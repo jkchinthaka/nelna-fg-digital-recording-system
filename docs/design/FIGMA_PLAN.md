@@ -15,7 +15,7 @@ Define the Figma file structure, journeys, IA, lo-fi wireframes, tokens, compone
 | --- | --- |
 | Phase 00 Discovery and governance | **Merged** to main |
 | Phase 01A Journeys, IA, lo-fi specification | **Approved** as proposed baseline (2026-08-04); open operational decisions remain non-final |
-| Phase 01B Design tokens and components | **Current** — specs for review |
+| Phase 01B Design tokens and components | **Under review** (PR #3); draft Figma file exists — see FIGMA_IMPLEMENTATION_LOG |
 | Phase 01C High-fidelity MVP screens and prototype | Not started |
 | Application development | **Not started** |
 

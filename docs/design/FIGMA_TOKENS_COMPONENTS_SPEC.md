@@ -1,8 +1,10 @@
 # Figma Tokens and Components Build Specification — Phase 01B
 
-**Document status:** Instruction for Figma pages 04–05 — **does not claim the Figma file was created in this repo**  
-**Phase:** 01B  
+**Document status:** Instruction for Figma pages 04–05 — see also implementation log for actual Figma work  
+**Phase:** 01B-R  
 **Last updated:** 2026-08-04
+
+**Prefer detailed guides:** [FIGMA_VARIABLES_SPEC.md](FIGMA_VARIABLES_SPEC.md) · [FIGMA_COMPONENT_BUILD_GUIDE.md](FIGMA_COMPONENT_BUILD_GUIDE.md) · [FIGMA_IMPLEMENTATION_LOG.md](FIGMA_IMPLEMENTATION_LOG.md)
 
 Owners create or update the Figma Professional file using this specification plus [DESIGN_TOKENS.md](DESIGN_TOKENS.md) and [COMPONENT_SYSTEM.md](COMPONENT_SYSTEM.md). Do not generate binary image assets in git. Do not copy unrelated design systems or unlicensed brand assets.
 

@@ -7,7 +7,7 @@ Place approved charter, scope, UAT, design, and release approval records in this
 | Record | Status | Date |
 | --- | --- | --- |
 | [PHASE_01A_DESIGN_APPROVAL.md](PHASE_01A_DESIGN_APPROVAL.md) | **Approved** as proposed design baseline | 2026-08-04 |
-| [PHASE_01B_DESIGN_APPROVAL.md](PHASE_01B_DESIGN_APPROVAL.md) | Not approved — form for Phase 01B review | — |
+| [PHASE_01B_DESIGN_APPROVAL.md](PHASE_01B_DESIGN_APPROVAL.md) | **Not approved** — under review with PR #3 | — |
 
 ## Notes
 

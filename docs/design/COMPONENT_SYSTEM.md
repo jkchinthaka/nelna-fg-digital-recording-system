@@ -1,9 +1,18 @@
 # Component System — Phase 01B
 
 **Document status:** Proposed component inventory and behaviour specs for Figma page 05  
-**Phase:** 01B  
+**Phase:** 01B-R  
 **Last updated:** 2026-08-04  
 **Depends on:** [DESIGN_TOKENS.md](DESIGN_TOKENS.md), Phase 01A wireframes/journeys
+
+**Detailed companions (do not treat as contradictory copies):**
+- Full catalogue: [COMPONENT_CATALOGUE.md](COMPONENT_CATALOGUE.md)
+- Anatomy/states: [COMPONENT_ANATOMY_AND_STATES.md](COMPONENT_ANATOMY_AND_STATES.md)
+- Operator patterns: [OPERATOR_COMPONENT_PATTERNS.md](OPERATOR_COMPONENT_PATTERNS.md)
+- Critical states: [CRITICAL_STATE_PATTERNS.md](CRITICAL_STATE_PATTERNS.md)
+- Django handoff: [DESIGN_TO_DJANGO_HANDOFF.md](DESIGN_TO_DJANGO_HANDOFF.md)
+
+Where this overview and the catalogue differ in depth, prefer the catalogue + anatomy docs. Colour usage must follow the **approved palette** in [DESIGN_SYSTEM_FOUNDATIONS.md](DESIGN_SYSTEM_FOUNDATIONS.md) (semantic roles only).
 
 No Django/HTML implementation in this phase. Components are specified for Figma build and later Tailwind/template mapping. Do not invent checklist field content or Nelna limits.
 

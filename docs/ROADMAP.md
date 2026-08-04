@@ -6,7 +6,7 @@
 
 Branch naming pattern: `foundation/...`, `design/...`, `feature/phase-NN-short-name`, or `hardening/...` as appropriate. Never commit directly to `main`.
 
-**Progress:** Phase 00 merged. Phase 01A merged and **owner-approved** as proposed design baseline (open operational decisions remain non-final). Phase 01B in review. Application development has not started.
+**Progress:** Phase 00 merged. Phase 01A merged and **owner-approved** as proposed design baseline (open operational decisions remain non-final). Phase 01B under review on **PR #3** (`design/figma-tokens-components`; planned name `design/figma-design-system` recorded as harmless deviation). Application development has not started. Phase 01C must not start before Phase 01B approval.
 
 ---
 
@@ -42,12 +42,12 @@ Branch naming pattern: `foundation/...`, `design/...`, `feature/phase-NN-short-n
 | --- | --- |
 | Objective | Define design tokens and core component system for Figma pages 04–05; document build/review/approval path |
 | Inputs | Owner-approved 01A baseline; accessibility/content/responsive rules |
-| Outputs | DESIGN_TOKENS; COMPONENT_SYSTEM; FIGMA_TOKENS_COMPONENTS_SPEC; 01B checklist + approval form; status updates |
+| Outputs | DESIGN_TOKENS; COMPONENT_SYSTEM; catalogue/anatomy/patterns; foundations; variables/build guides; tokens JSON; contrast validation; Figma draft file + implementation log; 01B checklist + approval form |
 | Approval gate | Design system review + [PHASE_01B_DESIGN_APPROVAL.md](approvals/PHASE_01B_DESIGN_APPROVAL.md) |
-| Branch naming | `design/figma-tokens-components` |
-| Exit criteria | Token/component specs in review/merged; no app code; no false approval claims; open Nelna decisions still tagged |
+| Branch naming | `design/figma-tokens-components` (deviation from planned `design/figma-design-system` — see PHASE_01B_DECISIONS P1B-010) |
+| Exit criteria | Token/component specs + artefacts in review; JSON valid; contrast documented; Figma status truthful; no app code; no false approval claims |
 | Dependencies | Phase 01A approval |
-| Status | **Current — awaiting manual design review** |
+| Status | **Under review — PR #3 open** |
 
 ## Phase 01C — High-fidelity MVP screens and prototype
 

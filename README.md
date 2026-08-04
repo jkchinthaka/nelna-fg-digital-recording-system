@@ -8,18 +8,20 @@ Provide named-account, scoped-role digital recording, checking, verification, ev
 
 ## Current phase
 
-**Phase 01B — Design tokens and component system** (in review)
+**Phase 01B — Design tokens and component system** (under review — PR #3)
 
 | Phase | Status |
 | --- | --- |
 | Phase 00 — Discovery and governance | Merged to `main` |
 | Phase 01A — Journeys, IA, lo-fi specification | **Approved** as proposed design baseline (2026-08-04) |
-| Phase 01B — Design tokens and components | Current — awaiting manual design review |
-| Phase 01C — High-fidelity MVP screens and prototype | Not started |
+| Phase 01B — Design tokens and components | **Under review** on PR #3 — do not start 01C until approved |
+| Phase 01C — High-fidelity MVP screens and prototype | Not started — blocked on 01B approval |
 
-This repository contains governance documentation, architecture decision records, Cursor rules, and design specifications through Phase 01B. It does **not** contain an application codebase. No Django/HTML/CSS/JS implementation has started.
+This repository contains governance documentation, architecture decision records, Cursor rules, and design specifications through Phase 01B (including machine-readable tokens). It does **not** contain an application codebase. No Django/HTML/CSS/JS implementation has started.
 
-Open business decisions from 01A remain proposed or decision-required and are **not** final Nelna operational approvals. Phase 01B is **not approved** until its design approval form is signed.
+Open business decisions remain proposed or decision-required and are **not** final Nelna operational approvals. Phase 01B is **not approved** until its design approval form is signed.
+
+**Figma:** Draft file created — see [docs/design/FIGMA_IMPLEMENTATION_LOG.md](docs/design/FIGMA_IMPLEMENTATION_LOG.md). Not an approved published library.
 
 ## Approved architecture (technical direction)
 
@@ -84,7 +86,20 @@ Open business decisions from 01A remain proposed or decision-required and are **
 | Responsive behaviour | [docs/design/RESPONSIVE_BEHAVIOUR.md](docs/design/RESPONSIVE_BEHAVIOUR.md) |
 | Figma build specification (01A) | [docs/design/FIGMA_BUILD_SPECIFICATION.md](docs/design/FIGMA_BUILD_SPECIFICATION.md) |
 | Design tokens | [docs/design/DESIGN_TOKENS.md](docs/design/DESIGN_TOKENS.md) |
+| Design system foundations | [docs/design/DESIGN_SYSTEM_FOUNDATIONS.md](docs/design/DESIGN_SYSTEM_FOUNDATIONS.md) |
 | Component system | [docs/design/COMPONENT_SYSTEM.md](docs/design/COMPONENT_SYSTEM.md) |
+| Component catalogue | [docs/design/COMPONENT_CATALOGUE.md](docs/design/COMPONENT_CATALOGUE.md) |
+| Component anatomy and states | [docs/design/COMPONENT_ANATOMY_AND_STATES.md](docs/design/COMPONENT_ANATOMY_AND_STATES.md) |
+| Operator component patterns | [docs/design/OPERATOR_COMPONENT_PATTERNS.md](docs/design/OPERATOR_COMPONENT_PATTERNS.md) |
+| Critical state patterns | [docs/design/CRITICAL_STATE_PATTERNS.md](docs/design/CRITICAL_STATE_PATTERNS.md) |
+| Figma variables spec | [docs/design/FIGMA_VARIABLES_SPEC.md](docs/design/FIGMA_VARIABLES_SPEC.md) |
+| Figma component build guide | [docs/design/FIGMA_COMPONENT_BUILD_GUIDE.md](docs/design/FIGMA_COMPONENT_BUILD_GUIDE.md) |
+| Figma implementation log | [docs/design/FIGMA_IMPLEMENTATION_LOG.md](docs/design/FIGMA_IMPLEMENTATION_LOG.md) |
+| Design-to-Django handoff | [docs/design/DESIGN_TO_DJANGO_HANDOFF.md](docs/design/DESIGN_TO_DJANGO_HANDOFF.md) |
+| Design QA checklist | [docs/design/DESIGN_QA_CHECKLIST.md](docs/design/DESIGN_QA_CHECKLIST.md) |
+| Contrast validation | [docs/design/CONTRAST_VALIDATION.md](docs/design/CONTRAST_VALIDATION.md) |
+| Phase 01B decisions | [docs/design/PHASE_01B_DECISIONS.md](docs/design/PHASE_01B_DECISIONS.md) |
+| Machine-readable tokens | [design/tokens/nelna-fg.tokens.json](design/tokens/nelna-fg.tokens.json) |
 | Figma tokens/components spec (01B) | [docs/design/FIGMA_TOKENS_COMPONENTS_SPEC.md](docs/design/FIGMA_TOKENS_COMPONENTS_SPEC.md) |
 | Figma review checklist (01A) | [docs/design/FIGMA_REVIEW_CHECKLIST.md](docs/design/FIGMA_REVIEW_CHECKLIST.md) |
 | Figma review checklist (01B) | [docs/design/FIGMA_REVIEW_CHECKLIST_01B.md](docs/design/FIGMA_REVIEW_CHECKLIST_01B.md) |
@@ -105,10 +120,10 @@ Open business decisions from 01A remain proposed or decision-required and are **
 
 ## Next action
 
-1. Complete manual design review of Phase 01B using [docs/design/FIGMA_REVIEW_CHECKLIST_01B.md](docs/design/FIGMA_REVIEW_CHECKLIST_01B.md) and [docs/approvals/PHASE_01B_DESIGN_APPROVAL.md](docs/approvals/PHASE_01B_DESIGN_APPROVAL.md).
-2. Build Figma pages 04–05 from [docs/design/FIGMA_TOKENS_COMPONENTS_SPEC.md](docs/design/FIGMA_TOKENS_COMPONENTS_SPEC.md) (Figma binary not claimed created in-repo).
-3. Keep resolving open business decisions via the assumption register and questionnaire — they are not final operational approvals.
-4. After Phase 01B approval, begin **Phase 01C — high-fidelity MVP screens and prototype**.
+1. Manual design-system review of Phase 01B (PR #3) using [docs/design/DESIGN_QA_CHECKLIST.md](docs/design/DESIGN_QA_CHECKLIST.md) and [docs/approvals/PHASE_01B_DESIGN_APPROVAL.md](docs/approvals/PHASE_01B_DESIGN_APPROVAL.md).
+2. Complete remaining Figma manual steps in [docs/design/FIGMA_IMPLEMENTATION_LOG.md](docs/design/FIGMA_IMPLEMENTATION_LOG.md).
+3. Keep resolving open business decisions — they are not final operational approvals.
+4. **Do not start Phase 01C** until Phase 01B is approved.
 
 ## Important
 
