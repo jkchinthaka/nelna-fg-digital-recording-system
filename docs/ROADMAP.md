@@ -1,12 +1,12 @@
 # Roadmap — Phase Delivery Plan
 
 **Document status:** Governing roadmap for greenfield delivery  
-**Phase:** 01A — User journeys and low-fidelity specification (current)  
+**Phase:** 01B — Design tokens and component system (current)  
 **Last updated:** 2026-08-04
 
 Branch naming pattern: `foundation/...`, `design/...`, `feature/phase-NN-short-name`, or `hardening/...` as appropriate. Never commit directly to `main`.
 
-**Progress:** Phase 00 merged to `main`. Application development has not started. Phase 01 split into 01A (journeys/IA/lo-fi docs), 01B (tokens/components), 01C (high-fidelity + prototype).
+**Progress:** Phase 00 merged. Phase 01A merged and **owner-approved** as proposed design baseline (open operational decisions remain non-final). Phase 01B in review. Application development has not started.
 
 ---
 
@@ -34,20 +34,20 @@ Branch naming pattern: `foundation/...`, `design/...`, `feature/phase-NN-short-n
 | Branch naming | `design/figma-user-journeys` |
 | Exit criteria | Required 01A docs in review/merged; no app code; no false approval claims; no invented Nelna values |
 | Dependencies | Phase 00 merged |
-| Status | **Current — awaiting manual design review** |
+| Status | **Complete — merged; owner-approved as proposed baseline (2026-08-04)** |
 
 ## Phase 01B — Design tokens and components
 
 | Field | Content |
 | --- | --- |
-| Objective | Define and build Figma design tokens and core components (pages 04–05) |
-| Inputs | Approved or conditionally approved 01A specs |
-| Outputs | Token definitions; component library stubs/frames; doc updates |
-| Approval gate | Design system review |
+| Objective | Define design tokens and core component system for Figma pages 04–05; document build/review/approval path |
+| Inputs | Owner-approved 01A baseline; accessibility/content/responsive rules |
+| Outputs | DESIGN_TOKENS; COMPONENT_SYSTEM; FIGMA_TOKENS_COMPONENTS_SPEC; 01B checklist + approval form; status updates |
+| Approval gate | Design system review + [PHASE_01B_DESIGN_APPROVAL.md](approvals/PHASE_01B_DESIGN_APPROVAL.md) |
 | Branch naming | `design/figma-tokens-components` |
-| Exit criteria | Tokens/components reviewable in Figma per build spec; still no application code required |
-| Dependencies | Phase 01A approval (or explicit conditional go-ahead) |
-| Status | Not started — do not begin until 01A review decision |
+| Exit criteria | Token/component specs in review/merged; no app code; no false approval claims; open Nelna decisions still tagged |
+| Dependencies | Phase 01A approval |
+| Status | **Current — awaiting manual design review** |
 
 ## Phase 01C — High-fidelity MVP screens and prototype
 

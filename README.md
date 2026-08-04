@@ -8,16 +8,18 @@ Provide named-account, scoped-role digital recording, checking, verification, ev
 
 ## Current phase
 
-**Phase 01A — User journeys, information architecture, and low-fidelity design specification** (in review)
+**Phase 01B — Design tokens and component system** (in review)
 
 | Phase | Status |
 | --- | --- |
 | Phase 00 — Discovery and governance | Merged to `main` |
-| Phase 01A — Journeys, IA, lo-fi specification | Current — awaiting manual design review |
-| Phase 01B — Design tokens and components | Not started |
+| Phase 01A — Journeys, IA, lo-fi specification | **Approved** as proposed design baseline (2026-08-04) |
+| Phase 01B — Design tokens and components | Current — awaiting manual design review |
 | Phase 01C — High-fidelity MVP screens and prototype | Not started |
 
-This repository contains governance documentation, architecture decision records, Cursor rules, and Phase 01A design specifications. It does **not** contain an application codebase. No Django/HTML/CSS/JS implementation has started. Phase 01A is **not approved** until the design approval form is signed.
+This repository contains governance documentation, architecture decision records, Cursor rules, and design specifications through Phase 01B. It does **not** contain an application codebase. No Django/HTML/CSS/JS implementation has started.
+
+Open business decisions from 01A remain proposed or decision-required and are **not** final Nelna operational approvals. Phase 01B is **not approved** until its design approval form is signed.
 
 ## Approved architecture (technical direction)
 
@@ -80,10 +82,15 @@ This repository contains governance documentation, architecture decision records
 | Content and language | [docs/design/CONTENT_AND_LANGUAGE_GUIDE.md](docs/design/CONTENT_AND_LANGUAGE_GUIDE.md) |
 | Accessibility and usability | [docs/design/ACCESSIBILITY_AND_USABILITY.md](docs/design/ACCESSIBILITY_AND_USABILITY.md) |
 | Responsive behaviour | [docs/design/RESPONSIVE_BEHAVIOUR.md](docs/design/RESPONSIVE_BEHAVIOUR.md) |
-| Figma build specification | [docs/design/FIGMA_BUILD_SPECIFICATION.md](docs/design/FIGMA_BUILD_SPECIFICATION.md) |
-| Figma review checklist | [docs/design/FIGMA_REVIEW_CHECKLIST.md](docs/design/FIGMA_REVIEW_CHECKLIST.md) |
+| Figma build specification (01A) | [docs/design/FIGMA_BUILD_SPECIFICATION.md](docs/design/FIGMA_BUILD_SPECIFICATION.md) |
+| Design tokens | [docs/design/DESIGN_TOKENS.md](docs/design/DESIGN_TOKENS.md) |
+| Component system | [docs/design/COMPONENT_SYSTEM.md](docs/design/COMPONENT_SYSTEM.md) |
+| Figma tokens/components spec (01B) | [docs/design/FIGMA_TOKENS_COMPONENTS_SPEC.md](docs/design/FIGMA_TOKENS_COMPONENTS_SPEC.md) |
+| Figma review checklist (01A) | [docs/design/FIGMA_REVIEW_CHECKLIST.md](docs/design/FIGMA_REVIEW_CHECKLIST.md) |
+| Figma review checklist (01B) | [docs/design/FIGMA_REVIEW_CHECKLIST_01B.md](docs/design/FIGMA_REVIEW_CHECKLIST_01B.md) |
 | Design decision register | [docs/design/DESIGN_DECISION_REGISTER.md](docs/design/DESIGN_DECISION_REGISTER.md) |
-| Phase 01A approval form | [docs/approvals/PHASE_01A_DESIGN_APPROVAL.md](docs/approvals/PHASE_01A_DESIGN_APPROVAL.md) |
+| Phase 01A approval | [docs/approvals/PHASE_01A_DESIGN_APPROVAL.md](docs/approvals/PHASE_01A_DESIGN_APPROVAL.md) |
+| Phase 01B approval form | [docs/approvals/PHASE_01B_DESIGN_APPROVAL.md](docs/approvals/PHASE_01B_DESIGN_APPROVAL.md) |
 | Roadmap | [docs/ROADMAP.md](docs/ROADMAP.md) |
 | Approvals | [docs/approvals/](docs/approvals/) |
 
@@ -98,10 +105,10 @@ This repository contains governance documentation, architecture decision records
 
 ## Next action
 
-1. Complete manual design review of Phase 01A using [docs/design/FIGMA_REVIEW_CHECKLIST.md](docs/design/FIGMA_REVIEW_CHECKLIST.md) and [docs/approvals/PHASE_01A_DESIGN_APPROVAL.md](docs/approvals/PHASE_01A_DESIGN_APPROVAL.md).
-2. Create the Figma file from [docs/design/FIGMA_BUILD_SPECIFICATION.md](docs/design/FIGMA_BUILD_SPECIFICATION.md) (not claimed created in-repo).
-3. Capture named owners and questionnaire answers into the assumption register as they arrive.
-4. After Phase 01A approval, begin **Phase 01B — design tokens and components**.
+1. Complete manual design review of Phase 01B using [docs/design/FIGMA_REVIEW_CHECKLIST_01B.md](docs/design/FIGMA_REVIEW_CHECKLIST_01B.md) and [docs/approvals/PHASE_01B_DESIGN_APPROVAL.md](docs/approvals/PHASE_01B_DESIGN_APPROVAL.md).
+2. Build Figma pages 04–05 from [docs/design/FIGMA_TOKENS_COMPONENTS_SPEC.md](docs/design/FIGMA_TOKENS_COMPONENTS_SPEC.md) (Figma binary not claimed created in-repo).
+3. Keep resolving open business decisions via the assumption register and questionnaire — they are not final operational approvals.
+4. After Phase 01B approval, begin **Phase 01C — high-fidelity MVP screens and prototype**.
 
 ## Important
 
