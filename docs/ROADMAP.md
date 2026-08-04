@@ -1,10 +1,12 @@
 # Roadmap — Phase Delivery Plan
 
 **Document status:** Governing roadmap for greenfield delivery  
-**Phase:** 00 — Discovery and governance (in progress)  
+**Phase:** 01A — User journeys and low-fidelity specification (current)  
 **Last updated:** 2026-08-04
 
 Branch naming pattern: `foundation/...`, `design/...`, `feature/phase-NN-short-name`, or `hardening/...` as appropriate. Never commit directly to `main`.
+
+**Progress:** Phase 00 merged to `main`. Application development has not started. Phase 01 split into 01A (journeys/IA/lo-fi docs), 01B (tokens/components), 01C (high-fidelity + prototype).
 
 ---
 
@@ -17,20 +19,60 @@ Branch naming pattern: `foundation/...`, `design/...`, `feature/phase-NN-short-n
 | Outputs | Docs tree; Cursor rules; README; decision/assumption/risk registers |
 | Approval gate | Manual PR review of foundation docs |
 | Branch naming | `foundation/project-discovery` |
-| Exit criteria | Required docs and rules merged or open for review; no app code; no invented Nelna values |
+| Exit criteria | Required docs and rules merged; no app code; no invented Nelna values |
 | Dependencies | None |
+| Status | **Complete — merged to main** |
 
-## Phase 01 — Figma journeys and design system
+## Phase 01A — User journeys, IA, and low-fidelity specification
 
 | Field | Content |
 | --- | --- |
-| Objective | Produce Figma journeys, IA, tokens, components, and key screens per FIGMA_PLAN |
+| Objective | Define personas, eight critical journeys, IA, screen inventory, workflow states, lo-fi wireframe specs, language/a11y/responsive rules, Figma build spec, and design approval form |
+| Inputs | Phase 00 docs (charter, MVP scope, ADR-003, FIGMA_PLAN, assumptions) |
+| Outputs | docs/design/* 01A set; Phase 01A approval form; updated README/ROADMAP/FIGMA_PLAN |
+| Approval gate | Manual design review + [PHASE_01A_DESIGN_APPROVAL.md](approvals/PHASE_01A_DESIGN_APPROVAL.md) |
+| Branch naming | `design/figma-user-journeys` |
+| Exit criteria | Required 01A docs in review/merged; no app code; no false approval claims; no invented Nelna values |
+| Dependencies | Phase 00 merged |
+| Status | **Current — awaiting manual design review** |
+
+## Phase 01B — Design tokens and components
+
+| Field | Content |
+| --- | --- |
+| Objective | Define and build Figma design tokens and core components (pages 04–05) |
+| Inputs | Approved or conditionally approved 01A specs |
+| Outputs | Token definitions; component library stubs/frames; doc updates |
+| Approval gate | Design system review |
+| Branch naming | `design/figma-tokens-components` |
+| Exit criteria | Tokens/components reviewable in Figma per build spec; still no application code required |
+| Dependencies | Phase 01A approval (or explicit conditional go-ahead) |
+| Status | Not started — do not begin until 01A review decision |
+
+## Phase 01C — High-fidelity MVP screens and prototype
+
+| Field | Content |
+| --- | --- |
+| Objective | High-fidelity MVP screens (pages 06–12) and interactive prototype |
+| Inputs | 01A journeys/IA; 01B tokens/components |
+| Outputs | Hi-fi frames; prototype; developer handoff expansion |
+| Approval gate | Business/QA UX review of MVP flows |
+| Branch naming | `design/figma-hifi-mvp` |
+| Exit criteria | MVP journeys prototype-ready; Sinhala/EN strategy applied with pending translations marked |
+| Dependencies | Phase 01B |
+| Status | Not started |
+
+## Phase 01 — Figma journeys and design system (umbrella)
+
+| Field | Content |
+| --- | --- |
+| Objective | Umbrella for 01A–01C per FIGMA_PLAN |
 | Inputs | Charter, MVP scope, questionnaire answers as available |
-| Outputs | Figma file pages 00–12 progress; handoff notes |
-| Approval gate | Business/QA UX review of journeys and operator flows |
-| Branch naming | `design/phase-01-figma-journeys` (docs updates) |
-| Exit criteria | Agreed journeys for MVP roles; tokens/components started; Sinhala/English strategy documented in Figma plan adherence |
-| Dependencies | Phase 00 review |
+| Outputs | Complete Figma foundation through hi-fi prototype |
+| Approval gate | See 01A/01B/01C gates |
+| Branch naming | See sub-phases |
+| Exit criteria | Journeys agreed; tokens/components done; hi-fi MVP reviewed |
+| Dependencies | Phase 00 |
 
 ## Phase 02 — Django/PostgreSQL foundation
 

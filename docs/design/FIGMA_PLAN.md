@@ -1,102 +1,98 @@
 # Figma Plan
 
-**Document status:** Preparation plan — no final UI designs are created in Phase 00  
-**Phase:** 00 — Discovery and governance  
+**Document status:** Active design plan — Phase 01A specification complete for review; Figma file not claimed created  
+**Phase:** 01A current · 01B tokens/components next · 01C high-fidelity + prototype after  
 **Tool:** Figma Professional  
 **Last updated:** 2026-08-04
 
 ## Purpose
 
-Define the Figma file structure, required screens, components, states, breakpoints, accessibility expectations, language strategy, and handoff method for Phase 01 design work.
+Define the Figma file structure, journeys, IA, lo-fi wireframes, tokens (later), components (later), screens, breakpoints, accessibility, language strategy, and handoff method.
+
+## Phase status
+
+| Phase | Status |
+| --- | --- |
+| Phase 00 Discovery and governance | **Merged** to main |
+| Phase 01A Journeys, IA, lo-fi specification | **Current** — documentation PR for manual design review |
+| Phase 01B Design tokens and components | Not started |
+| Phase 01C High-fidelity MVP screens and prototype | Not started |
+| Application development | **Not started** |
+
+Phase 01A is **not approved** until [PHASE_01A_DESIGN_APPROVAL.md](../approvals/PHASE_01A_DESIGN_APPROVAL.md) is signed.
+
+## Specification documents (01A)
+
+| Doc | Path |
+| --- | --- |
+| Personas | [PERSONAS.md](PERSONAS.md) |
+| User journeys | [USER_JOURNEYS.md](USER_JOURNEYS.md) |
+| Information architecture | [INFORMATION_ARCHITECTURE.md](INFORMATION_ARCHITECTURE.md) |
+| Screen inventory | [SCREEN_INVENTORY.md](SCREEN_INVENTORY.md) |
+| Low-fidelity wireframes | [LOW_FIDELITY_WIREFRAMES.md](LOW_FIDELITY_WIREFRAMES.md) |
+| Workflow states | [WORKFLOW_STATE_MAP.md](WORKFLOW_STATE_MAP.md) |
+| Content and language | [CONTENT_AND_LANGUAGE_GUIDE.md](CONTENT_AND_LANGUAGE_GUIDE.md) |
+| Accessibility | [ACCESSIBILITY_AND_USABILITY.md](ACCESSIBILITY_AND_USABILITY.md) |
+| Responsive behaviour | [RESPONSIVE_BEHAVIOUR.md](RESPONSIVE_BEHAVIOUR.md) |
+| Figma build specification | [FIGMA_BUILD_SPECIFICATION.md](FIGMA_BUILD_SPECIFICATION.md) |
+| Review checklist | [FIGMA_REVIEW_CHECKLIST.md](FIGMA_REVIEW_CHECKLIST.md) |
+| Design decisions | [DESIGN_DECISION_REGISTER.md](DESIGN_DECISION_REGISTER.md) |
 
 ## Figma pages
 
-| Page | Intent |
-| --- | --- |
-| 00 Project Brief | Goals, roles, constraints, non-goals, MVP summary |
-| 01 User Journeys | Operator, supervisor, QA, admin, auditor journeys for MVP |
-| 02 Information Architecture | Navigation and object model for MVP |
-| 03 Design Tokens | Color, type, space, elevation, semantic status tokens |
-| 04 Components | Buttons, inputs, task cards, status chips, evidence uploader, empty/error |
-| 05 Operator Mobile | Mobile-first recording screens |
-| 06 Supervisor Mobile and Tablet | Check queues and detail actions |
-| 07 QA Console | Verification queues and detail |
-| 08 Administration | Users, roles, org, templates (admin) |
-| 09 Management Dashboard | High-level status (post-MVP elements marked) |
-| 10 Offline and Error States | Connectivity loss, sync pending, conflicts (future-aware) |
-| 11 Interactive Prototypes | Clickable MVP paths |
-| 12 Developer Handoff | Specs, assets, behavior notes for Django/HTMX implementation |
+| Page | Intent | 01A | 01B | 01C |
+| --- | --- | --- | --- | --- |
+| 00 Project Brief | Goals, roles, constraints, MVP summary | Spec + frames to build | | |
+| 01 User Journeys | J1–J8 boards | Spec + frames to build | | |
+| 02 Information Architecture | Nav + sitemap | Spec + frames to build | | |
+| 03 Low-Fidelity Wireframes | MVP lo-fi | Spec + frames to build | | |
+| 04 Design Tokens | Colour, type, space, semantic status | Stub | **Build** | |
+| 05 Components | Buttons, inputs, cards, status, uploader | Stub | **Build** | |
+| 06 Operator Mobile | Hi-fi operator | Stub | | **Build** |
+| 07 Supervisor Mobile and Tablet | Hi-fi supervisor | Stub | | **Build** |
+| 08 QA Console | Hi-fi QA | Stub | | **Build** |
+| 09 Administration | Hi-fi admin | Stub | | **Build** |
+| 10 Management Dashboard | Hi-fi management | Stub | | **Build** |
+| 11 Offline and Error States | Sync/error lo-fi | Spec + frames | Refine | |
+| 12 Interactive Prototypes | Clickable MVP | Stub | | **Build** |
+| 13 Developer Handoff | Specs for Django/HTMX | Light links | | Expand |
+| 99 Archive | Retired frames | Ready | | |
+
+Detailed build rules: [FIGMA_BUILD_SPECIFICATION.md](FIGMA_BUILD_SPECIFICATION.md).
 
 ## Required screens (MVP-focused)
 
-- Login / session expired
-- Home / my tasks
-- Task detail / checklist fill
-- Submission confirmation
-- Evidence capture/upload
-- Supervisor queue / check detail
-- QA queue / verify detail
-- Amendment request / history view (as approved)
-- Basic audit export trigger/download (admin/QA)
-- Denied access / not found
-- Read-only auditor record view
-
-Exact field lists await approved forms (**EVIDENCE REQUIRED**).
+See [SCREEN_INVENTORY.md](SCREEN_INVENTORY.md). Exact field lists await approved forms (**EVIDENCE REQUIRED**).
 
 ## Required components
 
-- Primary/secondary/destructive buttons
-- Text, select, toggle, numeric, pass/fail controls (as needed by forms)
-- Task list item and filters
-- Status indicators (semantic, not color-only)
-- Evidence thumbnail + upload progress
-- Banner alerts and inline field errors
-- Language toggle or locale presentation pattern
-- Sticky operator action bar
+Deferred to Phase 01B (tokens + components). Lo-fi annotations only in 01A.
 
 ## Required states
 
-- Empty, loading, success, validation error
-- Forbidden / unauthorized
-- Offline / degraded connectivity (design even if MVP is online-only)
-- Sync pending / sync conflict (future)
-- Retrospective entry indicator (for BC procedures)
+Empty, loading, success, validation error, forbidden, offline/degraded, sync pending/conflict (design), retrospective indicator — see wireframes and Journey 6.
 
 ## Responsive breakpoints
 
-| Name | Min width (proposed) | Primary users |
-| --- | --- | --- |
-| Operator mobile | 360px | Operators |
-| Supervisor large phone / small tablet | 600px | Supervisors |
-| Tablet | 768px | Supervisors / QA |
-| Desktop | 1024px+ | QA / Admin / Management |
-
-All breakpoint pixel values are **PROPOSED** until design-system approval.
+See [RESPONSIVE_BEHAVIOUR.md](RESPONSIVE_BEHAVIOUR.md). Values remain **PROPOSED**.
 
 ## Accessibility requirements
 
-- Visible labels and focus states
-- Contrast aligned to WCAG-oriented targets in NFRs
-- Do not convey critical status by color alone
-- Touch targets sized for gloved/factory use where practical
-- Error messages tied to fields
+See [ACCESSIBILITY_AND_USABILITY.md](ACCESSIBILITY_AND_USABILITY.md). WCAG 2.2 AA target — not claimed certified.
 
 ## Sinhala and English content strategy
 
-- Operator-facing MVP content: Sinhala mandatory; English optional secondary as owners confirm
-- QA/Admin: language mix **DECISION REQUIRED** via questionnaire
-- Figma must include real string containers for both languages once translations are provided — do not invent operational terminology
-- Layout must tolerate Sinhala string length differences
+See [CONTENT_AND_LANGUAGE_GUIDE.md](CONTENT_AND_LANGUAGE_GUIDE.md). Sinhala-first operators; no invented final regulatory Sinhala.
 
 ## Figma-to-Django handoff method
 
-1. Freeze MVP frames in page 12 with tokens and component mappings.
-2. Export semantic tokens to CSS variables consumed by Tailwind configuration in implementation phases.
-3. Annotate HTMX interaction expectations (partial swaps, targets) in handoff notes.
-4. Map each screen to template path naming agreed in Phase 02+.
-5. Link frames to requirement IDs where applicable in the traceability matrix.
-6. Developers implement templates/partials to match approved frames; deviations require design+QA note.
+1. Freeze approved frames (after 01C) with tokens/components.
+2. Export semantic tokens to CSS variables / Tailwind in implementation phases.
+3. Annotate HTMX partial-swap expectations in handoff.
+4. Map screens to template paths from Phase 02+.
+5. Link frames to requirement IDs in the traceability matrix.
+6. Deviations require design + QA note.
 
-## Phase 00 boundary
+## Boundary
 
-This document prepares Figma work. **Do not treat Phase 00 as delivering final UI designs.**
+This plan does **not** claim a Figma binary was created in-repo. Owners create the Figma file from the build specification.
