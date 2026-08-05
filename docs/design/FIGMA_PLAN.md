@@ -1,25 +1,28 @@
 # Figma Plan
 
-**Document status:** Active design plan — Phase 01A specification complete for review; Figma file not claimed created  
-**Phase:** 01A current · 01B tokens/components next · 01C high-fidelity + prototype after  
+**Document status:** Active design plan — Phase 01B Approved with conditions; remaining Figma work continues into 01C  
+**Phase:** 01A Approved · **01B Approved with conditions** · 01C ready after PR #3 merge  
 **Tool:** Figma Professional  
-**Last updated:** 2026-08-04
+**Last updated:** 2026-08-05
 
 ## Purpose
 
-Define the Figma file structure, journeys, IA, lo-fi wireframes, tokens (later), components (later), screens, breakpoints, accessibility, language strategy, and handoff method.
+Define the Figma file structure, journeys, IA, lo-fi wireframes, tokens, components, screens, breakpoints, accessibility, language strategy, and handoff method.
 
 ## Phase status
 
 | Phase | Status |
 | --- | --- |
 | Phase 00 Discovery and governance | **Merged** to main |
-| Phase 01A Journeys, IA, lo-fi specification | **Current** — documentation PR for manual design review |
-| Phase 01B Design tokens and components | Not started |
-| Phase 01C High-fidelity MVP screens and prototype | Not started |
+| Phase 01A Journeys, IA, lo-fi specification | **Approved** as proposed baseline (2026-08-04); open operational decisions remain non-final |
+| Phase 01B Design tokens and components | **Approved with conditions** (2026-08-05); PR #3 open until manual merge |
+| Phase 01C High-fidelity MVP screens and prototype | **Ready after PR #3 merge** — carry remaining variable/component/a11y conditions |
 | Application development | **Not started** |
+| Figma ownership / editing access | **Verified** — chinthaka / Full seat / MCP + browser |
 
-Phase 01A is **not approved** until [PHASE_01A_DESIGN_APPROVAL.md](../approvals/PHASE_01A_DESIGN_APPROVAL.md) is signed.
+Remaining Phase 01B Figma work is **not** complete. See [FIGMA_IMPLEMENTATION_LOG.md](FIGMA_IMPLEMENTATION_LOG.md) and [PHASE_01B_DESIGN_APPROVAL.md](../approvals/PHASE_01B_DESIGN_APPROVAL.md).
+
+Draft Figma file: https://www.figma.com/design/jnn8Xhsg1zFEHxYShCUb4M — not a published approved library.
 
 ## Specification documents (01A)
 
@@ -34,9 +37,18 @@ Phase 01A is **not approved** until [PHASE_01A_DESIGN_APPROVAL.md](../approvals/
 | Content and language | [CONTENT_AND_LANGUAGE_GUIDE.md](CONTENT_AND_LANGUAGE_GUIDE.md) |
 | Accessibility | [ACCESSIBILITY_AND_USABILITY.md](ACCESSIBILITY_AND_USABILITY.md) |
 | Responsive behaviour | [RESPONSIVE_BEHAVIOUR.md](RESPONSIVE_BEHAVIOUR.md) |
-| Figma build specification | [FIGMA_BUILD_SPECIFICATION.md](FIGMA_BUILD_SPECIFICATION.md) |
-| Review checklist | [FIGMA_REVIEW_CHECKLIST.md](FIGMA_REVIEW_CHECKLIST.md) |
+| Figma build specification (01A) | [FIGMA_BUILD_SPECIFICATION.md](FIGMA_BUILD_SPECIFICATION.md) |
+| Review checklist (01A) | [FIGMA_REVIEW_CHECKLIST.md](FIGMA_REVIEW_CHECKLIST.md) |
 | Design decisions | [DESIGN_DECISION_REGISTER.md](DESIGN_DECISION_REGISTER.md) |
+
+## Specification documents (01B)
+
+| Doc | Path |
+| --- | --- |
+| Design tokens | [DESIGN_TOKENS.md](DESIGN_TOKENS.md) |
+| Component system | [COMPONENT_SYSTEM.md](COMPONENT_SYSTEM.md) |
+| Figma tokens/components build spec | [FIGMA_TOKENS_COMPONENTS_SPEC.md](FIGMA_TOKENS_COMPONENTS_SPEC.md) |
+| Review checklist (01B) | [FIGMA_REVIEW_CHECKLIST_01B.md](FIGMA_REVIEW_CHECKLIST_01B.md) |
 
 ## Figma pages
 

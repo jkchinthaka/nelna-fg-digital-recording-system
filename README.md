@@ -8,16 +8,20 @@ Provide named-account, scoped-role digital recording, checking, verification, ev
 
 ## Current phase
 
-**Phase 01A — User journeys, information architecture, and low-fidelity design specification** (in review)
+**Phase 01B — Design tokens and component system** (**Approved with conditions** — PR #3 open until manual merge)
 
 | Phase | Status |
 | --- | --- |
 | Phase 00 — Discovery and governance | Merged to `main` |
-| Phase 01A — Journeys, IA, lo-fi specification | Current — awaiting manual design review |
-| Phase 01B — Design tokens and components | Not started |
-| Phase 01C — High-fidelity MVP screens and prototype | Not started |
+| Phase 01A — Journeys, IA, lo-fi specification | **Approved** as proposed design baseline (2026-08-04) |
+| Phase 01B — Design tokens and components | **Approved with conditions** (2026-08-05) — PR #3 remains open until manual merge |
+| Phase 01C — High-fidelity MVP screens and prototype | **Ready after PR #3 merge** — carry 01B conditions forward |
 
-This repository contains governance documentation, architecture decision records, Cursor rules, and Phase 01A design specifications. It does **not** contain an application codebase. No Django/HTML/CSS/JS implementation has started. Phase 01A is **not approved** until the design approval form is signed.
+This repository contains governance documentation, architecture decision records, Cursor rules, and design specifications through Phase 01B (including machine-readable tokens). It does **not** contain an application codebase. No Django/HTML/CSS/JS implementation has started.
+
+Open business decisions remain proposed or decision-required and are **not** final Nelna operational approvals. Remaining Phase 01B Figma conditions are **not** marked complete.
+
+**Figma ownership and editing access:** Verified — owner/handle `chinthaka` (`chinthakajayaweera1@gmail.com`); plan CHINTHAKA JAYAWEERA's team; Full seat; MCP and browser authentication verified. Draft file: https://www.figma.com/design/jnn8Xhsg1zFEHxYShCUb4M — not a published approved library.
 
 ## Approved architecture (technical direction)
 
@@ -80,10 +84,28 @@ This repository contains governance documentation, architecture decision records
 | Content and language | [docs/design/CONTENT_AND_LANGUAGE_GUIDE.md](docs/design/CONTENT_AND_LANGUAGE_GUIDE.md) |
 | Accessibility and usability | [docs/design/ACCESSIBILITY_AND_USABILITY.md](docs/design/ACCESSIBILITY_AND_USABILITY.md) |
 | Responsive behaviour | [docs/design/RESPONSIVE_BEHAVIOUR.md](docs/design/RESPONSIVE_BEHAVIOUR.md) |
-| Figma build specification | [docs/design/FIGMA_BUILD_SPECIFICATION.md](docs/design/FIGMA_BUILD_SPECIFICATION.md) |
-| Figma review checklist | [docs/design/FIGMA_REVIEW_CHECKLIST.md](docs/design/FIGMA_REVIEW_CHECKLIST.md) |
+| Figma build specification (01A) | [docs/design/FIGMA_BUILD_SPECIFICATION.md](docs/design/FIGMA_BUILD_SPECIFICATION.md) |
+| Design tokens | [docs/design/DESIGN_TOKENS.md](docs/design/DESIGN_TOKENS.md) |
+| Design system foundations | [docs/design/DESIGN_SYSTEM_FOUNDATIONS.md](docs/design/DESIGN_SYSTEM_FOUNDATIONS.md) |
+| Component system | [docs/design/COMPONENT_SYSTEM.md](docs/design/COMPONENT_SYSTEM.md) |
+| Component catalogue | [docs/design/COMPONENT_CATALOGUE.md](docs/design/COMPONENT_CATALOGUE.md) |
+| Component anatomy and states | [docs/design/COMPONENT_ANATOMY_AND_STATES.md](docs/design/COMPONENT_ANATOMY_AND_STATES.md) |
+| Operator component patterns | [docs/design/OPERATOR_COMPONENT_PATTERNS.md](docs/design/OPERATOR_COMPONENT_PATTERNS.md) |
+| Critical state patterns | [docs/design/CRITICAL_STATE_PATTERNS.md](docs/design/CRITICAL_STATE_PATTERNS.md) |
+| Figma variables spec | [docs/design/FIGMA_VARIABLES_SPEC.md](docs/design/FIGMA_VARIABLES_SPEC.md) |
+| Figma component build guide | [docs/design/FIGMA_COMPONENT_BUILD_GUIDE.md](docs/design/FIGMA_COMPONENT_BUILD_GUIDE.md) |
+| Figma implementation log | [docs/design/FIGMA_IMPLEMENTATION_LOG.md](docs/design/FIGMA_IMPLEMENTATION_LOG.md) |
+| Design-to-Django handoff | [docs/design/DESIGN_TO_DJANGO_HANDOFF.md](docs/design/DESIGN_TO_DJANGO_HANDOFF.md) |
+| Design QA checklist | [docs/design/DESIGN_QA_CHECKLIST.md](docs/design/DESIGN_QA_CHECKLIST.md) |
+| Contrast validation | [docs/design/CONTRAST_VALIDATION.md](docs/design/CONTRAST_VALIDATION.md) |
+| Phase 01B decisions | [docs/design/PHASE_01B_DECISIONS.md](docs/design/PHASE_01B_DECISIONS.md) |
+| Machine-readable tokens | [design/tokens/nelna-fg.tokens.json](design/tokens/nelna-fg.tokens.json) |
+| Figma tokens/components spec (01B) | [docs/design/FIGMA_TOKENS_COMPONENTS_SPEC.md](docs/design/FIGMA_TOKENS_COMPONENTS_SPEC.md) |
+| Figma review checklist (01A) | [docs/design/FIGMA_REVIEW_CHECKLIST.md](docs/design/FIGMA_REVIEW_CHECKLIST.md) |
+| Figma review checklist (01B) | [docs/design/FIGMA_REVIEW_CHECKLIST_01B.md](docs/design/FIGMA_REVIEW_CHECKLIST_01B.md) |
 | Design decision register | [docs/design/DESIGN_DECISION_REGISTER.md](docs/design/DESIGN_DECISION_REGISTER.md) |
-| Phase 01A approval form | [docs/approvals/PHASE_01A_DESIGN_APPROVAL.md](docs/approvals/PHASE_01A_DESIGN_APPROVAL.md) |
+| Phase 01A approval | [docs/approvals/PHASE_01A_DESIGN_APPROVAL.md](docs/approvals/PHASE_01A_DESIGN_APPROVAL.md) |
+| Phase 01B approval form | [docs/approvals/PHASE_01B_DESIGN_APPROVAL.md](docs/approvals/PHASE_01B_DESIGN_APPROVAL.md) |
 | Roadmap | [docs/ROADMAP.md](docs/ROADMAP.md) |
 | Approvals | [docs/approvals/](docs/approvals/) |
 
@@ -98,10 +120,11 @@ This repository contains governance documentation, architecture decision records
 
 ## Next action
 
-1. Complete manual design review of Phase 01A using [docs/design/FIGMA_REVIEW_CHECKLIST.md](docs/design/FIGMA_REVIEW_CHECKLIST.md) and [docs/approvals/PHASE_01A_DESIGN_APPROVAL.md](docs/approvals/PHASE_01A_DESIGN_APPROVAL.md).
-2. Create the Figma file from [docs/design/FIGMA_BUILD_SPECIFICATION.md](docs/design/FIGMA_BUILD_SPECIFICATION.md) (not claimed created in-repo).
-3. Capture named owners and questionnaire answers into the assumption register as they arrive.
-4. After Phase 01A approval, begin **Phase 01B — design tokens and components**.
+1. Manually merge PR #3 when ready.
+2. After merge, begin **Phase 01C** high-fidelity MVP screens while completing Phase 01B conditions (variables, component sets, a11y annotations) — none may be silently omitted.
+3. Do **not** publish the Figma component library before final design-system review.
+4. Do **not** begin application development until the design screens required for the Django foundation are reviewed.
+5. Keep resolving open business decisions — they are not final operational approvals.
 
 ## Important
 

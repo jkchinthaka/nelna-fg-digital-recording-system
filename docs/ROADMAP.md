@@ -1,12 +1,12 @@
 # Roadmap — Phase Delivery Plan
 
 **Document status:** Governing roadmap for greenfield delivery  
-**Phase:** 01A — User journeys and low-fidelity specification (current)  
-**Last updated:** 2026-08-04
+**Phase:** 01B Approved with conditions · 01C ready after PR #3 merge  
+**Last updated:** 2026-08-05
 
 Branch naming pattern: `foundation/...`, `design/...`, `feature/phase-NN-short-name`, or `hardening/...` as appropriate. Never commit directly to `main`.
 
-**Progress:** Phase 00 merged to `main`. Application development has not started. Phase 01 split into 01A (journeys/IA/lo-fi docs), 01B (tokens/components), 01C (high-fidelity + prototype).
+**Progress:** Phase 00 merged. Phase 01A approved. Phase 01B **Approved with conditions** (2026-08-05) by Project Owner / Developer; Figma ownership and Full-seat access verified. PR #3 remains open until manual merge. Phase 01C is ready after PR #3 merge, carrying remaining Figma conditions. Application development has **not** started.
 
 ---
 
@@ -34,33 +34,33 @@ Branch naming pattern: `foundation/...`, `design/...`, `feature/phase-NN-short-n
 | Branch naming | `design/figma-user-journeys` |
 | Exit criteria | Required 01A docs in review/merged; no app code; no false approval claims; no invented Nelna values |
 | Dependencies | Phase 00 merged |
-| Status | **Current — awaiting manual design review** |
+| Status | **Complete — merged; owner-approved as proposed baseline (2026-08-04)** |
 
 ## Phase 01B — Design tokens and components
 
 | Field | Content |
 | --- | --- |
-| Objective | Define and build Figma design tokens and core components (pages 04–05) |
-| Inputs | Approved or conditionally approved 01A specs |
-| Outputs | Token definitions; component library stubs/frames; doc updates |
-| Approval gate | Design system review |
-| Branch naming | `design/figma-tokens-components` |
-| Exit criteria | Tokens/components reviewable in Figma per build spec; still no application code required |
-| Dependencies | Phase 01A approval (or explicit conditional go-ahead) |
-| Status | Not started — do not begin until 01A review decision |
+| Objective | Define design tokens and core component system for Figma pages 04–05; document build/review/approval path |
+| Inputs | Owner-approved 01A baseline; accessibility/content/responsive rules |
+| Outputs | DESIGN_TOKENS; COMPONENT_SYSTEM; catalogue/anatomy/patterns; foundations; variables/build guides; tokens JSON; contrast validation; Figma draft file + implementation log; 01B checklist + approval form |
+| Approval gate | Design system review + [PHASE_01B_DESIGN_APPROVAL.md](approvals/PHASE_01B_DESIGN_APPROVAL.md) |
+| Branch naming | `design/figma-tokens-components` (deviation from planned `design/figma-design-system` — see PHASE_01B_DECISIONS P1B-010) |
+| Exit criteria | Token/component specs + artefacts in review; JSON valid; contrast documented; Figma status truthful; no app code; no false approval claims |
+| Dependencies | Phase 01A approval |
+| Status | **Approved with conditions (2026-08-05) — PR #3 open until manual merge** |
 
 ## Phase 01C — High-fidelity MVP screens and prototype
 
 | Field | Content |
 | --- | --- |
 | Objective | High-fidelity MVP screens (pages 06–12) and interactive prototype |
-| Inputs | 01A journeys/IA; 01B tokens/components |
-| Outputs | Hi-fi frames; prototype; developer handoff expansion |
+| Inputs | 01A journeys/IA; 01B tokens/components; 01B approval conditions |
+| Outputs | Hi-fi frames; prototype; developer handoff expansion; continued variable/component/a11y completion |
 | Approval gate | Business/QA UX review of MVP flows |
 | Branch naming | `design/figma-hifi-mvp` |
-| Exit criteria | MVP journeys prototype-ready; Sinhala/EN strategy applied with pending translations marked |
-| Dependencies | Phase 01B |
-| Status | Not started |
+| Exit criteria | MVP journeys prototype-ready; Sinhala/EN strategy applied with pending translations marked; 01B conditions not omitted |
+| Dependencies | Phase 01B approval; PR #3 merge |
+| Status | **Ready after PR #3 merge** |
 
 ## Phase 01 — Figma journeys and design system (umbrella)
 
