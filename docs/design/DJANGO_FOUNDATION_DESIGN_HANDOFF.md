@@ -1,7 +1,7 @@
 # Django Foundation Design Handoff
 
-**Document status:** Draft pending owner review — not approved  
-**Phase:** 01C — High-fidelity MVP screens and prototype  
+**Document status:** Phase 01C approved with deferred Sinhala condition — Phase 02 foundation authorized after PR #4 merge  
+**Phase:** 01C → 02 handoff  
 **Branch:** `design/figma-high-fidelity-mvp`  
 **Created:** 2026-08-05  
 **Last updated:** 2026-08-05
@@ -11,8 +11,24 @@
 - [DESIGN_TO_DJANGO_HANDOFF.md](DESIGN_TO_DJANGO_HANDOFF.md) (Phase 01A baseline)
 - [DESIGN_TOKENS.md](DESIGN_TOKENS.md)
 - [COMPONENT_SYSTEM.md](COMPONENT_SYSTEM.md)
+- [PHASE_01C_HIGH_FIDELITY_APPROVAL.md](../approvals/PHASE_01C_HIGH_FIDELITY_APPROVAL.md)
+- [DESIGN_DEBT_REGISTER.md](DESIGN_DEBT_REGISTER.md)
 
-This document specifies which high-fidelity screens must be complete and reviewed before Phase 02 Django foundation implementation can begin. It defines the **minimum viable design handoff** for MVP foundation work.
+## Phase 02 authorization (01C-D)
+
+| Item | Status |
+| --- | --- |
+| Phase 01C | Approved with deferred Sinhala typography condition (2026-08-05) |
+| Phase 02 start | Authorized after PR #4 merge — **technical foundation only** |
+| Scope allowed | Django/PostgreSQL/platform foundation, backend-only work |
+| DEBT-01C-R-NOTO | **OPEN** — non-blocking for foundation; blocking for operator Sinhala UAT/pilot/production |
+| Noto Sans Sinhala verified | **No** |
+| Abhaya Libre production-approved | **No** |
+| Operator UAT / pilot / production | **Blocked** until Noto debt closed with evidence |
+| Figma library published | **No** |
+| Application code started | **Not yet** |
+
+This document specifies which high-fidelity screens are the design reference for Phase 02 Django foundation implementation.
 
 ---
 

@@ -1,10 +1,10 @@
 # Phase 01C High-Fidelity Design Approval Form
 
-**Document status:** Not approved — awaiting review and owner sign-off  
+**Document status:** Approved with deferred condition  
 **Phase:** 01C — High-fidelity MVP screens and prototype  
 **Branch:** `design/figma-high-fidelity-mvp`  
 **Created:** 2026-08-05  
-**Updated:** (to be filled by reviewer)
+**Updated:** 2026-08-05
 
 This approval is by the **Project Owner / Developer** only. It does **not** claim approval by QA, IT management, or other Nelna stakeholders.
 
@@ -12,36 +12,28 @@ This approval is by the **Project Owner / Developer** only. It does **not** clai
 
 ## Purpose
 
-Record review of Phase 01C high-fidelity design deliverables (Figma screens, prototypes, documentation) before Phase 02 Django foundation implementation.
+Record review of Phase 01C high-fidelity design deliverables (Figma screens, prototypes, documentation) and authorize Phase 02 technical foundation development under an explicit deferred Sinhala typography condition.
 
 ---
 
-## Documents reviewed
-
-- [ ] [HIGH_FIDELITY_SCREEN_SPEC.md](../design/HIGH_FIDELITY_SCREEN_SPEC.md)
-- [ ] [PROTOTYPE_FLOW_MAP.md](../design/PROTOTYPE_FLOW_MAP.md)
-- [ ] [RESPONSIVE_SCREEN_MATRIX.md](../design/RESPONSIVE_SCREEN_MATRIX.md)
-- [ ] [SCREEN_CONTENT_MATRIX.md](../design/SCREEN_CONTENT_MATRIX.md)
-- [ ] [FIGMA_01C_IMPLEMENTATION_LOG.md](../design/FIGMA_01C_IMPLEMENTATION_LOG.md)
-- [ ] [DESIGN_ACCEPTANCE_CRITERIA_01C.md](../design/DESIGN_ACCEPTANCE_CRITERIA_01C.md)
-- [ ] [PHASE_01C_DECISIONS.md](../design/PHASE_01C_DECISIONS.md)
-- [ ] [DESIGN_DEBT_REGISTER.md](../design/DESIGN_DEBT_REGISTER.md)
-- [ ] [DJANGO_FOUNDATION_DESIGN_HANDOFF.md](../design/DJANGO_FOUNDATION_DESIGN_HANDOFF.md)
-- [ ] Figma file reviewed: https://www.figma.com/design/jnn8Xhsg1zFEHxYShCUb4M
-- [ ] Phase 01A and 01B baselines still in force
-
----
-
-## Reviewer record
+## Decision summary
 
 | Field | Entry |
 | --- | --- |
-| Reviewer name | (to be filled) |
+| Decision | **Approved with deferred condition** |
+| Reviewer | Chinthaka Jayaweera |
 | Reviewer role | Project Owner / Developer |
-| Date | (to be filled) |
-| Documents reviewed | Phase 01C design documentation and Figma file listed above |
-| Figma file reviewed | Yes / No (to be marked) |
-| Figma account ownership verified | Yes / No (to be marked) |
+| Date | 2026-08-05 |
+| High-fidelity design direction | Approved for technical foundation development |
+| Prototype direction | Approved as development reference |
+| Sinhala typography | **Not finally verified** |
+| Deferred condition | Noto Sans Sinhala must be manually applied and verified before operator UAT, pilot, or production |
+| Application-development permission | Phase 02 backend and platform foundation may begin **after PR #4 merge** |
+| QA / IT / other Nelna stakeholder approval | **Not claimed** |
+
+### Reason for deferred condition
+
+The project owner has decided not to delay Django/PostgreSQL technical foundation development for the remaining manual Figma Noto Sans Sinhala verification (01C-F evidence check failed against the cloud file; debt remains open by design).
 
 ---
 
@@ -54,128 +46,80 @@ Record review of Phase 01C high-fidelity design deliverables (Figma screens, pro
 | Plan name | CHINTHAKA JAYAWEERA's team |
 | Seat type | Full |
 | Figma file owner | chinthaka |
-| Cursor Figma MCP authentication | Verified (as of 2026-08-05) |
-| Browser Figma authentication | Verified (as of 2026-08-05) |
+| Figma file | https://www.figma.com/design/jnn8Xhsg1zFEHxYShCUb4M |
+| Library published | No |
 
 ---
 
-## Approval checklist
+## Technical design validation (owner)
 
-Review all items before approval:
-
-### Screen completeness
-
-- [ ] All MVP screens (AUTH, OP, SV, QA, AD, MG, AU) have high-fidelity frames in Figma at required breakpoints
-- [ ] All screens use design tokens (color, typography, spacing, radius) from Phase 01B
-- [ ] All screens use reusable components (buttons, inputs, cards, status, uploader, etc.)
-- [ ] All screens include key states (default, loading, empty, error, success) where applicable
-- [ ] All screens use **SAMPLE DATA** only (EMP-XXXX, SAMPLE-BATCH, XX.X°C) — no invented Nelna operational values as facts
-- [ ] All failure/critical states use non-color-only indicators (icon + text + border/pattern)
-
-### Interactive prototypes
-
-- [ ] All P1–P7 prototype flows functional in Figma presentation mode
-- [ ] All primary actions (buttons, links) navigate correctly
-- [ ] Conditional branches (pass/fail, approve/return) functional
-- [ ] Back navigation works
-- [ ] Prototype index page links to all start frames
-- [ ] No broken hotspots
-
-### Responsive behavior
-
-- [ ] All required breakpoints (360, 430, 768, 1024, 1440) have representative frames
-- [ ] Mobile screens use single-column layouts and bottom navigation
-- [ ] Tablet screens use two-column or table layouts where applicable
-- [ ] Desktop screens use sidebar navigation and multi-column layouts where applicable
-- [ ] Touch targets meet minimums (48px general, 56px operator-critical)
-
-### Accessibility
-
-- [ ] All screens have keyboard navigation annotations (tab order, focus indicators)
-- [ ] All screens have visible focus indicator annotations (2px solid green ring)
-- [ ] All interactive elements have screen reader labels annotated
-- [ ] All touch targets measured and annotated (min 48px / 56px)
-- [ ] Operator screens have Sinhala text wrapping tests
-- [ ] All status indicators use non-color-only patterns (icon + text + border)
-- [ ] Color contrast meets WCAG 2.2 AA (4.5:1 normal, 3:1 large text)
-- [ ] Warning `#B76E00` and gold `#C7A94B` NOT used as normal text on low-contrast backgrounds
-
-### Phase 01B conditions
-
-- [ ] All Figma variables complete (typography, spacing, radius, elevation, motion, component dimensions)
-- [ ] All core components converted to reusable Figma component sets with documented variants
-- [ ] All accessibility annotations complete (keyboard, focus, screen reader, Sinhala, responsive)
-- [ ] Contrast validation enforced (no warning/gold normal text on low-contrast backgrounds)
-- [ ] Figma component library remains unpublished (draft only)
-
-### Sample data and no invented facts
-
-- [ ] All screens use sample data placeholders only
-- [ ] No real Nelna operational values (temp limits, CCP/OPRP, sites, products) presented as facts
-- [ ] All unresolved items marked [ASSUMPTION] / [DECISION REQUIRED] / [PROPOSED]
-- [ ] Proposed KPIs marked [PROPOSED]
-- [ ] Proposed Sinhala translations marked PROPOSED
-
-### Open design decisions
-
-- [ ] All 67 open decisions documented in [PHASE_01C_DECISIONS.md](../design/PHASE_01C_DECISIONS.md)
-- [ ] All blocking decisions (27) resolved or escalated
-- [ ] Non-blocking decisions (40) documented and deferred if appropriate
-- [ ] All decisions have identified owners
-
-### Content and translations
-
-- [ ] All content keys mapped in [SCREEN_CONTENT_MATRIX.md](../design/SCREEN_CONTENT_MATRIX.md)
-- [ ] Proposed Sinhala translations marked PROPOSED (linguistic review pending or scheduled)
-- [ ] Food safety domain terms reviewed or review scheduled
-- [ ] Content matrix exportable to i18n format
-
-### Design debt
-
-- [ ] All Phase 01B remaining conditions documented in [DESIGN_DEBT_REGISTER.md](../design/DESIGN_DEBT_REGISTER.md)
-- [ ] All known design gaps documented as debt
-- [ ] Blocking debt resolved before approval
-- [ ] Non-blocking debt tracked for future phases
-
-### Django foundation handoff
-
-- [ ] Django foundation screens identified in [DJANGO_FOUNDATION_DESIGN_HANDOFF.md](../design/DJANGO_FOUNDATION_DESIGN_HANDOFF.md)
-- [ ] All foundation screens complete in Figma
-- [ ] Foundation screens have detailed Django/HTMX annotations
-- [ ] Design tokens exportable to CSS variables / Tailwind config
-- [ ] Component specifications documented for Django template implementation
-
-### Documentation completeness
-
-- [ ] All Phase 01C documentation complete and reviewed
-- [ ] [FIGMA_01C_IMPLEMENTATION_LOG.md](../design/FIGMA_01C_IMPLEMENTATION_LOG.md) updated with actual build progress
-- [ ] All acceptance criteria met per [DESIGN_ACCEPTANCE_CRITERIA_01C.md](../design/DESIGN_ACCEPTANCE_CRITERIA_01C.md)
+| Item | Status |
+| --- | --- |
+| Technical design validation | **Passed, subject to manual owner approval recorded herein** |
+| Blocking design debt for Phase 02 foundation | **None** (Sinhala debt reclassified — see below) |
+| Remaining design debt | Non-blocking for Phase 02 foundation; **DEBT-01C-R-NOTO remains open** |
 
 ---
 
-## Decision (select one)
+## Deferred condition — DEBT-01C-R-NOTO
+
+| Classification | Applies |
+| --- | --- |
+| Debt status | **OPEN** — not verified, not closed |
+| Non-blocking for Phase 02 technical foundation | Yes |
+| Non-blocking for backend-only development | Yes |
+| Blocking before final operator-facing Sinhala UI approval | Yes |
+| Blocking before operator UAT | Yes |
+| Blocking before pilot | Yes |
+| Blocking before production release | Yes |
+
+**Restrictions:**
+
+- Do not claim final Sinhala UI approval
+- Do not claim Noto Sans Sinhala verification passed
+- Do not treat Abhaya Libre as the approved production font
+- Do not begin operator UAT
+- Do not begin pilot
+- Do not release production operator screens
+- Do not close DEBT-01C-R-NOTO without file evidence of Noto Sans Sinhala applied and verified
+
+---
+
+## Documents reviewed (owner)
+
+- [x] Phase 01C design documentation set on branch `design/figma-high-fidelity-mvp`
+- [x] Figma file: https://www.figma.com/design/jnn8Xhsg1zFEHxYShCUb4M
+- [x] [DESIGN_DEBT_REGISTER.md](../design/DESIGN_DEBT_REGISTER.md) — Sinhala debt remains open
+- [x] [FIGMA_01C_IMPLEMENTATION_LOG.md](../design/FIGMA_01C_IMPLEMENTATION_LOG.md) — 01C-F failed verification recorded
+- [x] Phase 01A and 01B baselines still in force
+
+---
+
+## Decision (selected)
 
 | Outcome | Mark |
 | --- | --- |
 | Approved | ☐ |
-| Approved with conditions | ☐ |
+| Approved with conditions | ☑ |
 | Rejected | ☐ |
 
-**Outcome:** (to be filled by reviewer)
+**Outcome:** Approved with deferred condition
 
 ---
 
-## Conditions (if approved with conditions)
+## Conditions
 
-(List any conditions that must be met before implementation or next phase)
-
-1. (to be filled if applicable)
+1. **DEBT-01C-R-NOTO** remains open until Noto Sans Sinhala is manually applied in Figma Desktop, interim Abhaya Libre is archived or marked non-production, wrapping/clipping are verified at 360px and 430px, and evidence is recorded.
+2. Phase 02 may proceed only for **technical foundation** (Django/PostgreSQL/platform) after PR #4 is merged.
+3. Operator-facing Sinhala UI final approval, operator UAT, pilot, and production remain blocked until condition 1 is closed with evidence.
+4. Figma component library remains unpublished until final design-system review.
+5. Open Nelna operational values remain proposed / decision-required — not final business approvals.
 
 ---
 
 ## Comments
 
-(Reviewer notes, concerns, clarifications)
+Accepted-risk deferral: foundation engineering may proceed in parallel with unfinished manual Sinhala font verification. This does **not** resolve Sinhala accessibility completeness.
 
 ---
 
@@ -183,21 +127,21 @@ Review all items before approval:
 
 | Field | Entry |
 | --- | --- |
-| Signature / typed confirmation | (to be filled) |
-| Date | (to be filled) |
+| Signature / typed confirmation | Chinthaka Jayaweera |
+| Role | Project Owner / Developer |
+| Date | 2026-08-05 |
 
 ---
 
 ## Post-approval actions
 
-- [ ] Update docs/approvals/README.md with Phase 01C approval status
-- [ ] Merge PR (branch `design/figma-high-fidelity-mvp` → `main`) manually when ready
-- [ ] Begin Phase 02 Django foundation implementation (only after approval + Django handoff screens ready)
+- [x] Update docs/approvals/README.md with Phase 01C approval-with-deferred-condition status
+- [ ] Merge PR #4 (`design/figma-high-fidelity-mvp` → `main`) manually when ready
+- [ ] Begin Phase 02 Django/PostgreSQL technical foundation after merge
+- [ ] Keep DEBT-01C-R-NOTO open until evidenced
 - [ ] Do not publish Figma library until final design-system review
-- [ ] Continue resolving open business decisions (they are not final operational approvals)
+- [ ] Do not start operator UAT / pilot / production until Noto debt closed
 
 ---
 
-**Document status:** Not approved — awaiting owner review  
-**Approval required before:** Phase 02 implementation start  
-**Related documentation:** All Phase 01C design documents listed in "Documents reviewed" section
+**Related documentation:** Phase 01C design docs; [DESIGN_DEBT_REGISTER.md](../design/DESIGN_DEBT_REGISTER.md); [DJANGO_FOUNDATION_DESIGN_HANDOFF.md](../design/DJANGO_FOUNDATION_DESIGN_HANDOFF.md)

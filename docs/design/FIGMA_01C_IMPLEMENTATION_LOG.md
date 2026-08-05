@@ -80,7 +80,19 @@ Inspected authenticated as chinthaka (Full). Evidence:
 7. P1–P7 start nodes (`67:26`, `67:228`, `67:581`, `67:781`, `67:363`, `67:496`, `67:1276`, `67:1382`) remain intact.
 8. MCP still cannot load Noto Sans Sinhala locally — this alone is **not** treated as failure; failure is because **file text metadata** still shows Abhaya Libre.
 
-**Debt not closed.** Re-run 01C-F after Desktop changes are saved to the cloud file.
+**Debt not closed by 01C-F.**
+
+### 01C-D owner deferral (2026-08-05)
+
+| Field | Entry |
+| --- | --- |
+| Decision | Phase 01C approved with deferred Sinhala typography condition |
+| Owner | Chinthaka Jayaweera (Project Owner / Developer) |
+| DEBT-01C-R-NOTO | **Remains OPEN** — not verified; Abhaya Libre not production-approved |
+| Phase 02 | Authorized for technical foundation after PR #4 merge |
+| Operator UAT / pilot / production | Still blocked until Noto debt closed with evidence |
+
+Approval form: [PHASE_01C_HIGH_FIDELITY_APPROVAL.md](../approvals/PHASE_01C_HIGH_FIDELITY_APPROVAL.md)
 
 ## Non-blocking debt
 

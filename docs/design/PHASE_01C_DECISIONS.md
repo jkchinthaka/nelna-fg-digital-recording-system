@@ -1,6 +1,6 @@
 # Phase 01C Design Decisions
 
-**Document status:** Draft pending owner review — not approved  
+**Document status:** Phase 01C approved with deferred Sinhala typography condition (2026-08-05)  
 **Phase:** 01C — High-fidelity MVP screens and prototype  
 **Branch:** `design/figma-high-fidelity-mvp`  
 **Created:** 2026-08-05  
@@ -9,8 +9,27 @@
 **Related documents:**
 - [HIGH_FIDELITY_SCREEN_SPEC.md](HIGH_FIDELITY_SCREEN_SPEC.md)
 - [DESIGN_DECISION_REGISTER.md](DESIGN_DECISION_REGISTER.md) (main register, all phases)
+- [PHASE_01C_HIGH_FIDELITY_APPROVAL.md](../approvals/PHASE_01C_HIGH_FIDELITY_APPROVAL.md)
+- [DESIGN_DEBT_REGISTER.md](DESIGN_DEBT_REGISTER.md)
 
-This document records Phase 01C design decisions. These decisions supplement the main [DESIGN_DECISION_REGISTER.md](DESIGN_DECISION_REGISTER.md), which tracks decisions across all phases.
+## Owner decision D-01C-D-001 — Defer Noto Sans Sinhala verification
+
+| Field | Entry |
+| --- | --- |
+| Decision ID | D-01C-D-001 |
+| Decision | Phase 01C approved with deferred Sinhala typography condition |
+| Status | Accepted (owner) |
+| Owner | Chinthaka Jayaweera |
+| Role | Project Owner / Developer |
+| Date | 2026-08-05 |
+| Evidence | Explicit owner prompt 01C-D; 01C-F verification failed (debt remains open) |
+| Impact | Phase 02 technical foundation may start after PR #4 merge; operator Sinhala UAT/pilot/production blocked |
+| Related debt | DEBT-01C-R-NOTO remains **OPEN** |
+| Must not claim | Noto verified; Abhaya Libre production-approved; Sinhala a11y complete; QA/IT management approval |
+
+---
+
+This document also records Phase 01C design decisions that supplement the main [DESIGN_DECISION_REGISTER.md](DESIGN_DECISION_REGISTER.md).
 
 ---
 

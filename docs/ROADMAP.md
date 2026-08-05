@@ -6,7 +6,7 @@
 
 Branch naming pattern: `foundation/...`, `design/...`, `feature/phase-NN-short-name`, or `hardening/...` as appropriate. Never commit directly to `main`.
 
-**Progress:** Phase 00–01B merged. Phase 01C **01C-R remediation** on `design/figma-high-fidelity-mvp` (PR #4): required screen coverage, component sets, responsive representatives, P1–P7 hi-fi prototype clones, and coverage matrix with node IDs. **Blocking:** owner must apply/verify Noto Sans Sinhala in Figma. High-fidelity approval **pending**. Application development **not** started. Phase 02 blocked.
+**Progress:** Phase 00–01B merged. Phase 01C **Approved with deferred Sinhala typography condition** (2026-08-05, Chinthaka Jayaweera). DEBT-01C-R-NOTO remains **open** (non-blocking for Phase 02 foundation; blocking for operator UAT/pilot/production). Phase 02 technical foundation **authorized after PR #4 merge**. Application code **not yet started**. Figma library **not** published.
 
 ---
 
@@ -60,7 +60,7 @@ Branch naming pattern: `foundation/...`, `design/...`, `feature/phase-NN-short-n
 | Branch naming | `design/figma-high-fidelity-mvp` |
 | Exit criteria | MVP journeys prototype-ready; Sinhala/EN strategy applied with pending translations marked; 01B conditions not omitted; 67 open design decisions resolved or documented |
 | Dependencies | Phase 01B approval |
-| Status | **Current — 01C-R coverage remediation under review (2026-08-05); Noto Sans Sinhala owner verification blocking; not approved; Phase 02 blocked** |
+| Status | **Approved with deferred Sinhala typography condition (2026-08-05) — Phase 02 foundation authorized after PR #4 merge; DEBT-01C-R-NOTO remains open** |
 
 ## Phase 01 — Figma journeys and design system (umbrella)
 
@@ -84,9 +84,8 @@ Branch naming pattern: `foundation/...`, `design/...`, `feature/phase-NN-short-n
 | Approval gate | Technical review of settings/security defaults |
 | Branch naming | `feature/phase-02-django-foundation` |
 | Exit criteria | App boots locally; DB migrations empty/base OK; no invented business data |
-| Dependencies | Phase 00; hosting decisions as needed for non-local later |
-
-## Phase 03 — Accounts and scoped RBAC
+| Dependencies | Phase 01C approved with deferred Sinhala condition; PR #4 merged |
+| Status | **Authorized after PR #4 merge** — technical foundation only; operator UAT/pilot/production blocked by DEBT-01C-R-NOTO |
 
 | Field | Content |
 | --- | --- |

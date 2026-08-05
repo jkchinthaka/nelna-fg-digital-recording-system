@@ -482,7 +482,8 @@ From [PHASE_01B_DESIGN_APPROVAL.md](../approvals/PHASE_01B_DESIGN_APPROVAL.md), 
 | DEBT-01C-008 | Printable audit pack (concept) | 01C | No | Open | Phase 03+ | Product owner |
 
 **Total debt items:** 21 (+ tracked partial completions below)  
-**Blocking for Phase 02:** Yes — Phase 01C not approved; **Noto Sans Sinhala owner verification blocking**  
+**Blocking for Phase 02 technical foundation:** No — owner deferred Sinhala verification (2026-08-05)  
+**Still blocking:** Operator Sinhala UI final approval, operator UAT, pilot, production  
 **01C-R Figma progress (2026-08-05):** Required screen coverage expanded; component sets completed; P1–P7 hi-fi prototype clones wired; coverage matrix with node IDs. See [FIGMA_01C_COVERAGE_MATRIX.md](FIGMA_01C_COVERAGE_MATRIX.md) and [FIGMA_01C_IMPLEMENTATION_LOG.md](FIGMA_01C_IMPLEMENTATION_LOG.md).
 
 ### Status updates after 01C-R remediation (2026-08-05)
@@ -491,7 +492,7 @@ From [PHASE_01B_DESIGN_APPROVAL.md](../approvals/PHASE_01B_DESIGN_APPROVAL.md), 
 | --- | --- | --- |
 | DEBT-01B-001 Typography vars | Mostly complete | 30 Typography variables including weights/line-heights |
 | DEBT-01B-007 Component sets | Mostly complete | Actions/forms/overlays/review/ops sets present; legacy singles remain |
-| DEBT-01C-R-NOTO | **Open — BLOCKING** | MCP cannot load Noto Sans Sinhala; manual frame `31:23`; interim Abhaya Libre `31:33` |
+| DEBT-01C-R-NOTO | **Open — deferred classification** | See 01C-D below; **not verified**, **not closed** |
 | Screen inventory / prototypes | Mostly complete | Coverage matrix COMPLETE rows with node IDs; a11y representative only |
 
 ### 01C-F verification attempt (2026-08-05) — FAILED
@@ -508,11 +509,27 @@ Owner reported Noto Sans Sinhala applied via Figma Desktop. **Figma file evidenc
 | Archive page contains retired interim | **No** — Page 99 Archive empty |
 | P1–P7 start nodes intact | Yes |
 
-**DEBT-01C-R-NOTO remains Open — BLOCKING.** Do not resolve until cloud file text metadata shows `Noto Sans Sinhala`, interim Abhaya is archived/marked non-production, and a completion annotation is present.
+**DEBT-01C-R-NOTO was not closed by 01C-F.** Cloud file still lacked Noto evidence.
 
-**Likely owner action still needed:** In Figma Desktop, apply Noto to samples, archive Abhaya frame to 99 Archive (or mark non-production), add verification annotation, then **Save / ensure cloud sync** before re-running 01C-F.
+### 01C-D owner deferral (2026-08-05) — accepted risk
 
-**Status:** 01C-R delivered for review — Phase 01C **not** exit-ready until Noto owner verification is visible in the cloud file + approval form. Do not start Phase 02.
+| Field | Entry |
+| --- | --- |
+| Decision | Phase 01C approved with deferred Sinhala typography condition |
+| Owner | Chinthaka Jayaweera |
+| Role | Project Owner / Developer |
+| Debt ID | DEBT-01C-R-NOTO |
+| Debt status | **OPEN** (do not delete; do not claim verified) |
+| Non-blocking for Phase 02 technical foundation | Yes |
+| Non-blocking for backend-only development | Yes |
+| Blocking before final operator-facing Sinhala UI approval | Yes |
+| Blocking before operator UAT | Yes |
+| Blocking before pilot | Yes |
+| Blocking before production release | Yes |
+| Abhaya Libre production-approved? | **No** |
+| Noto Sans Sinhala verified? | **No** |
+
+**Status:** Phase 01C **Approved with deferred condition**. Phase 02 technical foundation authorized after PR #4 merge. Operator UAT / pilot / production remain blocked until DEBT-01C-R-NOTO is closed with evidence.
 
 ---
 

@@ -1,7 +1,7 @@
 # Figma Plan
 
-**Document status:** Active design plan — Phase 01B Approved with conditions; Phase 01C current (under review)  
-**Phase:** 01A Approved · **01B Approved with conditions (merged)** · **01C Current (representative hi-fi + prototypes under review; not approved)**  
+**Document status:** Active design plan — Phase 01C Approved with deferred Sinhala condition; Phase 02 foundation authorized after PR #4 merge  
+**Phase:** 01A Approved · **01B Approved with conditions (merged)** · **01C Approved with deferred Sinhala typography condition (2026-08-05)**  
 **Tool:** Figma Professional  
 **Last updated:** 2026-08-05
 
@@ -16,13 +16,14 @@ Define the Figma file structure, journeys, IA, lo-fi wireframes, tokens, compone
 | Phase 00 Discovery and governance | **Merged** to main |
 | Phase 01A Journeys, IA, lo-fi specification | **Approved** as proposed baseline (2026-08-04); open operational decisions remain non-final |
 | Phase 01B Design tokens and components | **Approved with conditions** (2026-08-05); merged via PR #3 |
-| Phase 01C High-fidelity MVP screens and prototype | **Current / 01C-R** — required coverage + P1–P7 hi-fi clones on PR #4; **Noto Sans Sinhala owner verification blocking**; approval pending |
-| Application development | **Not started** |
+| Phase 01C High-fidelity MVP screens and prototype | **Approved with deferred condition** (2026-08-05) — DEBT-01C-R-NOTO open; PR #4 ready to merge |
+| Application development | **Not started** — Phase 02 foundation authorized after PR #4 merge |
 | Figma ownership / editing access | **Verified** — chinthaka / Full seat / MCP + browser |
 | Figma library | **Not published** |
-| High-fidelity approval | **Pending** |
+| High-fidelity approval | **Approved with deferred Sinhala typography condition** |
+| Operator UAT / pilot / production | **Blocked** until Noto Sans Sinhala debt closed with evidence |
 
-Remaining Phase 01B/01C Figma gaps are tracked in [DESIGN_DEBT_REGISTER.md](DESIGN_DEBT_REGISTER.md). See [FIGMA_01C_IMPLEMENTATION_LOG.md](FIGMA_01C_IMPLEMENTATION_LOG.md).
+Remaining open Sinhala font debt is tracked in [DESIGN_DEBT_REGISTER.md](DESIGN_DEBT_REGISTER.md). See [FIGMA_01C_IMPLEMENTATION_LOG.md](FIGMA_01C_IMPLEMENTATION_LOG.md).
 
 Draft Figma file: https://www.figma.com/design/jnn8Xhsg1zFEHxYShCUb4M — not a published approved library.
 
