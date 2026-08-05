@@ -188,7 +188,7 @@
 
 ## Blocking gaps remaining
 
-1. **Noto Sans Sinhala** not loadable in MCP (`The font family "Noto Sans Sinhala" does not exist`). Manual frame `04/tokens/MANUAL-Noto-Sans-Sinhala` (`31:23`). Interim wrapping uses Abhaya Libre (`31:33`) — owner must apply Noto and verify.
+1. **Noto Sans Sinhala** — 01C-F verification **FAILED** (2026-08-05): cloud file text metadata shows **Abhaya Libre** on interim samples (`31:33`); frame `31:23` still blocking instructions; no Noto Sans Sinhala text nodes on pages 04/06/99; Archive empty. Owner must apply Noto in Desktop, archive/mark Abhaya non-production, annotate, and sync cloud file.
 2. Accessibility annotations are representative (not every screen).
 3. Legacy single-component duplicates of secondary/destructive remain beside full sets (library not published).
 
