@@ -1,12 +1,12 @@
 # Roadmap — Phase Delivery Plan
 
 **Document status:** Governing roadmap for greenfield delivery  
-**Phase:** 01B Approved with conditions · 01C ready after PR #3 merge  
+**Phase:** 01B Approved with conditions · 01C current (under review)  
 **Last updated:** 2026-08-05
 
 Branch naming pattern: `foundation/...`, `design/...`, `feature/phase-NN-short-name`, or `hardening/...` as appropriate. Never commit directly to `main`.
 
-**Progress:** Phase 00 merged. Phase 01A approved. Phase 01B **Approved with conditions** (2026-08-05) by Project Owner / Developer; Figma ownership and Full-seat access verified. PR #3 remains open until manual merge. Phase 01C is ready after PR #3 merge, carrying remaining Figma conditions. Application development has **not** started.
+**Progress:** Phase 00 merged. Phase 01A approved. Phase 01B **Approved with conditions** (2026-08-05) by Project Owner / Developer and **merged** (PR #3). Phase 01C **Current** on `design/figma-high-fidelity-mvp`: representative high-fidelity screens, core variables/components, P1–P7 prototypes, and Phase 01C docs under review. High-fidelity approval is **pending**. Remaining design debt is tracked explicitly. Application development has **not** started. Phase 02 must not begin until 01C review gate passes.
 
 ---
 
@@ -47,7 +47,7 @@ Branch naming pattern: `foundation/...`, `design/...`, `feature/phase-NN-short-n
 | Branch naming | `design/figma-tokens-components` (deviation from planned `design/figma-design-system` — see PHASE_01B_DECISIONS P1B-010) |
 | Exit criteria | Token/component specs + artefacts in review; JSON valid; contrast documented; Figma status truthful; no app code; no false approval claims |
 | Dependencies | Phase 01A approval |
-| Status | **Approved with conditions (2026-08-05) — PR #3 open until manual merge** |
+| Status | **Approved with conditions (2026-08-05) — merged via PR #3** |
 
 ## Phase 01C — High-fidelity MVP screens and prototype
 
@@ -56,11 +56,11 @@ Branch naming pattern: `foundation/...`, `design/...`, `feature/phase-NN-short-n
 | Objective | High-fidelity MVP screens (pages 06–12) and interactive prototype |
 | Inputs | 01A journeys/IA; 01B tokens/components; 01B approval conditions |
 | Outputs | Hi-fi frames; prototype; developer handoff expansion; continued variable/component/a11y completion |
-| Approval gate | Business/QA UX review of MVP flows |
-| Branch naming | `design/figma-hifi-mvp` |
-| Exit criteria | MVP journeys prototype-ready; Sinhala/EN strategy applied with pending translations marked; 01B conditions not omitted |
-| Dependencies | Phase 01B approval; PR #3 merge |
-| Status | **Ready after PR #3 merge** |
+| Approval gate | Business/QA UX review of MVP flows; [PHASE_01C_HIGH_FIDELITY_APPROVAL.md](approvals/PHASE_01C_HIGH_FIDELITY_APPROVAL.md) |
+| Branch naming | `design/figma-high-fidelity-mvp` |
+| Exit criteria | MVP journeys prototype-ready; Sinhala/EN strategy applied with pending translations marked; 01B conditions not omitted; 67 open design decisions resolved or documented |
+| Dependencies | Phase 01B approval |
+| Status | **Current — representative Figma + docs under review (2026-08-05); not approved; Phase 02 blocked** |
 
 ## Phase 01 — Figma journeys and design system (umbrella)
 

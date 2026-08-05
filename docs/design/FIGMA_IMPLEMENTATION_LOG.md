@@ -1,8 +1,10 @@
 # Figma Implementation Log — Phase 01B
 
 **Document status:** Factual record of connector and file work  
-**Phase:** 01B — Approved with conditions  
+**Phase:** 01B — Approved with conditions (merged) · 01C — Current (representative hi-fi under review; not approved)  
 **Last updated:** 2026-08-05
+
+> Phase 01C Figma work is recorded in [FIGMA_01C_IMPLEMENTATION_LOG.md](FIGMA_01C_IMPLEMENTATION_LOG.md). This log remains the Phase 01B connector/file history.
 
 ## Connector / authentication (verified)
 
@@ -80,3 +82,33 @@ Primary / secondary / destructive buttons · text-like employee field · passwor
 ## Honesty statement
 
 This log records genuine connector work and verified ownership. Do not invent additional Figma URLs. Incomplete items above are **not** marked complete. Contrast restrictions on warning `#B76E00` and gold `#C7A94B` remain in force.
+
+---
+
+## Phase 01C — High-fidelity MVP screens and prototype
+
+**Status:** Current — documentation complete (2026-08-05), Figma build not started
+
+**Phase 01C scope:**
+- High-fidelity MVP screens (AUTH, OP, SV, QA, AD, MG, AU, LD concepts) at required breakpoints per [RESPONSIVE_SCREEN_MATRIX.md](RESPONSIVE_SCREEN_MATRIX.md)
+- Interactive prototypes (P1–P7 flows) per [PROTOTYPE_FLOW_MAP.md](PROTOTYPE_FLOW_MAP.md)
+- Complete remaining Phase 01B conditions (variables, component sets, a11y annotations)
+- Resolve 67 open design decisions per [PHASE_01C_DECISIONS.md](PHASE_01C_DECISIONS.md)
+
+**Phase 01C documentation (complete 2026-08-05):**
+- [HIGH_FIDELITY_SCREEN_SPEC.md](HIGH_FIDELITY_SCREEN_SPEC.md) — all MVP screens specified
+- [PROTOTYPE_FLOW_MAP.md](PROTOTYPE_FLOW_MAP.md) — P1–P7 flows with Mermaid diagrams
+- [RESPONSIVE_SCREEN_MATRIX.md](RESPONSIVE_SCREEN_MATRIX.md) — screen-to-breakpoint mapping
+- [SCREEN_CONTENT_MATRIX.md](SCREEN_CONTENT_MATRIX.md) — EN + proposed SI content
+- [FIGMA_01C_IMPLEMENTATION_LOG.md](FIGMA_01C_IMPLEMENTATION_LOG.md) — Phase 01C build log (template, honest status: not started)
+- [DESIGN_ACCEPTANCE_CRITERIA_01C.md](DESIGN_ACCEPTANCE_CRITERIA_01C.md) — acceptance criteria for Phase 01C exit
+- [PHASE_01C_DECISIONS.md](PHASE_01C_DECISIONS.md) — 67 open decisions documented
+- [DESIGN_DEBT_REGISTER.md](DESIGN_DEBT_REGISTER.md) — design debt tracking (21 items: 6 blocking, 15 non-blocking)
+- [DJANGO_FOUNDATION_DESIGN_HANDOFF.md](DJANGO_FOUNDATION_DESIGN_HANDOFF.md) — foundation screens for Phase 02
+- [PHASE_01C_HIGH_FIDELITY_APPROVAL.md](../approvals/PHASE_01C_HIGH_FIDELITY_APPROVAL.md) — approval form (not approved, awaiting review)
+
+**Figma build status:** Not started (2026-08-05). See [FIGMA_01C_IMPLEMENTATION_LOG.md](FIGMA_01C_IMPLEMENTATION_LOG.md) for tracking when Figma work begins.
+
+**Branch:** `design/figma-high-fidelity-mvp`
+
+**Approval status:** Not approved. Documentation complete, Figma build not started, awaiting owner review and resolution of 27 blocking design decisions.

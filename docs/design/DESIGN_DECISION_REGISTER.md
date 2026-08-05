@@ -1,12 +1,14 @@
 # Design Decision Register
 
 **Document status:** Living register for design decisions  
-**Phase:** 01B Approved with conditions · 01C next after PR #3 merge  
+**Phase:** 01B Approved with conditions (merged) · 01C Current (representative hi-fi under review; not approved)  
 **Last updated:** 2026-08-05
 
 Statuses: Proposed · Accepted (design direction) · Accepted (01A baseline) · Deferred · Rejected · Superseded  
 
 **01A note:** Owner approved Phase 01A as the proposed journey/IA/lo-fi baseline on 2026-08-04. Items still marked Proposed / Decision required are **not** final Nelna operational approvals.
+
+**01C note:** Phase 01C docs + representative Figma build recorded 2026-08-05. Open decisions remain in [PHASE_01C_DECISIONS.md](PHASE_01C_DECISIONS.md). High-fidelity approval pending.
 
 | ID | Decision | Status | Owner | Reason | Alternatives | Impact | Evidence | Review trigger |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -34,3 +36,9 @@ Statuses: Proposed · Accepted (design direction) · Accepted (01A baseline) · 
 | DES-020 | Component library scoped to MVP recording/review/auth/evidence/sync shells | Proposed (01B) | UX (TBC) | Match MVP | Build full enterprise kit | Page 05 | COMPONENT_SYSTEM | 01C needs |
 | DES-023 | Figma project-owner account verified: chinthaka / chinthakajayaweera1@gmail.com; Full seat; MCP + browser auth verified | Accepted | Project owner | Owner verification 2026-08-05 | Account mismatch resolved | FIGMA_IMPLEMENTATION_LOG; whoami | Auth change |
 | DES-024 | Phase 01B Approved with conditions; remaining variable/component/a11y work continues into 01C; no library publication yet | Accepted | Chinthaka Jayaweera | Owner approval 2026-08-05 | 01C after PR #3 merge; conditions mandatory | PHASE_01B_DESIGN_APPROVAL | Condition closure |
+| DES-025 | Phase 01C representative hi-fi screens, P1–P7 prototypes, and docs under review; full inventory gaps tracked in debt register | Recorded | Cursor agent / owner pending | 2026-08-05 Figma + docs pass | HIGH_FIDELITY_SCREEN_SPEC; FIGMA_01C_IMPLEMENTATION_LOG; DESIGN_DEBT_REGISTER | Owner review + debt closure before 01C approval |
+| DES-026 | MVP foundation screens identified for Phase 02 Django handoff (AUTH-LGN, OP-HOME, OP-TASKS, OP-CHK core, SV-OVR, SV-QUE, SV-REV, QA-OVR, QA-QUE, QA-VER, AD-SHL, AD-USR) | Proposed | Dev lead / owner (TBC) | Phase 02 cannot start until foundation screens complete | Full hi-fi MVP can proceed in parallel | DJANGO_FOUNDATION_DESIGN_HANDOFF | 02 kickoff |
+| DES-027 | MVP is online-first; offline capability deferred to Phase 03+ | Proposed (01C decision D-01C-022, D-01C-024, D-01C-026) | Product owner (TBC) | Simplified Phase 02 scope | Full offline MVP | Operator offline states designed as concept | PHASE_01C_DECISIONS; MVP_SCOPE | Offline requirement change |
+| DES-028 | Sample data only in Phase 01C screens (EMP-XXXX, SAMPLE-BATCH, XX.X°C); no invented Nelna operational values | Accepted (design direction) | Compliance reviewer | Project rules 09, 12 | Real data | All 01C screen specs | Rule enforcement |
+| DES-029 | Proposed Sinhala translations marked PROPOSED; linguistic and domain review pending | Recorded | Content owner (TBC) | Translations require expert review | Skip Sinhala in design | SCREEN_CONTENT_MATRIX | Linguistic approval |
+| DES-030 | 21 design debt items tracked (6 blocking, 15 non-blocking); blocking debt must resolve before 01C approval | Recorded | Design owner | Phase 01B conditions + 01C gaps | Silent omission | DESIGN_DEBT_REGISTER | Debt closure |
