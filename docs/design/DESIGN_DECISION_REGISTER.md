@@ -1,14 +1,16 @@
 # Design Decision Register
 
-**Document status:** Living register for design decisions  
-**Phase:** 01B Approved with conditions (merged) · 01C Approved with deferred Sinhala typography condition (2026-08-05)  
+**Document status:** Living register for design decisions
+**Phase:** 01C Approved with deferred Sinhala condition · Phase 02 under implementation (pending approval)
 **Last updated:** 2026-08-05
 
-Statuses: Proposed · Accepted (design direction) · Accepted (01A baseline) · Deferred · Rejected · Superseded  
+Statuses: Proposed · Accepted (design direction) · Accepted (01A baseline) · Deferred · Rejected · Superseded
 
 **01A note:** Owner approved Phase 01A as the proposed journey/IA/lo-fi baseline on 2026-08-04. Items still marked Proposed / Decision required are **not** final Nelna operational approvals.
 
-**01C note:** Phase 01C approved with deferred Sinhala typography condition (D-01C-D-001 / DES-031). DEBT-01C-R-NOTO remains open. Phase 02 foundation authorized after PR #4 merge.
+**01C note:** Phase 01C approved with deferred Sinhala typography condition (D-01C-D-001 / DES-031). DEBT-01C-R-NOTO remains open.
+
+**02 note:** Phase 02 active branch is `foundation/django-postgresql`. Obsolete planned name `feature/phase-02-django-foundation` is superseded (DES-032). Phase 02 approval form remains unsigned.
 
 | ID | Decision | Status | Owner | Reason | Alternatives | Impact | Evidence | Review trigger |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -37,7 +39,8 @@ Statuses: Proposed · Accepted (design direction) · Accepted (01A baseline) · 
 | DES-023 | Figma project-owner account verified: chinthaka / chinthakajayaweera1@gmail.com; Full seat; MCP + browser auth verified | Accepted | Project owner | Owner verification 2026-08-05 | Account mismatch resolved | FIGMA_IMPLEMENTATION_LOG; whoami | Auth change |
 | DES-024 | Phase 01B Approved with conditions; remaining variable/component/a11y work continues into 01C; no library publication yet | Accepted | Chinthaka Jayaweera | Owner approval 2026-08-05 | 01C after PR #3 merge; conditions mandatory | PHASE_01B_DESIGN_APPROVAL | Condition closure |
 | DES-025 | Phase 01C representative hi-fi screens, P1–P7 prototypes, and docs under review; full inventory gaps tracked in debt register | Recorded | Cursor agent / owner pending | 2026-08-05 Figma + docs pass | HIGH_FIDELITY_SCREEN_SPEC; FIGMA_01C_IMPLEMENTATION_LOG; DESIGN_DEBT_REGISTER | Owner review + debt closure before 01C approval |
-| DES-031 | Phase 01C approved with deferred Sinhala typography condition; DEBT-01C-R-NOTO stays open; Phase 02 foundation may start after PR #4 merge; operator UAT/pilot/production blocked until Noto evidenced | Accepted | Chinthaka Jayaweera | Owner decision 01C-D 2026-08-05; 01C-F failed verification | PHASE_01C_HIGH_FIDELITY_APPROVAL; DESIGN_DEBT_REGISTER; PHASE_01C_DECISIONS | Close Noto debt with evidence before UAT/pilot/production |
+| DES-031 | Phase 01C approved with deferred Sinhala typography condition; DEBT-01C-R-NOTO stays open; Phase 02 foundation may proceed; operator UAT/pilot/production blocked until Noto evidenced | Accepted | Chinthaka Jayaweera | Owner decision 01C-D 2026-08-05; 01C-F failed verification | PHASE_01C_HIGH_FIDELITY_APPROVAL; DESIGN_DEBT_REGISTER; PHASE_01C_DECISIONS | Close Noto debt with evidence before UAT/pilot/production |
+| DES-032 | Phase 02 branch name `foundation/django-postgresql` supersedes obsolete planned name `feature/phase-02-django-foundation` | Accepted | Project owner | Align with foundation/ branch pattern; avoid obsolete feature/ name | ROADMAP; PHASE_02_TECHNICAL_BASELINE | Branch rename / docs drift |
 | DES-026 | MVP foundation screens identified for Phase 02 Django handoff (AUTH-LGN, OP-HOME, OP-TASKS, OP-CHK core, SV-OVR, SV-QUE, SV-REV, QA-OVR, QA-QUE, QA-VER, AD-SHL, AD-USR) | Proposed | Dev lead / owner (TBC) | Phase 02 cannot start until foundation screens complete | Full hi-fi MVP can proceed in parallel | DJANGO_FOUNDATION_DESIGN_HANDOFF | 02 kickoff |
 | DES-027 | MVP is online-first; offline capability deferred to Phase 03+ | Proposed (01C decision D-01C-022, D-01C-024, D-01C-026) | Product owner (TBC) | Simplified Phase 02 scope | Full offline MVP | Operator offline states designed as concept | PHASE_01C_DECISIONS; MVP_SCOPE | Offline requirement change |
 | DES-028 | Sample data only in Phase 01C screens (EMP-XXXX, SAMPLE-BATCH, XX.X°C); no invented Nelna operational values | Accepted (design direction) | Compliance reviewer | Project rules 09, 12 | Real data | All 01C screen specs | Rule enforcement |

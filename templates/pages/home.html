@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Foundation — Nelna FG Digital Recording System{% endblock %}
+{% block content %}
+  <section class="foundation-home" aria-labelledby="home-heading">
+    <h1 id="home-heading">{{ project_name }}</h1>
+    <p>Environment: {{ environment_label }}</p>
+    <p>Application version: {{ app_version }}</p>
+    <p>Status: {{ foundation_status }}</p>
+    <ul>
+      <li>
+        <a href="{% url 'core:health-live' %}">Liveness</a>
+      </li>
+      <li>
+        <a href="{% url 'core:health-ready' %}">Readiness</a>
+      </li>
+    </ul>
+    <div id="htmx-demo"
+         hx-get="{% url 'core:htmx-status' %}"
+         hx-trigger="load"
+         hx-swap="innerHTML">
+      {% include "components/loading_state.html" with message="Checking HTMX foundation…" show_spinner=True %}
+    </div>
+  </section>
+{% endblock %}

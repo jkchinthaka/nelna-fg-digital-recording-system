@@ -1,9 +1,9 @@
 # Design Debt Register
 
-**Document status:** Draft pending owner review  
-**Phase:** 01C — High-fidelity MVP screens and prototype (and carried-forward items)  
-**Branch:** `design/figma-high-fidelity-mvp`  
-**Created:** 2026-08-05  
+**Document status:** Living debt register — DEBT-01C-R-NOTO remains open
+**Phase:** 01C Approved with deferred condition · Phase 02 under implementation
+**Branch:** `foundation/django-postgresql` (design debt originated on `design/figma-high-fidelity-mvp`)
+**Created:** 2026-08-05
 **Last updated:** 2026-08-05
 
 **Related documents:**
@@ -53,10 +53,10 @@ From [PHASE_01B_DESIGN_APPROVAL.md](../approvals/PHASE_01B_DESIGN_APPROVAL.md), 
 
 ### DEBT-01B-001: Complete typography Figma variables
 
-**Debt ID:** DEBT-01B-001  
-**Phase:** 01B (carried to 01C)  
-**Category:** Design tokens  
-**Blocking:** No (can build screens with available vars, but must complete before 01C exit)  
+**Debt ID:** DEBT-01B-001
+**Phase:** 01B (carried to 01C)
+**Category:** Design tokens
+**Blocking:** No (can build screens with available vars, but must complete before 01C exit)
 **Status:** Open
 
 **Description:** Complete typography Figma variable collections per [FIGMA_VARIABLES_SPEC.md](FIGMA_VARIABLES_SPEC.md):
@@ -65,94 +65,94 @@ From [PHASE_01B_DESIGN_APPROVAL.md](../approvals/PHASE_01B_DESIGN_APPROVAL.md), 
 - Font weight variables (400, 500, 600, 700)
 - Line height variables (1.25, 1.45, 1.6)
 
-**Required resolution phase:** 01C  
-**Owner:** Design owner  
-**Target date:** Before Phase 01C exit  
+**Required resolution phase:** 01C
+**Owner:** Design owner
+**Target date:** Before Phase 01C exit
 **Resolution notes:** (to be filled when resolved)
 
 ---
 
 ### DEBT-01B-002: Complete spacing Figma variables
 
-**Debt ID:** DEBT-01B-002  
-**Phase:** 01B (carried to 01C)  
-**Category:** Design tokens  
-**Blocking:** No  
+**Debt ID:** DEBT-01B-002
+**Phase:** 01B (carried to 01C)
+**Category:** Design tokens
+**Blocking:** No
 **Status:** Open
 
 **Description:** Complete spacing Figma variable collections per [FIGMA_VARIABLES_SPEC.md](FIGMA_VARIABLES_SPEC.md):
 - Base spacing scale (4px base)
 - Spacing values: 0, 4, 8, 12, 16, 20, 24, 32, 40, 48, 56, 64, 80, 96, 128
 
-**Required resolution phase:** 01C  
-**Owner:** Design owner  
-**Target date:** Before Phase 01C exit  
+**Required resolution phase:** 01C
+**Owner:** Design owner
+**Target date:** Before Phase 01C exit
 **Resolution notes:** (to be filled when resolved)
 
 ---
 
 ### DEBT-01B-003: Complete radius Figma variables
 
-**Debt ID:** DEBT-01B-003  
-**Phase:** 01B (carried to 01C)  
-**Category:** Design tokens  
-**Blocking:** No  
+**Debt ID:** DEBT-01B-003
+**Phase:** 01B (carried to 01C)
+**Category:** Design tokens
+**Blocking:** No
 **Status:** Open
 
 **Description:** Complete border-radius Figma variable collections per [FIGMA_VARIABLES_SPEC.md](FIGMA_VARIABLES_SPEC.md):
 - Radius values: 0, 4, 8, 12
 
-**Required resolution phase:** 01C  
-**Owner:** Design owner  
-**Target date:** Before Phase 01C exit  
+**Required resolution phase:** 01C
+**Owner:** Design owner
+**Target date:** Before Phase 01C exit
 **Resolution notes:** (to be filled when resolved)
 
 ---
 
 ### DEBT-01B-004: Complete elevation Figma variables
 
-**Debt ID:** DEBT-01B-004  
-**Phase:** 01B (carried to 01C)  
-**Category:** Design tokens  
-**Blocking:** No  
+**Debt ID:** DEBT-01B-004
+**Phase:** 01B (carried to 01C)
+**Category:** Design tokens
+**Blocking:** No
 **Status:** Open
 
 **Description:** Complete elevation (shadow) Figma variable collections per [FIGMA_VARIABLES_SPEC.md](FIGMA_VARIABLES_SPEC.md):
 - Elevation levels: 0, 1, 2, 3
 - Minimal shadow design (operational clarity, not decorative)
 
-**Required resolution phase:** 01C  
-**Owner:** Design owner  
-**Target date:** Before Phase 01C exit  
+**Required resolution phase:** 01C
+**Owner:** Design owner
+**Target date:** Before Phase 01C exit
 **Resolution notes:** (to be filled when resolved)
 
 ---
 
 ### DEBT-01B-005: Complete motion Figma variables
 
-**Debt ID:** DEBT-01B-005  
-**Phase:** 01B (carried to 01C)  
-**Category:** Design tokens  
-**Blocking:** No  
+**Debt ID:** DEBT-01B-005
+**Phase:** 01B (carried to 01C)
+**Category:** Design tokens
+**Blocking:** No
 **Status:** Open
 
 **Description:** Complete motion (animation duration/easing) Figma variable collections per [FIGMA_VARIABLES_SPEC.md](FIGMA_VARIABLES_SPEC.md):
 - Duration values: 120ms (fast), 200ms (normal), 320ms (slow)
 - Easing: ease-in-out (or specify cubic-bezier if needed)
 
-**Required resolution phase:** 01C  
-**Owner:** Design owner  
-**Target date:** Before Phase 01C exit  
+**Required resolution phase:** 01C
+**Owner:** Design owner
+**Target date:** Before Phase 01C exit
 **Resolution notes:** (to be filled when resolved)
 
 ---
 
 ### DEBT-01B-006: Complete component-dimension Figma variables
 
-**Debt ID:** DEBT-01B-006  
-**Phase:** 01B (carried to 01C)  
-**Category:** Design tokens  
-**Blocking:** No  
+**Debt ID:** DEBT-01B-006
+**Phase:** 01B (carried to 01C)
+**Category:** Design tokens
+**Blocking:** No
 **Status:** Open
 
 **Description:** Complete component dimension Figma variable collections per [FIGMA_VARIABLES_SPEC.md](FIGMA_VARIABLES_SPEC.md):
@@ -161,19 +161,19 @@ From [PHASE_01B_DESIGN_APPROVAL.md](../approvals/PHASE_01B_DESIGN_APPROVAL.md), 
 - Button height: 48px, 56px
 - Card min-width, max-width, etc.
 
-**Required resolution phase:** 01C  
-**Owner:** Design owner  
-**Target date:** Before Phase 01C exit  
+**Required resolution phase:** 01C
+**Owner:** Design owner
+**Target date:** Before Phase 01C exit
 **Resolution notes:** (to be filled when resolved)
 
 ---
 
 ### DEBT-01B-007: Convert core specimens to reusable component sets
 
-**Debt ID:** DEBT-01B-007  
-**Phase:** 01B (carried to 01C)  
-**Category:** Components  
-**Blocking:** No (can build hi-fi with local components, but must convert before 01C exit)  
+**Debt ID:** DEBT-01B-007
+**Phase:** 01B (carried to 01C)
+**Category:** Components
+**Blocking:** No (can build hi-fi with local components, but must convert before 01C exit)
 **Status:** Open
 
 **Description:** Convert core component specimens into reusable Figma component sets with documented variants per [COMPONENT_SYSTEM.md](COMPONENT_SYSTEM.md):
@@ -187,19 +187,19 @@ From [PHASE_01B_DESIGN_APPROVAL.md](../approvals/PHASE_01B_DESIGN_APPROVAL.md), 
 - Banner (offline, warning, critical)
 - (other core components per COMPONENT_CATALOGUE)
 
-**Required resolution phase:** 01C  
-**Owner:** Design owner  
-**Target date:** Before Phase 01C exit  
+**Required resolution phase:** 01C
+**Owner:** Design owner
+**Target date:** Before Phase 01C exit
 **Resolution notes:** (to be filled when resolved)
 
 ---
 
 ### DEBT-01B-008: Complete keyboard navigation annotations
 
-**Debt ID:** DEBT-01B-008  
-**Phase:** 01B (carried to 01C)  
-**Category:** Accessibility  
-**Blocking:** Yes (required for Phase 01C acceptance)  
+**Debt ID:** DEBT-01B-008
+**Phase:** 01B (carried to 01C)
+**Category:** Accessibility
+**Blocking:** Yes (required for Phase 01C acceptance)
 **Status:** Open
 
 **Description:** Add keyboard navigation annotations to all hi-fi screens per [ACCESSIBILITY_AND_USABILITY.md](ACCESSIBILITY_AND_USABILITY.md):
@@ -208,38 +208,38 @@ From [PHASE_01B_DESIGN_APPROVAL.md](../approvals/PHASE_01B_DESIGN_APPROVAL.md), 
 - Escape / Enter behavior
 - Focus trap boundaries (modals, drawers)
 
-**Required resolution phase:** 01C  
-**Owner:** Design owner + a11y reviewer  
-**Target date:** Before Phase 01C exit  
+**Required resolution phase:** 01C
+**Owner:** Design owner + a11y reviewer
+**Target date:** Before Phase 01C exit
 **Resolution notes:** (to be filled when resolved)
 
 ---
 
 ### DEBT-01B-009: Complete visible-focus indicator annotations
 
-**Debt ID:** DEBT-01B-009  
-**Phase:** 01B (carried to 01C)  
-**Category:** Accessibility  
-**Blocking:** Yes  
+**Debt ID:** DEBT-01B-009
+**Phase:** 01B (carried to 01C)
+**Category:** Accessibility
+**Blocking:** Yes
 **Status:** Open
 
 **Description:** Add visible focus indicator annotations to all interactive elements per [ACCESSIBILITY_AND_USABILITY.md](ACCESSIBILITY_AND_USABILITY.md):
 - Focus ring: 2px solid green (#216E39)
 - Focus visible on all buttons, links, inputs, cards, rows
 
-**Required resolution phase:** 01C  
-**Owner:** Design owner + a11y reviewer  
-**Target date:** Before Phase 01C exit  
+**Required resolution phase:** 01C
+**Owner:** Design owner + a11y reviewer
+**Target date:** Before Phase 01C exit
 **Resolution notes:** (to be filled when resolved)
 
 ---
 
 ### DEBT-01B-010: Complete screen-reader label annotations
 
-**Debt ID:** DEBT-01B-010  
-**Phase:** 01B (carried to 01C)  
-**Category:** Accessibility  
-**Blocking:** Yes  
+**Debt ID:** DEBT-01B-010
+**Phase:** 01B (carried to 01C)
+**Category:** Accessibility
+**Blocking:** Yes
 **Status:** Open
 
 **Description:** Add screen-reader label annotations to all interactive elements and dynamic content per [ACCESSIBILITY_AND_USABILITY.md](ACCESSIBILITY_AND_USABILITY.md):
@@ -249,19 +249,19 @@ From [PHASE_01B_DESIGN_APPROVAL.md](../approvals/PHASE_01B_DESIGN_APPROVAL.md), 
 - Status announcements (e.g., "Loading", "Error", "Success")
 - Image alt text (evidence photos, icons)
 
-**Required resolution phase:** 01C  
-**Owner:** Design owner + a11y reviewer  
-**Target date:** Before Phase 01C exit  
+**Required resolution phase:** 01C
+**Owner:** Design owner + a11y reviewer
+**Target date:** Before Phase 01C exit
 **Resolution notes:** (to be filled when resolved)
 
 ---
 
 ### DEBT-01B-011: Complete Sinhala wrapping tests
 
-**Debt ID:** DEBT-01B-011  
-**Phase:** 01B (carried to 01C)  
-**Category:** Accessibility / Localization  
-**Blocking:** Yes  
+**Debt ID:** DEBT-01B-011
+**Phase:** 01B (carried to 01C)
+**Category:** Accessibility / Localization
+**Blocking:** Yes
 **Status:** Open
 
 **Description:** Add Sinhala text wrapping tests to operator screens per [ACCESSIBILITY_AND_USABILITY.md](ACCESSIBILITY_AND_USABILITY.md):
@@ -270,19 +270,19 @@ From [PHASE_01B_DESIGN_APPROVAL.md](../approvals/PHASE_01B_DESIGN_APPROVAL.md), 
 - Test Sinhala in status badges (ensure readable)
 - Test Sinhala in navigation (bottom nav labels)
 
-**Required resolution phase:** 01C  
-**Owner:** Design owner + linguistic reviewer  
-**Target date:** Before Phase 01C exit  
+**Required resolution phase:** 01C
+**Owner:** Design owner + linguistic reviewer
+**Target date:** Before Phase 01C exit
 **Resolution notes:** (to be filled when resolved)
 
 ---
 
 ### DEBT-01B-012: Complete responsive behavior annotations
 
-**Debt ID:** DEBT-01B-012  
-**Phase:** 01B (carried to 01C)  
-**Category:** Responsive design  
-**Blocking:** Yes  
+**Debt ID:** DEBT-01B-012
+**Phase:** 01B (carried to 01C)
+**Category:** Responsive design
+**Blocking:** Yes
 **Status:** Open
 
 **Description:** Add responsive behavior annotations to all screens per [RESPONSIVE_SCREEN_MATRIX.md](RESPONSIVE_SCREEN_MATRIX.md):
@@ -291,26 +291,26 @@ From [PHASE_01B_DESIGN_APPROVAL.md](../approvals/PHASE_01B_DESIGN_APPROVAL.md), 
 - Table → card list changes
 - Modal → full-screen sheet changes
 
-**Required resolution phase:** 01C  
-**Owner:** Design owner  
-**Target date:** Before Phase 01C exit  
+**Required resolution phase:** 01C
+**Owner:** Design owner
+**Target date:** Before Phase 01C exit
 **Resolution notes:** (to be filled when resolved)
 
 ---
 
 ### DEBT-01B-013: Enforce contrast validation
 
-**Debt ID:** DEBT-01B-013  
-**Phase:** 01B (carried to 01C)  
-**Category:** Accessibility  
-**Blocking:** Yes (ongoing enforcement during 01C screen build)  
+**Debt ID:** DEBT-01B-013
+**Phase:** 01B (carried to 01C)
+**Category:** Accessibility
+**Blocking:** Yes (ongoing enforcement during 01C screen build)
 **Status:** In Progress (must enforce during 01C)
 
 **Description:** Do not use warning `#B76E00` or gold `#C7A94B` as normal-sized text on backgrounds where [CONTRAST_VALIDATION.md](CONTRAST_VALIDATION.md) records a failure (WCAG 2.2 AA 4.5:1 for normal text).
 
-**Required resolution phase:** 01C (enforce during screen build)  
-**Owner:** Design owner  
-**Target date:** Ongoing throughout Phase 01C  
+**Required resolution phase:** 01C (enforce during screen build)
+**Owner:** Design owner
+**Target date:** Ongoing throughout Phase 01C
 **Resolution notes:** (to be filled when resolved)
 
 ---
@@ -319,136 +319,136 @@ From [PHASE_01B_DESIGN_APPROVAL.md](../approvals/PHASE_01B_DESIGN_APPROVAL.md), 
 
 ### DEBT-01C-001: Content translations not approved
 
-**Debt ID:** DEBT-01C-001  
-**Phase:** 01C  
-**Category:** Content / Localization  
-**Blocking:** No (can build screens with proposed translations, linguistic review deferred)  
+**Debt ID:** DEBT-01C-001
+**Phase:** 01C
+**Category:** Content / Localization
+**Blocking:** No (can build screens with proposed translations, linguistic review deferred)
 **Status:** Open
 
 **Description:** Proposed Sinhala translations in [SCREEN_CONTENT_MATRIX.md](SCREEN_CONTENT_MATRIX.md) are **PROPOSED** only, not approved. Linguistic review and domain-expert review required.
 
-**Required resolution phase:** 01C or defer to Phase 02 (if owner approves)  
-**Owner:** Content owner + linguistic reviewer + domain expert  
-**Target date:** Before Phase 01C exit (or defer to Phase 02)  
+**Required resolution phase:** 01C or defer to Phase 02 (if owner approves)
+**Owner:** Content owner + linguistic reviewer + domain expert
+**Target date:** Before Phase 01C exit (or defer to Phase 02)
 **Resolution notes:** (to be filled when resolved or deferred)
 
 ---
 
 ### DEBT-01C-002: Open design decisions not resolved
 
-**Debt ID:** DEBT-01C-002  
-**Phase:** 01C  
-**Category:** Design decisions  
-**Blocking:** Partial (27 blocking, 40 non-blocking)  
+**Debt ID:** DEBT-01C-002
+**Phase:** 01C
+**Category:** Design decisions
+**Blocking:** Partial (27 blocking, 40 non-blocking)
 **Status:** Open
 
 **Description:** 67 open design decisions documented in [HIGH_FIDELITY_SCREEN_SPEC.md](HIGH_FIDELITY_SCREEN_SPEC.md) and [PHASE_01C_DECISIONS.md](PHASE_01C_DECISIONS.md). 27 are blocking (must resolve before 01C exit), 40 are non-blocking (can defer if approved).
 
-**Required resolution phase:** 01C (blocking decisions), Phase 02+ (non-blocking, if deferred)  
-**Owner:** Project owner + stakeholders (IT, QA, security, product)  
-**Target date:** Before Phase 01C exit (blocking decisions)  
+**Required resolution phase:** 01C (blocking decisions), Phase 02+ (non-blocking, if deferred)
+**Owner:** Project owner + stakeholders (IT, QA, security, product)
+**Target date:** Before Phase 01C exit (blocking decisions)
 **Resolution notes:** (to be filled when decisions resolved)
 
 ---
 
 ### DEBT-01C-003: Sample data not replaced with real data
 
-**Debt ID:** DEBT-01C-003  
-**Phase:** 01C  
-**Category:** Content / Data  
-**Blocking:** No (sample data acceptable for design phase)  
+**Debt ID:** DEBT-01C-003
+**Phase:** 01C
+**Category:** Content / Data
+**Blocking:** No (sample data acceptable for design phase)
 **Status:** Open
 
 **Description:** All screens use **SAMPLE DATA** placeholders (EMP-XXXX, SAMPLE-BATCH, XX.X°C, etc.). Real Nelna operational values required for implementation.
 
-**Required resolution phase:** Phase 02 (implementation)  
-**Owner:** Business owner + data owner  
-**Target date:** Before Phase 02 implementation  
+**Required resolution phase:** Phase 02 (implementation)
+**Owner:** Business owner + data owner
+**Target date:** Before Phase 02 implementation
 **Resolution notes:** Design phase uses sample data intentionally per project rules (no invented Nelna facts)
 
 ---
 
 ### DEBT-01C-004: Loading workflow screens (concept only)
 
-**Debt ID:** DEBT-01C-004  
-**Phase:** 01C  
-**Category:** Screen completeness  
-**Blocking:** No (later phase scope)  
+**Debt ID:** DEBT-01C-004
+**Phase:** 01C
+**Category:** Screen completeness
+**Blocking:** No (later phase scope)
 **Status:** Open
 
 **Description:** Loading workflow screens (LD-BLK, LD-*) are **concept only** in Phase 01C. Full loading inspection workflow deferred to later phase.
 
-**Required resolution phase:** Phase 03 or later (per MVP scope)  
-**Owner:** Product owner  
-**Target date:** Deferred to post-MVP  
+**Required resolution phase:** Phase 03 or later (per MVP scope)
+**Owner:** Product owner
+**Target date:** Deferred to post-MVP
 **Resolution notes:** (to be filled when loading workflow scope confirmed)
 
 ---
 
 ### DEBT-01C-005: NC creation workflow (concept only)
 
-**Debt ID:** DEBT-01C-005  
-**Phase:** 01C  
-**Category:** Screen completeness  
-**Blocking:** No (later phase scope)  
+**Debt ID:** DEBT-01C-005
+**Phase:** 01C
+**Category:** Screen completeness
+**Blocking:** No (later phase scope)
 **Status:** Open
 
 **Description:** NC (Non-Conformance) creation screen (QA-NC) is **concept only** in Phase 01C. Full NC/CAPA workflow deferred to later phase.
 
-**Required resolution phase:** Phase 03 or later (per MVP scope)  
-**Owner:** Product owner + QA owner  
-**Target date:** Deferred to post-MVP  
+**Required resolution phase:** Phase 03 or later (per MVP scope)
+**Owner:** Product owner + QA owner
+**Target date:** Deferred to post-MVP
 **Resolution notes:** (to be filled when NC/CAPA workflow scope confirmed)
 
 ---
 
 ### DEBT-01C-006: Offline/sync workflow (concept only)
 
-**Debt ID:** DEBT-01C-006  
-**Phase:** 01C  
-**Category:** Screen completeness  
-**Blocking:** No (MVP online-first)  
+**Debt ID:** DEBT-01C-006
+**Phase:** 01C
+**Category:** Screen completeness
+**Blocking:** No (MVP online-first)
 **Status:** Open
 
 **Description:** Offline/sync workflow screens (OP-SYNC, offline states) are **design concept only** in Phase 01C. MVP is online-first. Full offline capability deferred to later phase.
 
-**Required resolution phase:** Phase 03 or later (per MVP scope)  
-**Owner:** Product owner + dev lead  
-**Target date:** Deferred to post-MVP  
+**Required resolution phase:** Phase 03 or later (per MVP scope)
+**Owner:** Product owner + dev lead
+**Target date:** Deferred to post-MVP
 **Resolution notes:** MVP decision is online-first (block submit/mutate if offline)
 
 ---
 
 ### DEBT-01C-007: Management KPIs not defined
 
-**Debt ID:** DEBT-01C-007  
-**Phase:** 01C  
-**Category:** Content / Business rules  
-**Blocking:** No (KPIs marked [PROPOSED])  
+**Debt ID:** DEBT-01C-007
+**Phase:** 01C
+**Category:** Content / Business rules
+**Blocking:** No (KPIs marked [PROPOSED])
 **Status:** Open
 
 **Description:** Management dashboard KPIs (MG-KPI) are **PROPOSED** only, not approved. Owner must define 4–6 actionable KPIs.
 
-**Required resolution phase:** 01C or defer to Phase 02  
-**Owner:** Business owner / management stakeholder  
-**Target date:** Before Phase 01C exit (or defer if screen is concept-only)  
+**Required resolution phase:** 01C or defer to Phase 02
+**Owner:** Business owner / management stakeholder
+**Target date:** Before Phase 01C exit (or defer if screen is concept-only)
 **Resolution notes:** (to be filled when KPIs approved)
 
 ---
 
 ### DEBT-01C-008: Printable audit pack not designed
 
-**Debt ID:** DEBT-01C-008  
-**Phase:** 01C  
-**Category:** Screen completeness  
-**Blocking:** No (later phase scope)  
+**Debt ID:** DEBT-01C-008
+**Phase:** 01C
+**Category:** Screen completeness
+**Blocking:** No (later phase scope)
 **Status:** Open
 
 **Description:** Printable audit pack format (AU-PCK print/export) is **concept only** in Phase 01C. Print stylesheet and PDF export deferred to later phase.
 
-**Required resolution phase:** Phase 03 or later  
-**Owner:** Product owner + auditor stakeholder  
-**Target date:** Deferred to post-MVP  
+**Required resolution phase:** Phase 03 or later
+**Owner:** Product owner + auditor stakeholder
+**Target date:** Deferred to post-MVP
 **Resolution notes:** (to be filled when audit export scope confirmed)
 
 ---
@@ -481,9 +481,9 @@ From [PHASE_01B_DESIGN_APPROVAL.md](../approvals/PHASE_01B_DESIGN_APPROVAL.md), 
 | DEBT-01C-007 | Management KPIs not defined | 01C | No | Open | 01C or defer | Business owner |
 | DEBT-01C-008 | Printable audit pack (concept) | 01C | No | Open | Phase 03+ | Product owner |
 
-**Total debt items:** 21 (+ tracked partial completions below)  
-**Blocking for Phase 02 technical foundation:** No — owner deferred Sinhala verification (2026-08-05)  
-**Still blocking:** Operator Sinhala UI final approval, operator UAT, pilot, production  
+**Total debt items:** 21 (+ tracked partial completions below)
+**Blocking for Phase 02 technical foundation:** No — owner deferred Sinhala verification (2026-08-05)
+**Still blocking:** Operator Sinhala UI final approval, operator UAT, pilot, production
 **01C-R Figma progress (2026-08-05):** Required screen coverage expanded; component sets completed; P1–P7 hi-fi prototype clones wired; coverage matrix with node IDs. See [FIGMA_01C_COVERAGE_MATRIX.md](FIGMA_01C_COVERAGE_MATRIX.md) and [FIGMA_01C_IMPLEMENTATION_LOG.md](FIGMA_01C_IMPLEMENTATION_LOG.md).
 
 ### Status updates after 01C-R remediation (2026-08-05)
@@ -529,7 +529,17 @@ Owner reported Noto Sans Sinhala applied via Figma Desktop. **Figma file evidenc
 | Abhaya Libre production-approved? | **No** |
 | Noto Sans Sinhala verified? | **No** |
 
-**Status:** Phase 01C **Approved with deferred condition**. Phase 02 technical foundation authorized after PR #4 merge. Operator UAT / pilot / production remain blocked until DEBT-01C-R-NOTO is closed with evidence.
+**Status:** Phase 01C **Approved with deferred condition**. Phase 02 technical foundation is **under implementation** on `foundation/django-postgresql` and **pending approval**. Operator UAT / pilot / production remain blocked until DEBT-01C-R-NOTO is closed with evidence.
+
+### Phase 02 note on DEBT-01C-R-NOTO (2026-08-05)
+
+| Field | Entry |
+| --- | --- |
+| Debt status | **Still OPEN** — not closed; not verified |
+| Phase 02 CSS | May list `"Noto Sans Sinhala"` in the font **stack** only |
+| Font binaries in repo | **None** |
+| Verification claim | **Forbidden** until Figma/evidence closure |
+| Docs | [FRONTEND_FOUNDATION.md](../frontend/FRONTEND_FOUNDATION.md) |
 
 ---
 
@@ -564,6 +574,6 @@ Phase 01C cannot proceed to approval until:
 
 ---
 
-**Document status:** Draft pending owner review  
-**Approval required before:** Phase 01C exit  
+**Document status:** Draft pending owner review
+**Approval required before:** Phase 01C exit
 **Related approval form:** [PHASE_01C_HIGH_FIDELITY_APPROVAL.md](../approvals/PHASE_01C_HIGH_FIDELITY_APPROVAL.md)

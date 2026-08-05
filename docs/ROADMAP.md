@@ -1,12 +1,12 @@
 # Roadmap — Phase Delivery Plan
 
-**Document status:** Governing roadmap for greenfield delivery  
-**Phase:** 01B Approved with conditions · 01C current (under review)  
+**Document status:** Governing roadmap for greenfield delivery
+**Phase:** 01C Approved with deferred Sinhala condition · Phase 02 under implementation (pending approval)
 **Last updated:** 2026-08-05
 
 Branch naming pattern: `foundation/...`, `design/...`, `feature/phase-NN-short-name`, or `hardening/...` as appropriate. Never commit directly to `main`.
 
-**Progress:** Phase 00–01B merged. Phase 01C **Approved with deferred Sinhala typography condition** (2026-08-05, Chinthaka Jayaweera). DEBT-01C-R-NOTO remains **open** (non-blocking for Phase 02 foundation; blocking for operator UAT/pilot/production). Phase 02 technical foundation **authorized after PR #4 merge**. Application code **not yet started**. Figma library **not** published.
+**Progress:** Phase 00–01B merged. Phase 01C **Approved with deferred Sinhala typography condition** (2026-08-05). DEBT-01C-R-NOTO remains **open** (non-blocking for Phase 02 foundation; blocking for operator UAT/pilot/production). Phase 02 technical foundation is **under implementation** on `foundation/django-postgresql` and **pending approval** (unsigned form). Obsolete planned branch name `feature/phase-02-django-foundation` is **superseded**. Figma library **not** published. Production readiness **not** claimed.
 
 ---
 
@@ -78,14 +78,16 @@ Branch naming pattern: `foundation/...`, `design/...`, `feature/phase-NN-short-n
 
 | Field | Content |
 | --- | --- |
-| Objective | Create Django 5.2 project, PostgreSQL, Docker Compose, settings layout, Pytest skeleton |
-| Inputs | ADRs; environment strategy |
-| Outputs | Runnable local foundation without business modules |
-| Approval gate | Technical review of settings/security defaults |
-| Branch naming | `feature/phase-02-django-foundation` |
-| Exit criteria | App boots locally; DB migrations empty/base OK; no invented business data |
-| Dependencies | Phase 01C approved with deferred Sinhala condition; PR #4 merged |
-| Status | **Authorized after PR #4 merge** — technical foundation only; operator UAT/pilot/production blocked by DEBT-01C-R-NOTO |
+| Objective | Create Django 5.2 project, PostgreSQL, Docker Compose, settings layout, Pytest skeleton, CI gates, frontend build baseline |
+| Inputs | ADRs; environment strategy; Phase 01C deferred-condition approval |
+| Outputs | Runnable local foundation without business modules; Phase 02 docs/ADRs |
+| Approval gate | Technical review — [PHASE_02_TECHNICAL_FOUNDATION_APPROVAL.md](approvals/PHASE_02_TECHNICAL_FOUNDATION_APPROVAL.md) |
+| Branch naming | `foundation/django-postgresql` (obsolete planned name `feature/phase-02-django-foundation` **superseded**) |
+| Exit criteria | App boots locally; base migrations OK; CI gates defined; no invented business data; approval form signed |
+| Dependencies | Phase 01C approved with deferred Sinhala condition |
+| Status | **Under implementation / pending approval** — technical foundation only; DEBT-01C-R-NOTO open; operator UAT/pilot/production blocked |
+
+## Phase 03 — Accounts and RBAC
 
 | Field | Content |
 | --- | --- |

@@ -1,6 +1,6 @@
 # Nelna FG Digital Recording System
 
-Secure, auditable Finished Goods digital recording delivered as a responsive Progressive Web Application.
+Secure, auditable Finished Goods digital recording delivered as a modular Django monolith with a responsive web UI. Longer-term direction includes an installable PWA (ADR-003); **PWA is not implemented in Phase 02**.
 
 ## Project purpose
 
@@ -8,115 +8,87 @@ Provide named-account, scoped-role digital recording, checking, verification, ev
 
 ## Current phase
 
-**Phase 01C — High-fidelity MVP screens and prototype** (**Approved with deferred Sinhala typography condition** — 2026-08-05)
+**Phase 02 — Django/PostgreSQL technical foundation** (**under implementation / pending approval**)
 
 | Phase | Status |
 | --- | --- |
 | Phase 00 — Discovery and governance | Merged to `main` |
 | Phase 01A — Journeys, IA, lo-fi specification | **Approved** as proposed design baseline (2026-08-04) |
-| Phase 01B — Design tokens and components | **Approved with conditions** (2026-08-05) — merged via PR #3 |
-| Phase 01C — High-fidelity MVP screens and prototype | **Approved with deferred condition** — PR #4 open for merge; DEBT-01C-R-NOTO remains open |
-| Phase 02 — Django/PostgreSQL foundation | **Authorized after PR #4 merge** (technical foundation only) |
+| Phase 01B — Design tokens and components | **Approved with conditions** (2026-08-05) |
+| Phase 01C — High-fidelity MVP screens and prototype | **Approved with deferred condition** — DEBT-01C-R-NOTO remains open |
+| Phase 02 — Django/PostgreSQL foundation | **Under implementation** on `foundation/django-postgresql` — **not approved** until [PHASE_02_TECHNICAL_FOUNDATION_APPROVAL.md](docs/approvals/PHASE_02_TECHNICAL_FOUNDATION_APPROVAL.md) is signed |
 
-This repository contains governance documentation, architecture decision records, Cursor rules, and design specifications through Phase 01C (design only). Application source code has **not** started yet.
+Branch note: obsolete name `feature/phase-02-django-foundation` is **superseded** by `foundation/django-postgresql`.
 
-Open business decisions remain proposed or decision-required and are **not** final Nelna operational approvals. Coverage matrix: [docs/design/FIGMA_01C_COVERAGE_MATRIX.md](docs/design/FIGMA_01C_COVERAGE_MATRIX.md). Figma library is **not** published.
+Open business decisions remain proposed or decision-required and are **not** final Nelna operational approvals. Figma library is **not** published.
 
-**Deferred condition:** Noto Sans Sinhala is **not** finally verified. Operator Sinhala UAT, pilot, and production remain **blocked** until DEBT-01C-R-NOTO is closed with evidence. Abhaya Libre is **not** the approved production font.
-
-**Figma ownership and editing access:** Verified — owner/handle `chinthaka` (`chinthakajayaweera1@gmail.com`); plan CHINTHAKA JAYAWEERA's team; Full seat; MCP and browser authentication verified. Draft file: https://www.figma.com/design/jnn8Xhsg1zFEHxYShCUb4M — not a published approved library.
+**Deferred Sinhala condition:** Noto Sans Sinhala is **not** finally verified. Operator Sinhala UAT, pilot, and production remain **blocked** until DEBT-01C-R-NOTO is closed with evidence. Abhaya Libre is **not** the approved production font. Phase 02 may reference Noto in the CSS font stack only — **no font binaries**, **no verification claim**.
 
 ## Approved architecture (technical direction)
 
 | Area | Direction |
 | --- | --- |
-| Backend | Python, Django 5.2 LTS |
+| Backend | Python 3.13.14, Django 5.2.16 LTS |
 | Architecture | Modular monolith |
-| Database | PostgreSQL (+ JSONB where appropriate) |
-| Cache / jobs | Redis, Celery |
-| UI | Django Templates, HTMX, Tailwind CSS, minimal JS, Alpine.js only when needed |
-| Client | One responsive installable PWA (no native app in initial phases) |
-| Evidence | MinIO locally; S3-compatible object storage in production |
-| Local dev | Docker Compose (introduced in later phases) |
-| Production edge | Nginx (later) |
-| Tests | Pytest, Playwright |
-| CI | GitHub Actions (later) |
-| Design | Figma Professional |
+| Database | PostgreSQL 17.10 (+ JSONB where appropriate) |
+| Cache / jobs | Redis 7.4.10, Celery 5.6.3 |
+| Dependency mgmt | uv 0.11.29 (`pyproject.toml` + `uv.lock`) |
+| UI (Phase 02) | Django Templates, HTMX 2.0.10, Tailwind 4.3.3; **no Alpine**; **no CDN**; **no PWA yet** |
+| Evidence | MinIO locally later; S3-compatible object storage in production (not Phase 02 scope) |
+| Local dev | Docker Compose (`compose.yaml`); host ports 5433 / 6380 by default |
+| Tests | Pytest 9.0.2 (+ pytest-django / pytest-cov); Playwright later |
+| CI | GitHub Actions quality gates |
+| Design | Figma Professional (design phases) |
 | AI | Optional local assistance later; never final FS/QA/loading/CAPA/access decisions |
+
+Exact pins: [docs/architecture/PHASE_02_TECHNICAL_BASELINE.md](docs/architecture/PHASE_02_TECHNICAL_BASELINE.md).
 
 ## Repository status
 
 | Item | Status |
 | --- | --- |
 | Greenfield repository | Yes |
-| Application source code | Not started |
+| Application foundation code | Present on Phase 02 branch (scaffold — not business MVP) |
+| Phase 02 approval | **Unsigned** |
 | Production readiness | **Not claimed** |
 | Secrets in repo | None intended; do not add any |
 | Previous repository code | Not used |
 
-## Documentation map
+## Quick start (local)
+
+Prefer `C:\Projects\nelna-fg-digital-recording-system` on Windows (not OneDrive). See [docs/operations/LOCAL_DEVELOPMENT.md](docs/operations/LOCAL_DEVELOPMENT.md).
+
+```powershell
+Copy-Item .env.example .env
+uv sync --locked
+npm ci
+npm run build
+docker compose up -d postgres redis
+uv run python manage.py migrate
+uv run python manage.py runserver 127.0.0.1:8000
+```
+
+## Documentation map (selected)
 
 | Document | Path |
 | --- | --- |
-| Project charter | [docs/business/PROJECT_CHARTER.md](docs/business/PROJECT_CHARTER.md) |
-| Assumption register | [docs/business/ASSUMPTION_REGISTER.md](docs/business/ASSUMPTION_REGISTER.md) |
-| Stakeholder questionnaire | [docs/business/STAKEHOLDER_QUESTIONNAIRE.md](docs/business/STAKEHOLDER_QUESTIONNAIRE.md) |
-| MVP scope | [docs/requirements/MVP_SCOPE.md](docs/requirements/MVP_SCOPE.md) |
-| Requirements catalogue | [docs/requirements/REQUIREMENTS_CATALOGUE.md](docs/requirements/REQUIREMENTS_CATALOGUE.md) |
-| Traceability matrix | [docs/requirements/TRACEABILITY_MATRIX.md](docs/requirements/TRACEABILITY_MATRIX.md) |
-| Non-functional requirements | [docs/requirements/NON_FUNCTIONAL_REQUIREMENTS.md](docs/requirements/NON_FUNCTIONAL_REQUIREMENTS.md) |
-| Decision register | [docs/decisions/DECISION_REGISTER.md](docs/decisions/DECISION_REGISTER.md) |
-| ADR modular monolith | [docs/architecture/ADR-001-MODULAR-MONOLITH.md](docs/architecture/ADR-001-MODULAR-MONOLITH.md) |
-| ADR PostgreSQL | [docs/architecture/ADR-002-POSTGRESQL-PRIMARY-DATABASE.md](docs/architecture/ADR-002-POSTGRESQL-PRIMARY-DATABASE.md) |
-| ADR responsive PWA | [docs/architecture/ADR-003-RESPONSIVE-PWA.md](docs/architecture/ADR-003-RESPONSIVE-PWA.md) |
-| System context | [docs/architecture/SYSTEM_CONTEXT.md](docs/architecture/SYSTEM_CONTEXT.md) |
-| Module map | [docs/architecture/MODULE_MAP.md](docs/architecture/MODULE_MAP.md) |
-| Security baseline | [docs/security/SECURITY_BASELINE.md](docs/security/SECURITY_BASELINE.md) |
-| AI safety policy | [docs/security/AI_SAFETY_POLICY.md](docs/security/AI_SAFETY_POLICY.md) |
-| Environment strategy | [docs/operations/ENVIRONMENT_STRATEGY.md](docs/operations/ENVIRONMENT_STRATEGY.md) |
-| Business continuity draft | [docs/operations/BUSINESS_CONTINUITY_DRAFT.md](docs/operations/BUSINESS_CONTINUITY_DRAFT.md) |
-| Validation strategy | [docs/testing/VALIDATION_STRATEGY.md](docs/testing/VALIDATION_STRATEGY.md) |
-| Risk register | [docs/risks/PROJECT_RISK_REGISTER.md](docs/risks/PROJECT_RISK_REGISTER.md) |
-| Figma plan | [docs/design/FIGMA_PLAN.md](docs/design/FIGMA_PLAN.md) |
-| Personas | [docs/design/PERSONAS.md](docs/design/PERSONAS.md) |
-| User journeys | [docs/design/USER_JOURNEYS.md](docs/design/USER_JOURNEYS.md) |
-| Information architecture | [docs/design/INFORMATION_ARCHITECTURE.md](docs/design/INFORMATION_ARCHITECTURE.md) |
-| Screen inventory | [docs/design/SCREEN_INVENTORY.md](docs/design/SCREEN_INVENTORY.md) |
-| Low-fidelity wireframes | [docs/design/LOW_FIDELITY_WIREFRAMES.md](docs/design/LOW_FIDELITY_WIREFRAMES.md) |
-| Workflow state map | [docs/design/WORKFLOW_STATE_MAP.md](docs/design/WORKFLOW_STATE_MAP.md) |
-| Content and language | [docs/design/CONTENT_AND_LANGUAGE_GUIDE.md](docs/design/CONTENT_AND_LANGUAGE_GUIDE.md) |
-| Accessibility and usability | [docs/design/ACCESSIBILITY_AND_USABILITY.md](docs/design/ACCESSIBILITY_AND_USABILITY.md) |
-| Responsive behaviour | [docs/design/RESPONSIVE_BEHAVIOUR.md](docs/design/RESPONSIVE_BEHAVIOUR.md) |
-| Figma build specification (01A) | [docs/design/FIGMA_BUILD_SPECIFICATION.md](docs/design/FIGMA_BUILD_SPECIFICATION.md) |
-| Design tokens | [docs/design/DESIGN_TOKENS.md](docs/design/DESIGN_TOKENS.md) |
-| Design system foundations | [docs/design/DESIGN_SYSTEM_FOUNDATIONS.md](docs/design/DESIGN_SYSTEM_FOUNDATIONS.md) |
-| Component system | [docs/design/COMPONENT_SYSTEM.md](docs/design/COMPONENT_SYSTEM.md) |
-| Component catalogue | [docs/design/COMPONENT_CATALOGUE.md](docs/design/COMPONENT_CATALOGUE.md) |
-| Component anatomy and states | [docs/design/COMPONENT_ANATOMY_AND_STATES.md](docs/design/COMPONENT_ANATOMY_AND_STATES.md) |
-| Operator component patterns | [docs/design/OPERATOR_COMPONENT_PATTERNS.md](docs/design/OPERATOR_COMPONENT_PATTERNS.md) |
-| Critical state patterns | [docs/design/CRITICAL_STATE_PATTERNS.md](docs/design/CRITICAL_STATE_PATTERNS.md) |
-| Figma variables spec | [docs/design/FIGMA_VARIABLES_SPEC.md](docs/design/FIGMA_VARIABLES_SPEC.md) |
-| Figma component build guide | [docs/design/FIGMA_COMPONENT_BUILD_GUIDE.md](docs/design/FIGMA_COMPONENT_BUILD_GUIDE.md) |
-| Figma implementation log | [docs/design/FIGMA_IMPLEMENTATION_LOG.md](docs/design/FIGMA_IMPLEMENTATION_LOG.md) |
-| Design-to-Django handoff | [docs/design/DESIGN_TO_DJANGO_HANDOFF.md](docs/design/DESIGN_TO_DJANGO_HANDOFF.md) |
-| Design QA checklist | [docs/design/DESIGN_QA_CHECKLIST.md](docs/design/DESIGN_QA_CHECKLIST.md) |
-| Contrast validation | [docs/design/CONTRAST_VALIDATION.md](docs/design/CONTRAST_VALIDATION.md) |
-| Phase 01B decisions | [docs/design/PHASE_01B_DECISIONS.md](docs/design/PHASE_01B_DECISIONS.md) |
-| Machine-readable tokens | [design/tokens/nelna-fg.tokens.json](design/tokens/nelna-fg.tokens.json) |
-| Figma tokens/components spec (01B) | [docs/design/FIGMA_TOKENS_COMPONENTS_SPEC.md](docs/design/FIGMA_TOKENS_COMPONENTS_SPEC.md) |
-| Figma review checklist (01A) | [docs/design/FIGMA_REVIEW_CHECKLIST.md](docs/design/FIGMA_REVIEW_CHECKLIST.md) |
-| Figma review checklist (01B) | [docs/design/FIGMA_REVIEW_CHECKLIST_01B.md](docs/design/FIGMA_REVIEW_CHECKLIST_01B.md) |
-| Design decision register | [docs/design/DESIGN_DECISION_REGISTER.md](docs/design/DESIGN_DECISION_REGISTER.md) |
-| Phase 01A approval | [docs/approvals/PHASE_01A_DESIGN_APPROVAL.md](docs/approvals/PHASE_01A_DESIGN_APPROVAL.md) |
-| Phase 01B approval form | [docs/approvals/PHASE_01B_DESIGN_APPROVAL.md](docs/approvals/PHASE_01B_DESIGN_APPROVAL.md) |
-| Phase 01C high-fidelity approval form | [docs/approvals/PHASE_01C_HIGH_FIDELITY_APPROVAL.md](docs/approvals/PHASE_01C_HIGH_FIDELITY_APPROVAL.md) |
-| High-fidelity screen spec | [docs/design/HIGH_FIDELITY_SCREEN_SPEC.md](docs/design/HIGH_FIDELITY_SCREEN_SPEC.md) |
-| Prototype flow map | [docs/design/PROTOTYPE_FLOW_MAP.md](docs/design/PROTOTYPE_FLOW_MAP.md) |
-| Figma 01C implementation log | [docs/design/FIGMA_01C_IMPLEMENTATION_LOG.md](docs/design/FIGMA_01C_IMPLEMENTATION_LOG.md) |
-| Design debt register | [docs/design/DESIGN_DEBT_REGISTER.md](docs/design/DESIGN_DEBT_REGISTER.md) |
-| Django foundation design handoff | [docs/design/DJANGO_FOUNDATION_DESIGN_HANDOFF.md](docs/design/DJANGO_FOUNDATION_DESIGN_HANDOFF.md) |
+| Phase 02 technical baseline | [docs/architecture/PHASE_02_TECHNICAL_BASELINE.md](docs/architecture/PHASE_02_TECHNICAL_BASELINE.md) |
+| ADR-004 dependency management | [docs/architecture/ADR-004-PYTHON-DEPENDENCY-MANAGEMENT.md](docs/architecture/ADR-004-PYTHON-DEPENDENCY-MANAGEMENT.md) |
+| ADR-005 settings / environments | [docs/architecture/ADR-005-DJANGO-SETTINGS-AND-ENVIRONMENTS.md](docs/architecture/ADR-005-DJANGO-SETTINGS-AND-ENVIRONMENTS.md) |
+| Local development | [docs/operations/LOCAL_DEVELOPMENT.md](docs/operations/LOCAL_DEVELOPMENT.md) |
+| Docker development | [docs/operations/DOCKER_DEVELOPMENT.md](docs/operations/DOCKER_DEVELOPMENT.md) |
+| Configuration reference | [docs/operations/CONFIGURATION_REFERENCE.md](docs/operations/CONFIGURATION_REFERENCE.md) |
+| Logging / observability | [docs/operations/LOGGING_AND_OBSERVABILITY.md](docs/operations/LOGGING_AND_OBSERVABILITY.md) |
+| Testing guide | [docs/testing/TESTING_GUIDE.md](docs/testing/TESTING_GUIDE.md) |
+| CI quality gates | [docs/testing/CI_QUALITY_GATES.md](docs/testing/CI_QUALITY_GATES.md) |
+| Secure configuration | [docs/security/SECURE_CONFIGURATION.md](docs/security/SECURE_CONFIGURATION.md) |
+| Frontend foundation | [docs/frontend/FRONTEND_FOUNDATION.md](docs/frontend/FRONTEND_FOUNDATION.md) |
+| Phase 02 approval form | [docs/approvals/PHASE_02_TECHNICAL_FOUNDATION_APPROVAL.md](docs/approvals/PHASE_02_TECHNICAL_FOUNDATION_APPROVAL.md) |
 | Roadmap | [docs/ROADMAP.md](docs/ROADMAP.md) |
-| Approvals | [docs/approvals/](docs/approvals/) |
+| Approvals index | [docs/approvals/](docs/approvals/) |
+| Design debt register | [docs/design/DESIGN_DEBT_REGISTER.md](docs/design/DESIGN_DEBT_REGISTER.md) |
+
+Earlier discovery, requirements, design, and ADR-001–003 documents remain under `docs/`.
 
 ## Contribution workflow
 
@@ -129,9 +101,9 @@ Open business decisions remain proposed or decision-required and are **not** fin
 
 ## Next action
 
-1. Manually merge PR #4 when ready.
-2. After merge, begin **Phase 02** Django/PostgreSQL technical foundation only.
-3. Keep **DEBT-01C-R-NOTO** open until Noto Sans Sinhala is evidenced in Figma (do not treat Abhaya Libre as production).
+1. Complete Phase 02 foundation work on `foundation/django-postgresql`.
+2. Obtain signature on [PHASE_02_TECHNICAL_FOUNDATION_APPROVAL.md](docs/approvals/PHASE_02_TECHNICAL_FOUNDATION_APPROVAL.md) before treating the foundation as approved.
+3. Keep **DEBT-01C-R-NOTO** open until Noto Sans Sinhala is evidenced (do not treat Abhaya Libre as production).
 4. Do **not** start operator UAT, pilot, or production until the Sinhala debt is closed.
 5. Do **not** publish the Figma component library before final design-system review.
 6. Keep resolving open business decisions — they are not final operational approvals.
