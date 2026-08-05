@@ -1,0 +1,119 @@
+@import "./generated-tokens.css";
+@import "tailwindcss";
+
+@theme {
+  --font-sans: Inter, system-ui, sans-serif;
+  --font-sinhala: "Noto Sans Sinhala", "Nirmala UI", "Iskoola Pota", sans-serif;
+  --color-primary: var(--color-brand-primary);
+  --color-surface: var(--color-surface-default);
+  --color-text: var(--color-text-primary);
+  --color-border: var(--color-border-default);
+  --color-danger: var(--color-status-danger);
+  --color-success: var(--color-status-success);
+  --color-warning: var(--color-status-warning);
+}
+
+/*
+  DEBT-01C-R-NOTO remains open.
+  "Noto Sans Sinhala" is the intended Sinhala font family name only.
+  Font binaries are not committed. Visual verification is not claimed.
+*/
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html {
+    font-family: var(--font-sans);
+  }
+
+  html[lang|="si"] body,
+  .lang-si {
+    font-family: var(--font-sinhala);
+  }
+
+  body {
+    margin: 0;
+    background: var(--color-surface-app, #f6f8f6);
+    color: var(--color-text-primary, #17211a);
+  }
+
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 3px solid var(--color-focus-ring, #216e39);
+    outline-offset: 2px;
+  }
+
+  .skip-link {
+    position: absolute;
+    left: -9999px;
+    top: auto;
+  }
+
+  .skip-link:focus {
+    left: 1rem;
+    top: 1rem;
+    z-index: 1000;
+    background: #fff;
+    padding: 0.5rem 1rem;
+  }
+}
+
+@layer components {
+  .app-shell {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .app-header,
+  .app-footer {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--color-border-default, #dde4df);
+  }
+
+  .app-footer {
+    border-bottom: 0;
+    border-top: 1px solid var(--color-border-default, #dde4df);
+    margin-top: auto;
+  }
+
+  .brand {
+    font-weight: 700;
+    color: var(--color-brand-primary, #216e39);
+    margin: 0;
+  }
+
+  .env-label {
+    margin: 0.25rem 0 0;
+    color: var(--color-text-secondary, #5c685f);
+  }
+
+  .app-main {
+    padding: 1.25rem;
+    max-width: 48rem;
+  }
+
+  .alert,
+  .error-summary,
+  .empty-state,
+  .loading-state,
+  .error-page,
+  .foundation-home {
+    margin-block: 1rem;
+  }
+
+  .loading-indicator {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid var(--color-border-default, #dde4df);
+    border-top-color: var(--color-brand-primary, #216e39);
+    border-radius: 50%;
+  }
+}

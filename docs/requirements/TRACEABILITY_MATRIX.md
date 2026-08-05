@@ -1,17 +1,23 @@
 # Traceability Matrix
 
-**Document status:** Initial placeholder matrix — no testing claimed complete  
-**Phase:** 00 — Discovery and governance  
-**Last updated:** 2026-08-04
+**Document status:** Living matrix — no testing claimed complete for business UAT
+**Phase:** 00–02 scaffolding (Phase 02 foundation under implementation)
+**Last updated:** 2026-08-05
 
 ## Rules
 
 - Rows may contain placeholders.
 - **Do not** mark testing, UAT, or approval as complete until evidence exists.
 - Design, test, and UAT references will be filled in later phases.
+- Phase 02 rows cover **technical foundation** only — not business-rule approval.
 
 | Requirement ID | Business owner | Risk | Planned module | Design reference | Test reference | UAT reference | Evidence | Approval status |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| FOUND-001 | Project / IT (TBC) | Unreproducible builds | config / tooling | PHASE_02_TECHNICAL_BASELINE; ADR-004 | CI lock + sync gates | TBC | pyproject.toml; uv.lock | Proposed (Phase 02 pending) |
+| FOUND-002 | Project / IT (TBC) | Env/secret misuse | config.settings | ADR-005; SECURE_CONFIGURATION | Production fail-closed CI | TBC | config/settings/production.py | Proposed (Phase 02 pending) |
+| FOUND-003 | Project / IT (TBC) | Local/CI drift | operations | LOCAL_DEVELOPMENT; DOCKER_DEVELOPMENT | compose config + image build CI | TBC | compose.yaml; Dockerfile | Proposed (Phase 02 pending) |
+| FOUND-004 | Project / IT (TBC) | Weak quality baseline | testing | TESTING_GUIDE; CI_QUALITY_GATES | pytest/ruff/mypy/bandit CI | TBC | .github/workflows/ci.yml | Proposed (Phase 02 pending) |
+| FOUND-005 | UX / IT (TBC) | Premature PWA / CDN / fonts | frontend | FRONTEND_FOUNDATION; DEBT-01C-R-NOTO | Token/CSS build CI | TBC | package.json; static/src/css | Proposed — Noto **not** verified |
 | AUTH-001 | IT owner (TBC) | Shared accounts / weak auth | accounts | TBC — Phase 01/03 | TBC | TBC | Security baseline | Proposed |
 | AUTH-002 | IT owner (TBC) | Credential exposure | accounts | TBC | TBC | TBC | Django defaults | Proposed |
 | AUTH-003 | IT / QA (TBC) | Accountability loss | accounts | TBC | TBC | TBC | Security baseline | Proposed |
@@ -49,12 +55,12 @@
 | ERP-001 | IT / Business (TBC) | False ERP dependency | integrations | MVP scope | TBC | TBC | MVP scope | Proposed |
 | ERP-002 | IT owner (TBC) | Data corruption / vendor risk | integrations | Security baseline | TBC | TBC | Security baseline | Proposed |
 | SECURITY-001 | IT / Security (TBC) | Privilege escalation | accounts / policies | Security baseline | TBC | TBC | Security baseline | Proposed |
-| SECURITY-002 | IT owner (TBC) | Secret leak | operations | Security baseline | TBC | TBC | Repo policy | Proposed |
+| SECURITY-002 | IT owner (TBC) | Secret leak | operations | Security baseline; SECURE_CONFIGURATION | detect-secrets; CI | TBC | Repo policy | Proposed |
 | SECURITY-003 | Project owner (TBC) | Premature production | operations | Release process | TBC | TBC | Workflow rules | Proposed |
-| OPERATIONS-001 | IT owner (TBC) | Env confusion | operations | Environment strategy | TBC | TBC | Environment strategy | Proposed |
+| OPERATIONS-001 | IT owner (TBC) | Env confusion | operations | Environment strategy; CONFIGURATION_REFERENCE | TBC | TBC | Environment strategy | Proposed |
 | OPERATIONS-002 | QA owner (TBC) | Unsafe fallback | operations | BC draft | TBC | TBC | BC draft — not approved | Proposed |
 | AI-001 | Project owner (TBC) | Distraction / scope | ai_assistance | MVP scope | N/A (MVP out) | N/A | MVP scope | Proposed |
 | AI-002 | QA / IT (TBC) | AI hallucination in critical path | ai_assistance | AI safety policy | TBC | TBC | AI safety policy | Proposed |
 | AI-003 | IT / Business (TBC) | AI outage blocks floor | ai_assistance | AI safety policy | TBC | TBC | AI safety policy | Proposed |
 
-**Testing status:** Not started. No UAT references are complete.
+**Testing status:** Foundation automated tests may run in Phase 02 CI; business UAT is **not** started. No UAT references are complete. Phase 02 approval form is **unsigned**.
