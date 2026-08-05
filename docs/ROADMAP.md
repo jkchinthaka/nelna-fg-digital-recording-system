@@ -1,12 +1,12 @@
 # Roadmap — Phase Delivery Plan
 
 **Document status:** Governing roadmap for greenfield delivery  
-**Phase:** 01B Approved with conditions · 01C ready after PR #3 merge  
+**Phase:** 01B Approved with conditions · 01C current (under review)  
 **Last updated:** 2026-08-05
 
 Branch naming pattern: `foundation/...`, `design/...`, `feature/phase-NN-short-name`, or `hardening/...` as appropriate. Never commit directly to `main`.
 
-**Progress:** Phase 00 merged. Phase 01A approved. Phase 01B **Approved with conditions** (2026-08-05) by Project Owner / Developer; Figma ownership and Full-seat access verified. PR #3 remains open until manual merge. Phase 01C is ready after PR #3 merge, carrying remaining Figma conditions. Application development has **not** started.
+**Progress:** Phase 00–01B merged. Phase 01C **Approved with deferred Sinhala typography condition** (2026-08-05, Chinthaka Jayaweera). DEBT-01C-R-NOTO remains **open** (non-blocking for Phase 02 foundation; blocking for operator UAT/pilot/production). Phase 02 technical foundation **authorized after PR #4 merge**. Application code **not yet started**. Figma library **not** published.
 
 ---
 
@@ -47,7 +47,7 @@ Branch naming pattern: `foundation/...`, `design/...`, `feature/phase-NN-short-n
 | Branch naming | `design/figma-tokens-components` (deviation from planned `design/figma-design-system` — see PHASE_01B_DECISIONS P1B-010) |
 | Exit criteria | Token/component specs + artefacts in review; JSON valid; contrast documented; Figma status truthful; no app code; no false approval claims |
 | Dependencies | Phase 01A approval |
-| Status | **Approved with conditions (2026-08-05) — PR #3 open until manual merge** |
+| Status | **Approved with conditions (2026-08-05) — merged via PR #3** |
 
 ## Phase 01C — High-fidelity MVP screens and prototype
 
@@ -56,11 +56,11 @@ Branch naming pattern: `foundation/...`, `design/...`, `feature/phase-NN-short-n
 | Objective | High-fidelity MVP screens (pages 06–12) and interactive prototype |
 | Inputs | 01A journeys/IA; 01B tokens/components; 01B approval conditions |
 | Outputs | Hi-fi frames; prototype; developer handoff expansion; continued variable/component/a11y completion |
-| Approval gate | Business/QA UX review of MVP flows |
-| Branch naming | `design/figma-hifi-mvp` |
-| Exit criteria | MVP journeys prototype-ready; Sinhala/EN strategy applied with pending translations marked; 01B conditions not omitted |
-| Dependencies | Phase 01B approval; PR #3 merge |
-| Status | **Ready after PR #3 merge** |
+| Approval gate | Business/QA UX review of MVP flows; [PHASE_01C_HIGH_FIDELITY_APPROVAL.md](approvals/PHASE_01C_HIGH_FIDELITY_APPROVAL.md) |
+| Branch naming | `design/figma-high-fidelity-mvp` |
+| Exit criteria | MVP journeys prototype-ready; Sinhala/EN strategy applied with pending translations marked; 01B conditions not omitted; 67 open design decisions resolved or documented |
+| Dependencies | Phase 01B approval |
+| Status | **Approved with deferred Sinhala typography condition (2026-08-05) — Phase 02 foundation authorized after PR #4 merge; DEBT-01C-R-NOTO remains open** |
 
 ## Phase 01 — Figma journeys and design system (umbrella)
 
@@ -84,9 +84,8 @@ Branch naming pattern: `foundation/...`, `design/...`, `feature/phase-NN-short-n
 | Approval gate | Technical review of settings/security defaults |
 | Branch naming | `feature/phase-02-django-foundation` |
 | Exit criteria | App boots locally; DB migrations empty/base OK; no invented business data |
-| Dependencies | Phase 00; hosting decisions as needed for non-local later |
-
-## Phase 03 — Accounts and scoped RBAC
+| Dependencies | Phase 01C approved with deferred Sinhala condition; PR #4 merged |
+| Status | **Authorized after PR #4 merge** — technical foundation only; operator UAT/pilot/production blocked by DEBT-01C-R-NOTO |
 
 | Field | Content |
 | --- | --- |

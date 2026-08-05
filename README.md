@@ -8,18 +8,21 @@ Provide named-account, scoped-role digital recording, checking, verification, ev
 
 ## Current phase
 
-**Phase 01B — Design tokens and component system** (**Approved with conditions** — PR #3 open until manual merge)
+**Phase 01C — High-fidelity MVP screens and prototype** (**Approved with deferred Sinhala typography condition** — 2026-08-05)
 
 | Phase | Status |
 | --- | --- |
 | Phase 00 — Discovery and governance | Merged to `main` |
 | Phase 01A — Journeys, IA, lo-fi specification | **Approved** as proposed design baseline (2026-08-04) |
-| Phase 01B — Design tokens and components | **Approved with conditions** (2026-08-05) — PR #3 remains open until manual merge |
-| Phase 01C — High-fidelity MVP screens and prototype | **Ready after PR #3 merge** — carry 01B conditions forward |
+| Phase 01B — Design tokens and components | **Approved with conditions** (2026-08-05) — merged via PR #3 |
+| Phase 01C — High-fidelity MVP screens and prototype | **Approved with deferred condition** — PR #4 open for merge; DEBT-01C-R-NOTO remains open |
+| Phase 02 — Django/PostgreSQL foundation | **Authorized after PR #4 merge** (technical foundation only) |
 
-This repository contains governance documentation, architecture decision records, Cursor rules, and design specifications through Phase 01B (including machine-readable tokens). It does **not** contain an application codebase. No Django/HTML/CSS/JS implementation has started.
+This repository contains governance documentation, architecture decision records, Cursor rules, and design specifications through Phase 01C (design only). Application source code has **not** started yet.
 
-Open business decisions remain proposed or decision-required and are **not** final Nelna operational approvals. Remaining Phase 01B Figma conditions are **not** marked complete.
+Open business decisions remain proposed or decision-required and are **not** final Nelna operational approvals. Coverage matrix: [docs/design/FIGMA_01C_COVERAGE_MATRIX.md](docs/design/FIGMA_01C_COVERAGE_MATRIX.md). Figma library is **not** published.
+
+**Deferred condition:** Noto Sans Sinhala is **not** finally verified. Operator Sinhala UAT, pilot, and production remain **blocked** until DEBT-01C-R-NOTO is closed with evidence. Abhaya Libre is **not** the approved production font.
 
 **Figma ownership and editing access:** Verified — owner/handle `chinthaka` (`chinthakajayaweera1@gmail.com`); plan CHINTHAKA JAYAWEERA's team; Full seat; MCP and browser authentication verified. Draft file: https://www.figma.com/design/jnn8Xhsg1zFEHxYShCUb4M — not a published approved library.
 
@@ -106,6 +109,12 @@ Open business decisions remain proposed or decision-required and are **not** fin
 | Design decision register | [docs/design/DESIGN_DECISION_REGISTER.md](docs/design/DESIGN_DECISION_REGISTER.md) |
 | Phase 01A approval | [docs/approvals/PHASE_01A_DESIGN_APPROVAL.md](docs/approvals/PHASE_01A_DESIGN_APPROVAL.md) |
 | Phase 01B approval form | [docs/approvals/PHASE_01B_DESIGN_APPROVAL.md](docs/approvals/PHASE_01B_DESIGN_APPROVAL.md) |
+| Phase 01C high-fidelity approval form | [docs/approvals/PHASE_01C_HIGH_FIDELITY_APPROVAL.md](docs/approvals/PHASE_01C_HIGH_FIDELITY_APPROVAL.md) |
+| High-fidelity screen spec | [docs/design/HIGH_FIDELITY_SCREEN_SPEC.md](docs/design/HIGH_FIDELITY_SCREEN_SPEC.md) |
+| Prototype flow map | [docs/design/PROTOTYPE_FLOW_MAP.md](docs/design/PROTOTYPE_FLOW_MAP.md) |
+| Figma 01C implementation log | [docs/design/FIGMA_01C_IMPLEMENTATION_LOG.md](docs/design/FIGMA_01C_IMPLEMENTATION_LOG.md) |
+| Design debt register | [docs/design/DESIGN_DEBT_REGISTER.md](docs/design/DESIGN_DEBT_REGISTER.md) |
+| Django foundation design handoff | [docs/design/DJANGO_FOUNDATION_DESIGN_HANDOFF.md](docs/design/DJANGO_FOUNDATION_DESIGN_HANDOFF.md) |
 | Roadmap | [docs/ROADMAP.md](docs/ROADMAP.md) |
 | Approvals | [docs/approvals/](docs/approvals/) |
 
@@ -120,11 +129,12 @@ Open business decisions remain proposed or decision-required and are **not** fin
 
 ## Next action
 
-1. Manually merge PR #3 when ready.
-2. After merge, begin **Phase 01C** high-fidelity MVP screens while completing Phase 01B conditions (variables, component sets, a11y annotations) — none may be silently omitted.
-3. Do **not** publish the Figma component library before final design-system review.
-4. Do **not** begin application development until the design screens required for the Django foundation are reviewed.
-5. Keep resolving open business decisions — they are not final operational approvals.
+1. Manually merge PR #4 when ready.
+2. After merge, begin **Phase 02** Django/PostgreSQL technical foundation only.
+3. Keep **DEBT-01C-R-NOTO** open until Noto Sans Sinhala is evidenced in Figma (do not treat Abhaya Libre as production).
+4. Do **not** start operator UAT, pilot, or production until the Sinhala debt is closed.
+5. Do **not** publish the Figma component library before final design-system review.
+6. Keep resolving open business decisions — they are not final operational approvals.
 
 ## Important
 
