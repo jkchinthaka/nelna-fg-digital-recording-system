@@ -67,6 +67,21 @@
 
 - DEBT-01C-R-NOTO: Apply and verify **Noto Sans Sinhala** in Figma Desktop on frame `31:23` / samples `31:33`.
 
+### 01C-F verification (2026-08-05) — FAILED against cloud file
+
+Inspected authenticated as chinthaka (Full). Evidence:
+
+1. `31:23` still contains “BLOCKING — Manual font completion required” (Inter only).
+2. `31:33` still named `sinhala-wrapping-interim`; all Sinhala strings use **Abhaya Libre / Regular** (metadata), not Noto Sans Sinhala.
+3. Pages 04 / 06 / 99: **0** text nodes with font family Noto Sans Sinhala.
+4. Page 99 Archive empty — interim font not archived.
+5. No completion / reviewer annotation found.
+6. Screenshots of `31:23` and `31:33` match the above.
+7. P1–P7 start nodes (`67:26`, `67:228`, `67:581`, `67:781`, `67:363`, `67:496`, `67:1276`, `67:1382`) remain intact.
+8. MCP still cannot load Noto Sans Sinhala locally — this alone is **not** treated as failure; failure is because **file text metadata** still shows Abhaya Libre.
+
+**Debt not closed.** Re-run 01C-F after Desktop changes are saved to the cloud file.
+
 ## Non-blocking debt
 
 - Per-screen a11y depth beyond representatives  

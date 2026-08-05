@@ -494,7 +494,25 @@ From [PHASE_01B_DESIGN_APPROVAL.md](../approvals/PHASE_01B_DESIGN_APPROVAL.md), 
 | DEBT-01C-R-NOTO | **Open — BLOCKING** | MCP cannot load Noto Sans Sinhala; manual frame `31:23`; interim Abhaya Libre `31:33` |
 | Screen inventory / prototypes | Mostly complete | Coverage matrix COMPLETE rows with node IDs; a11y representative only |
 
-**Status:** 01C-R delivered for review — Phase 01C **not** exit-ready until Noto owner verification + approval form. Do not start Phase 02.
+### 01C-F verification attempt (2026-08-05) — FAILED
+
+Owner reported Noto Sans Sinhala applied via Figma Desktop. **Figma file evidence does not support closure:**
+
+| Check | Result |
+| --- | --- |
+| Node `31:23` exists | Yes — still titled blocking / manual completion instructions |
+| Representative text uses font family `Noto Sans Sinhala` | **No** — zero Noto Sans Sinhala text nodes on pages 04 / 06 / 99 |
+| Interim Abhaya Libre `31:33` archived or non-production | **No** — still on Page 04 Design Tokens; all 8 Sinhala samples use Abhaya Libre |
+| 360px / 430px wrapping examples | Partial 360 only in interim frame; no 430 Noto examples found |
+| Owner review annotation of completion | **Not found** — frame still says “Do NOT mark Phase 01C complete until this is verified” |
+| Archive page contains retired interim | **No** — Page 99 Archive empty |
+| P1–P7 start nodes intact | Yes |
+
+**DEBT-01C-R-NOTO remains Open — BLOCKING.** Do not resolve until cloud file text metadata shows `Noto Sans Sinhala`, interim Abhaya is archived/marked non-production, and a completion annotation is present.
+
+**Likely owner action still needed:** In Figma Desktop, apply Noto to samples, archive Abhaya frame to 99 Archive (or mark non-production), add verification annotation, then **Save / ensure cloud sync** before re-running 01C-F.
+
+**Status:** 01C-R delivered for review — Phase 01C **not** exit-ready until Noto owner verification is visible in the cloud file + approval form. Do not start Phase 02.
 
 ---
 
