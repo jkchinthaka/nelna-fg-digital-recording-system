@@ -9,7 +9,7 @@
 File: `.github/workflows/ci.yml`
 Triggers: pull requests and pushes to `main`.
 
-Services: `postgres:17.10-alpine3.23`, `redis:7.4.10-alpine3.21` (CI ports 5432 / 6379).
+Services: `postgres:17.10-alpine3.23`, `redis:7.4.10-alpine3.21` (CI host-job ports 5432 / 6379).
 
 Toolchain setup: uv **0.11.29**, Python **3.13.14**, Node **24.18.0**.
 
@@ -25,15 +25,25 @@ Toolchain setup: uv **0.11.29**, Python **3.13.14**, Node **24.18.0**.
 | Template lint | `uv run djlint templates --check` |
 | JSON/YAML validate | Scripted parse of JSON + key YAML files |
 | Frontend | `npm ci` + `npm run build` + design token `--check` |
-| Pytest + coverage | fail-under **80** |
-| Migrations | `makemigrations --check` |
-| Django check | `manage.py check` |
+| Pytest + coverage (host) | fail-under **80** |
+| Migrations (host) | `makemigrations --check` |
+| Django check (host) | `manage.py check` |
 | Production fail-closed | Import production settings without secret must fail |
 | Deploy check | `manage.py check --deploy` with CI placeholders |
 | Bandit | `uv run bandit -r apps config scripts` |
 | pip-audit | `uv run pip-audit` |
 | Compose | `docker compose config` |
-| Image | `docker build --target runtime` |
+| Compose test profile | `docker compose --profile test config` |
+| Runtime image | `docker compose build web` |
+| Test image | `docker compose --profile test build test` |
+| Runtime isolation | Confirm `pytest` absent from `web` image |
+| Compose deps | `docker compose up -d postgres redis` + health wait |
+| Docker pytest + coverage | `docker compose --profile test run --rm test pytest ... --cov-fail-under=80` |
+| Docker migrations | `docker compose --profile test run --rm test python manage.py makemigrations --check` |
+| Docker Django check | `docker compose --profile test run --rm test python manage.py check` |
+| Cleanup | `docker compose down --volumes` |
+
+Host-based quality checks remain; the Docker `test` profile validates the dedicated test image path. The runtime `web` image must not include pytest.
 
 ## Pre-commit (local)
 
@@ -50,5 +60,6 @@ Pinned locally via project: pre-commit **4.5.1**; ruff hook **v0.15.0**; djlint 
 ## Related
 
 - [TESTING_GUIDE.md](TESTING_GUIDE.md)
+- [DOCKER_DEVELOPMENT.md](../operations/DOCKER_DEVELOPMENT.md)
 - [SECURE_CONFIGURATION.md](../security/SECURE_CONFIGURATION.md)
 - [PHASE_02_TECHNICAL_BASELINE.md](../architecture/PHASE_02_TECHNICAL_BASELINE.md)

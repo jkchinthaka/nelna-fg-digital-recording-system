@@ -178,5 +178,53 @@ jobs:
       - name: Docker Compose config
         run: docker compose config
 
-      - name: Docker image build
-        run: docker build --target runtime -t nelna-fg-foundation:ci .
+      - name: Docker Compose test profile config
+        run: docker compose --profile test config
+
+      - name: Docker runtime image build
+        run: docker compose build web
+
+      - name: Docker test image build
+        run: docker compose --profile test build test
+
+      - name: Confirm pytest absent from runtime image
+        run: |
+          docker compose run --rm --no-deps -e WAIT_FOR_POSTGRES=0 web \
+            sh -c 'command -v pytest && exit 1 || exit 0'
+
+      - name: Start Compose PostgreSQL and Redis
+        run: docker compose up -d postgres redis
+
+      - name: Wait for PostgreSQL and Redis health
+        run: |
+          for i in $(seq 1 30); do
+            pg=$(docker compose ps --format json postgres 2>/dev/null | head -n1 || true)
+            redis=$(docker compose ps --format json redis 2>/dev/null | head -n1 || true)
+            if docker compose exec -T postgres pg_isready -U nelna_fg -d nelna_fg \
+              && docker compose exec -T redis redis-cli ping | grep -q PONG; then
+              echo "Dependencies healthy"
+              exit 0
+            fi
+            echo "Waiting for dependencies... ($i)"
+            sleep 2
+          done
+          echo "Timed out waiting for postgres/redis" >&2
+          docker compose ps
+          exit 1
+
+      - name: Docker test image pytest with coverage
+        run: >
+          docker compose --profile test run --rm test
+          pytest --cov=apps --cov=config
+          --cov-report=term-missing
+          --cov-fail-under=80
+
+      - name: Docker test makemigrations check
+        run: docker compose --profile test run --rm test python manage.py makemigrations --check
+
+      - name: Docker test Django system check
+        run: docker compose --profile test run --rm test python manage.py check
+
+      - name: Tear down Compose stack
+        if: always()
+        run: docker compose down --volumes
