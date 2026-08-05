@@ -35,7 +35,7 @@ Open business decisions remain proposed or decision-required and are **not** fin
 | Dependency mgmt | uv 0.11.29 (`pyproject.toml` + `uv.lock`) |
 | UI (Phase 02) | Django Templates, HTMX 2.0.10, Tailwind 4.3.3; **no Alpine**; **no CDN**; **no PWA yet** |
 | Evidence | MinIO locally later; S3-compatible object storage in production (not Phase 02 scope) |
-| Local dev | Docker Compose (`compose.yaml`); host ports 5433 / 6380 by default |
+| Local dev | Docker Compose (`compose.yaml`); host publish ports via `COMPOSE_POSTGRES_HOST_PORT` / `COMPOSE_REDIS_HOST_PORT` (defaults 5433 / 6380) |
 | Tests | Pytest 9.0.2 (+ pytest-django / pytest-cov) via host `uv` **or** Compose profile `test`; Playwright later |
 | Docker images | `web` = lean runtime (no pytest); `test` = dedicated validation image |
 | CI | GitHub Actions quality gates (host + Docker test path) |

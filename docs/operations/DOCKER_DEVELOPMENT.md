@@ -24,12 +24,14 @@ Volumes: `postgres_data` for local persistence.
 
 | Service | Host bind (default) | Internal |
 | --- | --- | --- |
-| PostgreSQL | `127.0.0.1:${POSTGRES_PORT:-5433}` → 5432 | 5432 |
-| Redis | `127.0.0.1:${REDIS_PORT:-6380}` → 6379 | 6379 |
+| PostgreSQL | `127.0.0.1:${COMPOSE_POSTGRES_HOST_PORT:-5433}` → 5432 | 5432 |
+| Redis | `127.0.0.1:${COMPOSE_REDIS_HOST_PORT:-6380}` → 6379 | 6379 |
 | Web | `127.0.0.1:${WEB_PORT:-8000}` → 8000 | 8000 |
 | `test` | **None** (no host ports) | N/A |
 
-Defaults **5433** / **6380** reduce Windows conflicts with local 5432 / 6379 listeners. Inside the compose network, `web`, `celery-worker`, and `test` always use container DNS names and internal ports (`postgres:5432`, `redis:6379`).
+`POSTGRES_PORT` is the Django/application connection port (normally **5432** inside containers). It must **not** control Compose host publication. Defaults **5433** / **6380** for `COMPOSE_*_HOST_PORT` reduce Windows conflicts with local 5432 / 6379 listeners.
+
+Inside the compose network, `web`, `celery-worker`, and `test` always use container DNS names and internal ports (`postgres:5432`, `redis:6379`) — never the host-published ports.
 
 ## Common workflows
 

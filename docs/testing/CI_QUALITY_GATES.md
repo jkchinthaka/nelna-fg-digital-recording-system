@@ -45,6 +45,8 @@ Toolchain setup: uv **0.11.29**, Python **3.13.14**, Node **24.18.0**.
 
 Host-based quality checks remain; the Docker `test` profile validates the dedicated test image path. The runtime `web` image must not include pytest.
 
+Compose host publication uses `COMPOSE_POSTGRES_HOST_PORT` / `COMPOSE_REDIS_HOST_PORT` (CI: `55432` / `56379`) so job-level `POSTGRES_PORT=5432` for Actions services does not collide with Compose publish.
+
 ## Pre-commit (local)
 
 `.pre-commit-config.yaml` mirrors subset: whitespace/EOF, YAML/JSON, large files, private key detect, ruff, djlint, detect-secrets.

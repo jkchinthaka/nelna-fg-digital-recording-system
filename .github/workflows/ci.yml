@@ -45,8 +45,12 @@ jobs:
       POSTGRES_USER: nelna_fg_ci
       POSTGRES_PASSWORD: nelna_fg_ci_not_a_real_secret
       POSTGRES_HOST: localhost
+      # Host pytest talks to GitHub Actions Postgres on 5432.
       POSTGRES_PORT: "5432"
       REDIS_URL: redis://localhost:6379/0
+      # Compose host publish only — must not collide with Actions service ports.
+      COMPOSE_POSTGRES_HOST_PORT: "55432"
+      COMPOSE_REDIS_HOST_PORT: "56379"
       ENVIRONMENT_LABEL: test
       APP_VERSION: "0.2.0"
 
@@ -198,9 +202,7 @@ jobs:
       - name: Wait for PostgreSQL and Redis health
         run: |
           for i in $(seq 1 30); do
-            pg=$(docker compose ps --format json postgres 2>/dev/null | head -n1 || true)
-            redis=$(docker compose ps --format json redis 2>/dev/null | head -n1 || true)
-            if docker compose exec -T postgres pg_isready -U nelna_fg -d nelna_fg \
+            if docker compose exec -T postgres pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB" \
               && docker compose exec -T redis redis-cli ping | grep -q PONG; then
               echo "Dependencies healthy"
               exit 0

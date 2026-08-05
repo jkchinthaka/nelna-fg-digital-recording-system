@@ -89,7 +89,7 @@ Playwright remains planned per [VALIDATION_STRATEGY.md](VALIDATION_STRATEGY.md);
 
 ## Local DB for host-based tests
 
-CI host jobs use service containers on 5432/6379. Locally, point test env at compose-published **5433** / **6380** (or run the Docker `test` service on the compose network). Use synthetic credentials only.
+CI host jobs use Actions service containers on 5432/6379 (`POSTGRES_PORT=5432`). Locally, point host test env at Compose-published **5433** / **6380** (`COMPOSE_POSTGRES_HOST_PORT` / `COMPOSE_REDIS_HOST_PORT`), or run the Docker `test` service on the compose network (internal `postgres:5432` / `redis:6379`). Use synthetic credentials only.
 
 ## Related
 

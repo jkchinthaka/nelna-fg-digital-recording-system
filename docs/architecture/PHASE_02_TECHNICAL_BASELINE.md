@@ -95,6 +95,8 @@ Image tags used in compose/CI: `postgres:17.10-alpine3.23`, `redis:7.4.10-alpine
 
 Use `docker compose --profile test run --rm test pytest`. The obsolete command `docker compose run --rm web pytest` must not be used.
 
+Compose host publication uses `COMPOSE_POSTGRES_HOST_PORT` / `COMPOSE_REDIS_HOST_PORT` (defaults 5433 / 6380). `POSTGRES_PORT` remains the Django connection port (normally 5432 in-container) and must not control host publish.
+
 ## Open design debt affecting Phase 02 UI
 
 | Debt ID | Status | Phase 02 implication |
