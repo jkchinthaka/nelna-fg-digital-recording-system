@@ -1,8 +1,8 @@
 # Design Decision Register
 
 **Document status:** Living register for design decisions  
-**Phase:** 01B (01A baseline approved)  
-**Last updated:** 2026-08-04
+**Phase:** 01B Approved with conditions · 01C next after PR #3 merge  
+**Last updated:** 2026-08-05
 
 Statuses: Proposed · Accepted (design direction) · Accepted (01A baseline) · Deferred · Rejected · Superseded  
 
@@ -32,3 +32,5 @@ Statuses: Proposed · Accepted (design direction) · Accepted (01A baseline) · 
 | DES-022 | Figma file created for Product Design; incomplete library items remain manual | Recorded | Agent / owner | Connector available | Draft URL in implementation log | FIGMA_IMPLEMENTATION_LOG | 01B approval |
 | DES-019 | Light mode only in 01B; dark mode deferred | Proposed (01B) | UX (TBC) | Reduce scope | Ship dark now | Variable modes | TOK-002 | Accessibility request |
 | DES-020 | Component library scoped to MVP recording/review/auth/evidence/sync shells | Proposed (01B) | UX (TBC) | Match MVP | Build full enterprise kit | Page 05 | COMPONENT_SYSTEM | 01C needs |
+| DES-023 | Figma project-owner account verified: chinthaka / chinthakajayaweera1@gmail.com; Full seat; MCP + browser auth verified | Accepted | Project owner | Owner verification 2026-08-05 | Account mismatch resolved | FIGMA_IMPLEMENTATION_LOG; whoami | Auth change |
+| DES-024 | Phase 01B Approved with conditions; remaining variable/component/a11y work continues into 01C; no library publication yet | Accepted | Chinthaka Jayaweera | Owner approval 2026-08-05 | 01C after PR #3 merge; conditions mandatory | PHASE_01B_DESIGN_APPROVAL | Condition closure |

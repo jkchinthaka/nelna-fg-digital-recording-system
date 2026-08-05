@@ -1,9 +1,9 @@
 # Figma Plan
 
-**Document status:** Active design plan — Phase 01B token/component specs in review; Figma binary not claimed created in-repo  
-**Phase:** 01A approved baseline · **01B current** · 01C high-fidelity after 01B approval  
+**Document status:** Active design plan — Phase 01B Approved with conditions; remaining Figma work continues into 01C  
+**Phase:** 01A Approved · **01B Approved with conditions** · 01C ready after PR #3 merge  
 **Tool:** Figma Professional  
-**Last updated:** 2026-08-04
+**Last updated:** 2026-08-05
 
 ## Purpose
 
@@ -15,11 +15,14 @@ Define the Figma file structure, journeys, IA, lo-fi wireframes, tokens, compone
 | --- | --- |
 | Phase 00 Discovery and governance | **Merged** to main |
 | Phase 01A Journeys, IA, lo-fi specification | **Approved** as proposed baseline (2026-08-04); open operational decisions remain non-final |
-| Phase 01B Design tokens and components | **Under review** (PR #3); draft Figma file exists — see FIGMA_IMPLEMENTATION_LOG |
-| Phase 01C High-fidelity MVP screens and prototype | Not started |
+| Phase 01B Design tokens and components | **Approved with conditions** (2026-08-05); PR #3 open until manual merge |
+| Phase 01C High-fidelity MVP screens and prototype | **Ready after PR #3 merge** — carry remaining variable/component/a11y conditions |
 | Application development | **Not started** |
+| Figma ownership / editing access | **Verified** — chinthaka / Full seat / MCP + browser |
 
-Phase 01B is **not approved** until [PHASE_01B_DESIGN_APPROVAL.md](../approvals/PHASE_01B_DESIGN_APPROVAL.md) is signed.
+Remaining Phase 01B Figma work is **not** complete. See [FIGMA_IMPLEMENTATION_LOG.md](FIGMA_IMPLEMENTATION_LOG.md) and [PHASE_01B_DESIGN_APPROVAL.md](../approvals/PHASE_01B_DESIGN_APPROVAL.md).
+
+Draft Figma file: https://www.figma.com/design/jnn8Xhsg1zFEHxYShCUb4M — not a published approved library.
 
 ## Specification documents (01A)
 
