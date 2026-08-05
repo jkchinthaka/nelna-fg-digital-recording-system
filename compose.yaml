@@ -25,6 +25,7 @@ services:
       timeout: 3s
       retries: 10
 
+  # Production-like application runtime (no pytest / no test tooling).
   web:
     build:
       context: .
@@ -80,6 +81,36 @@ services:
       web:
         condition: service_started
     command: ["celery", "-A", "config", "worker", "--loglevel=INFO"]
+
+  # Dedicated validation service — enable with: docker compose --profile test ...
+  # Do not use `web` for pytest. Testing tools are intentionally absent from runtime.
+  test:
+    profiles: ["test"]
+    build:
+      context: .
+      target: test
+    image: nelna-fg-foundation:test
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.test
+      DJANGO_SECRET_KEY: test-only-insecure-key-not-for-production-use
+      DJANGO_DEBUG: "False"
+      ENVIRONMENT_LABEL: test
+      APP_VERSION: ${APP_VERSION:-0.2.0}
+      # Shared local Postgres service; pytest-django creates/destroys test_<POSTGRES_DB>.
+      POSTGRES_DB: ${POSTGRES_DB:-nelna_fg}
+      POSTGRES_USER: ${POSTGRES_USER:-nelna_fg}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nelna_fg_local_only}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      REDIS_URL: redis://redis:6379/0
+      WAIT_FOR_POSTGRES: "1"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    # No host ports. Override command as needed (pytest, manage.py, ruff, mypy, ...).
+    command: ["pytest"]
 
 volumes:
   postgres_data:

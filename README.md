@@ -36,8 +36,9 @@ Open business decisions remain proposed or decision-required and are **not** fin
 | UI (Phase 02) | Django Templates, HTMX 2.0.10, Tailwind 4.3.3; **no Alpine**; **no CDN**; **no PWA yet** |
 | Evidence | MinIO locally later; S3-compatible object storage in production (not Phase 02 scope) |
 | Local dev | Docker Compose (`compose.yaml`); host ports 5433 / 6380 by default |
-| Tests | Pytest 9.0.2 (+ pytest-django / pytest-cov); Playwright later |
-| CI | GitHub Actions quality gates |
+| Tests | Pytest 9.0.2 (+ pytest-django / pytest-cov) via host `uv` **or** Compose profile `test`; Playwright later |
+| Docker images | `web` = lean runtime (no pytest); `test` = dedicated validation image |
+| CI | GitHub Actions quality gates (host + Docker test path) |
 | Design | Figma Professional (design phases) |
 | AI | Optional local assistance later; never final FS/QA/loading/CAPA/access decisions |
 
@@ -67,6 +68,17 @@ docker compose up -d postgres redis
 uv run python manage.py migrate
 uv run python manage.py runserver 127.0.0.1:8000
 ```
+
+Docker validation (dedicated `test` service — not `web`):
+
+```powershell
+docker compose up -d postgres redis
+docker compose --profile test build test
+docker compose --profile test run --rm test pytest --cov=apps --cov=config --cov-report=term-missing --cov-fail-under=80
+docker compose down --volumes
+```
+
+Do **not** use `docker compose run --rm web pytest` — pytest is intentionally absent from the runtime image. See [docs/operations/DOCKER_DEVELOPMENT.md](docs/operations/DOCKER_DEVELOPMENT.md).
 
 ## Documentation map (selected)
 
