@@ -16,7 +16,7 @@ Define the Figma file structure, journeys, IA, lo-fi wireframes, tokens, compone
 | Phase 00 Discovery and governance | **Merged** to main |
 | Phase 01A Journeys, IA, lo-fi specification | **Approved** as proposed baseline (2026-08-04); open operational decisions remain non-final |
 | Phase 01B Design tokens and components | **Approved with conditions** (2026-08-05); merged via PR #3 |
-| Phase 01C High-fidelity MVP screens and prototype | **Current** — representative hi-fi frames, core components/variables, P1–P7 prototypes; approval pending on `design/figma-high-fidelity-mvp` |
+| Phase 01C High-fidelity MVP screens and prototype | **Current / 01C-R** — required coverage + P1–P7 hi-fi clones on PR #4; **Noto Sans Sinhala owner verification blocking**; approval pending |
 | Application development | **Not started** |
 | Figma ownership / editing access | **Verified** — chinthaka / Full seat / MCP + browser |
 | Figma library | **Not published** |

@@ -482,24 +482,19 @@ From [PHASE_01B_DESIGN_APPROVAL.md](../approvals/PHASE_01B_DESIGN_APPROVAL.md), 
 | DEBT-01C-008 | Printable audit pack (concept) | 01C | No | Open | Phase 03+ | Product owner |
 
 **Total debt items:** 21 (+ tracked partial completions below)  
-**Blocking for Phase 02:** Yes — Phase 01C not approved; full inventory incomplete  
-**01C Figma progress (2026-08-05):** Core variable collections created; partial component sets; representative screens pages 06–13; P1–P7 prototypes wired; offline gallery complete. See [FIGMA_01C_IMPLEMENTATION_LOG.md](FIGMA_01C_IMPLEMENTATION_LOG.md).
+**Blocking for Phase 02:** Yes — Phase 01C not approved; **Noto Sans Sinhala owner verification blocking**  
+**01C-R Figma progress (2026-08-05):** Required screen coverage expanded; component sets completed; P1–P7 hi-fi prototype clones wired; coverage matrix with node IDs. See [FIGMA_01C_COVERAGE_MATRIX.md](FIGMA_01C_COVERAGE_MATRIX.md) and [FIGMA_01C_IMPLEMENTATION_LOG.md](FIGMA_01C_IMPLEMENTATION_LOG.md).
 
-### Status updates after 01C Figma build pass (2026-08-05)
+### Status updates after 01C-R remediation (2026-08-05)
 
 | Debt ID | Updated status | Notes |
 | --- | --- | --- |
-| DEBT-01B-001 Typography vars | In Progress | Families + sizes done; weights/line-heights open |
-| DEBT-01B-002 Spacing vars | In Progress | Core scale + touch sizes done; extend to full scale if required |
-| DEBT-01B-003 Radius vars | In Progress | small/medium/large + border widths done |
-| DEBT-01B-004 Elevation | In Progress | Minimal level/modal floats done |
-| DEBT-01B-005 Motion | In Progress | fast/normal/slow done; easing open |
-| DEBT-01B-006 Component dims | In Progress | Breakpoints + chrome heights/widths done |
-| DEBT-01B-007 Component sets | In Progress | Buttons, pass-fail, status, banners, nav specimens; full catalogue open |
-| DEBT-01B-008 a11y annotations | In Progress | Tokens + handoff boards; not every screen |
-| DEBT-01C-SINHALA-FONT | Open (new) | Noto Sans Sinhala unavailable in Figma MCP environment |
+| DEBT-01B-001 Typography vars | Mostly complete | 30 Typography variables including weights/line-heights |
+| DEBT-01B-007 Component sets | Mostly complete | Actions/forms/overlays/review/ops sets present; legacy singles remain |
+| DEBT-01C-R-NOTO | **Open — BLOCKING** | MCP cannot load Noto Sans Sinhala; manual frame `31:23`; interim Abhaya Libre `31:33` |
+| Screen inventory / prototypes | Mostly complete | Coverage matrix COMPLETE rows with node IDs; a11y representative only |
 
-**Status:** Partial progress — Phase 01C **not** exit-ready; do not start Phase 02.
+**Status:** 01C-R delivered for review — Phase 01C **not** exit-ready until Noto owner verification + approval form. Do not start Phase 02.
 
 ---
 

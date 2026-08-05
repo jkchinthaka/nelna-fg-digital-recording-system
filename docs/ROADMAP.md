@@ -6,7 +6,7 @@
 
 Branch naming pattern: `foundation/...`, `design/...`, `feature/phase-NN-short-name`, or `hardening/...` as appropriate. Never commit directly to `main`.
 
-**Progress:** Phase 00 merged. Phase 01A approved. Phase 01B **Approved with conditions** (2026-08-05) by Project Owner / Developer and **merged** (PR #3). Phase 01C **Current** on `design/figma-high-fidelity-mvp`: representative high-fidelity screens, core variables/components, P1–P7 prototypes, and Phase 01C docs under review. High-fidelity approval is **pending**. Remaining design debt is tracked explicitly. Application development has **not** started. Phase 02 must not begin until 01C review gate passes.
+**Progress:** Phase 00–01B merged. Phase 01C **01C-R remediation** on `design/figma-high-fidelity-mvp` (PR #4): required screen coverage, component sets, responsive representatives, P1–P7 hi-fi prototype clones, and coverage matrix with node IDs. **Blocking:** owner must apply/verify Noto Sans Sinhala in Figma. High-fidelity approval **pending**. Application development **not** started. Phase 02 blocked.
 
 ---
 
@@ -60,7 +60,7 @@ Branch naming pattern: `foundation/...`, `design/...`, `feature/phase-NN-short-n
 | Branch naming | `design/figma-high-fidelity-mvp` |
 | Exit criteria | MVP journeys prototype-ready; Sinhala/EN strategy applied with pending translations marked; 01B conditions not omitted; 67 open design decisions resolved or documented |
 | Dependencies | Phase 01B approval |
-| Status | **Current — representative Figma + docs under review (2026-08-05); not approved; Phase 02 blocked** |
+| Status | **Current — 01C-R coverage remediation under review (2026-08-05); Noto Sans Sinhala owner verification blocking; not approved; Phase 02 blocked** |
 
 ## Phase 01 — Figma journeys and design system (umbrella)
 

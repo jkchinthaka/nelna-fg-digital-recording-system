@@ -8,18 +8,18 @@ Provide named-account, scoped-role digital recording, checking, verification, ev
 
 ## Current phase
 
-**Phase 01C — High-fidelity MVP screens and prototype** (current — under review; not approved)
+**Phase 01C — High-fidelity MVP screens and prototype** (01C-R remediation under review; **not approved**)
 
 | Phase | Status |
 | --- | --- |
 | Phase 00 — Discovery and governance | Merged to `main` |
 | Phase 01A — Journeys, IA, lo-fi specification | **Approved** as proposed design baseline (2026-08-04) |
 | Phase 01B — Design tokens and components | **Approved with conditions** (2026-08-05) — merged via PR #3 |
-| Phase 01C — High-fidelity MVP screens and prototype | **Current** — representative hi-fi Figma + docs on `design/figma-high-fidelity-mvp`; approval pending; Phase 02 not ready |
+| Phase 01C — High-fidelity MVP screens and prototype | **Current / 01C-R** — coverage expanded on `design/figma-high-fidelity-mvp` (PR #4); **Noto Sans Sinhala owner verification still blocking**; approval pending |
 
 This repository contains governance documentation, architecture decision records, Cursor rules, and design specifications through Phase 01C (design only). It does **not** contain an application codebase. No Django/HTML/CSS/JS implementation has started.
 
-Open business decisions remain proposed or decision-required and are **not** final Nelna operational approvals. Remaining Phase 01B/01C Figma gaps are tracked in [docs/design/DESIGN_DEBT_REGISTER.md](docs/design/DESIGN_DEBT_REGISTER.md). High-fidelity approval is **pending**. Figma library is **not** published.
+Open business decisions remain proposed or decision-required and are **not** final Nelna operational approvals. Coverage matrix: [docs/design/FIGMA_01C_COVERAGE_MATRIX.md](docs/design/FIGMA_01C_COVERAGE_MATRIX.md). High-fidelity approval is **pending**. Figma library is **not** published. Do **not** start Phase 02 until Noto verification and owner high-fidelity approval.
 
 **Figma ownership and editing access:** Verified — owner/handle `chinthaka` (`chinthakajayaweera1@gmail.com`); plan CHINTHAKA JAYAWEERA's team; Full seat; MCP and browser authentication verified. Draft file: https://www.figma.com/design/jnn8Xhsg1zFEHxYShCUb4M — not a published approved library.
 
@@ -126,10 +126,10 @@ Open business decisions remain proposed or decision-required and are **not** fin
 
 ## Next action
 
-1. Manually review Phase 01C high-fidelity Figma + docs on `design/figma-high-fidelity-mvp` (approval form remains blank until owner sign-off).
-2. Close remaining design debt (full screen inventory, remaining component sets, typography weights/line-heights, Sinhala font in Figma, per-screen a11y annotations) — none may be silently omitted.
+1. In Figma Desktop, install/enable **Noto Sans Sinhala** and complete frame `04/tokens/MANUAL-Noto-Sans-Sinhala` (`31:23`); replace interim Abhaya Libre samples.
+2. Manually review Phase 01C-R coverage + P1–P7 prototypes (PR #4 / Figma pages 04–13). Approval form stays blank until owner sign-off.
 3. Do **not** publish the Figma component library before final design-system review.
-4. Do **not** begin Phase 02 / application development until high-fidelity design review gate passes.
+4. Do **not** begin Phase 02 until high-fidelity design review gate passes (including Noto verification).
 5. Keep resolving open business decisions — they are not final operational approvals.
 
 ## Important
