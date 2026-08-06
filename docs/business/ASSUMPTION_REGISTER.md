@@ -1,8 +1,8 @@
 # Assumption Register
 
-**Document status:** Open assumptions — confirmation required before treating as fact  
-**Phase:** 00 — Discovery and governance  
-**Last updated:** 2026-08-04
+**Document status:** Open assumptions — confirmation required before treating as fact
+**Phase:** 00 — Discovery and governance (updated after Phase 03 / auth UI merge)
+**Last updated:** 2026-08-07
 
 ## Labels
 
@@ -19,11 +19,11 @@
 | ASM-001 | Product temperature classes used in FG recording will be provided from approved controlled documents | QA owner | Controlled docs | Before Phase 06 content build | EVIDENCE REQUIRED | Blocks template limits and deterministic rules |
 | ASM-002 | CCP/OPRP classifications relevant to digital checklists will be supplied by QA | QA owner | HACCP / related docs | Before Phase 06–10 rule config | EVIDENCE REQUIRED | Blocks critical-rule configuration |
 | ASM-003 | A complete inventory of paper forms in scope will be provided | QA / FG | Form inventory | Before MVP checklist selection | EVIDENCE REQUIRED | Blocks TEMPLATE-002 confirmation |
-| ASM-004 | Site/org hierarchy depth and naming will be confirmed for pilot | Business / IT | Org chart / site list | Before Phase 04 | DECISION REQUIRED | Blocks RBAC scoping model details |
-| ASM-005 | Shift patterns for FG will be documented | Operations | Shift roster policy | Before Phase 04–07 | EVIDENCE REQUIRED | Blocks scheduling |
-| ASM-006 | Night-shift operational day definition (which calendar date a night shift belongs to) will be confirmed | Operations / QA | Written rule | Before Phase 07 | DECISION REQUIRED | Affects due dates and reports |
+| ASM-004 | Site/org hierarchy depth and naming will be confirmed for pilot | Business / IT | Org chart / site list | Before Phase 04 Shift work and before inventing hierarchy values | DECISION REQUIRED | Organization/Site/Department **models exist** (Phase 03); official naming/codes remain unconfirmed — blocks inventing Nelna values and Shift scoping details |
+| ASM-005 | Shift patterns for FG will be documented (names and codes) | Operations | Shift roster policy | Before Phase 04 Shift implementation | EVIDENCE REQUIRED | Blocks Shift model coding and later scheduling |
+| ASM-006 | Night-shift operational day definition (which calendar date a night shift belongs to), timing, and effective-date rules will be confirmed | Operations / QA | Written rule | Before Phase 04 Shift behavior and before Phase 07 due dates | DECISION REQUIRED | Blocks overnight behavior, effective dating, due dates, and reports |
 | ASM-007 | Approximate user numbers by role for pilot and production will be provided | Business / HR / IT | Headcount estimates | Before pilot planning | OWNER REQUIRED | Affects licensing of infra and UAT sizing |
-| ASM-008 | Operator language requirements include mandatory Sinhala; English mix for other roles will be confirmed | Business / HR | Language survey / policy | Before Phase 01 content | EVIDENCE REQUIRED | Affects i18n and Figma content |
+| ASM-008 | Operator language requirements include mandatory Sinhala; English mix for other roles will be confirmed | Business / HR | Language survey / policy | Before Phase 01 content | EVIDENCE REQUIRED | Affects i18n and Figma content; DEBT-01C-R-NOTO still open |
 | ASM-009 | Device ownership model (company vs personal) for operators will be decided | IT / Operations | Device policy | Before pilot | DECISION REQUIRED | Affects MDM, PWA install, security |
 | ASM-010 | Wi-Fi coverage in recording areas is sufficient for online MVP | IT | Coverage survey | Before pilot | EVIDENCE REQUIRED | May force Phase 14 earlier or paper fallback |
 | ASM-011 | Hygiene rules for device use in production areas will be documented | QA / Operations | Hygiene SOP | Before pilot | EVIDENCE REQUIRED | Affects enclosure/device UX guidance |
@@ -33,5 +33,15 @@
 | ASM-015 | Hosting model for test/UAT/staging/production will be chosen | IT owner | Hosting decision | Before Phase 02 non-local envs | DECISION REQUIRED | Affects env strategy execution |
 | ASM-016 | RPO and RTO targets will be approved | IT / Management | BC/DR policy | Before Phase 19 sign-off | DECISION REQUIRED | Affects backup architecture |
 | ASM-017 | Expected records-per-day and photo volumes for pilot will be estimated | FG / QA | Volume estimate | Before Phase 11 sizing | ASSUMPTION until measured | Affects storage and performance tests |
+
+## Phase 04 gate summary
+
+Before implementing **Shift**, owners must progress:
+
+1. **ASM-004** — official organization / site / department naming and hierarchy
+2. **ASM-005** — shift names and codes
+3. **ASM-006** — shift timing, overnight behavior, and effective-date rules
+
+Do **not** invent Day/Night names, start/end times, shift codes, site/department codes, effective-date policy, or overnight rules.
 
 **No row is APPROVED.** Development must not hard-code these as Nelna facts.

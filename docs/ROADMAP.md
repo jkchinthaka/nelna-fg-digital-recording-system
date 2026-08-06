@@ -1,12 +1,14 @@
 # Roadmap — Phase Delivery Plan
 
 **Document status:** Governing roadmap for greenfield delivery
-**Phase:** Phase 02–03 approved with conditions · authentication UI polish in progress
-**Last updated:** 2026-08-06
+**Phase:** Phase 03 + authentication UI merged · Phase 04 scope reconciliation
+**Last updated:** 2026-08-07
 
 Branch naming pattern: `foundation/...`, `design/...`, `feature/phase-NN-short-name`, or `hardening/...` as appropriate. Never commit directly to `main`.
 
-**Progress:** Phase 00–01C complete (01C with deferred Sinhala condition). Phase 02 **Approved with conditions** and merged (PR #5 / #6). Phase 03 accounts/RBAC **Approved with conditions** and merged (PR #7). DEBT-01C-R-NOTO remains **open** (blocking for operator UAT/pilot/production and final Sinhala operator UI). Authentication UI polish is under design review on `design/authentication-ui-polish`. No business workflows. Production readiness **not** claimed.
+**Progress:** Phase 00–01C complete (01C with deferred Sinhala condition). Phase 02 **Approved with conditions** and merged (PR #5 / #6). Phase 03 accounts/RBAC **Approved with conditions** and merged (PR #7 / related follow-up merges). Authentication UI polish **merged** (PR #8). Organization, Site, and Department models exist from Phase 03. **No FG operational modules** (`master_data`, `checklists`, `records`, `reviews`, `evidence`) have started. DEBT-01C-R-NOTO remains **open** (blocking for operator UAT/pilot/production and final Sinhala operator UI). Production readiness **not** claimed. No deployment approval exists.
+
+**Numbering rule:** Preserve roadmap phase numbers. Do **not** rename FG master data, checklist templates, recording, review, or evidence work as Phase 04.
 
 ---
 
@@ -98,43 +100,73 @@ Branch naming pattern: `foundation/...`, `design/...`, `feature/phase-NN-short-n
 | Branch naming | `feature/accounts-rbac` |
 | Exit criteria | Auth/RBAC/lockout/audit tests pass; no seeded users/orgs/roles; no business workflows; approval form signed |
 | Dependencies | Phase 02 |
-| Status | **Approved with conditions (2026-08-06)** — merged via PR #7; DEBT-01C-R-NOTO remains open; authentication UI polish tracked separately on `design/authentication-ui-polish` |
+| Status | **Approved with conditions (2026-08-06)** — merged via PR #7 (and related follow-ups); DEBT-01C-R-NOTO remains open; authentication UI polish merged via PR #8 |
 
 ## Phase 04 — Organization hierarchy and shifts
 
 | Field | Content |
 | --- | --- |
-| Objective | Model approved org hierarchy and shift constructs |
-| Inputs | Confirmed hierarchy and shift evidence |
-| Outputs | `organizations` (+ shift support as designed) |
-| Approval gate | Business confirmation of hierarchy |
+| Objective | Complete residual organization-hierarchy confirmation and introduce Shift **only after** owner evidence for ASM-004, ASM-005, and ASM-006 |
+| Inputs | Confirmed hierarchy naming (ASM-004); shift names/codes (ASM-005); shift timing / overnight / effective-date rules (ASM-006) |
+| Outputs | Hierarchy confirmation record; `organizations` Shift support **as designed after evidence** (no invented shift values) |
+| Approval gate | Business confirmation of hierarchy and shift evidence before Shift implementation |
 | Branch naming | `feature/phase-04-organizations-shifts` |
-| Exit criteria | Scoped queries work; no invented sites |
-| Dependencies | Phase 03; ASM-004/005/006 progress |
+| Exit criteria | Hierarchy confirmation documented; Shift implemented only from evidenced values; scoped queries remain sound; no invented sites, departments, or shifts |
+| Dependencies | Phase 03 complete; ASM-004 / ASM-005 / ASM-006 progress |
+| Status | **Next numbered phase** — documentation reconciliation in progress; Shift coding blocked until ASM evidence |
 
-## Phase 05 — Master data, instruments and training
+### Phase 04 scope statement
+
+Phase 04 completes residual organization-hierarchy confirmation and introduces Shift only after ASM-004, ASM-005 and ASM-006 receive owner evidence. Organization, Site, and Department **already exist** from Phase 03 and are not rebuilt. FG products, checklist definitions, checklist records, review workflows and attachments are explicitly **outside** Phase 04.
+
+### Phase 04 business gates (blockers before Shift implementation)
+
+| Gate | Requirement | Status |
+| --- | --- | --- |
+| ASM-004 | Confirm official organization / site / department naming and hierarchy | **DECISION REQUIRED** — blocks inventing hierarchy values |
+| ASM-005 | Confirm shift names and codes | **EVIDENCE REQUIRED** — blocks Shift coding |
+| ASM-006 | Confirm shift timing, overnight behavior, and effective-date rules | **DECISION REQUIRED** — blocks overnight / dating behavior |
+
+Do **not** invent Day/Night shift names, shift start/end times, shift codes, site codes, department codes, effective-date policy, or overnight shift rules.
+
+### Phase 04 out of scope
+
+- FG Product / product category
+- Checklist builder, definition, or versioning
+- Checklist recording, draft/save/submit
+- Supervisor review, approval, rejection, return
+- Attachments / evidence storage
+- Reports / dashboards
+- ERP integration
+- Offline sync
+- Sinhala UI approval
+- Deployment / production readiness claims
+
+## Phase 05 — FG operational master data, instruments and training
 
 | Field | Content |
 | --- | --- |
-| Objective | Minimal masters for MVP templates; instruments/training as approved |
-| Inputs | Master data evidence |
+| Objective | Minimal FG / operational master data for MVP templates; instruments/training as approved |
+| Inputs | Master data evidence (MASTER-001); no invented product catalogues |
 | Outputs | `master_data`, `instruments`, `training` as needed |
 | Approval gate | Data owner review |
 | Branch naming | `feature/phase-05-master-data` |
 | Exit criteria | Only evidenced entities loaded |
-| Dependencies | Phase 04 |
+| Dependencies | Phase 04 (or explicit owner waiver of residual hierarchy/shift gates) |
+| Notes | **Not** Phase 04. Do not combine with checklist templates or recording. |
 
-## Phase 06 — Checklist templates
+## Phase 06 — Checklist definition and versioning
 
 | Field | Content |
 | --- | --- |
-| Objective | Versioned templates for two approved checklist types |
-| Inputs | Approved forms |
+| Objective | Versioned checklist definitions/templates for two approved checklist types |
+| Inputs | Approved forms (TEMPLATE evidence) |
 | Outputs | `checklists` module |
 | Approval gate | QA content approval |
 | Branch naming | `feature/phase-06-checklist-templates` |
 | Exit criteria | Two templates only unless expansion approved |
 | Dependencies | Phase 05; TEMPLATE evidence |
+| Notes | **Not** Phase 04. Definition/versioning only — no operator submission ownership. |
 
 ## Phase 07 — Scheduling and tasks
 
@@ -148,53 +180,57 @@ Branch naming pattern: `foundation/...`, `design/...`, `feature/phase-NN-short-n
 | Exit criteria | Operators see correct due work in test |
 | Dependencies | Phase 06 |
 
-## Phase 08 — Operator online recording
+## Phase 08 — Checklist recording and submission (draft → submit)
 
 | Field | Content |
 | --- | --- |
-| Objective | Online submission UX and record services |
-| Inputs | Figma operator screens; templates |
+| Objective | Online draft and submission UX and record services (DRAFT → SUBMITTED) |
+| Inputs | Figma operator screens; published templates |
 | Outputs | `records` submit path; operator UI |
-| Approval gate | Operator UAT sample |
+| Approval gate | Operator UAT sample (Sinhala UAT still blocked by DEBT-01C-R-NOTO) |
 | Branch naming | `feature/phase-08-operator-recording` |
-| Exit criteria | Sinhala-capable MVP flows; submit immutability |
+| Exit criteria | Submit immutability; online MVP flows; no fake success |
 | Dependencies | Phase 07; Phase 01 progress |
+| Notes | **Not** Phase 04. Do not include supervisor approval in this phase. |
 
 ## Phase 09 — Supervisor checking and amendments
 
 | Field | Content |
 | --- | --- |
-| Objective | Check workflow and amendment history |
-| Inputs | SoD rules |
+| Objective | Supervisor check workflow (approve / return for correction / related amendments) and amendment history |
+| Inputs | SoD rules (EVIDENCE REQUIRED) |
 | Outputs | `reviews`; amendment services |
 | Approval gate | QA/operations workflow review |
 | Branch naming | `feature/phase-09-supervisor-review` |
 | Exit criteria | SoD tests pass; before/after history stored |
 | Dependencies | Phase 08 |
+| Notes | **Not** Phase 04. Supervisor rejection/return paths belong here when approved — not in master-data or template phases. |
 
 ## Phase 10 — QA verification
 
 | Field | Content |
 | --- | --- |
-| Objective | QA verify path with deterministic critical rules hooks |
+| Objective | QA verify path with deterministic critical-rules hooks; QA reject / hold / reinspection only when approved by QA owner |
 | Inputs | QA rules evidence |
 | Outputs | `quality` verification services/UI |
 | Approval gate | QA owner |
 | Branch naming | `feature/phase-10-qa-verification` |
 | Exit criteria | Verify path tested; no AI final decisions |
 | Dependencies | Phase 09 |
+| Notes | Correction/rejection/return that are **supervisor-owned** remain Phase 09. Do not merge Phases 08–10 into one mega-phase. |
 
-## Phase 11 — Evidence storage
+## Phase 11 — Attachments and evidence storage
 
 | Field | Content |
 | --- | --- |
-| Objective | MinIO/S3 evidence upload and controlled access |
-| Inputs | Security baseline; volume assumptions |
+| Objective | MinIO/S3 evidence upload, attachment metadata, and controlled access |
+| Inputs | Security baseline; volume assumptions (ASM-017) |
 | Outputs | `evidence` module |
 | Approval gate | IT security review of access patterns |
 | Branch naming | `feature/phase-11-evidence-storage` |
 | Exit criteria | No DB BLOBs; signed URL pattern |
 | Dependencies | Phase 08+ (can start in parallel after foundation) |
+| Notes | **Not** Phase 04. Malware scanning and retention remain deferred until decided. |
 
 ## Phase 12 — Non-conformance, holds and CAPA
 

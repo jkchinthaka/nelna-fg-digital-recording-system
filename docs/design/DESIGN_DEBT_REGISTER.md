@@ -1,7 +1,7 @@
 # Design Debt Register
 
 **Document status:** Living debt register — DEBT-01C-R-NOTO remains open
-**Phase:** Phase 02 approved · Phase 03 under implementation
+**Phase:** Phase 02–03 approved · authentication UI merged · Phase 04 next
 **Branch:** `feature/accounts-rbac` (debt originated on design phases)
 **Created:** 2026-08-05
 **Last updated:** 2026-08-06
@@ -529,7 +529,7 @@ Owner reported Noto Sans Sinhala applied via Figma Desktop. **Figma file evidenc
 | Abhaya Libre production-approved? | **No** |
 | Noto Sans Sinhala verified? | **No** |
 
-**Status:** Phase 01C **Approved with deferred condition**. Phase 02 **Approved with conditions** (merged). Phase 03 accounts/RBAC **Approved with conditions** (merged via PR #7). Authentication UI polish may proceed on `design/authentication-ui-polish` without claiming Sinhala completion. Operator UAT / pilot / production remain blocked until DEBT-01C-R-NOTO is closed with evidence.
+**Status:** Phase 01C **Approved with deferred condition**. Phase 02 **Approved with conditions** (merged). Phase 03 accounts/RBAC **Approved with conditions** (merged via PR #7). Authentication UI polish **merged** via PR #8 without claiming Sinhala completion. Phase 04 remains hierarchy confirmation + Shift after ASM evidence — FG modules are Phase 05+. Operator UAT / pilot / production remain blocked until DEBT-01C-R-NOTO is closed with evidence.
 
 ### Phase 02 note on DEBT-01C-R-NOTO (2026-08-05)
 
@@ -556,7 +556,18 @@ Owner reported Noto Sans Sinhala applied via Figma Desktop. **Figma file evidenc
 | --- | --- |
 | Debt status | **Still OPEN** |
 | UI polish | English foundation screens only; see [AUTHENTICATION_UI_POLISH.md](AUTHENTICATION_UI_POLISH.md) |
+| Merge status | Merged via PR #8 |
+| Validation | Local and Docker validation passed |
+| GitHub Actions | Evidence unavailable during a GitHub Actions incident — **do not claim the missing CI check passed** |
 | Sinhala UI claim | **Forbidden** |
+
+### Phase 04 note on DEBT-01C-R-NOTO (2026-08-07)
+
+| Field | Entry |
+| --- | --- |
+| Debt status | **Still OPEN** |
+| Phase 04 impact | Non-blocking for hierarchy confirmation docs and Shift design gated by ASM-004/005/006; **blocking** for final Sinhala operator UI, UAT, pilot, production |
+| FG modules | Still Phase 05+ — not Phase 04 |
 
 ---
 

@@ -1,13 +1,24 @@
 # Authentication UI Polish
 
-**Document status:** Design implementation note — not an approval form  
-**Branch:** `design/authentication-ui-polish`  
-**Created:** 2026-08-06  
-**Last updated:** 2026-08-06
+**Document status:** Design implementation note — not an approval form
+**Branch:** `design/authentication-ui-polish` (merged via PR #8)
+**Created:** 2026-08-06
+**Last updated:** 2026-08-07
 
 ## Purpose
 
 Record visual and accessibility polish applied to the Phase 03 authentication interface after Phase 03 security approval. This document does **not** authorize production, pilot, operator UAT, or Sinhala UI completion.
+
+## Merge and validation status
+
+| Item | Status |
+| --- | --- |
+| Implementation | Merged to `main` via PR #8 |
+| Local validation | Passed (quality checks, pytest, coverage) |
+| Docker validation | Passed (Compose test profile) |
+| GitHub Actions | Evidence was **unavailable** during a GitHub Actions incident; **do not claim the missing CI check passed**; do not create retroactive approval claims |
+
+Authentication UI polish is **complete as merged English foundation UI**. It is not Sinhala UI approval and not production readiness.
 
 ## Visual design decisions
 

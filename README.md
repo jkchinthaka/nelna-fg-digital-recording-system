@@ -1,6 +1,6 @@
 # Nelna FG Digital Recording System
 
-Secure, auditable Finished Goods digital recording delivered as a modular Django monolith with a responsive web UI. Longer-term direction includes an installable PWA (ADR-003); **PWA is not implemented in Phase 02**.
+Secure, auditable Finished Goods digital recording delivered as a modular Django monolith with a responsive web UI. Longer-term direction includes an installable PWA (ADR-003); **PWA is not implemented yet**.
 
 ## Project purpose
 
@@ -8,7 +8,7 @@ Provide named-account, scoped-role digital recording, checking, verification, ev
 
 ## Current phase
 
-**Phase 03 — Accounts, authentication and scoped RBAC** (**under implementation / pending approval**)
+**Phase 04 — Organization hierarchy and shifts** (next numbered phase; Shift coding blocked until ASM-004 / ASM-005 / ASM-006 evidence)
 
 | Phase | Status |
 | --- | --- |
@@ -17,9 +17,14 @@ Provide named-account, scoped-role digital recording, checking, verification, ev
 | Phase 01B — Design tokens and components | **Approved with conditions** (2026-08-05) |
 | Phase 01C — High-fidelity MVP screens and prototype | **Approved with deferred condition** — DEBT-01C-R-NOTO remains open |
 | Phase 02 — Django/PostgreSQL foundation | **Approved with conditions** and merged (PR #5 / #6) |
-| Phase 03 — Accounts / auth / scoped RBAC | **Under implementation** on `feature/accounts-rbac` — **not approved** until [PHASE_03_ACCOUNTS_RBAC_APPROVAL.md](docs/approvals/PHASE_03_ACCOUNTS_RBAC_APPROVAL.md) is signed |
+| Phase 03 — Accounts / auth / scoped RBAC | **Approved with conditions** and merged (PR #7) |
+| Authentication UI polish | **Merged** (PR #8) — English foundation screens; not Sinhala UI approval |
+| Phase 04 — Organization hierarchy and shifts | **Next** — hierarchy confirmation + Shift only after ASM evidence |
+| Phase 05+ — FG master data, checklists, recording, review, evidence | **Not started** |
 
-**Deferred Sinhala condition:** Noto Sans Sinhala is **not** finally verified. Operator Sinhala UAT, pilot, and production remain **blocked** until DEBT-01C-R-NOTO is closed with evidence. Abhaya Libre is **not** the approved production font. No font binaries; no verification claim. Phase 03 backend auth work may proceed while the debt remains open.
+**Numbering rule:** Preserve roadmap phase numbers. FG master data is Phase 05; checklist definitions are Phase 06; recording is Phase 08; supervisor review is Phase 09; evidence is Phase 11. Do **not** label those as Phase 04.
+
+**Deferred Sinhala condition:** Noto Sans Sinhala is **not** finally verified. Operator Sinhala UAT, pilot, and production remain **blocked** until DEBT-01C-R-NOTO is closed with evidence. Abhaya Libre is **not** the approved production font. No font binaries; no verification claim.
 
 ## Approved architecture (technical direction)
 
@@ -30,10 +35,11 @@ Provide named-account, scoped-role digital recording, checking, verification, ev
 | Database | PostgreSQL 17.10 (+ JSONB where appropriate) |
 | Cache / jobs | Redis 7.4.10, Celery 5.6.3 |
 | Dependency mgmt | uv 0.11.29 (`pyproject.toml` + `uv.lock`) |
-| UI (Phase 02) | Django Templates, HTMX 2.0.10, Tailwind 4.3.3; **no Alpine**; **no CDN**; **no PWA yet** |
-| Evidence | MinIO locally later; S3-compatible object storage in production (not Phase 02 scope) |
+| UI | Django Templates, HTMX 2.0.10, Tailwind 4.3.3; **no Alpine**; **no CDN**; **no PWA yet** |
+| Evidence | MinIO locally later; S3-compatible object storage in production (Phase 11) |
 | Local dev | Docker Compose (`compose.yaml`); host publish ports via `COMPOSE_POSTGRES_HOST_PORT` / `COMPOSE_REDIS_HOST_PORT` (defaults 5433 / 6380) |
-| Identity (Phase 03) | Employee-code session authentication; scoped RBAC; security audit events — **no seeded users/orgs/roles** |
+| Identity | Employee-code session authentication; scoped RBAC; security audit events — **no seeded users/orgs/roles** |
+| Organization scope | Organization, Site, Department models exist (Phase 03); Shift deferred to Phase 04 after evidence |
 | Tests | Pytest (+ pytest-django / pytest-cov) via host `uv` **or** Compose profile `test`; Playwright later |
 | Docker images | `web` = lean runtime (no pytest); `test` = dedicated validation image |
 | CI | GitHub Actions quality gates (host + Docker test path) |
@@ -47,12 +53,13 @@ Exact pins: [docs/architecture/PHASE_02_TECHNICAL_BASELINE.md](docs/architecture
 | Item | Status |
 | --- | --- |
 | Greenfield repository | Yes |
-| Application foundation code | Present on Phase 02 branch (scaffold — not business MVP) |
+| Application foundation | Present — accounts, organizations, access_control, security_audit |
+| FG operational modules | **Not started** |
 | Phase 02 approval | **Approved with conditions** (merged) |
-| Phase 03 approval | **Unsigned** — under implementation on `feature/accounts-rbac` |
+| Phase 03 approval | **Approved with conditions** (merged) |
+| Authentication UI polish | Merged via PR #8; local and Docker validation passed; GitHub Actions evidence was unavailable during a GitHub Actions incident — **do not claim the missing CI check passed** |
 | Production readiness | **Not claimed** |
 | Secrets in repo | None intended; do not add any |
-| Previous repository code | Not used |
 
 ## Quick start (local)
 
@@ -83,23 +90,18 @@ Do **not** use `docker compose run --rm web pytest` — pytest is intentionally 
 
 | Document | Path |
 | --- | --- |
+| Roadmap (governing phase numbering) | [docs/ROADMAP.md](docs/ROADMAP.md) |
+| Module map | [docs/architecture/MODULE_MAP.md](docs/architecture/MODULE_MAP.md) |
+| Assumption register | [docs/business/ASSUMPTION_REGISTER.md](docs/business/ASSUMPTION_REGISTER.md) |
 | Phase 02 technical baseline | [docs/architecture/PHASE_02_TECHNICAL_BASELINE.md](docs/architecture/PHASE_02_TECHNICAL_BASELINE.md) |
-| ADR-004 dependency management | [docs/architecture/ADR-004-PYTHON-DEPENDENCY-MANAGEMENT.md](docs/architecture/ADR-004-PYTHON-DEPENDENCY-MANAGEMENT.md) |
-| ADR-005 settings / environments | [docs/architecture/ADR-005-DJANGO-SETTINGS-AND-ENVIRONMENTS.md](docs/architecture/ADR-005-DJANGO-SETTINGS-AND-ENVIRONMENTS.md) |
 | Local development | [docs/operations/LOCAL_DEVELOPMENT.md](docs/operations/LOCAL_DEVELOPMENT.md) |
 | Docker development | [docs/operations/DOCKER_DEVELOPMENT.md](docs/operations/DOCKER_DEVELOPMENT.md) |
-| Configuration reference | [docs/operations/CONFIGURATION_REFERENCE.md](docs/operations/CONFIGURATION_REFERENCE.md) |
-| Logging / observability | [docs/operations/LOGGING_AND_OBSERVABILITY.md](docs/operations/LOGGING_AND_OBSERVABILITY.md) |
 | Testing guide | [docs/testing/TESTING_GUIDE.md](docs/testing/TESTING_GUIDE.md) |
-| CI quality gates | [docs/testing/CI_QUALITY_GATES.md](docs/testing/CI_QUALITY_GATES.md) |
-| Secure configuration | [docs/security/SECURE_CONFIGURATION.md](docs/security/SECURE_CONFIGURATION.md) |
-| Frontend foundation | [docs/frontend/FRONTEND_FOUNDATION.md](docs/frontend/FRONTEND_FOUNDATION.md) |
-| Phase 02 approval form | [docs/approvals/PHASE_02_TECHNICAL_FOUNDATION_APPROVAL.md](docs/approvals/PHASE_02_TECHNICAL_FOUNDATION_APPROVAL.md) |
-| Roadmap | [docs/ROADMAP.md](docs/ROADMAP.md) |
 | Approvals index | [docs/approvals/](docs/approvals/) |
 | Design debt register | [docs/design/DESIGN_DEBT_REGISTER.md](docs/design/DESIGN_DEBT_REGISTER.md) |
+| Authentication UI polish note | [docs/design/AUTHENTICATION_UI_POLISH.md](docs/design/AUTHENTICATION_UI_POLISH.md) |
 
-Earlier discovery, requirements, design, and ADR-001–003 documents remain under `docs/`.
+Earlier discovery, requirements, design, and ADR documents remain under `docs/`.
 
 ## Contribution workflow
 
@@ -112,11 +114,12 @@ Earlier discovery, requirements, design, and ADR-001–003 documents remain unde
 
 ## Next action
 
-1. Complete Phase 03 review on `feature/accounts-rbac` and obtain signature on [PHASE_03_ACCOUNTS_RBAC_APPROVAL.md](docs/approvals/PHASE_03_ACCOUNTS_RBAC_APPROVAL.md).
+1. Obtain owner evidence for **ASM-004**, **ASM-005**, and **ASM-006** before implementing Shift.
 2. Keep **DEBT-01C-R-NOTO** open until Noto Sans Sinhala is evidenced (do not treat Abhaya Libre as production).
-3. Do **not** start operator UAT, pilot, or production until the Sinhala debt is closed.
-4. Do **not** seed real users, organizations, or business roles.
-5. Do **not** deploy to production without separate explicit written approval.
+3. Do **not** start FG master data, checklist, recording, review, or evidence modules as Phase 04.
+4. Do **not** start operator UAT, pilot, or production until the Sinhala debt is closed.
+5. Do **not** seed real users, organizations, shifts, or business roles.
+6. Do **not** deploy to production without separate explicit written approval.
 
 ## Important
 
