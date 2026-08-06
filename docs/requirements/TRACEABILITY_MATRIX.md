@@ -1,15 +1,16 @@
 # Traceability Matrix
 
 **Document status:** Living matrix — no testing claimed complete for business UAT
-**Phase:** 00–03 scaffolding (Phase 03 accounts/RBAC under implementation)
-**Last updated:** 2026-08-06
+**Phase:** Phase 03 + authentication UI merged · Phase 04 next (hierarchy/shifts)
+**Last updated:** 2026-08-07
 
 ## Rules
 
 - Rows may contain placeholders.
 - **Do not** mark testing, UAT, or approval as complete until evidence exists.
 - Design, test, and UAT references will be filled in later phases.
-- Phase 02/03 rows cover **technical foundation** only — not business-rule approval.
+- Phase 02/03 rows cover **technical foundation** only — not business-rule approval of FG operations.
+- Preserve roadmap numbering: master data = Phase 05; checklists = Phase 06; recording = Phase 08; review = Phase 09; evidence = Phase 11.
 
 | Requirement ID | Business owner | Risk | Planned module | Design reference | Test reference | UAT reference | Evidence | Approval status |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -18,12 +19,12 @@
 | FOUND-003 | Project / IT (TBC) | Local/CI drift | operations | LOCAL_DEVELOPMENT; DOCKER_DEVELOPMENT | compose config + image build CI | TBC | compose.yaml; Dockerfile | Phase 02 approved with conditions |
 | FOUND-004 | Project / IT (TBC) | Weak quality baseline | testing | TESTING_GUIDE; CI_QUALITY_GATES | pytest/ruff/mypy/bandit CI | TBC | .github/workflows/ci.yml | Phase 02 approved with conditions |
 | FOUND-005 | UX / IT (TBC) | Premature PWA / CDN / fonts | frontend | FRONTEND_FOUNDATION; DEBT-01C-R-NOTO | Token/CSS build CI | TBC | package.json; static/src/css | Proposed — Noto **not** verified |
-| AUTH-001 | IT owner (TBC) | Shared accounts / weak auth | accounts | ADR-006; AUTHENTICATION_AND_ACCESS_CONTROL | PHASE_03_TEST_PLAN | TBC | apps/accounts | Proposed (Phase 03 pending) |
-| AUTH-002 | IT owner (TBC) | Credential exposure | accounts | ADR-006; SECURITY_EVENT_CATALOGUE | PHASE_03_TEST_PLAN | TBC | Django hashers; audit exclusions | Proposed (Phase 03 pending) |
-| AUTH-003 | IT / QA (TBC) | Accountability loss | accounts / security_audit | SECURITY_EVENT_CATALOGUE | PHASE_03_TEST_PLAN | TBC | SecurityAuditEvent | Proposed (Phase 03 pending) |
-| AUTH-004 | IT owner (TBC) | Session abuse | accounts | AUTHENTICATION_AND_ACCESS_CONTROL | PHASE_03_TEST_PLAN | TBC | Session rotation; lockout | Proposed (Phase 03 pending) |
-| ORG-001 | Business owner (TBC) | Wrong scoping | organizations | ADR-007; MODULE_MAP | PHASE_03_TEST_PLAN | TBC | Organization/Site/Department | Proposed (Phase 03 pending) |
-| RBAC-001 | IT / QA (TBC) | Cross-scope access | access_control | ADR-007 | PHASE_03_TEST_PLAN | TBC | ScopedRoleAssignment | Proposed (Phase 03 pending) |
+| AUTH-001 | IT owner (TBC) | Shared accounts / weak auth | accounts | ADR-006; AUTHENTICATION_AND_ACCESS_CONTROL | PHASE_03_TEST_PLAN | TBC | apps/accounts | Phase 03 approved with conditions (merged) |
+| AUTH-002 | IT owner (TBC) | Credential exposure | accounts | ADR-006; SECURITY_EVENT_CATALOGUE | PHASE_03_TEST_PLAN | TBC | Django hashers; audit exclusions | Phase 03 approved with conditions (merged) |
+| AUTH-003 | IT / QA (TBC) | Accountability loss | accounts / security_audit | SECURITY_EVENT_CATALOGUE | PHASE_03_TEST_PLAN | TBC | SecurityAuditEvent | Phase 03 approved with conditions (merged) |
+| AUTH-004 | IT owner (TBC) | Session abuse | accounts | AUTHENTICATION_AND_ACCESS_CONTROL | PHASE_03_TEST_PLAN | TBC | Session rotation; lockout | Phase 03 approved with conditions (merged) |
+| ORG-001 | Business owner (TBC) | Wrong scoping | organizations | ADR-007; MODULE_MAP | PHASE_03_TEST_PLAN | TBC | Organization/Site/Department (foundation); naming confirmation = Phase 04 / ASM-004 | Phase 03 models merged; hierarchy naming still DECISION REQUIRED |
+| RBAC-001 | IT / QA (TBC) | Cross-scope access | access_control | ADR-007 | PHASE_03_TEST_PLAN | TBC | ScopedRoleAssignment | Phase 03 approved with conditions (merged) |
 | ORG-002 | IT / Business (TBC) | Privilege bleed | organizations / accounts | TBC | TBC | TBC | Security baseline | Proposed |
 | MASTER-001 | Business / QA (TBC) | Incorrect master data | master_data | TBC — Phase 05 | TBC | TBC | EVIDENCE REQUIRED | Proposed |
 | MASTER-002 | QA / IT (TBC) | Untracked changes | master_data / audit | TBC | TBC | TBC | Audit policy | Proposed |
@@ -64,4 +65,4 @@
 | AI-002 | QA / IT (TBC) | AI hallucination in critical path | ai_assistance | AI safety policy | TBC | TBC | AI safety policy | Proposed |
 | AI-003 | IT / Business (TBC) | AI outage blocks floor | ai_assistance | AI safety policy | TBC | TBC | AI safety policy | Proposed |
 
-**Testing status:** Foundation automated tests run in CI; business UAT is **not** started. Phase 02 approval form is **signed with conditions**. Phase 03 approval form remains **unsigned**.
+**Testing status:** Foundation automated tests run in CI / Docker; business UAT is **not** started. Phase 02 and Phase 03 approval forms are **signed with conditions**. Authentication UI polish merged via PR #8 (local/Docker validation passed; GitHub Actions evidence unavailable during an Actions incident — do not claim the missing CI check passed). DEBT-01C-R-NOTO remains **open**. No FG operational modules started.
