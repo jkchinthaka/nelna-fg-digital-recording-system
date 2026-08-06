@@ -12,13 +12,16 @@
     <script src="{% static 'js/app.js' %}" defer></script>
     <meta name="csrf-token" content="{{ csrf_token }}">
   </head>
-  <body class="app-shell" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+  <body class="app-shell {% block body_class %}{% endblock %}"
+        hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
     {% csrf_token %}
     <a class="skip-link" href="#main-content">Skip to content</a>
-    <header class="app-header" role="banner">
-      <p class="brand">Nelna FG Digital Recording System</p>
-      <p class="env-label">{{ ENVIRONMENT_LABEL }}</p>
-    </header>
+    {% block site_header %}
+      <header class="app-header" role="banner">
+        <p class="brand">Nelna FG Digital Recording System</p>
+        <p class="env-label">{{ ENVIRONMENT_LABEL }}</p>
+      </header>
+    {% endblock %}
     <main id="main-content" class="app-main" tabindex="-1">
       {% if messages %}
         {% for message in messages %}
@@ -27,8 +30,10 @@
       {% endif %}
       {% block content %}{% endblock %}
     </main>
-    <footer class="app-footer" role="contentinfo">
-      <p>Foundation v{{ APP_VERSION }}</p>
-    </footer>
+    {% block site_footer %}
+      <footer class="app-footer" role="contentinfo">
+        <p>Foundation v{{ APP_VERSION }}</p>
+      </footer>
+    {% endblock %}
   </body>
 </html>

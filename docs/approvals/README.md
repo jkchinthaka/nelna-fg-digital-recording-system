@@ -10,7 +10,7 @@ Place approved charter, scope, UAT, design, and release approval records in this
 | [PHASE_01B_DESIGN_APPROVAL.md](PHASE_01B_DESIGN_APPROVAL.md) | **Approved with conditions** (Project Owner / Developer) | 2026-08-05 |
 | [PHASE_01C_HIGH_FIDELITY_APPROVAL.md](PHASE_01C_HIGH_FIDELITY_APPROVAL.md) | **Approved with deferred condition** — Sinhala typography (DEBT-01C-R-NOTO) remains open | 2026-08-05 |
 | [PHASE_02_TECHNICAL_FOUNDATION_APPROVAL.md](PHASE_02_TECHNICAL_FOUNDATION_APPROVAL.md) | **Approved with conditions** — merged via PR #5 / #6 | 2026-08-05 |
-| [PHASE_03_ACCOUNTS_RBAC_APPROVAL.md](PHASE_03_ACCOUNTS_RBAC_APPROVAL.md) | **Unsigned** — Phase 03 under implementation on `feature/accounts-rbac` | — |
+| [PHASE_03_ACCOUNTS_RBAC_APPROVAL.md](PHASE_03_ACCOUNTS_RBAC_APPROVAL.md) | **Approved with conditions** — merged via PR #7; DEBT-01C-R-NOTO remains open | 2026-08-06 |
 
 ## Notes
 

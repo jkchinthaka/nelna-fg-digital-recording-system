@@ -16,7 +16,8 @@ class LoginForm(forms.Form):
             attrs={
                 "autocomplete": "username",
                 "autocapitalize": "characters",
-                "class": "form-input w-full border rounded px-3 py-3",
+                "class": "form-input",
+                "inputmode": "text",
             }
         ),
     )
@@ -26,7 +27,7 @@ class LoginForm(forms.Form):
         widget=forms.PasswordInput(
             attrs={
                 "autocomplete": "current-password",
-                "class": "form-input w-full border rounded px-3 py-3",
+                "class": "form-input",
             }
         ),
     )
@@ -42,7 +43,7 @@ class ChangePasswordForm(forms.Form):
         widget=forms.PasswordInput(
             attrs={
                 "autocomplete": "current-password",
-                "class": "form-input w-full border rounded px-3 py-3",
+                "class": "form-input",
             }
         ),
     )
@@ -52,7 +53,7 @@ class ChangePasswordForm(forms.Form):
         widget=forms.PasswordInput(
             attrs={
                 "autocomplete": "new-password",
-                "class": "form-input w-full border rounded px-3 py-3",
+                "class": "form-input",
             }
         ),
     )
@@ -62,7 +63,7 @@ class ChangePasswordForm(forms.Form):
         widget=forms.PasswordInput(
             attrs={
                 "autocomplete": "new-password",
-                "class": "form-input w-full border rounded px-3 py-3",
+                "class": "form-input",
             }
         ),
     )
@@ -94,7 +95,7 @@ class ForcePasswordChangeForm(forms.Form):
         widget=forms.PasswordInput(
             attrs={
                 "autocomplete": "new-password",
-                "class": "form-input w-full border rounded px-3 py-3",
+                "class": "form-input",
             }
         ),
     )
@@ -104,7 +105,7 @@ class ForcePasswordChangeForm(forms.Form):
         widget=forms.PasswordInput(
             attrs={
                 "autocomplete": "new-password",
-                "class": "form-input w-full border rounded px-3 py-3",
+                "class": "form-input",
             }
         ),
     )

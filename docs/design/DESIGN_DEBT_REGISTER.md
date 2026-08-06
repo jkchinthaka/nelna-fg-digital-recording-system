@@ -529,7 +529,7 @@ Owner reported Noto Sans Sinhala applied via Figma Desktop. **Figma file evidenc
 | Abhaya Libre production-approved? | **No** |
 | Noto Sans Sinhala verified? | **No** |
 
-**Status:** Phase 01C **Approved with deferred condition**. Phase 02 **Approved with conditions** (merged). Phase 03 accounts/RBAC is **under implementation** on `feature/accounts-rbac` and **pending approval**. Operator UAT / pilot / production remain blocked until DEBT-01C-R-NOTO is closed with evidence.
+**Status:** Phase 01C **Approved with deferred condition**. Phase 02 **Approved with conditions** (merged). Phase 03 accounts/RBAC **Approved with conditions** (merged via PR #7). Authentication UI polish may proceed on `design/authentication-ui-polish` without claiming Sinhala completion. Operator UAT / pilot / production remain blocked until DEBT-01C-R-NOTO is closed with evidence.
 
 ### Phase 02 note on DEBT-01C-R-NOTO (2026-08-05)
 
@@ -546,9 +546,17 @@ Owner reported Noto Sans Sinhala applied via Figma Desktop. **Figma file evidenc
 | Field | Entry |
 | --- | --- |
 | Debt status | **Still OPEN** |
-| Phase 03 impact | Non-blocking for backend auth/RBAC; **blocking** for final Sinhala operator UI approval, UAT, pilot, production |
+| Phase 03 impact | Non-blocking for backend auth/RBAC and authentication UI polish; **blocking** for final Sinhala operator UI approval, UAT, pilot, production |
 | Font binaries | **None** |
 | Verification claim | **Forbidden** |
+
+### Authentication UI polish note (2026-08-06)
+
+| Field | Entry |
+| --- | --- |
+| Debt status | **Still OPEN** |
+| UI polish | English foundation screens only; see [AUTHENTICATION_UI_POLISH.md](AUTHENTICATION_UI_POLISH.md) |
+| Sinhala UI claim | **Forbidden** |
 
 ---
 
