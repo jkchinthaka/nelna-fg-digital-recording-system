@@ -21,6 +21,10 @@ class SecurityAuditEvent(models.Model):
         USER_DEACTIVATED = "USER_DEACTIVATED", "User deactivated"
         ROLE_ASSIGNED = "ROLE_ASSIGNED", "Role assigned"
         ROLE_REVOKED = "ROLE_REVOKED", "Role revoked"
+        SHIFT_CREATED = "SHIFT_CREATED", "Shift created"
+        SHIFT_UPDATED = "SHIFT_UPDATED", "Shift updated"
+        SHIFT_ACTIVATED = "SHIFT_ACTIVATED", "Shift activated"
+        SHIFT_DEACTIVATED = "SHIFT_DEACTIVATED", "Shift deactivated"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     event_type = models.CharField(max_length=64, choices=EventType.choices)
