@@ -566,7 +566,8 @@ Owner reported Noto Sans Sinhala applied via Figma Desktop. **Figma file evidenc
 | Field | Entry |
 | --- | --- |
 | Debt status | **Still OPEN** |
-| Phase 04 impact | Non-blocking for hierarchy confirmation docs and Shift design gated by ASM-004/005/006; **blocking** for final Sinhala operator UI, UAT, pilot, production |
+| Phase 04A impact | Non-blocking for configurable unseeded Shift technical foundation |
+| Phase 04 impact | Non-blocking for hierarchy confirmation docs; **blocking** for final Sinhala operator UI, UAT, pilot, production |
 | FG modules | Still Phase 05+ — not Phase 04 |
 
 ---

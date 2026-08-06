@@ -1,7 +1,7 @@
 # Module Map
 
-**Document status:** Living module boundaries — Phase 03 complete; Phase 04 next
-**Phase:** 03 merged · Phase 04 = hierarchy confirmation + Shift after evidence
+**Document status:** Living module boundaries — Phase 04A Shift foundation
+**Phase:** 03 merged · 04A configurable Shift foundation · 04B UI/real-data pending
 **Last updated:** 2026-08-07
 
 This map guides implementation. Do not scaffold future business apps before their phase.
@@ -10,9 +10,9 @@ Do **not** rename FG master data, checklist, recording, review, or evidence work
 | Module | Responsibility | Data ownership | Public service boundary | Prohibited dependencies | Planned phase |
 | --- | --- | --- | --- | --- | --- |
 | accounts | Identity, employee-code authentication, password/lockout lifecycle | User | Auth services; admin account management | Must not embed checklist business rules | **03 complete** |
-| organizations | Organization / site / department scope hierarchy; Shift **after** ASM-004/005/006 | Organization, Site, Department; Shift (later) | Hierarchy services; deactivate/reactivate; Shift services when evidenced | Must not invent Nelna org/site/dept/shift values | **03 complete** (Shift = **04**) |
-| access_control | Roles, scoped assignments, authorization API | Role, ScopedRoleAssignment | Permission checks; decorators/mixins | Must not seed business roles | **03 complete** |
-| security_audit | Append-oriented auth/RBAC security events | SecurityAuditEvent | `record_event` only; no secrets | Must not store credentials | **03 complete** |
+| organizations | Organization / site / department scope hierarchy; configurable unseeded Shift (04A) | Organization, Site, Department, Shift | Hierarchy + Shift create/update/activate/deactivate services; scoped selectors | Must not invent or seed Nelna org/site/dept/shift business values | **03 complete** + **04A foundation** |
+| access_control | Roles, scoped assignments, authorization API | Role, ScopedRoleAssignment | Permission checks; decorators/mixins | Must not seed business roles or Shift role mappings without evidence | **03 complete** |
+| security_audit | Append-oriented auth/RBAC/Shift security events | SecurityAuditEvent | `record_event` only; no secrets | Must not store credentials | **03 complete** + Shift events in **04A** |
 | master_data | FG products and other minimal masters needed by templates | Master entities approved for digital use | Read APIs for recording; controlled write APIs for admins | No silent import from ERP DB; no unverified limits | **05** |
 | instruments | Instrument register and calibration status references as approved | Instrument records | Fitness-for-use queries used by recording | Must not invent calibration intervals | **05** |
 | training | Training completion gates as approved | Training records / qualifications refs | Eligibility checks for task assignment | Must not invent training matrices | **05** |
@@ -37,7 +37,7 @@ Do **not** rename FG master data, checklist, recording, review, or evidence work
 
 | Phase | Modules / focus |
 | --- | --- |
-| 04 | Residual hierarchy confirmation; Shift only after ASM-004/005/006 |
+| 04 | Residual hierarchy confirmation; **04A** configurable unseeded Shift foundation; **04B** UI + real-data config after evidence |
 | 05 | `master_data` (+ instruments/training as approved) |
 | 06 | `checklists` definition and versioning |
 | 07 | `schedules`, `tasks` |

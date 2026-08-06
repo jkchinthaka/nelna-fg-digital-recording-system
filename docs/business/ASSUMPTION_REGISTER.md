@@ -19,9 +19,9 @@
 | ASM-001 | Product temperature classes used in FG recording will be provided from approved controlled documents | QA owner | Controlled docs | Before Phase 06 content build | EVIDENCE REQUIRED | Blocks template limits and deterministic rules |
 | ASM-002 | CCP/OPRP classifications relevant to digital checklists will be supplied by QA | QA owner | HACCP / related docs | Before Phase 06–10 rule config | EVIDENCE REQUIRED | Blocks critical-rule configuration |
 | ASM-003 | A complete inventory of paper forms in scope will be provided | QA / FG | Form inventory | Before MVP checklist selection | EVIDENCE REQUIRED | Blocks TEMPLATE-002 confirmation |
-| ASM-004 | Site/org hierarchy depth and naming will be confirmed for pilot | Business / IT | Org chart / site list | Before Phase 04 Shift work and before inventing hierarchy values | DECISION REQUIRED | Organization/Site/Department **models exist** (Phase 03); official naming/codes remain unconfirmed — blocks inventing Nelna values and Shift scoping details |
-| ASM-005 | Shift patterns for FG will be documented (names and codes) | Operations | Shift roster policy | Before Phase 04 Shift implementation | EVIDENCE REQUIRED | Blocks Shift model coding and later scheduling |
-| ASM-006 | Night-shift operational day definition (which calendar date a night shift belongs to), timing, and effective-date rules will be confirmed | Operations / QA | Written rule | Before Phase 04 Shift behavior and before Phase 07 due dates | DECISION REQUIRED | Blocks overnight behavior, effective dating, due dates, and reports |
+| ASM-004 | Site/org hierarchy depth and naming will be confirmed for pilot | Business / IT | Org chart / site list | Before inventing hierarchy values and before production Shift configuration | DECISION REQUIRED | Organization/Site/Department **models exist** (Phase 03); official naming/codes remain unconfirmed. Phase 04A uses existing hierarchy FKs only — does **not** resolve official names/codes |
+| ASM-005 | Shift patterns for FG will be documented (names and codes) | Operations | Shift roster policy | Before production Shift configuration / operational use | EVIDENCE REQUIRED | Official Shift names/codes remain unresolved. Phase 04A provisionally unblocks a **configurable, unseeded** technical foundation only — no seeded Day/Night or Nelna business rows |
+| ASM-006 | Night-shift operational day definition (which calendar date a night shift belongs to), timing, and effective-date rules will be confirmed | Operations / QA | Written rule | Before production overnight policy and before Phase 07 due dates | DECISION REQUIRED | Official timings and operational overnight policy remain unresolved. Phase 04A uses provisional technical rules (`end_time <= start_time` ⇒ overnight; one definition per code/scope) — not production policy approval |
 | ASM-007 | Approximate user numbers by role for pilot and production will be provided | Business / HR / IT | Headcount estimates | Before pilot planning | OWNER REQUIRED | Affects licensing of infra and UAT sizing |
 | ASM-008 | Operator language requirements include mandatory Sinhala; English mix for other roles will be confirmed | Business / HR | Language survey / policy | Before Phase 01 content | EVIDENCE REQUIRED | Affects i18n and Figma content; DEBT-01C-R-NOTO still open |
 | ASM-009 | Device ownership model (company vs personal) for operators will be decided | IT / Operations | Device policy | Before pilot | DECISION REQUIRED | Affects MDM, PWA install, security |
@@ -36,12 +36,18 @@
 
 ## Phase 04 gate summary
 
-Before implementing **Shift**, owners must progress:
+ASM-004 / ASM-005 / ASM-006 remain **partially unresolved** for official business values.
 
-1. **ASM-004** — official organization / site / department naming and hierarchy
-2. **ASM-005** — shift names and codes
-3. **ASM-006** — shift timing, overnight behavior, and effective-date rules
+| Topic | Status |
+| --- | --- |
+| Official org/site/department names and codes (ASM-004) | Unresolved |
+| Official Shift names and codes (ASM-005) | Unresolved |
+| Official timings and operational overnight policy (ASM-006) | Unresolved |
+| Configurable unseeded Shift technical foundation (Phase 04A) | Provisionally unblocked by owner direction (2026-08-07) |
+| Real-data configuration / operational / production use | Remains blocked |
 
-Do **not** invent Day/Night names, start/end times, shift codes, site/department codes, effective-date policy, or overnight rules.
+Do **not** invent Day/Night names, start/end times, shift codes, site/department codes, or claim production overnight policy.
+
+See [PHASE_04_SHIFT_PROVISIONAL_CONFIGURATION.md](../decisions/PHASE_04_SHIFT_PROVISIONAL_CONFIGURATION.md) and [ADR-008](../architecture/ADR-008-CONFIGURABLE-SHIFT-FOUNDATION.md).
 
 **No row is APPROVED.** Development must not hard-code these as Nelna facts.

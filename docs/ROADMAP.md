@@ -1,12 +1,12 @@
 # Roadmap — Phase Delivery Plan
 
 **Document status:** Governing roadmap for greenfield delivery
-**Phase:** Phase 03 + authentication UI merged · Phase 04 scope reconciliation
+**Phase:** Phase 04A configurable Shift foundation in progress · Phase 04B / real-data config pending
 **Last updated:** 2026-08-07
 
 Branch naming pattern: `foundation/...`, `design/...`, `feature/phase-NN-short-name`, or `hardening/...` as appropriate. Never commit directly to `main`.
 
-**Progress:** Phase 00–01C complete (01C with deferred Sinhala condition). Phase 02 **Approved with conditions** and merged (PR #5 / #6). Phase 03 accounts/RBAC **Approved with conditions** and merged (PR #7 / related follow-up merges). Authentication UI polish **merged** (PR #8). Organization, Site, and Department models exist from Phase 03. **No FG operational modules** (`master_data`, `checklists`, `records`, `reviews`, `evidence`) have started. DEBT-01C-R-NOTO remains **open** (blocking for operator UAT/pilot/production and final Sinhala operator UI). Production readiness **not** claimed. No deployment approval exists.
+**Progress:** Phase 00–01C complete (01C with deferred Sinhala condition). Phase 02 **Approved with conditions** and merged (PR #5 / #6). Phase 03 accounts/RBAC **Approved with conditions** and merged (PR #7 / related follow-up merges). Authentication UI polish **merged** (PR #8). Phase 04 scope reconciliation **merged** (PR #10). Organization, Site, and Department models exist from Phase 03. Phase **04A** implements a configurable, **unseeded** Shift domain foundation under owner provisional direction (no invented Nelna shift values). Phase **04B** management UI and real-data configuration remain pending. **No FG operational modules** (`master_data`, `checklists`, `records`, `reviews`, `evidence`) have started. ASM-004 / ASM-005 / ASM-006 remain partially unresolved for official business values. DEBT-01C-R-NOTO remains **open** (blocking for operator UAT/pilot/production and final Sinhala operator UI). Production readiness **not** claimed. No deployment approval exists.
 
 **Numbering rule:** Preserve roadmap phase numbers. Do **not** rename FG master data, checklist templates, recording, review, or evidence work as Phase 04.
 
@@ -106,28 +106,28 @@ Branch naming pattern: `foundation/...`, `design/...`, `feature/phase-NN-short-n
 
 | Field | Content |
 | --- | --- |
-| Objective | Complete residual organization-hierarchy confirmation and introduce Shift **only after** owner evidence for ASM-004, ASM-005, and ASM-006 |
-| Inputs | Confirmed hierarchy naming (ASM-004); shift names/codes (ASM-005); shift timing / overnight / effective-date rules (ASM-006) |
-| Outputs | Hierarchy confirmation record; `organizations` Shift support **as designed after evidence** (no invented shift values) |
-| Approval gate | Business confirmation of hierarchy and shift evidence before Shift implementation |
-| Branch naming | `feature/phase-04-organizations-shifts` |
-| Exit criteria | Hierarchy confirmation documented; Shift implemented only from evidenced values; scoped queries remain sound; no invented sites, departments, or shifts |
-| Dependencies | Phase 03 complete; ASM-004 / ASM-005 / ASM-006 progress |
-| Status | **Next numbered phase** — documentation reconciliation in progress; Shift coding blocked until ASM evidence |
+| Objective | Complete residual organization-hierarchy confirmation and introduce a configurable Shift foundation without inventing official Nelna business values |
+| Inputs | Owner provisional technical direction (2026-08-07); later real ASM-004/005/006 evidence for production configuration |
+| Outputs | Hierarchy confirmation record; configurable unseeded `organizations.Shift` foundation (Phase 04A); management UI + real-data config (Phase 04B, pending) |
+| Approval gate | Technical review of Phase 04A; real-data / UAT still blocked until ASM evidence and DEBT-01C-R-NOTO closure |
+| Branch naming | `feature/phase-04-shift-foundation` (04A); later 04B branch as needed |
+| Exit criteria | Phase 04A: configurable Shift model/services/selectors/audit/admin/tests without seeded business rows. Full Phase 04: real Shift values configured after evidence; scoped queries remain sound |
+| Dependencies | Phase 03 complete; Phase 04 scope reconciliation (PR #10); owner provisional decision for configurable foundation |
+| Status | **04A implemented (configurable foundation)** — Phase 04 **not** fully complete; 04B UI + real-data configuration pending |
 
 ### Phase 04 scope statement
 
-Phase 04 completes residual organization-hierarchy confirmation and introduces Shift only after ASM-004, ASM-005 and ASM-006 receive owner evidence. Organization, Site, and Department **already exist** from Phase 03 and are not rebuilt. FG products, checklist definitions, checklist records, review workflows and attachments are explicitly **outside** Phase 04.
+Phase 04 completes residual organization-hierarchy confirmation and introduces Shift support. Organization, Site, and Department **already exist** from Phase 03 and are not rebuilt. Phase **04A** delivers a configurable, unseeded Shift domain foundation under owner provisional direction ([PHASE_04_SHIFT_PROVISIONAL_CONFIGURATION.md](decisions/PHASE_04_SHIFT_PROVISIONAL_CONFIGURATION.md), [ADR-008](architecture/ADR-008-CONFIGURABLE-SHIFT-FOUNDATION.md)). Phase **04B** covers management UI and administrator configuration of real values after evidence. FG products, checklist definitions, checklist records, review workflows and attachments remain explicitly **outside** Phase 04.
 
-### Phase 04 business gates (blockers before Shift implementation)
+### Phase 04 business gates
 
 | Gate | Requirement | Status |
 | --- | --- | --- |
-| ASM-004 | Confirm official organization / site / department naming and hierarchy | **DECISION REQUIRED** — blocks inventing hierarchy values |
-| ASM-005 | Confirm shift names and codes | **EVIDENCE REQUIRED** — blocks Shift coding |
-| ASM-006 | Confirm shift timing, overnight behavior, and effective-date rules | **DECISION REQUIRED** — blocks overnight / dating behavior |
+| ASM-004 | Confirm official organization / site / department naming and hierarchy | **DECISION REQUIRED** — remains unresolved for official names/codes; models exist; no inventing Nelna values |
+| ASM-005 | Confirm shift names and codes | **EVIDENCE REQUIRED** — remains unresolved for official Shift names/codes; technical configurable foundation provisionally unblocked only |
+| ASM-006 | Confirm shift timing, overnight behavior, and effective-date rules | **DECISION REQUIRED** — remains unresolved for official timings/policy; provisional overnight derivation (`end <= start`) is technical only |
 
-Do **not** invent Day/Night shift names, shift start/end times, shift codes, site codes, department codes, effective-date policy, or overnight shift rules.
+Do **not** invent or seed Day/Night shift names, official shift start/end times, official shift codes, site codes, or department codes. Authorized users configure real Shift values later. Production use remains prohibited until real data and UAT are confirmed.
 
 ### Phase 04 out of scope
 
