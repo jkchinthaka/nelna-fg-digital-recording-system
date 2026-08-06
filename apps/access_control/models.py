@@ -103,6 +103,7 @@ class ScopedRoleAssignment(models.Model):
             models.UniqueConstraint(
                 fields=["user", "role", "organization", "site", "department"],
                 condition=models.Q(is_active=True),
+                nulls_distinct=False,
                 name="ac_active_assignment_uniq",
             ),
         ]

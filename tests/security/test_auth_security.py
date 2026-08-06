@@ -25,8 +25,9 @@ def test_generic_failure_message_does_not_reveal_user(client: Client) -> None:
         {"employee_code": "TST001", "password": "wrong"},
     )
     assert response.status_code == 200
-    assert b"Invalid employee code or password" in response.content
+    assert b"Unable to sign in with the provided credentials." in response.content
     assert b"does not exist" not in response.content.lower()
+    assert b"Account locked" not in response.content
 
 
 @pytest.mark.django_db

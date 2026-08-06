@@ -8,7 +8,7 @@ from datetime import datetime
 
 from django.contrib.auth.models import Permission
 from django.core.exceptions import PermissionDenied, ValidationError
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.db.models import Q, QuerySet
 from django.utils import timezone
 
@@ -302,7 +302,6 @@ def assign_role(
         valid_until=valid_until,
         is_active=True,
     )
-    assignment.full_clean()
 
     duplicate = ScopedRoleAssignment.objects.filter(
         user=user,
@@ -315,7 +314,20 @@ def assign_role(
     if duplicate:
         raise ValidationError("An active assignment with this scope already exists.")
 
-    assignment.save()
+    try:
+        assignment.full_clean()
+    except ValidationError as exc:
+        messages = exc.messages if hasattr(exc, "messages") else []
+        joined = " ".join(str(m) for m in messages)
+        if "ac_active_assignment_uniq" in joined or "unique" in joined.lower():
+            raise ValidationError("An active assignment with this scope already exists.") from exc
+        raise
+
+    try:
+        assignment.save()
+    except IntegrityError as exc:
+        # Authoritative guard under race: PostgreSQL NULLS NOT DISTINCT unique index.
+        raise ValidationError("An active assignment with this scope already exists.") from exc
 
     request_id = getattr(request, "correlation_id", None) if request else None
     ip = None

@@ -17,15 +17,16 @@ Factory-floor operators are expected to authenticate with an employee code, not 
 3. **Backend:** Custom `EmployeeCodeBackend` (extends `ModelBackend` for permission compatibility) configured ahead of Django’s `ModelBackend`.
 4. **Session authentication:** Cookie-based Django sessions; session key rotated on successful login.
 5. **Lockout state:** Authoritative on PostgreSQL (`failed_login_count`, `locked_until`); Redis is not the source of truth for lockouts.
-6. **Migration:** `employee_code` is nullable for safe migration from Phase 02 users; login rejects accounts without a code. No invented default codes are assigned.
+6. **Migration:** `employee_code` is nullable for safe migration from Phase 02 users via direct ORM construction only. `UserManager.create_user` / admin creation require a non-empty code. Login rejects accounts without a code. No invented default codes are assigned.
 7. **Forced password change:** `must_change_password` plus middleware restricting access to password-change and logout routes.
-8. **Deferred:** MFA, SSO, LDAP/AD, email/SMS password recovery, public self-registration, API tokens.
+8. **Generic denials:** Locked, inactive, unknown, and bad-password outcomes share the same login response. Equivalent password-hash work is performed on those paths to reduce enumeration risk (not a hard timing guarantee).
+9. **Deferred:** MFA, SSO, LDAP/AD, email/SMS password recovery, public self-registration, API tokens, request-level login rate limiting.
 
 ## Consequences
 
 - Admin creates accounts and sets initial passwords; operators change passwords after first login when flagged.
 - Username remains on the model for Django compatibility but is not the operator login UI identifier.
-- Generic authentication errors avoid account enumeration.
+- Generic authentication errors avoid account enumeration; lockout does not change the external login response.
 - Email/username operator login is out of scope for Phase 03.
 
 ## Related

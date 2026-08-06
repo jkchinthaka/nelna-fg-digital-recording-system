@@ -17,6 +17,8 @@ from apps.accounts.backends import EmployeeCodeBackend
 from apps.accounts.models import User
 from apps.accounts.validators import normalize_employee_code
 
+GENERIC_LOGIN_ERROR = "Unable to sign in with the provided credentials."
+
 
 @dataclass(frozen=True, slots=True)
 class AuthResult:
@@ -44,6 +46,33 @@ def _client_meta(request: HttpRequest | None) -> dict[str, Any]:
     }
 
 
+def create_application_user(
+    *,
+    employee_code: str,
+    password: str,
+    username: str | None = None,
+    is_active: bool = True,
+    is_staff: bool = False,
+    must_change_password: bool = False,
+) -> User:
+    """Create a normal application account; employee_code is mandatory."""
+    normalized = normalize_employee_code(employee_code)
+    if not normalized:
+        raise ValidationError({"employee_code": "Employee code is required."})
+    user = User.objects.create_user(
+        username=username or normalized,
+        password=password,
+        employee_code=normalized,
+        is_active=is_active,
+        is_staff=is_staff,
+    )
+    assert isinstance(user, User)
+    if must_change_password:
+        user.must_change_password = True
+        user.save(update_fields=["must_change_password"])
+    return user
+
+
 def authenticate_login(
     request: HttpRequest,
     *,
@@ -53,26 +82,14 @@ def authenticate_login(
     """
     Authenticate with employee_code + password.
 
-    Returns a generic failure for unknown users, inactive users, and bad passwords.
-    Locked accounts return locked=True without revealing other details.
+    All denial outcomes are externally indistinguishable (generic failure).
+    Locked accounts do not increment failure counters again.
+    Audit metadata may record a non-sensitive reason for operators.
     """
     from apps.security_audit.services import record_event
 
     meta = _client_meta(request)
     normalized = normalize_employee_code(employee_code)
-
-    # Pre-check lockout for known users to avoid incrementing while locked.
-    existing = User.objects.filter(employee_code__iexact=normalized).first() if normalized else None
-    if existing is not None and existing.is_locked:
-        record_event(
-            event_type="LOGIN_FAILURE",
-            subject_user=existing,
-            request_id=meta["request_id"],
-            ip_address=meta["ip_address"],
-            user_agent_summary=meta["user_agent"],
-            metadata={"reason": "account_locked"},
-        )
-        return AuthResult(success=False, locked=True, error_code="account_locked")
 
     backend = EmployeeCodeBackend()
     user = backend.authenticate(
@@ -81,46 +98,25 @@ def authenticate_login(
         password=password,
     )
 
-    if user is None:
-        # Distinguish lockout race vs generic failure via fresh lookup.
-        candidate = (
-            User.objects.filter(employee_code__iexact=normalized).first() if normalized else None
+    if user is not None:
+        assert isinstance(user, User)
+        record_successful_login(user, request=request)
+        record_event(
+            event_type="LOGIN_SUCCESS",
+            actor=user,
+            subject_user=user,
+            request_id=meta["request_id"],
+            ip_address=meta["ip_address"],
+            user_agent_summary=meta["user_agent"],
+            metadata={},
         )
-        if candidate is not None and candidate.is_locked:
-            record_event(
-                event_type="LOGIN_FAILURE",
-                subject_user=candidate,
-                request_id=meta["request_id"],
-                ip_address=meta["ip_address"],
-                user_agent_summary=meta["user_agent"],
-                metadata={"reason": "account_locked"},
-            )
-            return AuthResult(success=False, locked=True, error_code="account_locked")
+        return AuthResult(success=True, user=user)
 
-        if candidate is not None:
-            if not candidate.is_active:
-                record_event(
-                    event_type="LOGIN_FAILURE",
-                    subject_user=candidate,
-                    request_id=meta["request_id"],
-                    ip_address=meta["ip_address"],
-                    user_agent_summary=meta["user_agent"],
-                    metadata={"reason": "inactive"},
-                )
-                return AuthResult(success=False, error_code="invalid_credentials")
+    candidate = (
+        User.objects.filter(employee_code__iexact=normalized).first() if normalized else None
+    )
 
-            locked_user = record_failed_login(candidate, request=request)
-            record_event(
-                event_type="LOGIN_FAILURE",
-                subject_user=candidate,
-                request_id=meta["request_id"],
-                ip_address=meta["ip_address"],
-                user_agent_summary=meta["user_agent"],
-                metadata={"reason": "invalid_credentials"},
-            )
-            if locked_user.is_locked:
-                return AuthResult(success=False, locked=True, error_code="account_locked")
-            return AuthResult(success=False, error_code="invalid_credentials")
+    if candidate is None:
         record_event(
             event_type="LOGIN_FAILURE",
             subject_user=None,
@@ -128,22 +124,47 @@ def authenticate_login(
             ip_address=meta["ip_address"],
             user_agent_summary=meta["user_agent"],
             metadata={"reason": "invalid_credentials"},
-            unknown_identifier=normalized or employee_code,
+            unknown_identifier=normalized or employee_code or "empty",
         )
         return AuthResult(success=False, error_code="invalid_credentials")
 
-    assert isinstance(user, User)
-    record_successful_login(user, request=request)
+    if candidate.is_locked:
+        # Already locked: do not extend counters; password work already ran in backend.
+        record_event(
+            event_type="LOGIN_FAILURE",
+            subject_user=candidate,
+            request_id=meta["request_id"],
+            ip_address=meta["ip_address"],
+            user_agent_summary=meta["user_agent"],
+            metadata={"reason": "account_locked"},
+        )
+        return AuthResult(success=False, locked=True, error_code="invalid_credentials")
+
+    if not candidate.is_active:
+        record_event(
+            event_type="LOGIN_FAILURE",
+            subject_user=candidate,
+            request_id=meta["request_id"],
+            ip_address=meta["ip_address"],
+            user_agent_summary=meta["user_agent"],
+            metadata={"reason": "inactive"},
+        )
+        return AuthResult(success=False, error_code="invalid_credentials")
+
+    locked_user = record_failed_login(candidate, request=request)
     record_event(
-        event_type="LOGIN_SUCCESS",
-        actor=user,
-        subject_user=user,
+        event_type="LOGIN_FAILURE",
+        subject_user=candidate,
         request_id=meta["request_id"],
         ip_address=meta["ip_address"],
         user_agent_summary=meta["user_agent"],
-        metadata={},
+        metadata={"reason": "invalid_credentials"},
     )
-    return AuthResult(success=True, user=user)
+    return AuthResult(
+        success=False,
+        locked=locked_user.is_locked,
+        error_code="invalid_credentials",
+    )
 
 
 @transaction.atomic
@@ -152,6 +173,7 @@ def record_failed_login(user: User, *, request: HttpRequest | None = None) -> Us
     from apps.security_audit.services import record_event
 
     locked_user = User.objects.select_for_update().get(pk=user.pk)
+    assert isinstance(locked_user, User)
     if locked_user.is_locked:
         return locked_user
 
@@ -183,6 +205,7 @@ def record_failed_login(user: User, *, request: HttpRequest | None = None) -> Us
 def record_successful_login(user: User, *, request: HttpRequest) -> User:
     """Reset failure counters, stamp success time, establish session with key cycle."""
     locked_user = User.objects.select_for_update().get(pk=user.pk)
+    assert isinstance(locked_user, User)
     now = timezone.now()
     locked_user.failed_login_count = 0
     locked_user.locked_until = None
@@ -292,6 +315,7 @@ def unlock_account(
     from apps.security_audit.services import record_event
 
     locked_user = User.objects.select_for_update().get(pk=user.pk)
+    assert isinstance(locked_user, User)
     locked_user.failed_login_count = 0
     locked_user.locked_until = None
     locked_user.save(update_fields=["failed_login_count", "locked_until"])

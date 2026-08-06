@@ -23,9 +23,11 @@ def make_user(
 ) -> User:
     code = normalize_employee_code(employee_code)
     if is_superuser:
-        user = User.objects.create_superuser(username=code, password=password)
-        user.employee_code = code
-        user.save(update_fields=["employee_code"])
+        user = User.objects.create_superuser(
+            username=code,
+            password=password,
+            employee_code=code,
+        )
     else:
         user = User.objects.create_user(
             username=code,
@@ -34,6 +36,7 @@ def make_user(
             is_active=is_active,
             is_staff=is_staff,
         )
+    assert isinstance(user, User)
     if must_change_password:
         user.must_change_password = True
         user.save(update_fields=["must_change_password"])

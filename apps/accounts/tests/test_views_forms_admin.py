@@ -67,7 +67,7 @@ def test_authenticated_login_redirects_to_landing(client: Client) -> None:
 
 
 @pytest.mark.django_db
-def test_login_locked_redirect(client: Client) -> None:
+def test_login_locked_returns_generic_response(client: Client) -> None:
     user = make_user(employee_code="TST043")
     user.locked_until = timezone.now() + timedelta(minutes=15)
     user.save(update_fields=["locked_until"])
@@ -75,8 +75,12 @@ def test_login_locked_redirect(client: Client) -> None:
         reverse("accounts:login"),
         {"employee_code": "TST043", "password": "Complex-Test-Pass-123!"},
     )
-    assert response.status_code == 302
-    assert reverse("accounts:account_locked") in response["Location"]
+    assert response.status_code == 200
+    assert reverse("accounts:account_locked") not in (response.get("Location") or "")
+    content = response.content.decode()
+    assert "Unable to sign in with the provided credentials." in content
+    assert "Account locked" not in content
+    assert "accounts/login.html" in [t.name for t in response.templates]
 
 
 @pytest.mark.django_db
@@ -364,7 +368,10 @@ def test_admin_reset_and_set_must_change_password() -> None:
 def test_user_str_and_is_locked_property() -> None:
     user = make_user(employee_code="TST060")
     assert str(user) == "TST060"
-    bare = User.objects.create_user(username="no_code_user", password="Complex-Test-Pass-123!")
+    # Migration-compatible path: direct ORM construction may omit employee_code.
+    bare = User(username="no_code_user")
+    bare.set_password("Complex-Test-Pass-123!")
+    bare.save()
     assert str(bare) == "no_code_user"
     user.locked_until = timezone.now() + timedelta(minutes=5)
     assert user.is_locked is True

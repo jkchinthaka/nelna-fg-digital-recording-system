@@ -12,6 +12,7 @@ from django.views.decorators.http import require_GET, require_http_methods, requ
 
 from apps.accounts import services as account_services
 from apps.accounts.forms import ChangePasswordForm, ForcePasswordChangeForm, LoginForm
+from apps.accounts.services import GENERIC_LOGIN_ERROR
 
 
 @require_http_methods(["GET", "POST"])
@@ -26,13 +27,12 @@ def login_view(request: HttpRequest) -> HttpResponse:
             employee_code=form.cleaned_data["employee_code"],
             password=form.cleaned_data["password"],
         )
-        if result.locked:
-            return redirect("accounts:account_locked")
         if result.success and result.user is not None:
             if result.user.must_change_password:
                 return redirect("accounts:force_password_change")
             return redirect("accounts:landing")
-        form.add_error(None, "Invalid employee code or password.")
+        # All denial outcomes share the same status, template, and message.
+        form.add_error(None, GENERIC_LOGIN_ERROR)
 
     return render(request, "accounts/login.html", {"form": form})
 
@@ -93,6 +93,12 @@ def force_password_change_view(request: HttpRequest) -> HttpResponse:
 
 @require_GET
 def account_locked_view(request: HttpRequest) -> HttpResponse:
+    """
+    Informational page only.
+
+    Login never redirects here based on a submitted employee code. Keeping the
+    route avoids breaking bookmarks while preventing account-existence leaks.
+    """
     return render(request, "accounts/account_locked.html")
 
 

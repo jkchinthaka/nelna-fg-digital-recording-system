@@ -8,22 +8,27 @@
 
 - UUID PK preserved; employee-code normalization and case-insensitive uniqueness
 - No raw password storage; inactive behavior; no seeded accounts
+- `create_user` / admin creation require employee_code; migration-compatible NULL via direct ORM only
 
 ## Authentication
 
-- Valid/invalid employee-code and password; generic errors
-- Session rotation; logout POST-only; unsafe `next` rejected
+- Valid/invalid employee-code and password; **generic** errors for unknown, wrong password, inactive, locked
+- Locked login does **not** redirect to a distinct locked page based on submitted code
+- Session key rotation on successful login (explicit assertion); logout POST-only; unsafe `next` rejected
 - Successful/failed login timestamps; counter reset after success
+- Password-hash work on unknown/inactive/locked paths (mitigation, not brittle timing asserts)
 
 ## Lockout
 
 - Threshold, temporary lock, expired lock allows auth, admin unlock
-- Concurrent failure safety; audit events; no credential leakage
+- Genuine multi-thread PostgreSQL concurrency for failed-login increments
+- Already-locked attempts do not extend counters
+- Audit events; no credential leakage in responses
 
 ## Password
 
 - Validators; current password required; forced-change redirect
-- Clears `must_change_password`; session remains authenticated; audit event
+- Clears `must_change_password`; session remains authenticated and is rotated; audit event
 
 ## Organizations
 
@@ -34,7 +39,9 @@
 
 - Global / organization / site / department scopes
 - Cross-organization denial; inactive/future/expired denial
-- Duplicate prevention; decorator and mixin enforcement; superuser behavior
+- Active assignment uniqueness with PostgreSQL NULLS NOT DISTINCT (all nullable scope shapes)
+- Inactive historical duplicates allowed; reactivation of duplicates rejected
+- Concurrent duplicate assignment creation; decorator and mixin enforcement; superuser behavior
 
 ## Audit
 

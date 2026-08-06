@@ -20,6 +20,8 @@ class EmployeeCodeBackend(ModelBackend):
 
     Failures are generic at the service/view layer; this backend returns None
     for unknown, inactive, locked, or bad-password cases.
+    Password-hash work runs for unknown, inactive, and locked paths to reduce
+    timing-based employee-code enumeration risk (not a hard timing guarantee).
     Retains ModelBackend permission compatibility via inheritance.
     """
 
@@ -36,6 +38,7 @@ class EmployeeCodeBackend(ModelBackend):
 
         normalized = normalize_employee_code(str(employee_code))
         if not normalized:
+            User().set_password(password)
             return None
 
         try:
@@ -45,7 +48,12 @@ class EmployeeCodeBackend(ModelBackend):
             User().set_password(password)
             return None
         except User.MultipleObjectsReturned:
+            User().set_password(password)
             return None
+
+        # Always verify the password hash before branch decisions so locked and
+        # inactive accounts perform comparable work to the bad-password path.
+        password_ok = user.check_password(password)
 
         if not self.user_can_authenticate(user):
             return None
@@ -53,9 +61,10 @@ class EmployeeCodeBackend(ModelBackend):
         if user.locked_until is not None and user.locked_until > timezone.now():
             return None
 
-        if not user.check_password(password):
+        if not password_ok:
             return None
 
+        assert isinstance(user, User)
         return user
 
     def user_can_authenticate(self, user: User | AnonymousUser | None) -> bool:

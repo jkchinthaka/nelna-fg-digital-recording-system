@@ -8,13 +8,17 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models.functions import Lower
 
+from apps.accounts.managers import UserManager
+
 
 class User(AbstractUser):
     """
     Named individual account. Shared accounts are prohibited.
 
-    employee_code is nullable to allow safe migration from the foundation user;
-    authentication via EmployeeCodeBackend requires a non-null code.
+    employee_code is nullable to allow safe migration from the foundation user
+    via direct ORM construction. UserManager.create_user / create_superuser and
+    Django admin creation require a non-empty employee_code. Authentication via
+    EmployeeCodeBackend rejects accounts without a code.
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -25,6 +29,8 @@ class User(AbstractUser):
     locked_until = models.DateTimeField(null=True, blank=True)
     last_failed_login_at = models.DateTimeField(null=True, blank=True)
     last_successful_login_at = models.DateTimeField(null=True, blank=True)
+
+    objects = UserManager()  # type: ignore[misc]
 
     class Meta:
         verbose_name = "user"

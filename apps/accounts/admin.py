@@ -2,18 +2,57 @@
 
 from __future__ import annotations
 
+from django import forms
 from django.conf import settings
 from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
+from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 from django.http import HttpRequest
 from django.utils import timezone
 
 from apps.accounts.models import User
 from apps.accounts.services import unlock_account
+from apps.accounts.validators import normalize_employee_code
+
+
+class EmployeeUserCreationForm(UserCreationForm):  # type: ignore[type-arg]
+    """Admin add-user form: employee_code is mandatory for application accounts."""
+
+    class Meta:
+        model = User
+        fields = ("username", "employee_code")
+
+    def __init__(self, *args: object, **kwargs: object) -> None:
+        super().__init__(*args, **kwargs)
+        self.fields["employee_code"].required = True
+
+    def clean_employee_code(self) -> str:
+        code = normalize_employee_code(str(self.cleaned_data.get("employee_code") or ""))
+        if not code:
+            raise forms.ValidationError("Employee code is required.")
+        return code
+
+
+class EmployeeUserChangeForm(UserChangeForm):  # type: ignore[type-arg]
+    class Meta:
+        model = User
+        fields = "__all__"
+
+    def __init__(self, *args: object, **kwargs: object) -> None:
+        super().__init__(*args, **kwargs)
+        self.fields["employee_code"].required = True
+
+    def clean_employee_code(self) -> str:
+        code = normalize_employee_code(str(self.cleaned_data.get("employee_code") or ""))
+        if not code:
+            raise forms.ValidationError("Employee code is required.")
+        return code
 
 
 @admin.register(User)
 class UserAdmin(DjangoUserAdmin):  # type: ignore[type-arg]
+    form = EmployeeUserChangeForm
+    add_form = EmployeeUserCreationForm
     ordering = ("employee_code", "username")
     list_display = (
         "employee_code",

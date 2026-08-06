@@ -14,7 +14,7 @@ Finished Goods recording requires organization, site, and department isolation. 
 2. **Role model:** `access_control.Role` — UUID, code, name, description, `is_active`, M2M to Permission. No seeded business roles.
 3. **Assignments:** `ScopedRoleAssignment` links user + role with optional organization, site, and department scope, validity window, and `assigned_by`.
 4. **Hierarchy:** Site requires organization and must belong to it; department requires organization and, if site-bound, must belong to that site.
-5. **Global assignment:** Allowed only when organization/site/department are all unset and the assignment service explicitly permits it.
+5. **Global assignment:** Allowed only when organization/site/department are all unset and the assignment service explicitly permits it. Active uniqueness uses PostgreSQL `NULLS NOT DISTINCT` so NULL scope fields compare equal.
 6. **Authorization API:** Central services (`user_has_permission`, scope accessors) — views stay thin; UI hiding is never sufficient.
 7. **Fail closed:** Inactive users, roles, assignments, future `valid_from`, and expired `valid_until` grant nothing. Cross-organization access is denied.
 8. **Superuser:** Explicit Django superuser privilege remains and is tested separately.
@@ -23,7 +23,7 @@ Finished Goods recording requires organization, site, and department isolation. 
 
 - Future FG modules check permissions via access-control services/decorators/mixins.
 - Role catalogues are data, not hard-coded Phase 03 seeds.
-- PostgreSQL constraints plus service validation enforce hierarchy.
+- PostgreSQL constraints (including NULLS NOT DISTINCT for active assignments) are authoritative; service validation provides friendly errors and is race-aware via IntegrityError handling.
 
 ## Related
 
