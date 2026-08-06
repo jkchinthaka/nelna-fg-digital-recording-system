@@ -28,6 +28,13 @@ def test_no_sqlite_engine() -> None:
     assert all("sqlite" not in engine for engine in engines)
 
 
+def test_csrf_and_session_cookies_are_httponly() -> None:
+    assert settings.SESSION_COOKIE_HTTPONLY is True
+    assert settings.CSRF_COOKIE_HTTPONLY is True
+    assert settings.CSRF_COOKIE_SAMESITE == "Lax"
+    assert settings.SESSION_COOKIE_SAMESITE == "Lax"
+
+
 def test_local_settings_module_importable() -> None:
     module = importlib.import_module("config.settings.local")
     assert isinstance(module.DEBUG, bool)

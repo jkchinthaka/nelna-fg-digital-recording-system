@@ -39,7 +39,7 @@ Conflicting actions (for example submit vs check vs verify, as defined by QA) ar
 
 ## Secure cookies
 
-Production cookies use Secure, HttpOnly, and appropriate SameSite settings. CSRF tokens protect cookie-authenticated mutating requests.
+Production cookies use Secure and appropriate SameSite settings. Session and CSRF cookies are HttpOnly. CSRF tokens for forms and HTMX are supplied via Django templates (not `document.cookie`).
 
 ## CSRF
 
