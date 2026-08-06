@@ -124,6 +124,24 @@ def require_permission(
         raise PermissionDenied("Permission denied.")
 
 
+def user_has_permission_any_scope(user: User | None, permission: str) -> bool:
+    """
+    True when the user holds the permission under any active assignment.
+
+    Used for module entry points (for example list pages) where a specific
+    organization/site/department scope is not yet selected.
+    """
+    if user is None or not getattr(user, "is_authenticated", False) or not user.is_active:
+        return False
+    if user.is_superuser:
+        return True
+    for assignment in _active_assignments_qs(user):
+        for perm in assignment.role.permissions.all():
+            if _permission_codename_matches(perm, permission):
+                return True
+    return False
+
+
 def get_effective_permissions(
     user: User | None,
     scope: Scope | None = None,

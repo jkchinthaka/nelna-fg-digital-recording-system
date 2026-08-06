@@ -219,6 +219,15 @@ class Shift(models.Model):
         """True when end_time is less than or equal to start_time (provisional overnight rule)."""
         return self.end_time <= self.start_time
 
+    @property
+    def scope_label(self) -> str:
+        """Human-readable interface scope label (not a seeded business value)."""
+        if self.department_id:
+            return "Department-specific"
+        if self.site_id:
+            return "Site-wide"
+        return "Organization-wide"
+
     def clean(self) -> None:
         super().clean()
         errors: dict[str, str] = {}

@@ -1,7 +1,7 @@
 # Traceability Matrix
 
 **Document status:** Living matrix — no testing claimed complete for business UAT
-**Phase:** Phase 04A configurable Shift foundation · real-data / UAT still blocked
+**Phase:** Phase 04A/04B Shift foundation + management UI · real-data / UAT still blocked
 **Last updated:** 2026-08-07
 
 ## Rules
@@ -24,7 +24,7 @@
 | AUTH-003 | IT / QA (TBC) | Accountability loss | accounts / security_audit | SECURITY_EVENT_CATALOGUE | PHASE_03_TEST_PLAN | TBC | SecurityAuditEvent | Phase 03 approved with conditions (merged) |
 | AUTH-004 | IT owner (TBC) | Session abuse | accounts | AUTHENTICATION_AND_ACCESS_CONTROL | PHASE_03_TEST_PLAN | TBC | Session rotation; lockout | Phase 03 approved with conditions (merged) |
 | ORG-001 | Business owner (TBC) | Wrong scoping | organizations | ADR-007; MODULE_MAP | PHASE_03_TEST_PLAN | TBC | Organization/Site/Department (foundation); naming confirmation = ASM-004 | Phase 03 models merged; hierarchy naming still DECISION REQUIRED |
-| ORG-003 | Operations / Business (TBC) | Incorrect Shift definitions | organizations | ADR-008; PHASE_04_SHIFT_PROVISIONAL_CONFIGURATION | PHASE_04A_TEST_PLAN | TBC | Configurable unseeded Shift foundation (04A); official values = ASM-005/006 | Phase 04A technical foundation — ASM-005/006 remain unresolved; no production authorization |
+| ORG-003 | Operations / Business (TBC) | Incorrect Shift definitions | organizations | ADR-008; PHASE_04_SHIFT_PROVISIONAL_CONFIGURATION; SHIFT_MANAGEMENT_UI | PHASE_04A_TEST_PLAN; shift UI tests | TBC | Configurable unseeded Shift foundation (04A) + management UI (04B); official values = ASM-005/006 | Phase 04A/04B technical delivery — ASM-005/006 remain unresolved; no production authorization |
 | RBAC-001 | IT / QA (TBC) | Cross-scope access | access_control | ADR-007 | PHASE_03_TEST_PLAN | TBC | ScopedRoleAssignment | Phase 03 approved with conditions (merged) |
 | ORG-002 | IT / Business (TBC) | Privilege bleed | organizations / accounts | TBC | TBC | TBC | Security baseline | Proposed |
 | MASTER-001 | Business / QA (TBC) | Incorrect master data | master_data | TBC — Phase 05 | TBC | TBC | EVIDENCE REQUIRED | Proposed |
@@ -66,4 +66,4 @@
 | AI-002 | QA / IT (TBC) | AI hallucination in critical path | ai_assistance | AI safety policy | TBC | TBC | AI safety policy | Proposed |
 | AI-003 | IT / Business (TBC) | AI outage blocks floor | ai_assistance | AI safety policy | TBC | TBC | AI safety policy | Proposed |
 
-**Testing status:** Foundation automated tests run in CI / Docker; business UAT is **not** started. Phase 02 and Phase 03 approval forms are **signed with conditions**. Authentication UI polish merged via PR #8. Phase 04 scope reconciliation merged via PR #10. Phase **04A** adds configurable Shift foundation tests (see PHASE_04A_TEST_PLAN) — not real-data UAT. ASM-004/005/006 remain partially unresolved. DEBT-01C-R-NOTO remains **open**. No FG operational modules started. No deployment authorization.
+**Testing status:** Foundation automated tests run in CI / Docker; business UAT is **not** started. Phase 02 and Phase 03 approval forms are **signed with conditions**. Authentication UI polish merged via PR #8. Phase 04 scope reconciliation merged via PR #10. Phase **04A** adds configurable Shift foundation tests; Phase **04B** adds Shift management UI tests — not real-data UAT. ASM-004/005/006 remain partially unresolved. DEBT-01C-R-NOTO remains **open**. No FG operational modules started. No deployment authorization.

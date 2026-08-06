@@ -1,4 +1,4 @@
-{% load static %}
+{% load static organizations_extras %}
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE|default:'en' }}">
   <head>
@@ -18,8 +18,23 @@
     <a class="skip-link" href="#main-content">Skip to content</a>
     {% block site_header %}
       <header class="app-header" role="banner">
-        <p class="brand">Nelna FG Digital Recording System</p>
-        <p class="env-label">{{ ENVIRONMENT_LABEL }}</p>
+        <div class="app-header__inner">
+          <div>
+            <p class="brand">Nelna FG Digital Recording System</p>
+            <p class="env-label">{{ ENVIRONMENT_LABEL }}</p>
+          </div>
+          {% block app_nav %}
+            {% if user.is_authenticated %}
+              <nav class="app-nav" aria-label="Primary">
+                <a href="{% url 'accounts:landing' %}">Home</a>
+                {% user_can_view_shifts as show_shifts %}
+                {% if show_shifts %}
+                  <a href="{% url 'organizations:shift_list' %}">Shift Management</a>
+                {% endif %}
+              </nav>
+            {% endif %}
+          {% endblock %}
+        </div>
       </header>
     {% endblock %}
     <main id="main-content" class="app-main" tabindex="-1">

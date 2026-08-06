@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load organizations_extras %}
 {% block title %}Signed in — Nelna FG Digital Recording System{% endblock %}
 {% block content %}
   <section class="landing-page" aria-labelledby="landing-heading">
@@ -18,16 +19,21 @@
       {% endif %}
       <p class="landing-meta">{{ phase_label }}</p>
       <p class="landing-notice">
-        Operational finished-goods modules are not yet implemented. This landing
-        page confirms session authentication only.
+        Operational finished-goods modules are not yet implemented. Shift
+        configuration is available to authorized users. Checklist recording remains
+        a later phase.
       </p>
       <p class="landing-meta">Keep this session private. Sign out when you finish working on a shared device.</p>
       <div class="landing-actions">
+        {% user_can_view_shifts as show_shifts %}
+        {% if show_shifts %}
+          <a class="btn btn--primary" href="{% url 'organizations:shift_list' %}">Shift Management</a>
+        {% endif %}
         <a class="btn btn--secondary"
            href="{% url 'accounts:change_password' %}">Change password</a>
         <form method="post" action="{% url 'accounts:logout' %}">
           {% csrf_token %}
-          <button type="submit" class="btn btn--primary">Sign out</button>
+          <button type="submit" class="btn btn--ghost">Sign out</button>
         </form>
       </div>
     </div>

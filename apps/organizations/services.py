@@ -192,6 +192,22 @@ def create_department(
     return department
 
 
+def _reraise_shift_persistence_error(exc: Exception) -> None:
+    """Map DB/unique failures to a stable field error for forms and APIs."""
+    if isinstance(exc, ValidationError):
+        messages = " ".join(str(m) for m in exc.messages)
+        if "org_shift_scope_code_ci_uniq" in messages or "unique" in messages.lower():
+            raise ValidationError(
+                {"code": "A Shift with this code already exists in the selected scope."}
+            ) from exc
+        raise
+    if isinstance(exc, IntegrityError):
+        raise ValidationError(
+            {"code": "A Shift with this code already exists in the selected scope."}
+        ) from exc
+    raise
+
+
 @transaction.atomic
 def create_shift(
     *,
@@ -237,10 +253,8 @@ def create_shift(
     try:
         shift.full_clean()
         shift.save()
-    except IntegrityError as exc:
-        raise ValidationError(
-            {"code": "A Shift with this code already exists in the selected scope."}
-        ) from exc
+    except (ValidationError, IntegrityError) as exc:
+        _reraise_shift_persistence_error(exc)
 
     record_event(
         event_type="SHIFT_CREATED",
@@ -323,10 +337,8 @@ def update_shift(
     try:
         shift.full_clean()
         shift.save()
-    except IntegrityError as exc:
-        raise ValidationError(
-            {"code": "A Shift with this code already exists in the selected scope."}
-        ) from exc
+    except (ValidationError, IntegrityError) as exc:
+        _reraise_shift_persistence_error(exc)
 
     record_event(
         event_type="SHIFT_UPDATED",

@@ -26,7 +26,7 @@ Implement a **configurable Shift** entity in `organizations` with:
 - Development can proceed without inventing Nelna operational values.
 - Real Shift configuration remains an administrator/owner action after evidence.
 - ASM-004 / ASM-005 / ASM-006 remain partially unresolved.
-- Phase 04B management UI and real-data UAT remain pending.
+- Phase 04B management UI is delivered; real-data UAT remains pending.
 - No deployment, pilot, or production authorization is granted by this ADR.
 - DEBT-01C-R-NOTO remains open and unrelated to Shift foundation.
 
