@@ -50,6 +50,19 @@ No additional review evidence is fabricated beyond the independent documentation
 
 This approval does **not** claim that CI passed, that GitHub Actions succeeded, that the PR is fully quality-gated, or that any incident automatically waives repository controls.
 
+## Related one-time CI exception
+
+A separate owner record documents a one-time documentation-only CI exception for PR #10:
+
+- [PR_10_DOCUMENTATION_CI_EXCEPTION.md](PR_10_DOCUMENTATION_CI_EXCEPTION.md)
+
+Facts:
+
+- The CI exception is **separate** from this Phase 04 scope approval.
+- Missing CI remains missing and is **not** treated as passed.
+- The exception applies only to PR #10 head baseline `b1c3f18` (plus the documentation-only exception commit that records it).
+- Final merge verification must inspect the latest PR head after the exception commit.
+
 ## Approved decision
 
 The owner approves the documentation reconciliation that preserves the governing roadmap:
