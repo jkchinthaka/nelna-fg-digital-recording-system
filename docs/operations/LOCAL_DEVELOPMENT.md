@@ -57,19 +57,21 @@ uv run celery -A config worker --loglevel=INFO
 
 | Service | Host port (default) | Container / process |
 | --- | --- | --- |
-| PostgreSQL | **5433** (`POSTGRES_PORT`) | Container listens on **5432** internally |
-| Redis | **6380** (`REDIS_PORT`) | Container listens on **6379** internally |
+| PostgreSQL | **5433** (`COMPOSE_POSTGRES_HOST_PORT`) | Container listens on **5432** internally |
+| Redis | **6380** (`COMPOSE_REDIS_HOST_PORT`) | Container listens on **6379** internally |
 | Django | **8000** (`WEB_PORT`) | `runserver` or compose `web` |
+
+`POSTGRES_PORT` is the Django connection port (normally **5432** inside containers). Host publish uses `COMPOSE_*_HOST_PORT` only — never reuse `POSTGRES_PORT` for Compose publication.
 
 Host defaults avoid common Windows conflicts with native PostgreSQL on 5432 and Redis on 6379. Override via `.env` if needed.
 
 When the Django process runs **on the host** (not in compose `web`), `.env` should keep:
 
 - `POSTGRES_HOST=127.0.0.1`
-- `POSTGRES_PORT=5433`
+- `POSTGRES_PORT=5433` (must match `COMPOSE_POSTGRES_HOST_PORT`)
 - `REDIS_URL=redis://127.0.0.1:6380/0`
 
-When Django runs **inside** compose `web`, compose sets `POSTGRES_HOST=postgres`, `POSTGRES_PORT=5432`, and `REDIS_URL=redis://redis:6379/0`.
+When Django runs **inside** compose `web` / `test`, compose sets `POSTGRES_HOST=postgres`, `POSTGRES_PORT=5432`, and `REDIS_URL=redis://redis:6379/0`.
 
 ## Common commands
 

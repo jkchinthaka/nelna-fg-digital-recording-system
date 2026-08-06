@@ -28,8 +28,8 @@ Source of examples: `.env.example`. Never commit real secrets. Production must s
 | `POSTGRES_DB` | `nelna_fg` | |
 | `POSTGRES_USER` | `nelna_fg` | |
 | `POSTGRES_PASSWORD` | local-only example | Not a production secret |
-| `POSTGRES_HOST` | `127.0.0.1` (host app) / `postgres` (compose web) | |
-| `POSTGRES_PORT` | **5433** host default; **5432** in-container | Compose maps host→5432 |
+| `POSTGRES_HOST` | `127.0.0.1` (host app) / `postgres` (compose web/test) | |
+| `POSTGRES_PORT` | **5432** in-container; host apps use **5433** when targeting Compose publish | Django connection port — **not** Compose host publish |
 | `DB_CONN_MAX_AGE` | `60` | |
 | `DB_CONNECT_TIMEOUT` | `10` | |
 | `DB_CONN_HEALTH_CHECKS` | `True` | |
@@ -38,19 +38,22 @@ Source of examples: `.env.example`. Never commit real secrets. Production must s
 
 | Variable | Example / default | Notes |
 | --- | --- | --- |
-| `REDIS_URL` | `redis://127.0.0.1:6380/0` | Host app; compose web uses `redis://redis:6379/0` |
+| `REDIS_URL` | `redis://127.0.0.1:6380/0` | Host app; compose web/test use `redis://redis:6379/0` |
 | `REDIS_CACHE_TIMEOUT` | `300` | Seconds |
-| `REDIS_PORT` | `6380` | Host publish port for compose |
 | `CELERY_TASK_TIME_LIMIT` | `300` | |
 | `CELERY_TASK_SOFT_TIME_LIMIT` | `240` | |
 
-## Compose publish ports
+## Compose host publish ports
+
+These control **localhost publish only**. Docker-network clients use service names and container ports (`postgres:5432`, `redis:6379`), not these values.
 
 | Variable | Default | Maps to |
 | --- | --- | --- |
-| `POSTGRES_PORT` | `5433` | Host → container 5432 |
-| `REDIS_PORT` | `6380` | Host → container 6379 |
+| `COMPOSE_POSTGRES_HOST_PORT` | `5433` | Host `127.0.0.1` → container 5432 |
+| `COMPOSE_REDIS_HOST_PORT` | `6380` | Host `127.0.0.1` → container 6379 |
 | `WEB_PORT` | `8000` | Host → container 8000 |
+
+Do **not** use `POSTGRES_PORT` for Compose host publication. In CI, Compose publish uses non-conflicting values (e.g. `55432` / `56379`) while host pytest keeps `POSTGRES_PORT=5432` against Actions service containers.
 
 ## Production-only / security toggles
 
@@ -68,3 +71,4 @@ Required for production import: `DJANGO_SECRET_KEY`, `DJANGO_ALLOWED_HOSTS`, `DJ
 - [ADR-005-DJANGO-SETTINGS-AND-ENVIRONMENTS.md](../architecture/ADR-005-DJANGO-SETTINGS-AND-ENVIRONMENTS.md)
 - [SECURE_CONFIGURATION.md](../security/SECURE_CONFIGURATION.md)
 - [ENVIRONMENT_STRATEGY.md](ENVIRONMENT_STRATEGY.md)
+- [DOCKER_DEVELOPMENT.md](DOCKER_DEVELOPMENT.md)

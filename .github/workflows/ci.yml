@@ -45,8 +45,12 @@ jobs:
       POSTGRES_USER: nelna_fg_ci
       POSTGRES_PASSWORD: nelna_fg_ci_not_a_real_secret
       POSTGRES_HOST: localhost
+      # Host pytest talks to GitHub Actions Postgres on 5432.
       POSTGRES_PORT: "5432"
       REDIS_URL: redis://localhost:6379/0
+      # Compose host publish only — must not collide with Actions service ports.
+      COMPOSE_POSTGRES_HOST_PORT: "55432"
+      COMPOSE_REDIS_HOST_PORT: "56379"
       ENVIRONMENT_LABEL: test
       APP_VERSION: "0.2.0"
 
@@ -178,5 +182,51 @@ jobs:
       - name: Docker Compose config
         run: docker compose config
 
-      - name: Docker image build
-        run: docker build --target runtime -t nelna-fg-foundation:ci .
+      - name: Docker Compose test profile config
+        run: docker compose --profile test config
+
+      - name: Docker runtime image build
+        run: docker compose build web
+
+      - name: Docker test image build
+        run: docker compose --profile test build test
+
+      - name: Confirm pytest absent from runtime image
+        run: |
+          docker compose run --rm --no-deps -e WAIT_FOR_POSTGRES=0 web \
+            sh -c 'command -v pytest && exit 1 || exit 0'
+
+      - name: Start Compose PostgreSQL and Redis
+        run: docker compose up -d postgres redis
+
+      - name: Wait for PostgreSQL and Redis health
+        run: |
+          for i in $(seq 1 30); do
+            if docker compose exec -T postgres pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB" \
+              && docker compose exec -T redis redis-cli ping | grep -q PONG; then
+              echo "Dependencies healthy"
+              exit 0
+            fi
+            echo "Waiting for dependencies... ($i)"
+            sleep 2
+          done
+          echo "Timed out waiting for postgres/redis" >&2
+          docker compose ps
+          exit 1
+
+      - name: Docker test image pytest with coverage
+        run: >
+          docker compose --profile test run --rm test
+          pytest --cov=apps --cov=config
+          --cov-report=term-missing
+          --cov-fail-under=80
+
+      - name: Docker test makemigrations check
+        run: docker compose --profile test run --rm test python manage.py makemigrations --check
+
+      - name: Docker test Django system check
+        run: docker compose --profile test run --rm test python manage.py check
+
+      - name: Tear down Compose stack
+        if: always()
+        run: docker compose down --volumes

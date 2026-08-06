@@ -82,8 +82,20 @@ Image tags used in compose/CI: `postgres:17.10-alpine3.23`, `redis:7.4.10-alpine
 | `apps/core/` | Health probes, middleware, foundation views/tasks |
 | `apps/accounts/` | Custom user model scaffold (RBAC policies later) |
 | `templates/`, `static/` | Template + CSS/htmx assets |
-| `compose.yaml` | Local postgres, redis, web, celery-worker |
-| `.github/workflows/ci.yml` | Quality gates |
+| `compose.yaml` | Local postgres, redis, web, celery-worker; profile `test` → dedicated `test` service |
+| `Dockerfile` | Multi-stage: `runtime` (lean, no pytest) and `test` (validation tooling) |
+| `.github/workflows/ci.yml` | Quality gates including Docker test profile |
+
+### Docker runtime vs test isolation
+
+| Image / service | Role | Testing tools |
+| --- | --- | --- |
+| `runtime` / Compose `web` | Production-oriented application runtime | **Excluded** — do not run pytest here |
+| `test` / Compose profile `test` | Dedicated validation image | pytest, Ruff, mypy, and related review tools |
+
+Use `docker compose --profile test run --rm test pytest`. The obsolete command `docker compose run --rm web pytest` must not be used.
+
+Compose host publication uses `COMPOSE_POSTGRES_HOST_PORT` / `COMPOSE_REDIS_HOST_PORT` (defaults 5433 / 6380). `POSTGRES_PORT` remains the Django connection port (normally 5432 in-container) and must not control host publish.
 
 ## Open design debt affecting Phase 02 UI
 
