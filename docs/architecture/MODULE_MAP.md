@@ -1,15 +1,17 @@
-# Module Map (Proposed Future Django Modules)
+# Module Map
 
-**Document status:** Proposed module boundaries — **do not create these Django apps in Phase 00**  
-**Phase:** 00 — Discovery and governance  
-**Last updated:** 2026-08-04
+**Document status:** Living module boundaries — Phase 03 apps under implementation
+**Phase:** 03 — Accounts / auth / scoped RBAC
+**Last updated:** 2026-08-06
 
-This map guides later implementation. Apps must not be scaffolded until their phase begins.
+This map guides implementation. Do not scaffold future business apps before their phase.
 
 | Module | Responsibility | Data ownership | Public service boundary | Prohibited dependencies | Planned phase |
 | --- | --- | --- | --- | --- | --- |
-| accounts | Identity, authentication helpers, role assignments, session-facing user services | User, role, membership/scope links | Auth services; role assignment services; policy helpers | Must not embed checklist business rules | 03 |
-| organizations | Sites/areas/departments hierarchy as approved | Org nodes and relations | Hierarchy queries; scope resolution | Must not invent hierarchy values; no ERP writes | 04 |
+| accounts | Identity, employee-code authentication, password/lockout lifecycle | User | Auth services; admin account management | Must not embed checklist business rules | 03 (under implementation) |
+| organizations | Organization / site / department scope hierarchy | Organization, Site, Department | Hierarchy services; deactivate/reactivate | Must not invent Nelna org names | 03 (under implementation) |
+| access_control | Roles, scoped assignments, authorization API | Role, ScopedRoleAssignment | Permission checks; decorators/mixins | Must not seed business roles | 03 (under implementation) |
+| security_audit | Append-oriented auth/RBAC security events | SecurityAuditEvent | `record_event` only; no secrets | Must not store credentials | 03 (under implementation) |
 | master_data | Products and other minimal masters needed by templates | Master entities approved for digital use | Read APIs for recording; controlled write APIs for admins | No silent import from ERP DB; no unverified limits | 05 |
 | instruments | Instrument register and calibration status references as approved | Instrument records | Fitness-for-use queries used by recording | Must not invent calibration intervals | 05 |
 | training | Training completion gates as approved | Training records / qualifications refs | Eligibility checks for task assignment | Must not invent training matrices | 05 |

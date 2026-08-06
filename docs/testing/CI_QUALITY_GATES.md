@@ -1,8 +1,8 @@
 # CI Quality Gates
 
-**Document status:** Phase 02 foundation guidance
-**Branch:** `foundation/django-postgresql`
-**Last updated:** 2026-08-05
+**Document status:** Phase 03 foundation guidance
+**Branch:** `feature/accounts-rbac`
+**Last updated:** 2026-08-06
 
 ## Workflow
 

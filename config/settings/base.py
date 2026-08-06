@@ -29,6 +29,10 @@ env = environ.Env(
     DJANGO_TIME_ZONE=(str, "Asia/Colombo"),
     DJANGO_LANGUAGE_CODE=(str, "en"),
     LOG_LEVEL=(str, "INFO"),
+    AUTH_MAX_FAILED_ATTEMPTS=(int, 5),
+    AUTH_LOCKOUT_MINUTES=(int, 15),
+    AUTH_LOGIN_RATE_LIMIT_WINDOW=(int, 300),
+    AUTH_PASSWORD_CHANGE_REQUIRED_ON_ADMIN_RESET=(bool, True),
 )
 
 # Intentionally do not read .env here. Local/test settings may load .env.
@@ -52,6 +56,9 @@ INSTALLED_APPS = [
     "django_htmx",
     "apps.core",
     "apps.accounts",
+    "apps.organizations",
+    "apps.access_control",
+    "apps.security_audit",
 ]
 
 MIDDLEWARE = [
@@ -60,12 +67,30 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "apps.accounts.middleware.ForcedPasswordChangeMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django_htmx.middleware.HtmxMiddleware",
     "apps.core.middleware.CorrelationIdMiddleware",
     "apps.core.middleware.RequestLoggingMiddleware",
 ]
+
+AUTHENTICATION_BACKENDS = [
+    "apps.accounts.backends.EmployeeCodeBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
+
+AUTH_MAX_FAILED_ATTEMPTS = env.int("AUTH_MAX_FAILED_ATTEMPTS", default=5)
+AUTH_LOCKOUT_MINUTES = env.int("AUTH_LOCKOUT_MINUTES", default=15)
+AUTH_LOGIN_RATE_LIMIT_WINDOW = env.int("AUTH_LOGIN_RATE_LIMIT_WINDOW", default=300)
+AUTH_PASSWORD_CHANGE_REQUIRED_ON_ADMIN_RESET = env.bool(
+    "AUTH_PASSWORD_CHANGE_REQUIRED_ON_ADMIN_RESET",
+    default=True,
+)
+
+LOGIN_URL = "accounts:login"
+LOGIN_REDIRECT_URL = "accounts:landing"
+LOGOUT_REDIRECT_URL = "accounts:login"
 
 ROOT_URLCONF = "config.urls"
 WSGI_APPLICATION = "config.wsgi.application"

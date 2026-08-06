@@ -1,4 +1,4 @@
-"""Minimal custom user — UUID primary key, no business identity fields yet."""
+"""Custom user model with employee-code authentication and lockout fields."""
 
 from __future__ import annotations
 
@@ -6,18 +6,54 @@ import uuid
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.db.models.functions import Lower
+
+from apps.accounts.managers import UserManager
 
 
 class User(AbstractUser):
     """
-    Foundation user model configured before initial migrations.
+    Named individual account. Shared accounts are prohibited.
 
-    Phase 03 will add identity, authentication workflows, and scoped RBAC.
-    Do not invent employee codes, sites, departments, or business roles here.
+    employee_code is nullable to allow safe migration from the foundation user
+    via direct ORM construction. UserManager.create_user / create_superuser and
+    Django admin creation require a non-empty employee_code. Authentication via
+    EmployeeCodeBackend rejects accounts without a code.
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    employee_code = models.CharField(max_length=64, null=True, blank=True)  # noqa: DJ001
+    must_change_password = models.BooleanField(default=False)
+    password_changed_at = models.DateTimeField(null=True, blank=True)
+    failed_login_count = models.PositiveIntegerField(default=0)
+    locked_until = models.DateTimeField(null=True, blank=True)
+    last_failed_login_at = models.DateTimeField(null=True, blank=True)
+    last_successful_login_at = models.DateTimeField(null=True, blank=True)
+
+    objects = UserManager()  # type: ignore[misc]
 
     class Meta:
         verbose_name = "user"
         verbose_name_plural = "users"
+        constraints = [
+            models.UniqueConstraint(
+                Lower("employee_code"),
+                condition=models.Q(employee_code__isnull=False),
+                name="acct_user_emp_code_ci_uniq",
+            ),
+        ]
+        indexes = [
+            models.Index(Lower("employee_code"), name="acct_user_emp_code_idx"),
+            models.Index(fields=["locked_until"], name="acct_user_locked_until_idx"),
+        ]
+
+    def __str__(self) -> str:
+        if self.employee_code:
+            return self.employee_code
+        return self.username
+
+    @property
+    def is_locked(self) -> bool:
+        from django.utils import timezone
+
+        return self.locked_until is not None and self.locked_until > timezone.now()

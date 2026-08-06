@@ -1,8 +1,8 @@
 # Security Baseline
 
-**Document status:** Draft baseline for implementation phases — not a completed security assessment  
-**Phase:** 00 — Discovery and governance  
-**Last updated:** 2026-08-04
+**Document status:** Living baseline — Phase 03 auth/RBAC foundation under implementation  
+**Phase:** 03 — Accounts / authentication / scoped RBAC  
+**Last updated:** 2026-08-06
 
 ## Principles
 
@@ -15,7 +15,7 @@
 
 ## Individual named accounts
 
-Every interactive user has a unique named account. Shared accounts are prohibited.
+Every interactive user has a unique named account. Shared accounts are prohibited. Phase 03 login identifier is **employee code** (ADR-006).
 
 ## Password hashing
 
@@ -23,15 +23,15 @@ Passwords are stored only using Django’s password hashers (or an approved equi
 
 ## Session authentication
 
-The browser/PWA uses session authentication unless a later approved ADR changes the model. Session lifetime follows an approved IT policy (**EVIDENCE REQUIRED** for exact timeouts).
+The browser uses Django session authentication (ADR-006). Session key rotates on successful login. Exact idle/absolute timeouts remain **EVIDENCE REQUIRED** for final IT policy.
 
 ## Deny-by-default authorization
 
-Policies deny unless a positive grant matches. UI hiding is never sufficient authorization.
+Policies deny unless a positive grant matches (ADR-007). UI hiding is never sufficient authorization. See [AUTHENTICATION_AND_ACCESS_CONTROL.md](AUTHENTICATION_AND_ACCESS_CONTROL.md).
 
 ## Scoped roles
 
-Roles are scoped to confirmed organization hierarchy nodes (site/area/department as approved). Global privileges are minimized and reviewable.
+Roles use Django permissions with optional organization/site/department scope via `ScopedRoleAssignment`. No business roles are seeded in Phase 03.
 
 ## Separation of duties
 
@@ -55,7 +55,7 @@ Secrets come from environment variables or a secret manager. Never commit `.env`
 
 ## Audit events
 
-Important operations append audit events (who, what, when, subject, outcome). Audit history is preserved.
+Important auth/RBAC operations append `SecurityAuditEvent` rows (see [SECURITY_EVENT_CATALOGUE.md](SECURITY_EVENT_CATALOGUE.md)). Audit history is preserved; retention period deferred.
 
 ## Evidence access
 

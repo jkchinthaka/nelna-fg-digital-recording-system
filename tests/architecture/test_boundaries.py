@@ -6,8 +6,14 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 APPS = ROOT / "apps"
-FORBIDDEN_APPS = {
+ALLOWED_APPS = {
+    "core",
+    "accounts",
     "organizations",
+    "access_control",
+    "security_audit",
+}
+FORBIDDEN_APPS = {
     "master_data",
     "checklists",
     "tasks",
@@ -22,13 +28,13 @@ FORBIDDEN_APPS = {
 
 def test_apps_namespace_exists() -> None:
     assert (APPS / "__init__.py").exists()
-    assert (APPS / "core").is_dir()
-    assert (APPS / "accounts").is_dir()
+    for name in ALLOWED_APPS:
+        assert (APPS / name).is_dir(), f"Expected app directory missing: {name}"
 
 
 def test_no_future_business_apps() -> None:
     present = {p.name for p in APPS.iterdir() if p.is_dir() and not p.name.startswith("_")}
-    assert present == {"core", "accounts"}
+    assert present == ALLOWED_APPS
     assert FORBIDDEN_APPS.isdisjoint(present)
 
 

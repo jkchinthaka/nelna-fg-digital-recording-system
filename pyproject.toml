@@ -56,8 +56,10 @@ select = ["E", "F", "I", "B", "UP", "N", "S", "DJ"]
 ignore = ["S101"]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["S105", "S106", "S603"]
-"**/tests/**" = ["S105", "S106", "S603"]
+"tests/**" = ["S105", "S106", "S107", "S603"]
+"**/tests/**" = ["S105", "S106", "S107", "S603"]
+"apps/accounts/models.py" = ["DJ001"]
+"apps/accounts/middleware.py" = ["S110"]
 "config/settings/**" = ["S105"]
 "scripts/build_design_tokens.py" = ["S105"]
 
@@ -127,5 +129,14 @@ max_line_length = 120
 ignore = "H006,H021,H030,H031"
 
 [tool.bandit]
-exclude_dirs = ["tests", "apps/core/tests", "apps/accounts/tests", ".venv", "node_modules"]
+exclude_dirs = [
+    "tests",
+    "apps/core/tests",
+    "apps/accounts/tests",
+    "apps/organizations/tests",
+    "apps/access_control/tests",
+    "apps/security_audit/tests",
+    ".venv",
+    "node_modules",
+]
 skips = ["B101", "B105"]

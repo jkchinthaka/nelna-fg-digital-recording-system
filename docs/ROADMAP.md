@@ -1,12 +1,12 @@
 # Roadmap — Phase Delivery Plan
 
 **Document status:** Governing roadmap for greenfield delivery
-**Phase:** 01C Approved with deferred Sinhala condition · Phase 02 under implementation (pending approval)
-**Last updated:** 2026-08-05
+**Phase:** Phase 02 approved with conditions · Phase 03 under implementation
+**Last updated:** 2026-08-06
 
 Branch naming pattern: `foundation/...`, `design/...`, `feature/phase-NN-short-name`, or `hardening/...` as appropriate. Never commit directly to `main`.
 
-**Progress:** Phase 00–01B merged. Phase 01C **Approved with deferred Sinhala typography condition** (2026-08-05). DEBT-01C-R-NOTO remains **open** (non-blocking for Phase 02 foundation; blocking for operator UAT/pilot/production). Phase 02 technical foundation is **under implementation** on `foundation/django-postgresql` and **pending approval** (unsigned form). Obsolete planned branch name `feature/phase-02-django-foundation` is **superseded**. Figma library **not** published. Production readiness **not** claimed.
+**Progress:** Phase 00–01C complete (01C with deferred Sinhala condition). Phase 02 **Approved with conditions** and merged (PR #5 / #6). DEBT-01C-R-NOTO remains **open** (non-blocking for Phase 03 backend auth/RBAC; blocking for operator UAT/pilot/production). Phase 03 accounts/RBAC is **under implementation** on `feature/accounts-rbac` with an **unsigned** approval form. No business workflows. Production readiness **not** claimed.
 
 ---
 
@@ -85,19 +85,20 @@ Branch naming pattern: `foundation/...`, `design/...`, `feature/phase-NN-short-n
 | Branch naming | `foundation/django-postgresql` (obsolete planned name `feature/phase-02-django-foundation` **superseded**) |
 | Exit criteria | App boots locally; base migrations OK; CI gates defined; no invented business data; approval form signed |
 | Dependencies | Phase 01C approved with deferred Sinhala condition |
-| Status | **Under implementation / pending approval** — technical foundation only; DEBT-01C-R-NOTO open; operator UAT/pilot/production blocked |
+| Status | **Approved with conditions** — merged via PR #5 / #6; DEBT-01C-R-NOTO remains open |
 
 ## Phase 03 — Accounts and RBAC
 
 | Field | Content |
 | --- | --- |
-| Objective | Named accounts, roles, deny-by-default policies, audit hooks for authz |
-| Inputs | Security baseline |
-| Outputs | `accounts` module; auth tests |
-| Approval gate | Security-focused PR review |
-| Branch naming | `feature/phase-03-accounts-rbac` |
-| Exit criteria | AuthZ tests pass; shared accounts prohibited |
+| Objective | Employee-code identity, session auth, lockout, org/site/department scope, Django-permission roles, scoped assignments, security audit |
+| Inputs | Phase 02 approved foundation; security baseline |
+| Outputs | `accounts`, `organizations`, `access_control`, `security_audit`; ADRs 006–007; unsigned Phase 03 approval form |
+| Approval gate | Security-focused PR review — [PHASE_03_ACCOUNTS_RBAC_APPROVAL.md](approvals/PHASE_03_ACCOUNTS_RBAC_APPROVAL.md) |
+| Branch naming | `feature/accounts-rbac` |
+| Exit criteria | Auth/RBAC/lockout/audit tests pass; no seeded users/orgs/roles; no business workflows; approval form signed |
 | Dependencies | Phase 02 |
+| Status | **Under implementation / pending approval** — DEBT-01C-R-NOTO open; no production deployment |
 
 ## Phase 04 — Organization hierarchy and shifts
 

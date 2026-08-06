@@ -4,5 +4,15 @@
   <section class="error-page" aria-labelledby="error-heading">
     <h1 id="error-heading">403 — Forbidden</h1>
     <p>You do not have permission to access this resource.</p>
+    <p>
+      <a href="{% url 'core:home' %}">Return to home</a>
+      {% if user.is_authenticated %}
+        or
+        <a href="{% url 'accounts:landing' %}">go to your landing page</a>
+      {% else %}
+        or
+        <a href="{% url 'accounts:login' %}">sign in</a>
+      {% endif %}
+    </p>
   </section>
 {% endblock %}

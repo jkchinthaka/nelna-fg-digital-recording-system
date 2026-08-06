@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Sign in — Nelna FG Digital Recording System{% endblock %}
+{% block content %}
+  <section class="auth-page" aria-labelledby="login-heading">
+    <h1 id="login-heading">Sign in</h1>
+    <p>Use your employee code and password. Shared accounts are not permitted.</p>
+    {% if form.non_field_errors %}
+      {% include "components/auth_error.html" with errors=form.non_field_errors %}
+    {% endif %}
+    <form method="post" action="{% url 'accounts:login' %}" novalidate>
+      {% csrf_token %}
+      {% include "components/form_field.html" with field=form.employee_code %}
+      {% include "components/form_field.html" with field=form.password %}
+      <button type="submit"
+              class="bg-primary text-neutral-900 font-semibold px-6 py-3 rounded">Sign in</button>
+    </form>
+  </section>
+{% endblock %}

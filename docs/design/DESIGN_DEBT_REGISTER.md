@@ -1,10 +1,10 @@
 # Design Debt Register
 
 **Document status:** Living debt register — DEBT-01C-R-NOTO remains open
-**Phase:** 01C Approved with deferred condition · Phase 02 under implementation
-**Branch:** `foundation/django-postgresql` (design debt originated on `design/figma-high-fidelity-mvp`)
+**Phase:** Phase 02 approved · Phase 03 under implementation
+**Branch:** `feature/accounts-rbac` (debt originated on design phases)
 **Created:** 2026-08-05
-**Last updated:** 2026-08-05
+**Last updated:** 2026-08-06
 
 **Related documents:**
 - [PHASE_01B_DESIGN_APPROVAL.md](../approvals/PHASE_01B_DESIGN_APPROVAL.md)
@@ -529,7 +529,7 @@ Owner reported Noto Sans Sinhala applied via Figma Desktop. **Figma file evidenc
 | Abhaya Libre production-approved? | **No** |
 | Noto Sans Sinhala verified? | **No** |
 
-**Status:** Phase 01C **Approved with deferred condition**. Phase 02 technical foundation is **under implementation** on `foundation/django-postgresql` and **pending approval**. Operator UAT / pilot / production remain blocked until DEBT-01C-R-NOTO is closed with evidence.
+**Status:** Phase 01C **Approved with deferred condition**. Phase 02 **Approved with conditions** (merged). Phase 03 accounts/RBAC is **under implementation** on `feature/accounts-rbac` and **pending approval**. Operator UAT / pilot / production remain blocked until DEBT-01C-R-NOTO is closed with evidence.
 
 ### Phase 02 note on DEBT-01C-R-NOTO (2026-08-05)
 
@@ -540,6 +540,15 @@ Owner reported Noto Sans Sinhala applied via Figma Desktop. **Figma file evidenc
 | Font binaries in repo | **None** |
 | Verification claim | **Forbidden** until Figma/evidence closure |
 | Docs | [FRONTEND_FOUNDATION.md](../frontend/FRONTEND_FOUNDATION.md) |
+
+### Phase 03 note on DEBT-01C-R-NOTO (2026-08-06)
+
+| Field | Entry |
+| --- | --- |
+| Debt status | **Still OPEN** |
+| Phase 03 impact | Non-blocking for backend auth/RBAC; **blocking** for final Sinhala operator UI approval, UAT, pilot, production |
+| Font binaries | **None** |
+| Verification claim | **Forbidden** |
 
 ---
 

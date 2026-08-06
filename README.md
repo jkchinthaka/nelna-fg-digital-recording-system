@@ -8,7 +8,7 @@ Provide named-account, scoped-role digital recording, checking, verification, ev
 
 ## Current phase
 
-**Phase 02 — Django/PostgreSQL technical foundation** (**under implementation / pending approval**)
+**Phase 03 — Accounts, authentication and scoped RBAC** (**under implementation / pending approval**)
 
 | Phase | Status |
 | --- | --- |
@@ -16,13 +16,10 @@ Provide named-account, scoped-role digital recording, checking, verification, ev
 | Phase 01A — Journeys, IA, lo-fi specification | **Approved** as proposed design baseline (2026-08-04) |
 | Phase 01B — Design tokens and components | **Approved with conditions** (2026-08-05) |
 | Phase 01C — High-fidelity MVP screens and prototype | **Approved with deferred condition** — DEBT-01C-R-NOTO remains open |
-| Phase 02 — Django/PostgreSQL foundation | **Under implementation** on `foundation/django-postgresql` — **not approved** until [PHASE_02_TECHNICAL_FOUNDATION_APPROVAL.md](docs/approvals/PHASE_02_TECHNICAL_FOUNDATION_APPROVAL.md) is signed |
+| Phase 02 — Django/PostgreSQL foundation | **Approved with conditions** and merged (PR #5 / #6) |
+| Phase 03 — Accounts / auth / scoped RBAC | **Under implementation** on `feature/accounts-rbac` — **not approved** until [PHASE_03_ACCOUNTS_RBAC_APPROVAL.md](docs/approvals/PHASE_03_ACCOUNTS_RBAC_APPROVAL.md) is signed |
 
-Branch note: obsolete name `feature/phase-02-django-foundation` is **superseded** by `foundation/django-postgresql`.
-
-Open business decisions remain proposed or decision-required and are **not** final Nelna operational approvals. Figma library is **not** published.
-
-**Deferred Sinhala condition:** Noto Sans Sinhala is **not** finally verified. Operator Sinhala UAT, pilot, and production remain **blocked** until DEBT-01C-R-NOTO is closed with evidence. Abhaya Libre is **not** the approved production font. Phase 02 may reference Noto in the CSS font stack only — **no font binaries**, **no verification claim**.
+**Deferred Sinhala condition:** Noto Sans Sinhala is **not** finally verified. Operator Sinhala UAT, pilot, and production remain **blocked** until DEBT-01C-R-NOTO is closed with evidence. Abhaya Libre is **not** the approved production font. No font binaries; no verification claim. Phase 03 backend auth work may proceed while the debt remains open.
 
 ## Approved architecture (technical direction)
 
@@ -36,7 +33,8 @@ Open business decisions remain proposed or decision-required and are **not** fin
 | UI (Phase 02) | Django Templates, HTMX 2.0.10, Tailwind 4.3.3; **no Alpine**; **no CDN**; **no PWA yet** |
 | Evidence | MinIO locally later; S3-compatible object storage in production (not Phase 02 scope) |
 | Local dev | Docker Compose (`compose.yaml`); host publish ports via `COMPOSE_POSTGRES_HOST_PORT` / `COMPOSE_REDIS_HOST_PORT` (defaults 5433 / 6380) |
-| Tests | Pytest 9.0.2 (+ pytest-django / pytest-cov) via host `uv` **or** Compose profile `test`; Playwright later |
+| Identity (Phase 03) | Employee-code session authentication; scoped RBAC; security audit events — **no seeded users/orgs/roles** |
+| Tests | Pytest (+ pytest-django / pytest-cov) via host `uv` **or** Compose profile `test`; Playwright later |
 | Docker images | `web` = lean runtime (no pytest); `test` = dedicated validation image |
 | CI | GitHub Actions quality gates (host + Docker test path) |
 | Design | Figma Professional (design phases) |
@@ -50,7 +48,8 @@ Exact pins: [docs/architecture/PHASE_02_TECHNICAL_BASELINE.md](docs/architecture
 | --- | --- |
 | Greenfield repository | Yes |
 | Application foundation code | Present on Phase 02 branch (scaffold — not business MVP) |
-| Phase 02 approval | **Unsigned** |
+| Phase 02 approval | **Approved with conditions** (merged) |
+| Phase 03 approval | **Unsigned** — under implementation on `feature/accounts-rbac` |
 | Production readiness | **Not claimed** |
 | Secrets in repo | None intended; do not add any |
 | Previous repository code | Not used |
@@ -113,12 +112,11 @@ Earlier discovery, requirements, design, and ADR-001–003 documents remain unde
 
 ## Next action
 
-1. Complete Phase 02 foundation work on `foundation/django-postgresql`.
-2. Obtain signature on [PHASE_02_TECHNICAL_FOUNDATION_APPROVAL.md](docs/approvals/PHASE_02_TECHNICAL_FOUNDATION_APPROVAL.md) before treating the foundation as approved.
-3. Keep **DEBT-01C-R-NOTO** open until Noto Sans Sinhala is evidenced (do not treat Abhaya Libre as production).
-4. Do **not** start operator UAT, pilot, or production until the Sinhala debt is closed.
-5. Do **not** publish the Figma component library before final design-system review.
-6. Keep resolving open business decisions — they are not final operational approvals.
+1. Complete Phase 03 review on `feature/accounts-rbac` and obtain signature on [PHASE_03_ACCOUNTS_RBAC_APPROVAL.md](docs/approvals/PHASE_03_ACCOUNTS_RBAC_APPROVAL.md).
+2. Keep **DEBT-01C-R-NOTO** open until Noto Sans Sinhala is evidenced (do not treat Abhaya Libre as production).
+3. Do **not** start operator UAT, pilot, or production until the Sinhala debt is closed.
+4. Do **not** seed real users, organizations, or business roles.
+5. Do **not** deploy to production without separate explicit written approval.
 
 ## Important
 
