@@ -40,6 +40,7 @@ Do **not** rename FG master data, checklist, recording, review, or evidence work
 | 04 | Residual hierarchy confirmation; Shift only after ASM-004/005/006 |
 | 05 | `master_data` (+ instruments/training as approved) |
 | 06 | `checklists` definition and versioning |
+| 07 | `schedules`, `tasks` |
 | 08 | `records` draft and submission |
 | 09 | `reviews` supervisor checking |
 | 10 | `quality` QA verification (when approved) |
