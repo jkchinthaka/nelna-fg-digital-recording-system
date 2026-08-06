@@ -1,19 +1,35 @@
 {% extends "base.html" %}
-{% block title %}Signed in — Nelna FG{% endblock %}
+{% block title %}Signed in — Nelna FG Digital Recording System{% endblock %}
 {% block content %}
-  <section class="foundation-home" aria-labelledby="landing-heading">
-    <h1 id="landing-heading">{{ phase_label }}</h1>
-    <p>{{ message }}</p>
-    <ul>
-      <li>
-        <a href="{% url 'accounts:change_password' %}">Change password</a>
-      </li>
-      <li>
+  <section class="landing-page" aria-labelledby="landing-heading">
+    <div class="landing-card">
+      <h1 id="landing-heading">Welcome</h1>
+      {% if user.is_authenticated %}
+        <p class="landing-meta">
+          Signed in as
+          <strong>
+            {% if user.employee_code %}
+              {{ user.employee_code }}
+            {% else %}
+              {{ user.get_username }}
+            {% endif %}
+          </strong>
+        </p>
+      {% endif %}
+      <p class="landing-meta">{{ phase_label }}</p>
+      <p class="landing-notice">
+        Operational finished-goods modules are not yet implemented. This landing
+        page confirms session authentication only.
+      </p>
+      <p class="landing-meta">Keep this session private. Sign out when you finish working on a shared device.</p>
+      <div class="landing-actions">
+        <a class="btn btn--secondary"
+           href="{% url 'accounts:change_password' %}">Change password</a>
         <form method="post" action="{% url 'accounts:logout' %}">
           {% csrf_token %}
-          <button type="submit" class="underline">Sign out</button>
+          <button type="submit" class="btn btn--primary">Sign out</button>
         </form>
-      </li>
-    </ul>
+      </div>
+    </div>
   </section>
 {% endblock %}
