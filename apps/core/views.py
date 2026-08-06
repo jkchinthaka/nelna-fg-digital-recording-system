@@ -11,6 +11,11 @@ from django.views.decorators.http import require_GET
 @require_GET
 def home(request: HttpRequest) -> HttpResponse:
     """Project foundation status page with safe non-secret information only."""
+    if request.user.is_authenticated:
+        from django.shortcuts import redirect
+
+        return redirect("accounts:landing")
+
     return render(
         request,
         "pages/home.html",
@@ -18,7 +23,9 @@ def home(request: HttpRequest) -> HttpResponse:
             "project_name": "Nelna FG Digital Recording System",
             "environment_label": getattr(settings, "ENVIRONMENT_LABEL", "unspecified"),
             "app_version": getattr(settings, "APP_VERSION", "unknown"),
-            "foundation_status": "Phase 02 technical foundation",
+            "foundation_status": (
+                "Phase 03 — Accounts / Auth / RBAC foundation (no business modules yet)"
+            ),
         },
     )
 

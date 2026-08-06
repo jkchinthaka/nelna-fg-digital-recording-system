@@ -7,18 +7,20 @@ import uuid
 import pytest
 from django.contrib.auth import get_user_model
 
+from tests.factories import make_user
+
 User = get_user_model()
 
 
 @pytest.mark.django_db
 def test_user_primary_key_is_uuid() -> None:
-    user = User.objects.create_user(username="foundation_user", password="complex-pass-123")
+    user = make_user(employee_code="TST010")
     assert isinstance(user.pk, uuid.UUID)
 
 
 @pytest.mark.django_db
 def test_password_is_hashed() -> None:
-    user = User.objects.create_user(username="hash_user", password="complex-pass-123")
+    user = make_user(employee_code="TST011", password="complex-pass-123")
     user.refresh_from_db()
     assert user.password != "complex-pass-123"
     assert user.check_password("complex-pass-123")
@@ -26,7 +28,7 @@ def test_password_is_hashed() -> None:
 
 @pytest.mark.django_db
 def test_superuser_flags() -> None:
-    admin = User.objects.create_superuser(username="admin_user", password="complex-pass-123")
+    admin = make_user(employee_code="TSTADMIN2", is_superuser=True)
     assert admin.is_staff is True
     assert admin.is_superuser is True
 
@@ -37,15 +39,17 @@ def test_no_default_users_seeded() -> None:
 
 
 @pytest.mark.django_db
-def test_minimal_model_has_no_business_fields() -> None:
+def test_phase03_identity_fields_present() -> None:
     field_names = {f.name for f in User._meta.get_fields()}
-    forbidden = {
+    required = {
         "employee_code",
-        "site",
-        "department",
-        "business_role",
-        "phone_number",
-        "profile_image",
-        "lockout_count",
+        "must_change_password",
+        "password_changed_at",
+        "failed_login_count",
+        "locked_until",
+        "last_failed_login_at",
+        "last_successful_login_at",
     }
+    assert required.issubset(field_names)
+    forbidden = {"site", "department", "business_role", "profile_image"}
     assert forbidden.isdisjoint(field_names)

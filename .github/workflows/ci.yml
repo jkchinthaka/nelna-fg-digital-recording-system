@@ -174,7 +174,7 @@ jobs:
         run: uv run python manage.py check --deploy --settings=config.settings.production
 
       - name: Bandit
-        run: uv run bandit -r apps config scripts
+        run: uv run bandit -c pyproject.toml -r apps config scripts
 
       - name: pip-audit
         run: uv run pip-audit

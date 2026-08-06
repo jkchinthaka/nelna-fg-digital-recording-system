@@ -1,18 +1,20 @@
 # Testing Guide
 
-**Document status:** Phase 02 foundation guidance
-**Branch:** `foundation/django-postgresql`
-**Last updated:** 2026-08-05
+**Document status:** Phase 03 foundation guidance
+**Branch:** `feature/accounts-rbac`
+**Last updated:** 2026-08-06
 
 ## Tooling (pinned)
 
 | Tool | Version |
 | --- | --- |
-| pytest | 9.0.2 |
+| pytest | 9.0.3 |
 | pytest-django | 4.11.1 |
 | pytest-cov | 7.0.0 |
 
 Settings module for tests: `config.settings.test` (`DJANGO_SETTINGS_MODULE` / `tool.pytest.ini_options`).
+
+Phase 03 adds identity, authentication, lockout, organization hierarchy, scoped RBAC, and security-audit tests. See [PHASE_03_TEST_PLAN.md](PHASE_03_TEST_PLAN.md).
 
 ## Running tests on the host
 

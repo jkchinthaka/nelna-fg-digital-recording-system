@@ -8,6 +8,9 @@
     <p>Status: {{ foundation_status }}</p>
     <ul>
       <li>
+        <a href="{% url 'accounts:login' %}">Sign in</a>
+      </li>
+      <li>
         <a href="{% url 'core:health-live' %}">Liveness</a>
       </li>
       <li>

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Account locked — Nelna FG{% endblock %}
+{% block content %}
+  <section class="auth-page" aria-labelledby="locked-heading">
+    <h1 id="locked-heading">Account locked</h1>
+    <p>
+      This account is temporarily locked because of too many failed sign-in attempts.
+      Try again later or contact an administrator.
+    </p>
+    <p>
+      <a href="{% url 'accounts:login' %}">Return to sign in</a>
+    </p>
+  </section>
+{% endblock %}
