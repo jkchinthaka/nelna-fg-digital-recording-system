@@ -3,14 +3,14 @@
 **Document status:** Evidence collection contract — **not** approved business truth
 **Requirement:** TEMPLATE-001 (related: TEMPLATE-002, TEMPLATE-003, ASM-001, ASM-003)
 **Created:** 2026-08-07 (Phase 06B)
-**Updated:** 2026-08-07 — Phase 06C: note no formal source form; FG-QA-001 Draft v0.1 project-proposed pending validation
-**Technical foundation:** Phase 06A/06B configurable unseeded checklist definition/versioning; Phase 06C provisional response-definition schema
+**Updated:** 2026-08-07 — Phase 06D: explicit DRAFT loader available for review only; TEMPLATE remains PROJECT-PROPOSED DRAFT — VALIDATION REQUIRED
+**Technical foundation:** Phase 06A/06B configurable unseeded checklist definition/versioning; Phase 06C provisional response-definition schema; Phase 06D explicit DRAFT proposal loader
 
 ## Purpose
 
 Stakeholders must supply **approved real checklist/form evidence** before:
 
-- loading official form content into the system
+- loading official form content into the system as approved production definitions
 - treating response types as approved business rules (06C primitives are definition-schema only)
 - authorizing Phase 07 scheduling / tasks
 
@@ -21,10 +21,15 @@ Empty fields are **EVIDENCE REQUIRED**. Do not invent answers.
 - [proposals/FG_QA_001_DRAFT_V0_1.md](proposals/FG_QA_001_DRAFT_V0_1.md) — FG-QA-001 Draft v0.1
 - Status: **PROJECT-PROPOSED DRAFT — VALIDATION REQUIRED**
 - **Still not officially approved** for production, pilot, or operational use
-- Not seeded into Organizations
+- Not auto-seeded into Organizations
+- An explicit DRAFT-only loader exists for controlled review instantiation — see [FG_QA_001_DRAFT_LOADING.md](../operations/FG_QA_001_DRAFT_LOADING.md). Loading a DRAFT is **not** approval.
+- Stakeholder validation worksheet: [FG_QA_001_INTERNAL_VALIDATION_CHECKLIST.md](FG_QA_001_INTERNAL_VALIDATION_CHECKLIST.md) (existence is not approval)
 
 Companion per-item worksheet (headers only):
 [templates/CHECKLIST_ITEM_EVIDENCE_INVENTORY.csv](templates/CHECKLIST_ITEM_EVIDENCE_INVENTORY.csv)
+
+Validation issue log (headers only):
+[templates/FG_QA_001_VALIDATION_ISSUES.csv](templates/FG_QA_001_VALIDATION_ISSUES.csv)
 
 ---
 
@@ -38,7 +43,7 @@ Companion per-item worksheet (headers only):
 | Response types | Provisional definition-schema primitives (YES_NO, YES_NO_NA, NUMBER, TEXT, SELECT) — business content still EVIDENCE REQUIRED |
 | Limits / temperature / instruments / training | Limits unset; temperature = NUMBER+unit proposal only; instruments/training EVIDENCE REQUIRED |
 | Scheduling / recording / review workflow | Not modeled — Phase 07+; EVIDENCE REQUIRED |
-| Seeded content | None — FG-QA-001 draft is documentation only |
+| Seeded content | None auto-seeded — FG-QA-001 may be loaded explicitly as DRAFT for review only (never published by loader) |
 
 ---
 
@@ -210,11 +215,12 @@ See [PHASE_07_READINESS_GATE.md](PHASE_07_READINESS_GATE.md).
 
 ## Explicit non-claims
 
-- Phase 06A/06B/06C technical work does **not** fully resolve TEMPLATE-001.
+- Phase 06A/06B/06C/06D technical work does **not** fully resolve TEMPLATE-001.
 - FG-QA-001 Draft v0.1 is a **project-proposed** baseline pending QA/Production/IT validation — **not** officially approved.
+- The Phase 06D loader instantiates a DRAFT for review only — it does **not** approve, publish, or auto-seed.
 - Optional Product association is provisional, not proven mandatory.
 - Response-type primitives in 06C are for definition schema only — not approved operational form content.
-- This intake is **not** an import specification and does **not** authorize CSV import code.
+- This intake is **not** an import specification for production content and does **not** authorize uncontrolled CSV import.
 - Phase 07 must not start from unanswered scheduling / workflow / scope answers.
 - Do not invent form content, limits, or temperature rules to unblock engineering.
 - ASM-001 and MASTER-001 remain open.
@@ -222,6 +228,8 @@ See [PHASE_07_READINESS_GATE.md](PHASE_07_READINESS_GATE.md).
 ## Related
 
 - [proposals/FG_QA_001_DRAFT_V0_1.md](proposals/FG_QA_001_DRAFT_V0_1.md)
+- [FG_QA_001_INTERNAL_VALIDATION_CHECKLIST.md](FG_QA_001_INTERNAL_VALIDATION_CHECKLIST.md)
+- [FG_QA_001_DRAFT_LOADING.md](../operations/FG_QA_001_DRAFT_LOADING.md)
 - [ASSUMPTION_REGISTER.md](ASSUMPTION_REGISTER.md)
 - [PHASE_06_CHECKLIST_PROVISIONAL_CONFIGURATION.md](../decisions/PHASE_06_CHECKLIST_PROVISIONAL_CONFIGURATION.md)
 - [ADR-010-CHECKLIST-DEFINITION-VERSIONING.md](../architecture/ADR-010-CHECKLIST-DEFINITION-VERSIONING.md)

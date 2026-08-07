@@ -73,12 +73,14 @@ TEMPLATE-001 / ASM-003 form inventory and official checklist content remain **EV
 | Topic | Status |
 | --- | --- |
 | Official checklist forms / questions / limits | Unresolved — EVIDENCE REQUIRED — use [TEMPLATE_001_CHECKLIST_EVIDENCE_INTAKE.md](TEMPLATE_001_CHECKLIST_EVIDENCE_INTAKE.md) |
-| TEMPLATE-001 project proposal | **PROJECT-PROPOSED DRAFT — VALIDATION REQUIRED** — [proposals/FG_QA_001_DRAFT_V0_1.md](proposals/FG_QA_001_DRAFT_V0_1.md) (NOT APPROVED for production; not seeded) |
+| TEMPLATE-001 project proposal | **PROJECT-PROPOSED DRAFT — VALIDATION REQUIRED** — [proposals/FG_QA_001_DRAFT_V0_1.md](proposals/FG_QA_001_DRAFT_V0_1.md) (NOT APPROVED for production; not auto-seeded) |
+| Explicit DRAFT loader (Phase 06D) | Available — `load_fg_qa_001_draft` loads Organization-scoped DRAFT for review only; never publishes; never auto-seeds — see [FG_QA_001_DRAFT_LOADING.md](../operations/FG_QA_001_DRAFT_LOADING.md) |
+| Internal validation worksheet | Available — [FG_QA_001_INTERNAL_VALIDATION_CHECKLIST.md](FG_QA_001_INTERNAL_VALIDATION_CHECKLIST.md) — existence is not approval |
 | Configurable unseeded definition/versioning engine (Phase 06A) | Implemented (provisional technical only) |
 | Lifecycle governance hardening (Phase 06B) | Implemented — centralized transitions; immutability; concurrency tests |
 | Response-type schema (Phase 06C) | Provisional technical primitives for **definition schema only** — see [RESPONSE_TYPE_DECISION_REGISTER.md](RESPONSE_TYPE_DECISION_REGISTER.md); PHOTO/SIGNATURE/etc still deferred |
 | ASM-001 temperature-class limits | Remains **open** — EVIDENCE REQUIRED; limits unset on FG-QA-001 draft |
-| MASTER-001 Product catalogue / fields | Remains **open** — EVIDENCE REQUIRED; no Product codes in FG-QA-001 draft |
+| MASTER-001 Product catalogue / fields | Remains **open** — EVIDENCE REQUIRED; no Product codes in FG-QA-001 draft; loader does not assign Products |
 | Scheduling / recording / review | Out of scope — Phase 07 gated by [PHASE_07_READINESS_GATE.md](PHASE_07_READINESS_GATE.md) |
 | Real-content / operational / production use | Remains blocked |
 

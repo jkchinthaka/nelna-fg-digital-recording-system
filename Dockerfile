@@ -23,7 +23,8 @@ FROM python:3.13.14-slim-bookworm AS python-deps
 COPY --from=ghcr.io/astral-sh/uv:0.11.29 /uv /uvx /usr/local/bin/
 ENV UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy \
-    UV_PYTHON_DOWNLOADS=0
+    UV_PYTHON_DOWNLOADS=0 \
+    UV_HTTP_TIMEOUT=300
 WORKDIR /app
 RUN apt-get update \
     && apt-get install -y --no-install-recommends build-essential libpq-dev \
@@ -32,7 +33,8 @@ COPY pyproject.toml uv.lock README.md ./
 COPY apps ./apps
 COPY config ./config
 COPY manage.py ./
-RUN uv sync --frozen --no-dev --no-group development --no-group testing --no-group security
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-dev --no-group development --no-group testing --no-group security
 
 ############################
 # Stage 3: Python deps (test + quality tools)
@@ -41,7 +43,8 @@ FROM python:3.13.14-slim-bookworm AS python-deps-test
 COPY --from=ghcr.io/astral-sh/uv:0.11.29 /uv /uvx /usr/local/bin/
 ENV UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy \
-    UV_PYTHON_DOWNLOADS=0
+    UV_PYTHON_DOWNLOADS=0 \
+    UV_HTTP_TIMEOUT=300
 WORKDIR /app
 RUN apt-get update \
     && apt-get install -y --no-install-recommends build-essential libpq-dev \
@@ -51,7 +54,8 @@ COPY apps ./apps
 COPY config ./config
 COPY manage.py ./
 # Include development, testing, and security groups for validation tooling.
-RUN uv sync --frozen --all-groups
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --all-groups
 
 ############################
 # Stage 4: production runtime (no pytest / no test tooling)
@@ -76,6 +80,7 @@ COPY --chown=nelna:nelna manage.py pyproject.toml uv.lock ./
 COPY --chown=nelna:nelna templates ./templates
 COPY --chown=nelna:nelna scripts ./scripts
 COPY --chown=nelna:nelna tests ./tests
+COPY --chown=nelna:nelna docs ./docs
 COPY --chown=nelna:nelna infra/docker/entrypoint.sh /entrypoint.sh
 COPY --from=frontend-build --chown=nelna:nelna /build/static/dist ./static/dist
 
@@ -115,6 +120,7 @@ COPY --chown=nelna:nelna manage.py pyproject.toml uv.lock ./
 COPY --chown=nelna:nelna templates ./templates
 COPY --chown=nelna:nelna scripts ./scripts
 COPY --chown=nelna:nelna tests ./tests
+COPY --chown=nelna:nelna docs ./docs
 COPY --chown=nelna:nelna design ./design
 COPY --chown=nelna:nelna package.json package-lock.json ./
 COPY --chown=nelna:nelna infra/docker/entrypoint.sh /entrypoint.sh

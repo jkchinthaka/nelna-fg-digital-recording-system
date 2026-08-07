@@ -30,6 +30,7 @@ from apps.checklists.models import (
     ChecklistTemplate,
     ChecklistVersion,
 )
+from apps.checklists.proposal_loader import is_fg_qa_001_proposal_template
 from apps.checklists.selectors import (
     StatusFilter,
     actor_can_manage_template,
@@ -360,6 +361,7 @@ def version_detail(request: HttpRequest, version_id: uuid.UUID) -> HttpResponse:
     _require_view_module(request)
     version = _get_version_or_404(request, version_id)
     can_manage = actor_can_manage_version(_actor(request), version)
+    is_proposal_draft = is_fg_qa_001_proposal_template(version.template) and version.is_draft
     context = {
         "version": version,
         "template": version.template,
@@ -367,6 +369,8 @@ def version_detail(request: HttpRequest, version_id: uuid.UUID) -> HttpResponse:
         "can_manage": can_manage,
         "can_edit_structure": can_manage and version.is_draft,
         "section_form": ChecklistSectionForm(),
+        "is_fg_qa_001_proposal_draft": is_proposal_draft,
+        "show_proposal_review_banner": is_fg_qa_001_proposal_template(version.template),
     }
     return render(request, "checklists/versions/detail.html", context)
 

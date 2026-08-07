@@ -19,7 +19,7 @@
         {% if can_manage and version.status == 'DRAFT' %}
           <form method="post"
                 action="{% url 'checklists:version_publish' version.id %}"
-                onsubmit="return confirm('Publish version {{ version.version_number }}? Published definitions become immutable.');">
+                onsubmit="return confirm('Publish version {{ version.version_number }}? Published definitions become immutable. FG-QA-001 proposals should only be published after QA/Production validation.');">
             {% csrf_token %}
             <button type="submit" class="btn btn--primary btn--inline">Publish</button>
           </form>
@@ -34,6 +34,23 @@
         {% endif %}
       </div>
     </header>
+    {% if show_proposal_review_banner %}
+      <div class="mgmt-page__lead" role="status" aria-live="polite">
+        <p>
+          <strong>Proposed draft — pending QA / Production validation.</strong>
+          FG-QA-001 is a project-proposed baseline.
+          <strong>NOT APPROVED FOR PRODUCTION USE.</strong>
+          SELECT disposition labels (RELEASE / HOLD / REJECT) are definition choices only —
+          they do not run release, HOLD, or REJECT automation.
+          This screen is definition review only — no checklist execution / recording.
+        </p>
+        {% if is_fg_qa_001_proposal_draft %}
+          <p>
+            Lifecycle status remains <strong>Draft</strong> until an authorized publish after validation.
+          </p>
+        {% endif %}
+      </div>
+    {% endif %}
     {% if can_edit_structure %}
       <section class="mgmt-editor" aria-labelledby="add-section-heading">
         <h2 id="add-section-heading">Add section</h2>
