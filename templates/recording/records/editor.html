@@ -8,9 +8,10 @@
       <div>
         <h1 id="recording-editor-heading">Draft Checklist Recording</h1>
         <p class="mgmt-page__lead">
-          Responses are saved as a draft only. Required items may remain unanswered
-          until a future submission phase. Configured number ranges are informational —
-          out-of-range values may be recorded.
+          Save Draft may remain incomplete. Submit Checklist requires all required
+          items answered. Configured number ranges are informational — out-of-range
+          values may be recorded and submitted. This phase does not evaluate product
+          quality outcomes.
         </p>
       </div>
       <a class="btn btn--ghost btn--inline"
@@ -47,7 +48,23 @@
           DRAFT
         </dd>
       </div>
+      <div>
+        <dt>Required progress</dt>
+        <dd>
+          {{ completeness.answered_required_items }} /
+          {{ completeness.required_items }} required answered
+          {% if completeness.missing_required_items %}({{ completeness.missing_required_items|length }} missing){% endif %}
+        </dd>
+      </div>
     </dl>
+    {% if completeness.missing_required_items %}
+      <div class="alert alert-info" role="status">
+        <p>Required items still unanswered (Save Draft is allowed; Submit is not):</p>
+        <ul>
+          {% for item in completeness.missing_required_items %}<li>{{ item.code }} — {{ item.label }}</li>{% endfor %}
+        </ul>
+      </div>
+    {% endif %}
     <form method="post"
           action="{% url 'recording:record_detail' record_id=record.id %}"
           class="recording-editor"
@@ -108,6 +125,8 @@
       {% endfor %}
       <div class="mgmt-actions">
         <button type="submit" class="btn btn--primary">Save Draft</button>
+        <a class="btn btn--secondary"
+           href="{% url 'recording:submit_confirm' record_id=record.id %}">Submit Checklist</a>
       </div>
     </form>
   </section>

@@ -1,4 +1,4 @@
-"""Checklist draft recording services — start + save draft only; no submission."""
+"""Checklist recording services — draft save + immutable submission (Phase 08B)."""
 
 from __future__ import annotations
 
@@ -17,7 +17,14 @@ from apps.checklists.models import (
     ChecklistResponseType,
     ChecklistVersionStatus,
 )
-from apps.recording.models import ChecklistRecord, ChecklistResponse, ChoiceResponseValue
+from apps.recording.models import (
+    ChecklistRecord,
+    ChecklistRecordStatus,
+    ChecklistResponse,
+    ChecklistSubmission,
+    ChecklistSubmissionResponse,
+    ChoiceResponseValue,
+)
 from apps.scheduling.models import ChecklistTask, ChecklistTaskStatus
 from apps.scheduling.services import RECORD_CHECKLIST_TASK, task_authorization_scope
 from apps.security_audit.services import record_event
@@ -35,7 +42,11 @@ def _require_authenticated_actor(actor: User | None) -> User:
 
 
 def _record_metadata(
-    record: ChecklistRecord, *, changed_item_count: int | None = None
+    record: ChecklistRecord,
+    *,
+    changed_item_count: int | None = None,
+    submission: ChecklistSubmission | None = None,
+    answered_item_count: int | None = None,
 ) -> dict[str, Any]:
     task = record.checklist_task
     metadata: dict[str, Any] = {
@@ -48,6 +59,11 @@ def _record_metadata(
     }
     if changed_item_count is not None:
         metadata["changed_item_count"] = changed_item_count
+    if answered_item_count is not None:
+        metadata["answered_item_count"] = answered_item_count
+    if submission is not None:
+        metadata["checklist_submission_id"] = str(submission.id)
+        metadata["submission_number"] = submission.submission_number
     return metadata
 
 
@@ -65,13 +81,38 @@ def _assert_task_recordable(task: ChecklistTask) -> None:
         )
 
 
+def _assert_record_is_draft(record: ChecklistRecord) -> None:
+    if record.status != ChecklistRecordStatus.DRAFT:
+        raise ValidationError(
+            {
+                "status": (
+                    "Submitted checklist records cannot be edited. "
+                    "Future corrections require an explicit resubmission workflow."
+                )
+            }
+        )
+
+
+def transition_record_to_submitted(record: ChecklistRecord) -> ChecklistRecord:
+    """Centralized DRAFT → SUBMITTED transition. Reverse is not allowed in 08B."""
+    if record.status == ChecklistRecordStatus.SUBMITTED:
+        return record
+    if record.status != ChecklistRecordStatus.DRAFT:
+        raise ValidationError(
+            {"status": f"Cannot transition checklist record from {record.status} to SUBMITTED."}
+        )
+    record.status = ChecklistRecordStatus.SUBMITTED
+    record.save(update_fields=["status", "updated_at"])
+    return record
+
+
 def start_checklist_recording(
     *,
     actor: User | None,
     task_id: uuid.UUID,
 ) -> ChecklistRecord:
     """
-    Start (or return existing) draft ChecklistRecord for a PENDING task.
+    Start (or return existing) ChecklistRecord for a PENDING task.
 
     Idempotent and race-safe. Does not transfer started_by ownership.
     """
@@ -139,6 +180,7 @@ def start_checklist_recording(
             record = ChecklistRecord(
                 organization_id=locked.organization_id,
                 checklist_task=locked,
+                status=ChecklistRecordStatus.DRAFT,
                 started_by=user,
             )
             record.full_clean()
@@ -208,7 +250,7 @@ def _apply_typed_value(
             number = Decimal(str(raw).strip())
         except (InvalidOperation, AttributeError, TypeError) as exc:
             raise ValidationError({str(item.id): "Enter a valid number."}) from exc
-        # Out-of-range values are intentionally accepted for draft capture.
+        # Out-of-range values are intentionally accepted.
         response.number_value = number
         return
 
@@ -241,6 +283,95 @@ def _is_blank_answer(raw: Any) -> bool:
     return False
 
 
+def _response_is_structurally_valid(item: ChecklistItem, response: ChecklistResponse) -> bool:
+    response_type = item.response_type
+    if response_type == ChecklistResponseType.YES_NO:
+        return response.choice_value in YES_NO_VALUES
+    if response_type == ChecklistResponseType.YES_NO_NA:
+        return response.choice_value in YES_NO_NA_VALUES
+    if response_type == ChecklistResponseType.NUMBER:
+        return response.number_value is not None
+    if response_type == ChecklistResponseType.TEXT:
+        return bool((response.text_value or "").strip())
+    if response_type == ChecklistResponseType.SELECT:
+        return (
+            response.selected_option_id is not None
+            and response.selected_option is not None
+            and response.selected_option.item_id == item.id
+        )
+    return False
+
+
+def collect_submission_completeness(
+    *,
+    record: ChecklistRecord,
+    items: list[ChecklistItem] | None = None,
+    responses: dict[uuid.UUID, ChecklistResponse] | None = None,
+) -> dict[str, Any]:
+    """
+    Completeness metrics for submission UX / validation.
+
+    Does not evaluate PASS/FAIL or min/max conformance.
+    """
+    version_id = record.checklist_task.checklist_version_id
+    if items is None:
+        items = list(
+            ChecklistItem.objects.select_related("section")
+            .prefetch_related("options")
+            .filter(section__version_id=version_id)
+            .order_by("section__position", "position")
+        )
+    if responses is None:
+        responses = {
+            response.checklist_item_id: response
+            for response in ChecklistResponse.objects.filter(
+                checklist_record_id=record.id
+            ).select_related("selected_option")
+        }
+
+    required_items = [item for item in items if item.is_required]
+    missing_required: list[ChecklistItem] = []
+    for item in required_items:
+        response = responses.get(item.id)
+        if response is None or not _response_is_structurally_valid(item, response):
+            missing_required.append(item)
+
+    answered_count = sum(
+        1
+        for item in items
+        if (resp := responses.get(item.id)) is not None
+        and _response_is_structurally_valid(item, resp)
+    )
+    return {
+        "total_items": len(items),
+        "required_items": len(required_items),
+        "answered_required_items": len(required_items) - len(missing_required),
+        "missing_required_items": missing_required,
+        "answered_items": answered_count,
+        "items": items,
+        "responses": responses,
+    }
+
+
+def validate_record_ready_for_submission(
+    *,
+    record: ChecklistRecord,
+    items: list[ChecklistItem] | None = None,
+    responses: dict[uuid.UUID, ChecklistResponse] | None = None,
+) -> dict[str, Any]:
+    """Raise ValidationError if required completeness is not met."""
+    stats = collect_submission_completeness(record=record, items=items, responses=responses)
+    missing = stats["missing_required_items"]
+    if missing:
+        errors: dict[str, list[str]] = {
+            str(item.id): [f"Required item {item.code} must be answered before submission."]
+            for item in missing
+        }
+        errors["completeness"] = [f"{len(missing)} required item(s) remain unanswered."]
+        raise ValidationError(errors)
+    return stats
+
+
 def save_checklist_draft_responses(
     *,
     actor: User | None,
@@ -248,10 +379,9 @@ def save_checklist_draft_responses(
     answers: dict[uuid.UUID, Any],
 ) -> ChecklistRecord:
     """
-    Save/update/clear typed draft responses for a ChecklistRecord.
+    Save/update/clear typed draft responses for a DRAFT ChecklistRecord.
 
-    Partial completion is allowed — required items may remain unanswered.
-    Does not evaluate min/max, PASS/FAIL, HOLD, or submission completeness.
+    Partial completion is allowed. Rejected when record is SUBMITTED.
     """
     user = _require_authenticated_actor(actor)
 
@@ -276,6 +406,7 @@ def save_checklist_draft_responses(
         if record.organization_id != task.organization_id:
             raise ValidationError({"organization": "Record organization mismatch."})
         _assert_task_recordable(task)
+        _assert_record_is_draft(record)
 
         version_id = task.checklist_version_id
         items = {
@@ -297,7 +428,6 @@ def save_checklist_draft_responses(
         for item_id, raw in answers.items():
             item = items.get(item_id)
             if item is None:
-                # Do not reveal whether a foreign UUID exists elsewhere.
                 errors[str(item_id)] = ["Item is not part of this checklist definition."]
                 continue
 
@@ -343,3 +473,125 @@ def save_checklist_draft_responses(
         "checklist_task__checklist_version",
         "started_by",
     ).get(pk=record.id)
+
+
+def submit_checklist_record(
+    *,
+    actor: User | None,
+    record_id: uuid.UUID,
+) -> ChecklistSubmission:
+    """
+    Submit a complete DRAFT record and create immutable Submission #1 snapshot.
+
+    Idempotent for already-submitted records with submission #1.
+    Does not evaluate PASS/FAIL, HOLD, or QA disposition.
+    ChecklistTask status remains PENDING until a later lifecycle unit.
+    """
+    user = _require_authenticated_actor(actor)
+
+    try:
+        with transaction.atomic():
+            record = (
+                ChecklistRecord.objects.select_related(
+                    "organization",
+                    "checklist_task",
+                    "checklist_task__organization",
+                    "checklist_task__checklist_template",
+                    "checklist_task__checklist_version",
+                    "started_by",
+                )
+                .select_for_update()
+                .filter(pk=record_id)
+                .first()
+            )
+            if record is None:
+                raise ValidationError({"record": "Checklist record not found."})
+
+            task = record.checklist_task
+            require_permission(user, RECORD_CHECKLIST_TASK, scope=task_authorization_scope(task))
+            if record.organization_id != task.organization_id:
+                raise ValidationError({"organization": "Record organization mismatch."})
+            _assert_task_recordable(task)
+
+            if record.status == ChecklistRecordStatus.SUBMITTED:
+                existing = (
+                    ChecklistSubmission.objects.select_related(
+                        "checklist_record",
+                        "submitted_by",
+                    )
+                    .filter(checklist_record_id=record.id, submission_number=1)
+                    .first()
+                )
+                if existing is not None:
+                    return existing
+                raise ValidationError(
+                    {
+                        "status": (
+                            "Record is SUBMITTED but Submission #1 is missing. "
+                            "Contact support — do not invent a replacement submission."
+                        )
+                    }
+                )
+
+            _assert_record_is_draft(record)
+            stats = validate_record_ready_for_submission(record=record)
+            responses: dict[uuid.UUID, ChecklistResponse] = stats["responses"]
+
+            submission = ChecklistSubmission(
+                checklist_record=record,
+                submission_number=1,
+                submitted_by=user,
+            )
+            submission.full_clean()
+            submission.save()
+
+            snapshot_rows: list[ChecklistSubmissionResponse] = []
+            for item in stats["items"]:
+                response = responses.get(item.id)
+                if response is None:
+                    continue
+                if not _response_is_structurally_valid(item, response):
+                    continue
+                snapshot = ChecklistSubmissionResponse(
+                    checklist_submission=submission,
+                    checklist_item=item,
+                    choice_value=response.choice_value,
+                    number_value=response.number_value,
+                    text_value=response.text_value,
+                    selected_option_id=response.selected_option_id,
+                )
+                snapshot.full_clean()
+                snapshot_rows.append(snapshot)
+            ChecklistSubmissionResponse.objects.bulk_create(snapshot_rows)
+
+            transition_record_to_submitted(record)
+            record_event(
+                event_type="CHECKLIST_RECORD_SUBMITTED",
+                actor=user,
+                metadata=_record_metadata(
+                    record,
+                    submission=submission,
+                    answered_item_count=len(snapshot_rows),
+                ),
+            )
+    except IntegrityError:
+        raced = (
+            ChecklistSubmission.objects.select_related(
+                "checklist_record",
+                "submitted_by",
+            )
+            .filter(checklist_record_id=record_id, submission_number=1)
+            .first()
+        )
+        if raced is not None:
+            return raced
+        raise ValidationError({"submission": "Unable to create checklist submission."}) from None
+
+    return ChecklistSubmission.objects.select_related(
+        "checklist_record",
+        "checklist_record__organization",
+        "checklist_record__checklist_task",
+        "checklist_record__checklist_task__checklist_template",
+        "checklist_record__checklist_task__checklist_version",
+        "submitted_by",
+    ).get(pk=submission.id)

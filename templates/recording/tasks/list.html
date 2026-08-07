@@ -7,8 +7,8 @@
       <div>
         <h1 id="recording-list-heading">Checklist Recording</h1>
         <p class="mgmt-page__lead">
-          Draft recording for PENDING checklist tasks. Save Draft only —
-          submission, supervisor review, and QA disposition belong to later phases.
+          Draft recording and submission for PENDING checklist tasks.
+          Supervisor review and QA disposition belong to later phases.
           Production recording remains blocked until approved published definitions
           and recorder role mapping are evidenced.
         </p>
@@ -42,17 +42,28 @@
                 <td>{{ task.get_status_display }}</td>
                 <td>
                   {% if task.checklist_record %}
-                    Draft Started
+                    {% if task.checklist_record.status == "SUBMITTED" %}
+                      Submitted
+                    {% else %}
+                      Draft Started
+                    {% endif %}
                   {% else %}
                     Not Started
                   {% endif %}
                 </td>
                 <td>
                   {% if task.checklist_record %}
-                    <a class="btn btn--secondary btn--inline"
-                       href="{% url 'recording:record_detail' record_id=task.checklist_record.id %}">
-                      Continue Recording
-                    </a>
+                    {% if task.checklist_record.status == "SUBMITTED" %}
+                      <a class="btn btn--secondary btn--inline"
+                         href="{% url 'recording:record_submitted' record_id=task.checklist_record.id %}">
+                        View Submitted
+                      </a>
+                    {% else %}
+                      <a class="btn btn--secondary btn--inline"
+                         href="{% url 'recording:record_detail' record_id=task.checklist_record.id %}">
+                        Continue Recording
+                      </a>
+                    {% endif %}
                   {% else %}
                     <form method="post"
                           action="{% url 'recording:start_recording' task_id=task.id %}">

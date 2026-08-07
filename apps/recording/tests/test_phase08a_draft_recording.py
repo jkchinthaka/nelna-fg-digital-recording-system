@@ -390,11 +390,15 @@ def test_recording_ui_save_draft_and_csrf() -> None:
     editor = ok_client.get(reverse("recording:record_detail", args=[record.id]))
     assert editor.status_code == 200
     assert b"Save Draft" in editor.content
+    assert b"Submit Checklist" in editor.content
     assert b"Configured range" in editor.content
     assert b"Unit: C" in editor.content
-    assert b"Submit" not in editor.content
-    assert b"PASS" not in editor.content
-    assert b"FAIL" not in editor.content
+    assert b"Release" not in editor.content
+    assert b"Hold" not in editor.content
+    assert b"Reject" not in editor.content
+    assert b"Supervisor" not in editor.content
+    assert b"QA Approve" not in editor.content
+    assert b"status-pill" not in editor.content
 
     payload = {
         response_field_name(published["yes_no"].id): "YES",

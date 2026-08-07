@@ -16,4 +16,14 @@ urlpatterns = [
         views.record_detail,
         name="record_detail",
     ),
+    path(
+        "recording/<uuid:record_id>/submit/",
+        views.submit_confirm,
+        name="submit_confirm",
+    ),
+    path(
+        "recording/<uuid:record_id>/submitted/",
+        views.record_submitted,
+        name="record_submitted",
+    ),
 ]

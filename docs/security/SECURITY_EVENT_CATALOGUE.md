@@ -36,6 +36,7 @@
 | `CHECKLIST_TASK_CANCELLED` | Batch checklist task cancelled (soft cancel) |
 | `CHECKLIST_RECORD_STARTED` | Draft checklist record started for a PENDING task |
 | `CHECKLIST_RECORD_DRAFT_SAVED` | Draft checklist responses saved (aggregate) |
+| `CHECKLIST_RECORD_SUBMITTED` | Checklist record submitted with immutable Submission #1 snapshot |
 
 ## Safe metadata
 
@@ -50,6 +51,8 @@ Checklist events may include: template UUID/code, version UUID/number, organizat
 Checklist task events may include: task UUID, organization UUID, template UUID/code, version UUID/number, `batch_reference`, status. Do not store checklist question text or request bodies.
 
 Checklist draft recording events may include: record UUID, task UUID, organization UUID, template UUID, version UUID, `batch_reference`, `changed_item_count`. Do **not** store answer values, question text, remarks, or request bodies.
+
+Checklist submission events may include: record UUID, submission UUID, submission number, task UUID, organization UUID, template UUID, version UUID, `batch_reference`, `answered_item_count`. Do **not** store answer values, question text, remarks, or request bodies.
 
 Unknown login identifiers must be masked or hashed — never store raw unknown employee codes in clear text when the account is unknown.
 

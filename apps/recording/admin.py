@@ -1,11 +1,16 @@
-"""Django admin for draft checklist recording — support-oriented, no hard delete."""
+"""Django admin for recording — support-oriented, no hard delete or snapshot edits."""
 
 from __future__ import annotations
 
 from django.contrib import admin
 from django.http import HttpRequest
 
-from apps.recording.models import ChecklistRecord, ChecklistResponse
+from apps.recording.models import (
+    ChecklistRecord,
+    ChecklistResponse,
+    ChecklistSubmission,
+    ChecklistSubmissionResponse,
+)
 
 
 class ChecklistResponseInline(admin.TabularInline):  # type: ignore[type-arg]
@@ -34,11 +39,12 @@ class ChecklistRecordAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
         "id",
         "organization",
         "checklist_task",
+        "status",
         "started_by",
         "started_at",
         "updated_at",
     )
-    list_filter = ("organization",)
+    list_filter = ("organization", "status")
     search_fields = (
         "checklist_task__batch_reference",
         "checklist_task__checklist_template__code",
@@ -49,6 +55,7 @@ class ChecklistRecordAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
         "id",
         "organization",
         "checklist_task",
+        "status",
         "started_by",
         "started_at",
         "updated_at",
@@ -56,6 +63,11 @@ class ChecklistRecordAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
 
     def has_add_permission(self, request: HttpRequest) -> bool:
         return False
+
+    def has_change_permission(
+        self, request: HttpRequest, obj: ChecklistRecord | None = None
+    ) -> bool:
+        return request.method in {"GET", "HEAD", "OPTIONS"}
 
     def has_delete_permission(
         self, request: HttpRequest, obj: ChecklistRecord | None = None
@@ -102,6 +114,110 @@ class ChecklistResponseAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
 
     def has_delete_permission(
         self, request: HttpRequest, obj: ChecklistResponse | None = None
+    ) -> bool:
+        return False
+
+    def get_actions(self, request: HttpRequest):  # type: ignore[no-untyped-def]
+        actions = super().get_actions(request)
+        actions.pop("delete_selected", None)
+        return actions
+
+
+class ChecklistSubmissionResponseInline(admin.TabularInline):  # type: ignore[type-arg]
+    model = ChecklistSubmissionResponse
+    extra = 0
+    can_delete = False
+    readonly_fields = (
+        "id",
+        "checklist_item",
+        "choice_value",
+        "number_value",
+        "text_value",
+        "selected_option",
+        "created_at",
+    )
+    fields = readonly_fields
+
+    def has_add_permission(
+        self, request: HttpRequest, obj: ChecklistSubmission | None = None
+    ) -> bool:
+        return False
+
+
+@admin.register(ChecklistSubmission)
+class ChecklistSubmissionAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
+    list_display = (
+        "id",
+        "checklist_record",
+        "submission_number",
+        "submitted_by",
+        "submitted_at",
+    )
+    search_fields = (
+        "checklist_record__checklist_task__batch_reference",
+        "submitted_by__employee_code",
+    )
+    ordering = ("-submitted_at",)
+    inlines = (ChecklistSubmissionResponseInline,)
+    readonly_fields = (
+        "id",
+        "checklist_record",
+        "submission_number",
+        "submitted_by",
+        "submitted_at",
+    )
+
+    def has_add_permission(self, request: HttpRequest) -> bool:
+        return False
+
+    def has_change_permission(
+        self, request: HttpRequest, obj: ChecklistSubmission | None = None
+    ) -> bool:
+        return request.method in {"GET", "HEAD", "OPTIONS"}
+
+    def has_delete_permission(
+        self, request: HttpRequest, obj: ChecklistSubmission | None = None
+    ) -> bool:
+        return False
+
+    def get_actions(self, request: HttpRequest):  # type: ignore[no-untyped-def]
+        actions = super().get_actions(request)
+        actions.pop("delete_selected", None)
+        return actions
+
+
+@admin.register(ChecklistSubmissionResponse)
+class ChecklistSubmissionResponseAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
+    list_display = (
+        "id",
+        "checklist_submission",
+        "checklist_item",
+        "choice_value",
+        "number_value",
+        "created_at",
+    )
+    ordering = ("-created_at",)
+    readonly_fields = (
+        "id",
+        "checklist_submission",
+        "checklist_item",
+        "choice_value",
+        "number_value",
+        "text_value",
+        "selected_option",
+        "created_at",
+    )
+
+    def has_add_permission(self, request: HttpRequest) -> bool:
+        return False
+
+    def has_change_permission(
+        self, request: HttpRequest, obj: ChecklistSubmissionResponse | None = None
+    ) -> bool:
+        return request.method in {"GET", "HEAD", "OPTIONS"}
+
+    def has_delete_permission(
+        self, request: HttpRequest, obj: ChecklistSubmissionResponse | None = None
     ) -> bool:
         return False
 

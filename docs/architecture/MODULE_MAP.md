@@ -18,7 +18,7 @@ Do **not** rename FG master data, checklist, recording, review, or evidence work
 | training | Training completion gates as approved | Training records / qualifications refs | Eligibility checks for task assignment | Must not invent training matrices | **05** (not started) |
 | checklists | Definition/versioning (06A–06D); provisional workflow formalization docs (06E) | ChecklistTemplate, ChecklistVersion, ChecklistSection, ChecklistItem | Template/version lifecycle; DRAFT loader; management UI | No recording ownership; no automatic RELEASE/HOLD/REJECT; FG-QA-001 never auto-published | **06A–06E** |
 | scheduling | Batch-triggered checklist task orchestration (07A); batch-source contract + integration port + recording permission foundation (07B) | ChecklistTask (`batch_reference`; no ProductionBatch master) | create/cancel services; `accept_batch_checklist_task_request` port; scoped selectors; orchestration UI | Must not store answers; no DRAFT/RETIRED tasks; no auto latest-version; no invented batch ERP fields; no auto role mapping; manage ≠ record | **07A/07B** |
-| recording | Operator draft checklist recording (08A); submission later (08B) | ChecklistRecord, ChecklistResponse | start recording; save draft responses; scoped selectors; draft UI | No submission/Supervisor/QA/HOLD in 08A; no JSON blob answers; no FG-QA-001 publish; manage ≠ record | **08A** |
+| recording | Operator draft checklist recording (08A) + immutable submission snapshots (08B) | ChecklistRecord, ChecklistResponse, ChecklistSubmission, ChecklistSubmissionResponse | start/save draft; submit; scoped selectors; draft + submitted UI | No Supervisor/QA/HOLD in 08B; draft ≠ historical truth; manage ≠ record; no FG-QA-001 publish | **08A/08B** |
 | tasks | Assignment of work to users/roles (deferred — avoid Celery name clash; 07A in `scheduling`) | Future task assignment states | Assign/claim/complete coordination | Must not store full answer payloads | **07** (beyond 07A) |
 | records | Reserved legacy MODULE_MAP label — **do not scaffold**; use `recording` | — | — | Duplicate of `recording` forbidden | superseded by **recording** |
 | reviews | Supervisor checking workflow | Check actions and outcomes | Check/reject/request-amendment services | Must not perform QA verification ownership | **09** |
@@ -40,7 +40,7 @@ Do **not** rename FG master data, checklist, recording, review, or evidence work
 | --- | --- |
 | 06 | **06A–06D** checklist definition/response/proposal loader; **06E** provisional workflow formalization |
 | 07 | **07A** ChecklistTask foundation; **07B** batch-source contract + recorder authorization readiness; later recurrence/assignment as approved |
-| 08 | **08A** `recording` draft foundation; **08B** submission later when gates pass |
+| 08 | **08A** draft recording; **08B** immutable submission snapshots; correction/Supervisor later |
 | 09 | `reviews` supervisor checking |
 | 10 | `quality` QA verification |
 
