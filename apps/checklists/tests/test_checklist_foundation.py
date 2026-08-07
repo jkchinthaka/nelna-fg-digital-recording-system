@@ -302,7 +302,8 @@ def test_list_edit_object_aware_and_query_bound(client: Client) -> None:
     body = response.content.decode()
     assert reverse("checklists:template_edit", args=[t_a.id]) in body
     assert reverse("checklists:template_edit", args=[t_b.id]) not in body
-    assert len(ctx) < 50
+    # Bound includes primary nav permission tags (including recording module gate).
+    assert len(ctx) < 55
 
 
 @pytest.mark.django_db

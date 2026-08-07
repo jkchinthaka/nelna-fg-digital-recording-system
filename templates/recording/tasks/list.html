@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Checklist Recording — Nelna FG Digital Recording System{% endblock %}
+{% block body_class %}mgmt-shell{% endblock %}
+{% block content %}
+  <section class="mgmt-page" aria-labelledby="recording-list-heading">
+    <header class="mgmt-page__header">
+      <div>
+        <h1 id="recording-list-heading">Checklist Recording</h1>
+        <p class="mgmt-page__lead">
+          Draft recording for PENDING checklist tasks. Save Draft only —
+          submission, supervisor review, and QA disposition belong to later phases.
+          Production recording remains blocked until approved published definitions
+          and recorder role mapping are evidenced.
+        </p>
+      </div>
+    </header>
+    {% if not tasks %}
+      <p class="mgmt-page__lead" role="status">No recordable checklist tasks are available.</p>
+    {% else %}
+      <div class="table-wrap"
+           role="region"
+           aria-label="Recordable checklist tasks">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th scope="col">Batch reference</th>
+              <th scope="col">Checklist</th>
+              <th scope="col">Version</th>
+              <th scope="col">Organization</th>
+              <th scope="col">Task status</th>
+              <th scope="col">Recording state</th>
+              <th scope="col">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for task in tasks %}
+              <tr>
+                <td>{{ task.batch_reference }}</td>
+                <td>{{ task.checklist_template.code }} — {{ task.checklist_template.name }}</td>
+                <td>v{{ task.checklist_version.version_number }}</td>
+                <td>{{ task.organization.code }}</td>
+                <td>{{ task.get_status_display }}</td>
+                <td>
+                  {% if task.checklist_record %}
+                    Draft Started
+                  {% else %}
+                    Not Started
+                  {% endif %}
+                </td>
+                <td>
+                  {% if task.checklist_record %}
+                    <a class="btn btn--secondary btn--inline"
+                       href="{% url 'recording:record_detail' record_id=task.checklist_record.id %}">
+                      Continue Recording
+                    </a>
+                  {% else %}
+                    <form method="post"
+                          action="{% url 'recording:start_recording' task_id=task.id %}">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn--primary btn--inline">Start Recording</button>
+                    </form>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% if page.has_other_pages %}
+        <nav class="pagination" aria-label="Recording task pages">
+          {% if page.has_previous %}<a href="?page={{ page.previous_page_number }}">Previous</a>{% endif %}
+          <span>Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+          {% if page.has_next %}<a href="?page={{ page.next_page_number }}">Next</a>{% endif %}
+        </nav>
+      {% endif %}
+    {% endif %}
+  </section>
+{% endblock %}

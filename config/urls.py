@@ -12,6 +12,7 @@ urlpatterns = [
     path("", include("apps.master_data.urls")),
     path("", include("apps.checklists.urls")),
     path("", include("apps.scheduling.urls")),
+    path("", include("apps.recording.urls")),
     path("", include("apps.core.urls")),
 ]
 

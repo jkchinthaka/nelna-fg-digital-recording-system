@@ -56,7 +56,7 @@ Checklist task capabilities (Phase 07A/07B):
 | --- | --- |
 | `scheduling.view_checklisttask` | View orchestration tasks |
 | `scheduling.manage_checklisttask` | Administrative create/cancel |
-| `scheduling.record_checklisttask` | Future Phase 08 recording — catalogue only; not auto-assigned |
+| `scheduling.record_checklisttask` | Phase 08A draft recording — catalogue permission; not auto-assigned to business roles |
 
 Manage does **not** imply record. Business categories (Production Employee / Store Employee / QA) require explicit approved role mapping before assignment.
 

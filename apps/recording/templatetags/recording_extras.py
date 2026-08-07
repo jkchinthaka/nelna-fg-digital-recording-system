@@ -1,0 +1,28 @@
+"""Recording template filters."""
+
+from __future__ import annotations
+
+from typing import Any
+
+from django import template
+from django.forms import BoundField, Form
+
+from apps.recording.forms import response_field_name
+from apps.recording.selectors import actor_can_access_recording_module
+
+register = template.Library()
+
+
+@register.simple_tag(takes_context=True)
+def user_can_record_checklist_tasks(context: dict[str, Any]) -> bool:
+    request = context.get("request")
+    user = getattr(request, "user", None) if request is not None else None
+    return actor_can_access_recording_module(user)
+
+
+@register.filter
+def response_bound_field(form: Form, item: Any) -> BoundField | None:
+    name = response_field_name(item.id)
+    if name not in form.fields:
+        return None
+    return form[name]

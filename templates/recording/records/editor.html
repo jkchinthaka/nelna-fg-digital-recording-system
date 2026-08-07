@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% load recording_extras %}
+{% block title %}Draft Recording — Nelna FG Digital Recording System{% endblock %}
+{% block body_class %}mgmt-shell{% endblock %}
+{% block content %}
+  <section class="mgmt-page" aria-labelledby="recording-editor-heading">
+    <header class="mgmt-page__header">
+      <div>
+        <h1 id="recording-editor-heading">Draft Checklist Recording</h1>
+        <p class="mgmt-page__lead">
+          Responses are saved as a draft only. Required items may remain unanswered
+          until a future submission phase. Configured number ranges are informational —
+          out-of-range values may be recorded.
+        </p>
+      </div>
+      <a class="btn btn--ghost btn--inline"
+         href="{% url 'recording:task_list' %}">Back to recordable tasks</a>
+    </header>
+    <dl class="mgmt-meta" aria-label="Recording context">
+      <div>
+        <dt>Template</dt>
+        <dd>
+          {{ task.checklist_template.code }} — {{ task.checklist_template.name }}
+        </dd>
+      </div>
+      <div>
+        <dt>Version</dt>
+        <dd>
+          v{{ task.checklist_version.version_number }} ({{ task.checklist_version.status }})
+        </dd>
+      </div>
+      <div>
+        <dt>Batch reference</dt>
+        <dd>
+          {{ task.batch_reference }}
+        </dd>
+      </div>
+      <div>
+        <dt>Organization</dt>
+        <dd>
+          {{ task.organization.code }} — {{ task.organization.name }}
+        </dd>
+      </div>
+      <div>
+        <dt>Recording state</dt>
+        <dd>
+          DRAFT
+        </dd>
+      </div>
+    </dl>
+    <form method="post"
+          action="{% url 'recording:record_detail' record_id=record.id %}"
+          class="recording-editor"
+          novalidate>
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="alert alert-error" role="alert">
+          {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+        </div>
+      {% endif %}
+      {% for section in sections %}
+        <section class="recording-section" aria-labelledby="section-{{ section.id }}">
+          <h2 id="section-{{ section.id }}">{{ section.title }}</h2>
+          {% if section.description %}<p class="recording-section__description">{{ section.description }}</p>{% endif %}
+          {% for item in section.items.all %}
+            {% with field=form|response_bound_field:item %}
+              <fieldset class="recording-item">
+                <legend>
+                  {{ item.code }} — {{ item.label }}
+                  {% if item.is_required %}<span class="recording-item__required">Required</span>{% endif %}
+                </legend>
+                {% if item.help_text %}<p class="form-help">{{ item.help_text }}</p>{% endif %}
+                {% if item.response_type == "NUMBER" %}
+                  {% if item.unit %}<p class="form-help">Unit: {{ item.unit }}</p>{% endif %}
+                  {% if item.minimum_value is not None or item.maximum_value is not None %}
+                    <p class="form-help">
+                      Configured range:
+                      {% if item.minimum_value is not None %}
+                        {{ item.minimum_value }}
+                      {% else %}
+                        —
+                      {% endif %}
+                      –
+                      {% if item.maximum_value is not None %}
+                        {{ item.maximum_value }}
+                      {% else %}
+                        —
+                      {% endif %}
+                      {% if item.unit %}{{ item.unit }}{% endif %}
+                      (informational only)
+                    </p>
+                  {% endif %}
+                {% endif %}
+                {% if field %}
+                  <div class="form-field">
+                    {{ field }}
+                    {% if field.errors %}
+                      <ul class="form-errors" role="alert">
+                        {% for error in field.errors %}<li>{{ error }}</li>{% endfor %}
+                      </ul>
+                    {% endif %}
+                  </div>
+                {% endif %}
+              </fieldset>
+            {% endwith %}
+          {% endfor %}
+        </section>
+      {% endfor %}
+      <div class="mgmt-actions">
+        <button type="submit" class="btn btn--primary">Save Draft</button>
+      </div>
+    </form>
+  </section>
+{% endblock %}

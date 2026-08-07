@@ -34,6 +34,8 @@
 | `CHECKLIST_VERSION_RETIRED` | Published checklist version retired |
 | `CHECKLIST_TASK_CREATED` | Batch checklist task created (or idempotent return of existing) |
 | `CHECKLIST_TASK_CANCELLED` | Batch checklist task cancelled (soft cancel) |
+| `CHECKLIST_RECORD_STARTED` | Draft checklist record started for a PENDING task |
+| `CHECKLIST_RECORD_DRAFT_SAVED` | Draft checklist responses saved (aggregate) |
 
 ## Safe metadata
 
@@ -46,6 +48,8 @@ FG Product events may include: FG Product UUID, normalized Product code, Organiz
 Checklist events may include: template UUID/code, version UUID/number, organization UUID, optional product UUID, status, changed field names. Do not store full checklist question text in security audit metadata. Lifecycle transitions remain DRAFT→PUBLISHED→RETIRED only (Phase 06B); audit emits once from services, not duplicated from views.
 
 Checklist task events may include: task UUID, organization UUID, template UUID/code, version UUID/number, `batch_reference`, status. Do not store checklist question text or request bodies.
+
+Checklist draft recording events may include: record UUID, task UUID, organization UUID, template UUID, version UUID, `batch_reference`, `changed_item_count`. Do **not** store answer values, question text, remarks, or request bodies.
 
 Unknown login identifiers must be masked or hashed — never store raw unknown employee codes in clear text when the account is unknown.
 

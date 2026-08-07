@@ -1,11 +1,11 @@
 # Phase 08 Recording Readiness Gate
 
-**Document status:** Evidence-driven entry gate — **not** Phase 08 authorization
-**Created:** 2026-08-07 (Phase 07B)
+**Document status:** Evidence-driven entry gate — **not** production authorization
+**Updated:** 2026-08-08 (Phase 08A)
 
 ## Purpose
 
-Prevent premature ChecklistResponse / submission schema work until recording authorization and at least one approved published definition path exists.
+Separate **08A technical draft recording foundation** from **production recording readiness**.
 
 ## Entry criteria
 
@@ -14,7 +14,8 @@ Prevent premature ChecklistResponse / submission schema work until recording aut
 | Generic response-definition schema exists (06C) | **PASS** |
 | Checklist definition/versioning exists (06A/06B) | **PASS** |
 | Batch ChecklistTask foundation exists (07A) | **PASS** |
-| Recording permission architecture exists (`record_checklisttask`) | **PASS** (07B catalogue only — not assigned) |
+| Recording permission architecture exists (`record_checklisttask`) | **PASS** (catalogue — not auto-assigned) |
+| Phase 08A draft recording technical foundation (`apps.recording`) | **PASS** (synthetic tests only) |
 | At least one approved/published test/pilot definition available | **NOT YET** (FG-QA-001 remains DRAFT) |
 | Recorder role mapping approved | **NOT YET** |
 | Correction/resubmission business rule sufficiently defined | **PROVISIONAL** (06E — preserve original; no silent overwrite) |
@@ -24,17 +25,19 @@ Prevent premature ChecklistResponse / submission schema work until recording aut
 
 ## Verdict
 
-**PHASE 08 IMPLEMENTATION REMAINS BLOCKED.**
+**PHASE 08A TECHNICAL FOUNDATION:** complete (draft only).
 
-Do not create:
+**PRODUCTION RECORDING / PHASE 08B SUBMISSION:** remain **BLOCKED**.
 
-- ChecklistRun / ChecklistResponse / Submission tables
-- operator recording UI
+Do not create in later work without gates:
+
+- ChecklistSubmission / SupervisorReview / QADecision
 - automatic HOLD / RELEASE / REJECT evaluation
+- FG-QA-001 publication without owner approval
 
 ## Related
 
+- [ADR-013-CHECKLIST-DRAFT-RECORDING.md](../architecture/ADR-013-CHECKLIST-DRAFT-RECORDING.md)
+- [CHECKLIST_RECORDING_UI.md](../design/CHECKLIST_RECORDING_UI.md)
 - [CHECKLIST_RECORDER_ROLE_MAPPING.md](CHECKLIST_RECORDER_ROLE_MAPPING.md)
 - [PHASE_07_PRODUCTION_READINESS_GATE.md](PHASE_07_PRODUCTION_READINESS_GATE.md)
-- [PHASE_06E_FG_QA_001_PROVISIONAL_WORKFLOW.md](../decisions/PHASE_06E_FG_QA_001_PROVISIONAL_WORKFLOW.md)
-- [ADR-012-BATCH-SOURCE-AND-RECORDER-AUTHORIZATION.md](../architecture/ADR-012-BATCH-SOURCE-AND-RECORDER-AUTHORIZATION.md)

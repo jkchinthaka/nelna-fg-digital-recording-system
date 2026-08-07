@@ -789,4 +789,57 @@
       padding: 1.25rem 1rem;
     }
   }
+
+  .mgmt-meta {
+    display: grid;
+    gap: 0.75rem;
+    margin: 1rem 0 1.5rem;
+  }
+
+  .mgmt-meta dt {
+    font-weight: 600;
+  }
+
+  .mgmt-meta dd {
+    margin: 0.15rem 0 0;
+  }
+
+  .recording-section {
+    margin: 1.5rem 0;
+  }
+
+  .recording-section__description {
+    margin: 0.35rem 0 1rem;
+  }
+
+  .recording-item {
+    border: 1px solid var(--color-border-default, #dde4ea);
+    border-radius: 0.5rem;
+    padding: 0.85rem 1rem 1rem;
+    margin: 0 0 0.85rem;
+  }
+
+  .recording-item__required {
+    font-size: 0.85em;
+    font-weight: 600;
+    margin-left: 0.35rem;
+  }
+
+  .form-help {
+    margin: 0.35rem 0;
+    font-size: 0.9rem;
+  }
+
+  .form-errors {
+    margin: 0.35rem 0 0;
+    padding-left: 1.1rem;
+    color: var(--color-danger, #b42318);
+  }
+
+  .mgmt-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+  }
 }

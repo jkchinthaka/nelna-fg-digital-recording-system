@@ -183,18 +183,19 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Dependencies | Phase 06 technical + 06E provisional workflow; FG-QA-001 publish + batch source for real generation |
 | Status | **07A + 07B** â€” technical foundation + integration/RBAC readiness docs; real production task generation still **BLOCKED** |
 
-## Phase 08 â€” Checklist recording and submission (draft â†’ submit)
+## Phase 08 — Checklist recording and submission (draft → submit)
 
 | Field | Content |
 | --- | --- |
-| Objective | Online draft and submission UX and record services (DRAFT â†’ SUBMITTED) |
+| Objective | Online draft and submission UX and record services (DRAFT → SUBMITTED) |
 | Inputs | Figma operator screens; published templates; approved recorder role mapping |
-| Outputs | `records` submit path; operator UI |
-| Approval gate | Operator UAT sample (Sinhala UAT still blocked by DEBT-01C-R-NOTO); Phase 08 readiness gate |
-| Branch naming | `feature/phase-08-operator-recording` |
-| Exit criteria | Submit immutability; online MVP flows; no fake success |
-| Dependencies | Phase 07; Phase 01 progress; PHASE_08_RECORDING_READINESS_GATE |
-| Notes | **Not** Phase 04. Do not include supervisor approval in this phase. **Phase 08 remains BLOCKED** until published definition + recorder mapping. |
+| Outputs | **08A:** `recording.ChecklistRecord` / `ChecklistResponse` draft foundation + Save Draft UI; **08B:** submission later when gates pass |
+| Approval gate | Operator UAT sample (Sinhala UAT still blocked by DEBT-01C-R-NOTO); Phase 08 readiness gate for production use |
+| Branch naming | Direct-main quality-first for 08A |
+| Exit criteria | **08A:** typed draft responses; record permission enforced; partial draft allowed; no Submit/HOLD. Full Phase 08: submit immutability; online MVP flows; no fake success |
+| Dependencies | Phase 07 technical; Phase 01 progress; published pilot definition + recorder mapping for production |
+| Notes | **Not** Phase 04. Do not include supervisor approval in this phase. **08A technical foundation complete**; **production recording remains BLOCKED** (FG-QA-001 unpublished; role mapping open). |
+| Status | **08A implemented** — draft only; 08B+ blocked |
 
 ## Phase 09 â€” Supervisor checking and amendments
 

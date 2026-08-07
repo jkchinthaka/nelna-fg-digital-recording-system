@@ -13,6 +13,7 @@ ALLOWED_APPS = {
     "master_data",
     "checklists",
     "scheduling",
+    "recording",
     "access_control",
     "security_audit",
 }

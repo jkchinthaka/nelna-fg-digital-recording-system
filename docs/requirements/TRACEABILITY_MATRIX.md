@@ -34,10 +34,10 @@
 | TEMPLATE-003 | QA owner (TBC) | Invented limits | checklists | ADR-010; ASM-001 | PHASE_06A_TEST_PLAN | TBC | Controlled docs — EVIDENCE REQUIRED | Proposed — limits excluded from 06A |
 | TASK-001 | Operations / FG (TBC) | Missed tasks | scheduling | ADR-011; ADR-012; PHASE_06E; PHASE_07_PRODUCTION_READINESS_GATE; PRODUCTION_BATCH_SOURCE_CONTRACT | PHASE_07A_TEST_PLAN; PHASE_07B_TEST_PLAN | TBC | Per-batch provisional trigger; ChecklistTask + batch_reference; source contract without ERP invention | 07A/07B — real generation blocked |
 | TASK-002 | IT / Security (TBC) | Unauthorized task view | scheduling | ADR-011; ADR-012 | PHASE_07A_TEST_PLAN; PHASE_07B_TEST_PLAN | TBC | Org-scoped view/manage; record permission separate and unassigned | Phase 07B |
-| RECORD-001 | FG Operations (TBC) | Incomplete digital adoption | records | TBC — Phase 08; PHASE_08_RECORDING_READINESS_GATE; CHECKLIST_RECORDER_ROLE_MAPPING | TBC | TBC | MVP scope | Proposed — Phase 08 BLOCKED |
-| RECORD-002 | Business / QA (TBC) | Slow / unusable UX | records (UI) | FIGMA_PLAN | TBC | TBC | Constitution | Proposed |
-| RECORD-003 | QA owner (TBC) | Silent alteration | records | TBC — Phase 09 | TBC | TBC | Architecture principles | Proposed |
-| RECORD-004 | Business / IT (TBC) | ERP outage blocks floor | records / integrations | TBC | TBC | TBC | Constitution | Proposed |
+| RECORD-001 | FG Operations (TBC) | Incomplete digital adoption | recording | ADR-013; CHECKLIST_RECORDING_UI; PHASE_08_RECORDING_READINESS_GATE; CHECKLIST_RECORDER_ROLE_MAPPING | PHASE_08A_TEST_PLAN | TBC | 08A draft foundation; production recording gated | 08A technical — production BLOCKED |
+| RECORD-002 | Business / QA (TBC) | Slow / unusable UX | recording (UI) | CHECKLIST_RECORDING_UI; FIGMA_PLAN | PHASE_08A_TEST_PLAN | TBC | Save Draft UI | 08A technical |
+| RECORD-003 | QA owner (TBC) | Silent alteration | recording | TBC — Phase 08B/09 | TBC | TBC | Architecture principles; no overwrite of submitted records | Proposed |
+| RECORD-004 | Business / IT (TBC) | ERP outage blocks floor | recording / integrations | TBC | TBC | TBC | Constitution | Proposed |
 | REVIEW-001 | FG / Operations (TBC) | Weak checking | reviews | TBC — Phase 09 | TBC | TBC | EVIDENCE REQUIRED | Proposed |
 | REVIEW-002 | QA / IT (TBC) | SoD bypass | reviews / accounts | TBC | TBC | TBC | Security baseline | Proposed |
 | REVIEW-003 | QA owner (TBC) | Lost correction history | records / reviews | TBC | TBC | TBC | Architecture principles | Proposed |
