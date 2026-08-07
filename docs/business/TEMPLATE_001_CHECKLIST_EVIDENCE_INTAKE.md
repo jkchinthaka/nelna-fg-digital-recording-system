@@ -3,15 +3,23 @@
 **Document status:** Evidence collection contract — **not** approved business truth
 **Requirement:** TEMPLATE-001 (related: TEMPLATE-002, TEMPLATE-003, ASM-001, ASM-003)
 **Created:** 2026-08-07 (Phase 06B)
+**Updated:** 2026-08-07 — aligned to required real business evidence checklist
 **Technical foundation:** Phase 06A/06B configurable unseeded checklist definition/versioning
 
 ## Purpose
 
-Stakeholders must supply approved checklist/form evidence before real content loading, response-schema implementation, or Phase 07 scheduling.
+Stakeholders must supply **approved real checklist/form evidence** before:
+
+- loading official form content into the system
+- deciding response-type schema (before Phase 08 recording)
+- authorizing Phase 07 scheduling / tasks
 
 Empty fields are **EVIDENCE REQUIRED**. Do not invent answers.
 
-Companion template: [templates/CHECKLIST_ITEM_EVIDENCE_INVENTORY.csv](templates/CHECKLIST_ITEM_EVIDENCE_INVENTORY.csv) (headers only).
+Companion per-item worksheet (headers only):
+[templates/CHECKLIST_ITEM_EVIDENCE_INVENTORY.csv](templates/CHECKLIST_ITEM_EVIDENCE_INVENTORY.csv)
+
+---
 
 ## Current technical baseline (not business approval)
 
@@ -22,47 +30,82 @@ Companion template: [templates/CHECKLIST_ITEM_EVIDENCE_INVENTORY.csv](templates/
 | Lifecycle | DRAFT → PUBLISHED → RETIRED; published/retired structure immutable |
 | Response types | Not modeled — EVIDENCE REQUIRED |
 | Limits / temperature / instruments / training | Not modeled — EVIDENCE REQUIRED |
+| Scheduling / recording / review workflow | Not modeled — Phase 07+; EVIDENCE REQUIRED |
 | Seeded content | None |
 
 ---
 
-## A. Checklist identity
+## 1. Actual checklist / form (source artifact)
+
+Supply at least one real artifact. Preferred formats:
+
+| Artifact type | Provided? | Location / filename | Notes |
+| --- | --- | --- | --- |
+| PDF | EVIDENCE REQUIRED | EVIDENCE REQUIRED | |
+| Excel | EVIDENCE REQUIRED | EVIDENCE REQUIRED | |
+| Word | EVIDENCE REQUIRED | EVIDENCE REQUIRED | |
+| Screenshot / photo | EVIDENCE REQUIRED | EVIDENCE REQUIRED | |
+| Existing paper form (scan/photo) | EVIDENCE REQUIRED | EVIDENCE REQUIRED | |
+
+Store artifacts outside invented app content (e.g. controlled document store). Record path/reference here only.
+
+---
+
+## 2. Checklist identity
 
 | Item | Value |
 | --- | --- |
-| Official checklist / form name | EVIDENCE REQUIRED |
-| Official code / reference number | EVIDENCE REQUIRED |
-| Business owner | EVIDENCE REQUIRED |
-| Organization applicability | EVIDENCE REQUIRED |
-| Product applicability | EVIDENCE REQUIRED |
-| Existing paper/ERP revision identifier | EVIDENCE REQUIRED |
+| Official form name | EVIDENCE REQUIRED |
+| Form / reference code | EVIDENCE REQUIRED |
+| Revision / version | EVIDENCE REQUIRED |
+| Department / business owner | EVIDENCE REQUIRED |
 
-## B. Structure
+---
 
-| Item | Value |
+## 3. Actual sections
+
+| Section order | Section name | Notes |
+| --- | --- | --- |
+| EVIDENCE REQUIRED | EVIDENCE REQUIRED | EVIDENCE REQUIRED |
+
+Use additional rows as needed. Do not invent section titles.
+
+---
+
+## 4. Actual checklist items / questions
+
+| Item order | Section | Exact wording | Mandatory / optional | Notes |
+| --- | --- | --- | --- | --- |
+| EVIDENCE REQUIRED | EVIDENCE REQUIRED | EVIDENCE REQUIRED | EVIDENCE REQUIRED | EVIDENCE REQUIRED |
+
+Prefer completing the CSV inventory for item-level capture.
+
+---
+
+## 5. For every item — operator entry
+
+For **each** item, state what the operator enters. Do not preselect a type as approved schema.
+
+| Candidate entry | Applies to this item? |
 | --- | --- |
-| Sections (titles, order) | EVIDENCE REQUIRED |
-| Question / item order | EVIDENCE REQUIRED |
-| Item wording | EVIDENCE REQUIRED |
-| Instructions / help text | EVIDENCE REQUIRED |
-| Mandatory / optional rule per item | EVIDENCE REQUIRED |
+| Text | EVIDENCE REQUIRED |
+| Number | EVIDENCE REQUIRED |
+| Yes / No | EVIDENCE REQUIRED |
+| Selection (list values) | EVIDENCE REQUIRED |
+| Temperature | EVIDENCE REQUIRED |
+| Date / time | EVIDENCE REQUIRED |
+| Photo | EVIDENCE REQUIRED |
+| Signature | EVIDENCE REQUIRED |
+| N/A allowed? | EVIDENCE REQUIRED |
+| Other (specify) | EVIDENCE REQUIRED |
 
-## C. Response requirements
+See also [RESPONSE_TYPE_DECISION_REGISTER.md](RESPONSE_TYPE_DECISION_REGISTER.md) (question list only).
 
-For **each** item, supply:
+---
 
-| Field | Value |
-| --- | --- |
-| Required response type | EVIDENCE REQUIRED |
-| Allowed values | EVIDENCE REQUIRED |
-| Data type | EVIDENCE REQUIRED |
-| Unit (if applicable) | EVIDENCE REQUIRED |
-| Validation rule | EVIDENCE REQUIRED |
-| Null / N/A policy | EVIDENCE REQUIRED |
+## 6. Validation / acceptance
 
-Do not prefill response types. Candidate types to **ask about** (not approved): text, number, boolean, select, date/time, temperature, photo, signature, other.
-
-## D. Limits / acceptance
+Per applicable item:
 
 | Field | Value |
 | --- | --- |
@@ -71,68 +114,90 @@ Do not prefill response types. Candidate types to **ask about** (not approved): 
 | Target | EVIDENCE REQUIRED |
 | Tolerance | EVIDENCE REQUIRED |
 | Pass / fail rule | EVIDENCE REQUIRED |
-| Warning vs hard failure | EVIDENCE REQUIRED |
+| Warning rule | EVIDENCE REQUIRED |
 
-## E. Temperature requirements (ASM-001)
+---
+
+## 7. Measurement information
+
+Per applicable item:
 
 | Field | Value |
 | --- | --- |
-| Whether temperature applies | EVIDENCE REQUIRED |
 | Unit | EVIDENCE REQUIRED |
-| Minimum | EVIDENCE REQUIRED |
-| Maximum | EVIDENCE REQUIRED |
-| Source policy / document | EVIDENCE REQUIRED |
-
-## F. Instrument requirements
-
-| Field | Value |
-| --- | --- |
-| Instrument required? | EVIDENCE REQUIRED |
-| Instrument type | EVIDENCE REQUIRED |
+| Instrument | EVIDENCE REQUIRED |
 | Calibration requirement | EVIDENCE REQUIRED |
-| Evidence source | EVIDENCE REQUIRED |
 
-## G. Training / role requirements
+ASM-001 temperature-class limits remain unresolved until evidenced here or in linked policy.
 
-| Field | Value |
-| --- | --- |
-| Who may record | EVIDENCE REQUIRED |
-| Required training | EVIDENCE REQUIRED |
-| Certification if applicable | EVIDENCE REQUIRED |
+---
 
-## H. Operational context
+## 8. Operational scope
 
 Questions for stakeholders — **not** schema commitments:
 
 | Field | Value |
 | --- | --- |
-| Product | EVIDENCE REQUIRED |
-| Shift | EVIDENCE REQUIRED |
-| Site | EVIDENCE REQUIRED |
-| Department | EVIDENCE REQUIRED |
-| Process / stage | EVIDENCE REQUIRED |
+| Which Product? | EVIDENCE REQUIRED |
+| Which Organization? | EVIDENCE REQUIRED |
+| Site? | EVIDENCE REQUIRED |
+| Department? | EVIDENCE REQUIRED |
+| Shift? | EVIDENCE REQUIRED |
+| Process / stage? | EVIDENCE REQUIRED |
 
-## I. Scheduling / frequency (Phase 07 gate)
+---
 
-| Field | Value |
+## 9. Scheduling
+
+(Phase 07 gate — do not invent frequency)
+
+| Trigger / frequency | Applies? |
 | --- | --- |
-| When checklist is required | EVIDENCE REQUIRED |
-| Per shift? | EVIDENCE REQUIRED |
-| Per batch? | EVIDENCE REQUIRED |
-| Per day? | EVIDENCE REQUIRED |
-| Ad hoc / event trigger? | EVIDENCE REQUIRED |
+| Every shift? | EVIDENCE REQUIRED |
+| Every batch? | EVIDENCE REQUIRED |
+| Daily? | EVIDENCE REQUIRED |
+| Hourly? | EVIDENCE REQUIRED |
+| Before / after production? | EVIDENCE REQUIRED |
+| Ad hoc? | EVIDENCE REQUIRED |
+| Other (specify) | EVIDENCE REQUIRED |
 
-## J. Approval / provenance
+See [PHASE_07_READINESS_GATE.md](PHASE_07_READINESS_GATE.md).
 
-| Field | Value |
+---
+
+## 10. Workflow
+
+| Question | Answer |
 | --- | --- |
-| Supplied by | EVIDENCE REQUIRED |
-| Department / team | EVIDENCE REQUIRED |
-| Source document | EVIDENCE REQUIRED |
-| Source version | EVIDENCE REQUIRED |
-| Date | EVIDENCE REQUIRED |
+| Who fills it? | EVIDENCE REQUIRED |
+| Who reviews it? | EVIDENCE REQUIRED |
+| Who approves it? | EVIDENCE REQUIRED |
+| Does QA verify it? | EVIDENCE REQUIRED |
+| Can rejected records be corrected / resubmitted? | EVIDENCE REQUIRED |
+
+---
+
+## 11. Evidence (attachments / marks)
+
+| Question | Answer |
+| --- | --- |
+| Photo required? | EVIDENCE REQUIRED |
+| File attachment? | EVIDENCE REQUIRED |
+| Signature? | EVIDENCE REQUIRED |
+| Remarks? | EVIDENCE REQUIRED |
+
+---
+
+## 12. Source / approval
+
+| Item | Value |
+| --- | --- |
+| Who provided the form? | EVIDENCE REQUIRED |
+| Current approved revision? | EVIDENCE REQUIRED |
+| Effective date? | EVIDENCE REQUIRED |
 | Approved by | EVIDENCE REQUIRED |
 | Approval date | EVIDENCE REQUIRED |
+| Source document reference | EVIDENCE REQUIRED |
 
 ---
 
@@ -140,9 +205,10 @@ Questions for stakeholders — **not** schema commitments:
 
 - Phase 06A/06B technical work does **not** resolve TEMPLATE-001.
 - Optional Product association is provisional, not proven mandatory.
-- Response-type candidate list is a question list only.
+- Response-type candidates are a question list only — not an approved schema.
 - This intake is **not** an import specification and does **not** authorize CSV import code.
-- Phase 07 must not assume unanswered scheduling/scope answers.
+- Phase 07 must not start from unanswered scheduling / workflow / scope answers.
+- Do not invent form content, limits, or temperature rules to unblock engineering.
 
 ## Related
 
@@ -150,3 +216,4 @@ Questions for stakeholders — **not** schema commitments:
 - [PHASE_06_CHECKLIST_PROVISIONAL_CONFIGURATION.md](../decisions/PHASE_06_CHECKLIST_PROVISIONAL_CONFIGURATION.md)
 - [ADR-010-CHECKLIST-DEFINITION-VERSIONING.md](../architecture/ADR-010-CHECKLIST-DEFINITION-VERSIONING.md)
 - [PHASE_07_READINESS_GATE.md](PHASE_07_READINESS_GATE.md)
+- [RESPONSE_TYPE_DECISION_REGISTER.md](RESPONSE_TYPE_DECISION_REGISTER.md)

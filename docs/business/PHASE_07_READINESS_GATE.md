@@ -22,6 +22,8 @@ Do not invent answers. Do not create Schedule/Task models while this gate is ope
 | 6 | What happens when a definition changes after tasks exist? | EVIDENCE REQUIRED |
 | 7 | Can tasks reference retired definitions? | EVIDENCE REQUIRED |
 | 8 | Timezone / cutoff rules evidenced? | EVIDENCE REQUIRED |
+| 9 | Fill / review / approve / QA verify / resubmit workflow evidenced (TEMPLATE-001 §10)? | EVIDENCE REQUIRED |
+| 10 | Scheduling trigger choices evidenced (shift/batch/daily/hourly/before-after/ad hoc — TEMPLATE-001 §9)? | EVIDENCE REQUIRED |
 
 ## Technical note
 
