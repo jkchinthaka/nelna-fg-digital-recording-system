@@ -1,18 +1,18 @@
-# Roadmap — Phase Delivery Plan
+﻿# Roadmap â€” Phase Delivery Plan
 
 **Document status:** Governing roadmap for greenfield delivery
-**Phase:** Phase 04A/04B · Phase 05A/05B · Phase 06A/06B/06C/06D checklist definition + draft loader · MASTER-001 / TEMPLATE still evidence-required
+**Phase:** Phase 04A/04B Â· Phase 05A/05B Â· Phase 06A/06B/06C/06D checklist definition + draft loader Â· MASTER-001 / TEMPLATE still evidence-required
 **Last updated:** 2026-08-07
 
 Branch naming pattern: `foundation/...`, `design/...`, `feature/phase-NN-short-name`, or `hardening/...` as appropriate. Never commit directly to `main`.
 
-**Progress:** Phase 00–01C complete (01C with deferred Sinhala condition). Phase 02 **Approved with conditions** and merged (PR #5 / #6). Phase 03 accounts/RBAC **Approved with conditions** and merged (PR #7 / related follow-up merges). Authentication UI polish **merged** (PR #8). Phase 04 scope reconciliation **merged** (PR #10). Organization, Site, and Department models exist from Phase 03. Phase **04A** implements a configurable, **unseeded** Shift domain foundation under owner provisional direction (no invented Nelna shift values). Phase **04B** delivers the Shift management web UI. Phase **05A** implements a configurable, **unseeded** FG Product foundation under owner provisional direction (organization-scoped; no invented product catalogues). Phase **05B** hardens Product UI authorization (object-aware manage affordances) and MASTER-001 evidence intake readiness. Phase **06A** implements a configurable, **unseeded** checklist definition/versioning foundation (immutable published versions; no invented form content). Phase **06B** hardens checklist lifecycle governance and TEMPLATE-001 evidence intake readiness. Phase **06C** adds provisional checklist response-definition schema and a **project-proposed** FG-QA-001 draft (NOT APPROVED for production; not seeded). Phase **06D** adds an explicit DRAFT-only loader (`load_fg_qa_001_draft`) and internal validation worksheet — never auto-seeds, never publishes. MASTER-001 and TEMPLATE evidence remain required. Real-data configuration and UAT remain pending. **No recording/scheduling modules** have started. ASM-004 / ASM-005 / ASM-006 remain partially unresolved for official business values. DEBT-01C-R-NOTO remains **open** (blocking for operator UAT/pilot/production and final Sinhala operator UI). Production readiness **not** claimed. No deployment approval exists.
+**Progress:** Phase 00â€“01C complete (01C with deferred Sinhala condition). Phase 02 **Approved with conditions** and merged (PR #5 / #6). Phase 03 accounts/RBAC **Approved with conditions** and merged (PR #7 / related follow-up merges). Authentication UI polish **merged** (PR #8). Phase 04 scope reconciliation **merged** (PR #10). Organization, Site, and Department models exist from Phase 03. Phase **04A** implements a configurable, **unseeded** Shift domain foundation under owner provisional direction (no invented Nelna shift values). Phase **04B** delivers the Shift management web UI. Phase **05A** implements a configurable, **unseeded** FG Product foundation under owner provisional direction (organization-scoped; no invented product catalogues). Phase **05B** hardens Product UI authorization (object-aware manage affordances) and MASTER-001 evidence intake readiness. Phase **06A** implements a configurable, **unseeded** checklist definition/versioning foundation (immutable published versions; no invented form content). Phase **06B** hardens checklist lifecycle governance and TEMPLATE-001 evidence intake readiness. Phase **06C** adds provisional checklist response-definition schema and a **project-proposed** FG-QA-001 draft (NOT APPROVED for production; not seeded). Phase **06D** adds an explicit DRAFT-only loader (`load_fg_qa_001_draft`) and internal validation worksheet â€” never auto-seeds, never publishes. MASTER-001 and TEMPLATE evidence remain required. Real-data configuration and UAT remain pending. **No recording/scheduling modules** have started. ASM-004 / ASM-005 / ASM-006 remain partially unresolved for official business values. DEBT-01C-R-NOTO remains **open** (blocking for operator UAT/pilot/production and final Sinhala operator UI). Production readiness **not** claimed. No deployment approval exists.
 
 **Numbering rule:** Preserve roadmap phase numbers. Do **not** rename FG master data, checklist templates, recording, review, or evidence work as Phase 04.
 
 ---
 
-## Phase 00 — Discovery and governance
+## Phase 00 â€” Discovery and governance
 
 | Field | Content |
 | --- | --- |
@@ -23,9 +23,9 @@ Branch naming pattern: `foundation/...`, `design/...`, `feature/phase-NN-short-n
 | Branch naming | `foundation/project-discovery` |
 | Exit criteria | Required docs and rules merged; no app code; no invented Nelna values |
 | Dependencies | None |
-| Status | **Complete — merged to main** |
+| Status | **Complete â€” merged to main** |
 
-## Phase 01A — User journeys, IA, and low-fidelity specification
+## Phase 01A â€” User journeys, IA, and low-fidelity specification
 
 | Field | Content |
 | --- | --- |
@@ -36,39 +36,39 @@ Branch naming pattern: `foundation/...`, `design/...`, `feature/phase-NN-short-n
 | Branch naming | `design/figma-user-journeys` |
 | Exit criteria | Required 01A docs in review/merged; no app code; no false approval claims; no invented Nelna values |
 | Dependencies | Phase 00 merged |
-| Status | **Complete — merged; owner-approved as proposed baseline (2026-08-04)** |
+| Status | **Complete â€” merged; owner-approved as proposed baseline (2026-08-04)** |
 
-## Phase 01B — Design tokens and components
+## Phase 01B â€” Design tokens and components
 
 | Field | Content |
 | --- | --- |
-| Objective | Define design tokens and core component system for Figma pages 04–05; document build/review/approval path |
+| Objective | Define design tokens and core component system for Figma pages 04â€“05; document build/review/approval path |
 | Inputs | Owner-approved 01A baseline; accessibility/content/responsive rules |
 | Outputs | DESIGN_TOKENS; COMPONENT_SYSTEM; catalogue/anatomy/patterns; foundations; variables/build guides; tokens JSON; contrast validation; Figma draft file + implementation log; 01B checklist + approval form |
 | Approval gate | Design system review + [PHASE_01B_DESIGN_APPROVAL.md](approvals/PHASE_01B_DESIGN_APPROVAL.md) |
-| Branch naming | `design/figma-tokens-components` (deviation from planned `design/figma-design-system` — see PHASE_01B_DECISIONS P1B-010) |
+| Branch naming | `design/figma-tokens-components` (deviation from planned `design/figma-design-system` â€” see PHASE_01B_DECISIONS P1B-010) |
 | Exit criteria | Token/component specs + artefacts in review; JSON valid; contrast documented; Figma status truthful; no app code; no false approval claims |
 | Dependencies | Phase 01A approval |
-| Status | **Approved with conditions (2026-08-05) — merged via PR #3** |
+| Status | **Approved with conditions (2026-08-05) â€” merged via PR #3** |
 
-## Phase 01C — High-fidelity MVP screens and prototype
+## Phase 01C â€” High-fidelity MVP screens and prototype
 
 | Field | Content |
 | --- | --- |
-| Objective | High-fidelity MVP screens (pages 06–12) and interactive prototype |
+| Objective | High-fidelity MVP screens (pages 06â€“12) and interactive prototype |
 | Inputs | 01A journeys/IA; 01B tokens/components; 01B approval conditions |
 | Outputs | Hi-fi frames; prototype; developer handoff expansion; continued variable/component/a11y completion |
 | Approval gate | Business/QA UX review of MVP flows; [PHASE_01C_HIGH_FIDELITY_APPROVAL.md](approvals/PHASE_01C_HIGH_FIDELITY_APPROVAL.md) |
 | Branch naming | `design/figma-high-fidelity-mvp` |
 | Exit criteria | MVP journeys prototype-ready; Sinhala/EN strategy applied with pending translations marked; 01B conditions not omitted; 67 open design decisions resolved or documented |
 | Dependencies | Phase 01B approval |
-| Status | **Approved with deferred Sinhala typography condition (2026-08-05) — Phase 02 foundation authorized after PR #4 merge; DEBT-01C-R-NOTO remains open** |
+| Status | **Approved with deferred Sinhala typography condition (2026-08-05) â€” Phase 02 foundation authorized after PR #4 merge; DEBT-01C-R-NOTO remains open** |
 
-## Phase 01 — Figma journeys and design system (umbrella)
+## Phase 01 â€” Figma journeys and design system (umbrella)
 
 | Field | Content |
 | --- | --- |
-| Objective | Umbrella for 01A–01C per FIGMA_PLAN |
+| Objective | Umbrella for 01Aâ€“01C per FIGMA_PLAN |
 | Inputs | Charter, MVP scope, questionnaire answers as available |
 | Outputs | Complete Figma foundation through hi-fi prototype |
 | Approval gate | See 01A/01B/01C gates |
@@ -76,33 +76,33 @@ Branch naming pattern: `foundation/...`, `design/...`, `feature/phase-NN-short-n
 | Exit criteria | Journeys agreed; tokens/components done; hi-fi MVP reviewed |
 | Dependencies | Phase 00 |
 
-## Phase 02 — Django/PostgreSQL foundation
+## Phase 02 â€” Django/PostgreSQL foundation
 
 | Field | Content |
 | --- | --- |
 | Objective | Create Django 5.2 project, PostgreSQL, Docker Compose, settings layout, Pytest skeleton, CI gates, frontend build baseline |
 | Inputs | ADRs; environment strategy; Phase 01C deferred-condition approval |
 | Outputs | Runnable local foundation without business modules; Phase 02 docs/ADRs |
-| Approval gate | Technical review — [PHASE_02_TECHNICAL_FOUNDATION_APPROVAL.md](approvals/PHASE_02_TECHNICAL_FOUNDATION_APPROVAL.md) |
+| Approval gate | Technical review â€” [PHASE_02_TECHNICAL_FOUNDATION_APPROVAL.md](approvals/PHASE_02_TECHNICAL_FOUNDATION_APPROVAL.md) |
 | Branch naming | `foundation/django-postgresql` (obsolete planned name `feature/phase-02-django-foundation` **superseded**) |
 | Exit criteria | App boots locally; base migrations OK; CI gates defined; no invented business data; approval form signed |
 | Dependencies | Phase 01C approved with deferred Sinhala condition |
-| Status | **Approved with conditions** — merged via PR #5 / #6; DEBT-01C-R-NOTO remains open |
+| Status | **Approved with conditions** â€” merged via PR #5 / #6; DEBT-01C-R-NOTO remains open |
 
-## Phase 03 — Accounts and RBAC
+## Phase 03 â€” Accounts and RBAC
 
 | Field | Content |
 | --- | --- |
 | Objective | Employee-code identity, session auth, lockout, org/site/department scope, Django-permission roles, scoped assignments, security audit |
 | Inputs | Phase 02 approved foundation; security baseline |
-| Outputs | `accounts`, `organizations`, `access_control`, `security_audit`; ADRs 006–007; Phase 03 approval form |
-| Approval gate | Security-focused PR review — [PHASE_03_ACCOUNTS_RBAC_APPROVAL.md](approvals/PHASE_03_ACCOUNTS_RBAC_APPROVAL.md) |
+| Outputs | `accounts`, `organizations`, `access_control`, `security_audit`; ADRs 006â€“007; Phase 03 approval form |
+| Approval gate | Security-focused PR review â€” [PHASE_03_ACCOUNTS_RBAC_APPROVAL.md](approvals/PHASE_03_ACCOUNTS_RBAC_APPROVAL.md) |
 | Branch naming | `feature/accounts-rbac` |
 | Exit criteria | Auth/RBAC/lockout/audit tests pass; no seeded users/orgs/roles; no business workflows; approval form signed |
 | Dependencies | Phase 02 |
-| Status | **Approved with conditions (2026-08-06)** — merged via PR #7 (and related follow-ups); DEBT-01C-R-NOTO remains open; authentication UI polish merged via PR #8 |
+| Status | **Approved with conditions (2026-08-06)** â€” merged via PR #7 (and related follow-ups); DEBT-01C-R-NOTO remains open; authentication UI polish merged via PR #8 |
 
-## Phase 04 — Organization hierarchy and shifts
+## Phase 04 â€” Organization hierarchy and shifts
 
 | Field | Content |
 | --- | --- |
@@ -113,7 +113,7 @@ Branch naming pattern: `foundation/...`, `design/...`, `feature/phase-NN-short-n
 | Branch naming | Direct-main for 04A/04B quality-first workflow; feature branches optional |
 | Exit criteria | Phase 04A: configurable Shift model/services/selectors/audit/admin/tests without seeded business rows. Phase 04B: authorized Shift management UI. Full Phase 04: real Shift values configured after evidence; scoped queries remain sound |
 | Dependencies | Phase 03 complete; Phase 04 scope reconciliation (PR #10); owner provisional decision for configurable foundation |
-| Status | **04A + 04B implemented** — Phase 04 **not** fully complete; real-data configuration / UAT pending |
+| Status | **04A + 04B implemented** â€” Phase 04 **not** fully complete; real-data configuration / UAT pending |
 
 ### Phase 04 scope statement
 
@@ -123,9 +123,9 @@ Phase 04 completes residual organization-hierarchy confirmation and introduces S
 
 | Gate | Requirement | Status |
 | --- | --- | --- |
-| ASM-004 | Confirm official organization / site / department naming and hierarchy | **DECISION REQUIRED** — remains unresolved for official names/codes; models exist; no inventing Nelna values |
-| ASM-005 | Confirm shift names and codes | **EVIDENCE REQUIRED** — remains unresolved for official Shift names/codes; technical configurable foundation provisionally unblocked only |
-| ASM-006 | Confirm shift timing, overnight behavior, and effective-date rules | **DECISION REQUIRED** — remains unresolved for official timings/policy; provisional overnight derivation (`end <= start`) is technical only |
+| ASM-004 | Confirm official organization / site / department naming and hierarchy | **DECISION REQUIRED** â€” remains unresolved for official names/codes; models exist; no inventing Nelna values |
+| ASM-005 | Confirm shift names and codes | **EVIDENCE REQUIRED** â€” remains unresolved for official Shift names/codes; technical configurable foundation provisionally unblocked only |
+| ASM-006 | Confirm shift timing, overnight behavior, and effective-date rules | **DECISION REQUIRED** â€” remains unresolved for official timings/policy; provisional overnight derivation (`end <= start`) is technical only |
 
 Do **not** invent or seed Day/Night shift names, official shift start/end times, official shift codes, site codes, or department codes. Authorized users configure real Shift values later. Production use remains prohibited until real data and UAT are confirmed.
 
@@ -142,7 +142,7 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 - Sinhala UI approval
 - Deployment / production readiness claims
 
-## Phase 05 — FG operational master data, instruments and training
+## Phase 05 â€” FG operational master data, instruments and training
 
 | Field | Content |
 | --- | --- |
@@ -153,10 +153,10 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Branch naming | Direct-main quality-first for 05A/05B |
 | Exit criteria | 05A: configurable unseeded FG Product model/services/selectors/UI/audit without seeded business rows. 05B: object-aware Product UI affordances + MASTER-001 evidence intake readiness. Full Phase 05: evidenced entities only after MASTER-001 |
 | Dependencies | Phase 04 (04A/04B complete) |
-| Status | **05A + 05B implemented** — MASTER-001 unresolved; instruments/training not started; Product schema expansion blocked; Phase 05 **not** fully complete |
+| Status | **05A + 05B implemented** â€” MASTER-001 unresolved; instruments/training not started; Product schema expansion blocked; Phase 05 **not** fully complete |
 | Notes | **Not** Phase 04. Do not combine with checklist templates or recording. Site-only RBAC does not imply organization Product management under provisional ownership. |
 
-## Phase 06 — Checklist definition and versioning
+## Phase 06 â€” Checklist definition and versioning
 
 | Field | Content |
 | --- | --- |
@@ -167,36 +167,36 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Branch naming | Direct-main quality-first for 06A/06B/06C/06D/06E |
 | Exit criteria | 06A: configurable unseeded Template/Version/Section/Item with immutable publish, RBAC, UI, audit. 06B: centralized lifecycle, concurrency/immutability hardening, evidence intake readiness. 06C: provisional response-definition primitives + draft proposal artifact (not production content). 06D: explicit Organization-scoped DRAFT load (never publish/auto-seed) + stakeholder validation package. 06E: record owner-directed provisional workflow (per-batch trigger; recorder categories; Supervisor/QA authority; future HOLD/correction invariants) without claiming formal QA/Production approval. Full Phase 06: evidenced forms only after TEMPLATE evidence |
 | Dependencies | Phase 05 technical foundation (Product optional association); TEMPLATE evidence for content |
-| Status | **06A + 06B + 06C + 06D + 06E** — provisional workflow recorded (not formal sign-off); FG-QA-001 remains project-proposed DRAFT; TEMPLATE/ASM/MASTER content unresolved; Phase 06 **not** fully complete |
-| Notes | **Not** Phase 04. Definition/versioning + response **definition** schema only — no operator submission ownership. No invented temperature limits; no automatic RELEASE/HOLD/REJECT. FG-QA-001 draft is **NOT APPROVED**; not auto-seeded; DRAFT load is review-only. Phase 07A technical foundation may proceed under provisional workflow; full Phase 07 production readiness remains evidence-gated. |
+| Status | **06A + 06B + 06C + 06D + 06E** â€” provisional workflow recorded (not formal sign-off); FG-QA-001 remains project-proposed DRAFT; TEMPLATE/ASM/MASTER content unresolved; Phase 06 **not** fully complete |
+| Notes | **Not** Phase 04. Definition/versioning + response **definition** schema only â€” no operator submission ownership. No invented temperature limits; no automatic RELEASE/HOLD/REJECT. FG-QA-001 draft is **NOT APPROVED**; not auto-seeded; DRAFT load is review-only. Phase 07A technical foundation may proceed under provisional workflow; full Phase 07 production readiness remains evidence-gated. |
 
-## Phase 07 — Scheduling and tasks
+## Phase 07 â€” Scheduling and tasks
 
 | Field | Content |
 | --- | --- |
 | Objective | Schedules and task assignment |
 | Inputs | Owner-directed provisional per-batch trigger (06E); later frequency/applicability evidence for production generation |
-| Outputs | **07A:** `scheduling.ChecklistTask` foundation (`batch_reference`, PUBLISHED-only explicit version, PENDING/CANCELLED); later recurrence/`schedules` as approved |
-| Approval gate | Operations review of due logic for full Phase 07; 07A is technical foundation only |
-| Branch naming | Direct-main quality-first for 07A |
-| Exit criteria | **07A:** org-scoped create/cancel/list/detail with RBAC, audit, uniqueness, no recording/HOLD. Full Phase 07: operators see correct due work from evidenced batch source + published approved definitions |
+| Outputs | **07A:** `scheduling.ChecklistTask` foundation; **07B:** batch-source contract + integration port + `record_checklisttask` permission foundation + production/Phase 08 readiness gates; later recurrence/`schedules` as approved |
+| Approval gate | Operations review of due logic for full Phase 07; 07A/07B are technical/readiness only |
+| Branch naming | Direct-main quality-first for 07A/07B |
+| Exit criteria | **07A:** org-scoped create/cancel/list/detail with RBAC, audit, uniqueness, no recording/HOLD. **07B:** source contract + manageâ‰ record permission architecture; no ERP invention. Full Phase 07: operators see correct due work from evidenced batch source + published approved definitions |
 | Dependencies | Phase 06 technical + 06E provisional workflow; FG-QA-001 publish + batch source for real generation |
-| Status | **07A technical foundation implemented** — real production task generation still **BLOCKED** (FG-QA-001 DRAFT; batch source unresolved; Product/Shift/Site applicability open) |
+| Status | **07A + 07B** â€” technical foundation + integration/RBAC readiness docs; real production task generation still **BLOCKED** |
 
-## Phase 08 — Checklist recording and submission (draft → submit)
+## Phase 08 â€” Checklist recording and submission (draft â†’ submit)
 
 | Field | Content |
 | --- | --- |
-| Objective | Online draft and submission UX and record services (DRAFT → SUBMITTED) |
-| Inputs | Figma operator screens; published templates |
+| Objective | Online draft and submission UX and record services (DRAFT â†’ SUBMITTED) |
+| Inputs | Figma operator screens; published templates; approved recorder role mapping |
 | Outputs | `records` submit path; operator UI |
-| Approval gate | Operator UAT sample (Sinhala UAT still blocked by DEBT-01C-R-NOTO) |
+| Approval gate | Operator UAT sample (Sinhala UAT still blocked by DEBT-01C-R-NOTO); Phase 08 readiness gate |
 | Branch naming | `feature/phase-08-operator-recording` |
 | Exit criteria | Submit immutability; online MVP flows; no fake success |
-| Dependencies | Phase 07; Phase 01 progress |
-| Notes | **Not** Phase 04. Do not include supervisor approval in this phase. |
+| Dependencies | Phase 07; Phase 01 progress; PHASE_08_RECORDING_READINESS_GATE |
+| Notes | **Not** Phase 04. Do not include supervisor approval in this phase. **Phase 08 remains BLOCKED** until published definition + recorder mapping. |
 
-## Phase 09 — Supervisor checking and amendments
+## Phase 09 â€” Supervisor checking and amendments
 
 | Field | Content |
 | --- | --- |
@@ -207,9 +207,9 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Branch naming | `feature/phase-09-supervisor-review` |
 | Exit criteria | SoD tests pass; before/after history stored |
 | Dependencies | Phase 08 |
-| Notes | **Not** Phase 04. Supervisor rejection/return paths belong here when approved — not in master-data or template phases. |
+| Notes | **Not** Phase 04. Supervisor rejection/return paths belong here when approved â€” not in master-data or template phases. |
 
-## Phase 10 — QA verification
+## Phase 10 â€” QA verification
 
 | Field | Content |
 | --- | --- |
@@ -220,9 +220,9 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Branch naming | `feature/phase-10-qa-verification` |
 | Exit criteria | Verify path tested; no AI final decisions |
 | Dependencies | Phase 09 |
-| Notes | Correction/rejection/return that are **supervisor-owned** remain Phase 09. Do not merge Phases 08–10 into one mega-phase. |
+| Notes | Correction/rejection/return that are **supervisor-owned** remain Phase 09. Do not merge Phases 08â€“10 into one mega-phase. |
 
-## Phase 11 — Attachments and evidence storage
+## Phase 11 â€” Attachments and evidence storage
 
 | Field | Content |
 | --- | --- |
@@ -235,7 +235,7 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Dependencies | Phase 08+ (can start in parallel after foundation) |
 | Notes | **Not** Phase 04. Malware scanning and retention remain deferred until decided. |
 
-## Phase 12 — Non-conformance, holds and CAPA
+## Phase 12 â€” Non-conformance, holds and CAPA
 
 | Field | Content |
 | --- | --- |
@@ -247,7 +247,7 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Exit criteria | Human-only CAPA closure |
 | Dependencies | Phase 10 |
 
-## Phase 13 — Loading, dispatch and cold-chain controls
+## Phase 13 â€” Loading, dispatch and cold-chain controls
 
 | Field | Content |
 | --- | --- |
@@ -257,9 +257,9 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Approval gate | Dispatch + QA |
 | Branch naming | `feature/phase-13-loading-dispatch` |
 | Exit criteria | No AI loading release |
-| Dependencies | Phase 10–11 |
+| Dependencies | Phase 10â€“11 |
 
-## Phase 14 — Offline PWA and synchronization
+## Phase 14 â€” Offline PWA and synchronization
 
 | Field | Content |
 | --- | --- |
@@ -271,7 +271,7 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Exit criteria | Offline tests pass; idempotent sync |
 | Dependencies | Phase 08+ stable online flows |
 
-## Phase 15 — Notifications
+## Phase 15 â€” Notifications
 
 | Field | Content |
 | --- | --- |
@@ -283,7 +283,7 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Exit criteria | Failure-safe sending; no secret leak |
 | Dependencies | Provider decision |
 
-## Phase 16 — Reports and audit export
+## Phase 16 â€” Reports and audit export
 
 | Field | Content |
 | --- | --- |
@@ -295,7 +295,7 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Exit criteria | Export matches approved pilot/prod needs |
 | Dependencies | Audit events from earlier phases |
 
-## Phase 17 — ERP integration
+## Phase 17 â€” ERP integration
 
 | Field | Content |
 | --- | --- |
@@ -307,7 +307,7 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Exit criteria | No direct ERP DB writes; recording works if ERP down |
 | Dependencies | ASM-014 |
 
-## Phase 18 — Local AI and anomaly detection
+## Phase 18 â€” Local AI and anomaly detection
 
 | Field | Content |
 | --- | --- |
@@ -319,7 +319,7 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Exit criteria | Advisory only; core flows work with AI off |
 | Dependencies | Stable workflows; AI policy acknowledgement |
 
-## Phase 19 — Security, backup, monitoring and performance
+## Phase 19 â€” Security, backup, monitoring and performance
 
 | Field | Content |
 | --- | --- |
@@ -331,7 +331,7 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Exit criteria | Restore drill passed; security review recorded |
 | Dependencies | Staging-like environment |
 
-## Phase 20 — Pilot, UAT and parallel paper run
+## Phase 20 â€” Pilot, UAT and parallel paper run
 
 | Field | Content |
 | --- | --- |
@@ -343,7 +343,7 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Exit criteria | Exit criteria met; critical defects closed |
 | Dependencies | Phases through applicable MVP scope + Phase 19 as required |
 
-## Phase 21 — Production release and handover
+## Phase 21 â€” Production release and handover
 
 | Field | Content |
 | --- | --- |

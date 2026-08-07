@@ -1,0 +1,75 @@
+# Production Batch Source Contract
+
+**Document status:** Architecture contract — **not** an implemented ERP/Bileeta connector
+**Created:** 2026-08-07 (Phase 07B)
+**Related:** [ADR-012](../architecture/ADR-012-BATCH-SOURCE-AND-RECORDER-AUTHORIZATION.md), [ADR-011](../architecture/ADR-011-BATCH-CHECKLIST-TASK-FOUNDATION.md)
+
+## Purpose
+
+Describe what a future production-batch integration must supply before real automatic checklist-task generation is authorized.
+
+This document does **not** invent:
+
+- API URLs
+- ERP table names
+- Bileeta endpoint names
+- credentials
+- webhook schemas
+- event payload samples presented as facts
+
+Unknown values are **EVIDENCE REQUIRED**.
+
+## Current technical consumer
+
+Phase 07A/07B task creation accepts:
+
+| Field | Required | Notes |
+| --- | --- | --- |
+| `organization_id` | Yes | Must map to an existing Organization |
+| `batch_reference` | Yes | Trimmed external/business batch identity; case-preserving |
+| `checklist_template_id` | Yes | Explicit template |
+| `checklist_version_id` | Yes | Explicit **PUBLISHED** version only |
+
+Code port: `apps.scheduling.integration.accept_batch_checklist_task_request`
+Domain service: `create_batch_checklist_task`
+
+## Conceptual source contract (future)
+
+| Concept | Requirement | Status |
+| --- | --- | --- |
+| Source system identifier | Stable label for the originating system | EVIDENCE REQUIRED |
+| External batch reference | Maps to `batch_reference` | EVIDENCE REQUIRED (format/rules) |
+| Organization mapping | External plant/company → Organization UUID | EVIDENCE REQUIRED |
+| Event/action meaning | Create task / cancel / ignore | EVIDENCE REQUIRED |
+| Creation timestamp | Optional if supplied by source | EVIDENCE REQUIRED |
+| Idempotency key | Must prevent duplicate tasks for same logical batch+checklist | Current: org+template+batch_reference; future source-event key EVIDENCE REQUIRED |
+| Source-of-truth ownership | Which system owns batch lifecycle | EVIDENCE REQUIRED |
+| Retry semantics | Safe retries must be idempotent | Required |
+| Duplicate event behavior | Same version → return existing; different version → reject | Implemented for current identity |
+| Update/cancellation semantics | How cancelled/closed batches affect tasks | EVIDENCE REQUIRED |
+| Authentication | Machine identity for inbound events/API | EVIDENCE REQUIRED |
+| Audit | Accept/reject/create/idempotent outcomes | Partial (task create/cancel events exist) |
+| Failure handling | Operational owner for poison messages / mapping failures | EVIDENCE REQUIRED |
+
+## Explicit non-implementation (Phase 07B)
+
+- No `apps.integrations` ERP adapter
+- No webhook endpoint
+- No polling worker
+- No Celery ingestion
+- No ProductionBatch model
+- No `source_system` / `source_event_id` columns (deferred until evidenced)
+
+## Observability expectations (future)
+
+Log/audit categories (no secrets / no full auth headers):
+
+- source received
+- request accepted / rejected
+- task created / idempotent return
+- mapping failure
+- authorization / configuration failure
+- duplicate / version conflict
+- retry outcome
+
+Reuse `CHECKLIST_TASK_CREATED` when a task is actually created.

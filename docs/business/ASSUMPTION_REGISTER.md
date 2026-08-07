@@ -83,7 +83,9 @@ TEMPLATE-001 / ASM-003 form inventory and official checklist content remain **EV
 | ASM-001 temperature-class limits | Remains **open** — EVIDENCE REQUIRED; limits unset on FG-QA-001 draft |
 | MASTER-001 Product catalogue / fields | Remains **open** — EVIDENCE REQUIRED; no Product codes in FG-QA-001 draft; loader does not assign Products |
 | Batch checklist task foundation (Phase 07A) | Implemented technically — `scheduling.ChecklistTask` + `batch_reference`; PUBLISHED-only explicit version; no ProductionBatch master; no recording/HOLD |
-| Scheduling / recording / review | Full Phase 07 production generation + Phase 08/09/10 still gated — see [PHASE_07_READINESS_GATE.md](PHASE_07_READINESS_GATE.md) |
+| Batch source / ERP connector | Unresolved — EVIDENCE REQUIRED — contract only: [PRODUCTION_BATCH_SOURCE_CONTRACT.md](../integration/PRODUCTION_BATCH_SOURCE_CONTRACT.md); no invented endpoints |
+| Recorder role mapping (Phase 07B) | Permission `scheduling.record_checklisttask` exists unassigned; mapping APPROVAL REQUIRED — [CHECKLIST_RECORDER_ROLE_MAPPING.md](CHECKLIST_RECORDER_ROLE_MAPPING.md) |
+| Scheduling / recording / review | Full Phase 07 production generation + Phase 08/09/10 still gated — see [PHASE_07_PRODUCTION_READINESS_GATE.md](PHASE_07_PRODUCTION_READINESS_GATE.md) and [PHASE_08_RECORDING_READINESS_GATE.md](PHASE_08_RECORDING_READINESS_GATE.md) |
 | Real-content / operational / production use | Remains blocked |
 
 See [PHASE_06_CHECKLIST_PROVISIONAL_CONFIGURATION.md](../decisions/PHASE_06_CHECKLIST_PROVISIONAL_CONFIGURATION.md) and [ADR-010](../architecture/ADR-010-CHECKLIST-DEFINITION-VERSIONING.md).

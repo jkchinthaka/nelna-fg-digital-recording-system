@@ -21,6 +21,7 @@ Owner-directed provisional workflow states that a checklist is required for ever
 8. Cancel soft-cancels; no hard delete.
 9. Permissions: `scheduling.view_checklisttask`, `scheduling.manage_checklisttask` — not recording permissions.
 10. Audit: `CHECKLIST_TASK_CREATED`, `CHECKLIST_TASK_CANCELLED` with operational metadata including `batch_reference`.
+11. **Phase 07B:** thin integration port + `scheduling.record_checklisttask` catalogue permission (unassigned); no ERP connector; no source_system columns — see [ADR-012](ADR-012-BATCH-SOURCE-AND-RECORDER-AUTHORIZATION.md).
 
 ## Boundaries
 
@@ -34,14 +35,24 @@ Owner-directed provisional workflow states that a checklist is required for ever
 | | Celery / periodic generation |
 | | Publishing FG-QA-001 |
 
+| In Phase 07B | Out of scope |
+| --- | --- |
+| Batch source contract (EVIDENCE REQUIRED fields) | Real ERP/Bileeta connector |
+| Integration port delegating to create service | Webhooks / polling |
+| `record_checklisttask` permission declaration | Auto role mapping / recording UI |
+| Production + Phase 08 readiness gates | Response/submission models |
+
 ## Consequences
 
 - FG-QA-001 cannot generate real tasks until approved and published (intentional).
 - Real production generation remains blocked until batch source integration and remaining business decisions are evidenced.
 - Recurrence/`Schedule` models remain deferred.
+- Manage task permission must never be treated as recording permission.
 
 ## References
 
 - [PHASE_06E_FG_QA_001_PROVISIONAL_WORKFLOW.md](../decisions/PHASE_06E_FG_QA_001_PROVISIONAL_WORKFLOW.md)
 - [MODULE_MAP.md](MODULE_MAP.md)
 - [PHASE_07_READINESS_GATE.md](../business/PHASE_07_READINESS_GATE.md)
+- [PHASE_07_PRODUCTION_READINESS_GATE.md](../business/PHASE_07_PRODUCTION_READINESS_GATE.md)
+- [ADR-012-BATCH-SOURCE-AND-RECORDER-AUTHORIZATION.md](ADR-012-BATCH-SOURCE-AND-RECORDER-AUTHORIZATION.md)

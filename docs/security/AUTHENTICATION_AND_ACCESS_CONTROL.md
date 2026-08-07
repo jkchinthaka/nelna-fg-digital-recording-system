@@ -1,7 +1,7 @@
 # Authentication and Access Control
 
-**Document status:** Phase 03 foundation guidance
-**Last updated:** 2026-08-06
+**Document status:** Phase 03–07B foundation guidance
+**Last updated:** 2026-08-07
 
 ## Login lifecycle
 
@@ -50,11 +50,22 @@ Server-side enforcement via `access_control` services, decorators, and mixins. F
 
 Active `ScopedRoleAssignment` uniqueness uses PostgreSQL `NULLS NOT DISTINCT` semantics. Service-layer duplicate checks provide friendly validation; the database constraint is authoritative under concurrency.
 
+Checklist task capabilities (Phase 07A/07B):
+
+| Permission | Purpose |
+| --- | --- |
+| `scheduling.view_checklisttask` | View orchestration tasks |
+| `scheduling.manage_checklisttask` | Administrative create/cancel |
+| `scheduling.record_checklisttask` | Future Phase 08 recording — catalogue only; not auto-assigned |
+
+Manage does **not** imply record. Business categories (Production Employee / Store Employee / QA) require explicit approved role mapping before assignment.
+
 ## Security audit
 
 See [SECURITY_EVENT_CATALOGUE.md](SECURITY_EVENT_CATALOGUE.md). Prohibited: passwords, session IDs, cookies, Authorization headers, CSRF tokens, raw bodies, full DB/Redis URLs. Internal audit metadata may record non-sensitive denial reasons (`invalid_credentials`, `account_locked`, `inactive`) that are never shown in the login response.
 
 ## Related
 
-- ADR-006, ADR-007
+- ADR-006, ADR-007, ADR-011, ADR-012
+- [CHECKLIST_RECORDER_ROLE_MAPPING.md](../business/CHECKLIST_RECORDER_ROLE_MAPPING.md)
 - [PHASE_03_TEST_PLAN.md](../testing/PHASE_03_TEST_PLAN.md)

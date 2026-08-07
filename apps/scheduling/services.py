@@ -25,6 +25,7 @@ from apps.security_audit.services import record_event
 
 VIEW_CHECKLIST_TASK = "scheduling.view_checklisttask"
 MANAGE_CHECKLIST_TASK = "scheduling.manage_checklisttask"
+RECORD_CHECKLIST_TASK = "scheduling.record_checklisttask"
 
 
 def _require_authenticated_actor(actor: User | None) -> User:

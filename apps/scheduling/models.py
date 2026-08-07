@@ -68,6 +68,10 @@ class ChecklistTask(models.Model):
         verbose_name_plural = "Checklist tasks"
         permissions = [
             ("manage_checklisttask", "Can manage checklist tasks"),
+            (
+                "record_checklisttask",
+                "Can record checklist task responses (Phase 08 capability foundation)",
+            ),
         ]
         constraints = [
             models.UniqueConstraint(

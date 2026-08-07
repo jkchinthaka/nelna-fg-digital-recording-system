@@ -18,6 +18,7 @@ from apps.organizations.models import Organization
 from apps.scheduling.models import ChecklistTask, ChecklistTaskStatus
 from apps.scheduling.services import (
     MANAGE_CHECKLIST_TASK,
+    RECORD_CHECKLIST_TASK,
     VIEW_CHECKLIST_TASK,
     task_authorization_scope,
 )
@@ -33,10 +34,39 @@ def actor_can_manage_checklist_tasks(actor: User | None) -> bool:
     return bool(organization_ids_with_permission(actor, MANAGE_CHECKLIST_TASK))
 
 
+def actor_can_record_checklist_tasks(actor: User | None) -> bool:
+    """True if actor has recording capability in any organization (Phase 08 prep)."""
+    return bool(organization_ids_with_permission(actor, RECORD_CHECKLIST_TASK))
+
+
 def actor_can_manage_task(actor: User | None, task: ChecklistTask) -> bool:
     if actor is None or not getattr(actor, "is_authenticated", False) or not actor.is_active:
         return False
     return user_has_permission(actor, MANAGE_CHECKLIST_TASK, scope=task_authorization_scope(task))
+
+
+def actor_can_record_task(actor: User | None, task: ChecklistTask) -> bool:
+    """
+    Capability check for future Phase 08 recording.
+
+    Does not mutate task state and does not open recording UI in Phase 07B.
+    """
+    if actor is None or not getattr(actor, "is_authenticated", False) or not actor.is_active:
+        return False
+    return user_has_permission(actor, RECORD_CHECKLIST_TASK, scope=task_authorization_scope(task))
+
+
+def task_is_eligible_for_recording(task: ChecklistTask) -> bool:
+    """
+    Future Phase 08 eligibility contract (documented + testable).
+
+    Requires PENDING status and a historically bound PUBLISHED version.
+    Does not grant permission by itself.
+    """
+    if task.status != ChecklistTaskStatus.PENDING:
+        return False
+    version = task.checklist_version
+    return version.status == ChecklistVersionStatus.PUBLISHED
 
 
 def manageable_organization_ids(actor: User | None) -> frozenset[uuid.UUID]:
