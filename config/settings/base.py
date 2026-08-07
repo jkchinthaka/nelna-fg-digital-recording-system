@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     "apps.core",
     "apps.accounts",
     "apps.organizations",
+    "apps.master_data",
     "apps.access_control",
     "apps.security_audit",
 ]

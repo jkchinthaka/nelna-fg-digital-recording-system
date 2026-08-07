@@ -50,4 +50,19 @@ Do **not** invent Day/Night names, start/end times, shift codes, site/department
 
 See [PHASE_04_SHIFT_PROVISIONAL_CONFIGURATION.md](../decisions/PHASE_04_SHIFT_PROVISIONAL_CONFIGURATION.md) and [ADR-008](../architecture/ADR-008-CONFIGURABLE-SHIFT-FOUNDATION.md).
 
+## Phase 05 gate summary
+
+MASTER-001 remains **EVIDENCE REQUIRED** for official Product Master inventory and real catalogues.
+
+| Topic | Status |
+| --- | --- |
+| Official Product Master field inventory / pilot data (MASTER-001) | Unresolved — EVIDENCE REQUIRED |
+| Configurable unseeded FG Product technical foundation (Phase 05A) | Provisionally unblocked by owner direction (2026-08-07) |
+| Category / UOM / line / ERP IDs / instruments / training | Excluded from 05A; unresolved |
+| Real-data configuration / operational / production use | Remains blocked |
+
+Do **not** invent product catalogues, ERP mappings, or claim MASTER-001 resolved.
+
+See [PHASE_05_FG_PRODUCT_PROVISIONAL_CONFIGURATION.md](../decisions/PHASE_05_FG_PRODUCT_PROVISIONAL_CONFIGURATION.md) and [ADR-009](../architecture/ADR-009-FG-MASTER-DATA-DOMAIN.md).
+
 **No row is APPROVED.** Development must not hard-code these as Nelna facts.

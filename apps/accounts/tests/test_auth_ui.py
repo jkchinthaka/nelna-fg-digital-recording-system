@@ -83,7 +83,8 @@ def test_landing_page_authenticated_and_logout_post(client: Client) -> None:
     content = response.content.decode()
     assert "Welcome" in content
     assert "UI004" in content
-    assert "Operational finished-goods modules are not yet implemented" in content
+    assert "Checklist recording remains a later phase" in content
+    assert "No production master data is seeded" in content
     assert 'method="post"' in content
     assert reverse("accounts:logout") in content
     assert client.get(reverse("accounts:logout")).status_code == 405

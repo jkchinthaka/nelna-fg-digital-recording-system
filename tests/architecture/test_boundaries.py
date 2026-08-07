@@ -10,11 +10,11 @@ ALLOWED_APPS = {
     "core",
     "accounts",
     "organizations",
+    "master_data",
     "access_control",
     "security_audit",
 }
 FORBIDDEN_APPS = {
-    "master_data",
     "checklists",
     "tasks",
     "records",

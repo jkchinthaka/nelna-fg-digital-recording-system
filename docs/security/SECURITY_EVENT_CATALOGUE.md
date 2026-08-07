@@ -1,6 +1,6 @@
 # Security Event Catalogue
 
-**Document status:** Phase 03 foundation + Phase 04A Shift events
+**Document status:** Phase 03 foundation + Phase 04A Shift events + Phase 05A FG Product events
 **Last updated:** 2026-08-07
 
 ## Event types
@@ -20,12 +20,18 @@
 | `SHIFT_UPDATED` | Configurable Shift fields updated via domain service |
 | `SHIFT_ACTIVATED` | Shift reactivated (`is_active=True`) |
 | `SHIFT_DEACTIVATED` | Shift deactivated (`is_active=False`) |
+| `FG_PRODUCT_CREATED` | Configurable FG Product created via domain service |
+| `FG_PRODUCT_UPDATED` | Configurable FG Product fields updated via domain service |
+| `FG_PRODUCT_ACTIVATED` | FG Product reactivated (`is_active=True`) |
+| `FG_PRODUCT_DEACTIVATED` | FG Product deactivated (`is_active=False`) |
 
 ## Safe metadata
 
 Allowed examples: `reason` codes (`invalid_credentials`, `account_locked`, `inactive`), role/assignment UUIDs, organization/site/department UUIDs, boolean flags.
 
 Shift events may include: Shift UUID, normalized Shift code, Organization UUID, optional Site UUID, optional Department UUID, active status, overnight derived flag, changed field names.
+
+FG Product events may include: FG Product UUID, normalized Product code, Organization UUID, active status, changed field names.
 
 Unknown login identifiers must be masked or hashed — never store raw unknown employee codes in clear text when the account is unknown.
 
@@ -41,3 +47,4 @@ Retention period is **deferred** — not decided in Phase 03. Events are append-
 
 - [AUTHENTICATION_AND_ACCESS_CONTROL.md](AUTHENTICATION_AND_ACCESS_CONTROL.md)
 - [ADR-008-CONFIGURABLE-SHIFT-FOUNDATION.md](../architecture/ADR-008-CONFIGURABLE-SHIFT-FOUNDATION.md)
+- [ADR-009-FG-MASTER-DATA-DOMAIN.md](../architecture/ADR-009-FG-MASTER-DATA-DOMAIN.md)

@@ -25,6 +25,10 @@ class SecurityAuditEvent(models.Model):
         SHIFT_UPDATED = "SHIFT_UPDATED", "Shift updated"
         SHIFT_ACTIVATED = "SHIFT_ACTIVATED", "Shift activated"
         SHIFT_DEACTIVATED = "SHIFT_DEACTIVATED", "Shift deactivated"
+        FG_PRODUCT_CREATED = "FG_PRODUCT_CREATED", "FG Product created"
+        FG_PRODUCT_UPDATED = "FG_PRODUCT_UPDATED", "FG Product updated"
+        FG_PRODUCT_ACTIVATED = "FG_PRODUCT_ACTIVATED", "FG Product activated"
+        FG_PRODUCT_DEACTIVATED = "FG_PRODUCT_DEACTIVATED", "FG Product deactivated"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     event_type = models.CharField(max_length=64, choices=EventType.choices)

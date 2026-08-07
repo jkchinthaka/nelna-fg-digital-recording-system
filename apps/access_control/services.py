@@ -142,6 +142,35 @@ def user_has_permission_any_scope(user: User | None, permission: str) -> bool:
     return False
 
 
+def organization_ids_with_permission(user: User | None, permission: str) -> set[uuid.UUID]:
+    """
+    Organization IDs where the actor holds ``permission`` for org-level Scope.
+
+    Site-only or department-only assignments do not grant org-level Scope
+    (see ``_assignment_covers_scope``). Superusers and system-wide grants
+    return all organization primary keys.
+    """
+    if user is None or not getattr(user, "is_authenticated", False) or not user.is_active:
+        return set()
+    if user.is_superuser:
+        return set(Organization.objects.values_list("pk", flat=True))
+
+    org_ids: set[uuid.UUID] = set()
+    for assignment in _active_assignments_qs(user):
+        has_perm = any(
+            _permission_codename_matches(perm, permission)
+            for perm in assignment.role.permissions.all()
+        )
+        if not has_perm:
+            continue
+        if assignment.department_id is not None or assignment.site_id is not None:
+            continue
+        if assignment.organization_id is None:
+            return set(Organization.objects.values_list("pk", flat=True))
+        org_ids.add(assignment.organization_id)
+    return org_ids
+
+
 def get_effective_permissions(
     user: User | None,
     scope: Scope | None = None,
