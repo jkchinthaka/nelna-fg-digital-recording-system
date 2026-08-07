@@ -3,18 +3,25 @@
 **Document status:** Evidence collection contract — **not** approved business truth
 **Requirement:** TEMPLATE-001 (related: TEMPLATE-002, TEMPLATE-003, ASM-001, ASM-003)
 **Created:** 2026-08-07 (Phase 06B)
-**Updated:** 2026-08-07 — aligned to required real business evidence checklist
-**Technical foundation:** Phase 06A/06B configurable unseeded checklist definition/versioning
+**Updated:** 2026-08-07 — Phase 06C: note no formal source form; FG-QA-001 Draft v0.1 project-proposed pending validation
+**Technical foundation:** Phase 06A/06B configurable unseeded checklist definition/versioning; Phase 06C provisional response-definition schema
 
 ## Purpose
 
 Stakeholders must supply **approved real checklist/form evidence** before:
 
 - loading official form content into the system
-- deciding response-type schema (before Phase 08 recording)
+- treating response types as approved business rules (06C primitives are definition-schema only)
 - authorizing Phase 07 scheduling / tasks
 
 Empty fields are **EVIDENCE REQUIRED**. Do not invent answers.
+
+**No formal Nelna FG checklist source form is currently available.** A project-proposed draft exists for validation only:
+
+- [proposals/FG_QA_001_DRAFT_V0_1.md](proposals/FG_QA_001_DRAFT_V0_1.md) — FG-QA-001 Draft v0.1
+- Status: **PROJECT-PROPOSED DRAFT — VALIDATION REQUIRED**
+- **Still not officially approved** for production, pilot, or operational use
+- Not seeded into Organizations
 
 Companion per-item worksheet (headers only):
 [templates/CHECKLIST_ITEM_EVIDENCE_INVENTORY.csv](templates/CHECKLIST_ITEM_EVIDENCE_INVENTORY.csv)
@@ -28,10 +35,10 @@ Companion per-item worksheet (headers only):
 | Entities | ChecklistTemplate / ChecklistVersion / ChecklistSection / ChecklistItem |
 | Scope | Organization-owned; optional provisional FG Product association |
 | Lifecycle | DRAFT → PUBLISHED → RETIRED; published/retired structure immutable |
-| Response types | Not modeled — EVIDENCE REQUIRED |
-| Limits / temperature / instruments / training | Not modeled — EVIDENCE REQUIRED |
+| Response types | Provisional definition-schema primitives (YES_NO, YES_NO_NA, NUMBER, TEXT, SELECT) — business content still EVIDENCE REQUIRED |
+| Limits / temperature / instruments / training | Limits unset; temperature = NUMBER+unit proposal only; instruments/training EVIDENCE REQUIRED |
 | Scheduling / recording / review workflow | Not modeled — Phase 07+; EVIDENCE REQUIRED |
-| Seeded content | None |
+| Seeded content | None — FG-QA-001 draft is documentation only |
 
 ---
 
@@ -203,15 +210,18 @@ See [PHASE_07_READINESS_GATE.md](PHASE_07_READINESS_GATE.md).
 
 ## Explicit non-claims
 
-- Phase 06A/06B technical work does **not** resolve TEMPLATE-001.
+- Phase 06A/06B/06C technical work does **not** fully resolve TEMPLATE-001.
+- FG-QA-001 Draft v0.1 is a **project-proposed** baseline pending QA/Production/IT validation — **not** officially approved.
 - Optional Product association is provisional, not proven mandatory.
-- Response-type candidates are a question list only — not an approved schema.
+- Response-type primitives in 06C are for definition schema only — not approved operational form content.
 - This intake is **not** an import specification and does **not** authorize CSV import code.
 - Phase 07 must not start from unanswered scheduling / workflow / scope answers.
 - Do not invent form content, limits, or temperature rules to unblock engineering.
+- ASM-001 and MASTER-001 remain open.
 
 ## Related
 
+- [proposals/FG_QA_001_DRAFT_V0_1.md](proposals/FG_QA_001_DRAFT_V0_1.md)
 - [ASSUMPTION_REGISTER.md](ASSUMPTION_REGISTER.md)
 - [PHASE_06_CHECKLIST_PROVISIONAL_CONFIGURATION.md](../decisions/PHASE_06_CHECKLIST_PROVISIONAL_CONFIGURATION.md)
 - [ADR-010-CHECKLIST-DEFINITION-VERSIONING.md](../architecture/ADR-010-CHECKLIST-DEFINITION-VERSIONING.md)

@@ -9,6 +9,8 @@ from django.db.models import QuerySet
 
 from apps.checklists.models import (
     ChecklistItem,
+    ChecklistItemOption,
+    ChecklistResponseType,
     ChecklistSection,
     ChecklistTemplate,
     ChecklistVersion,
@@ -155,6 +157,39 @@ class ChecklistItemForm(forms.Form):
         initial=True,
         help_text="Technical required flag for later recording — not a QA threshold.",
     )
+    response_type = forms.ChoiceField(
+        label="Response type",
+        choices=[("", "Select response type"), *ChecklistResponseType.choices],
+        required=False,
+        widget=forms.Select(attrs={"class": "form-input"}),
+        help_text=(
+            "Technical primitive only. Publish requires a type. "
+            "Temperature uses NUMBER with an optional unit (for example °C)."
+        ),
+    )
+    unit = forms.CharField(
+        required=False,
+        max_length=32,
+        label="Unit (NUMBER only)",
+        widget=forms.TextInput(attrs={"class": "form-input", "autocomplete": "off"}),
+        help_text="Optional. Leave blank unless this NUMBER item records a measured unit.",
+    )
+    minimum_value = forms.DecimalField(
+        required=False,
+        max_digits=14,
+        decimal_places=4,
+        label="Minimum (NUMBER only, optional)",
+        widget=forms.NumberInput(attrs={"class": "form-input", "step": "any"}),
+        help_text="Optional. Do not invent Product limits.",
+    )
+    maximum_value = forms.DecimalField(
+        required=False,
+        max_digits=14,
+        decimal_places=4,
+        label="Maximum (NUMBER only, optional)",
+        widget=forms.NumberInput(attrs={"class": "form-input", "step": "any"}),
+        help_text="Optional. Do not invent Product limits.",
+    )
 
     def __init__(self, *args: Any, instance: ChecklistItem | None = None, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
@@ -163,3 +198,35 @@ class ChecklistItemForm(forms.Form):
             self.fields["label"].initial = instance.label
             self.fields["help_text"].initial = instance.help_text
             self.fields["is_required"].initial = instance.is_required
+            self.fields["response_type"].initial = instance.response_type
+            self.fields["unit"].initial = instance.unit
+            self.fields["minimum_value"].initial = instance.minimum_value
+            self.fields["maximum_value"].initial = instance.maximum_value
+
+
+class ChecklistItemOptionForm(forms.Form):
+    value = forms.CharField(
+        max_length=64,
+        label="Option value",
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-input",
+                "autocomplete": "off",
+                "autocapitalize": "characters",
+            }
+        ),
+        help_text="Stable machine value (normalized uppercase).",
+    )
+    label = forms.CharField(
+        max_length=255,
+        label="Option label",
+        widget=forms.TextInput(attrs={"class": "form-input", "autocomplete": "off"}),
+    )
+
+    def __init__(
+        self, *args: Any, instance: ChecklistItemOption | None = None, **kwargs: Any
+    ) -> None:
+        super().__init__(*args, **kwargs)
+        if instance is not None and not self.is_bound:
+            self.fields["value"].initial = instance.value
+            self.fields["label"].initial = instance.label

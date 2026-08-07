@@ -17,12 +17,15 @@ from django.views.decorators.http import require_GET, require_http_methods, requ
 from apps.accounts.models import User
 from apps.checklists.forms import (
     ChecklistItemForm,
+    ChecklistItemOptionForm,
     ChecklistSectionForm,
     ChecklistTemplateForm,
     CreateVersionForm,
 )
 from apps.checklists.models import (
     ChecklistItem,
+    ChecklistItemOption,
+    ChecklistResponseType,
     ChecklistSection,
     ChecklistTemplate,
     ChecklistVersion,
@@ -44,17 +47,21 @@ from apps.checklists.selectors import (
 from apps.checklists.services import (
     activate_checklist_template,
     add_checklist_item,
+    add_checklist_item_option,
     add_checklist_section,
     create_checklist_template,
     create_checklist_version,
     deactivate_checklist_template,
     move_checklist_item,
+    move_checklist_item_option,
     move_checklist_section,
     publish_checklist_version,
     remove_checklist_item,
+    remove_checklist_item_option,
     remove_checklist_section,
     retire_checklist_version,
     update_checklist_item,
+    update_checklist_item_option,
     update_checklist_section,
     update_checklist_template,
 )
@@ -525,6 +532,10 @@ def item_add(request: HttpRequest, section_id: uuid.UUID) -> HttpResponse:
                 label=form.cleaned_data["label"],
                 help_text=form.cleaned_data.get("help_text") or "",
                 is_required=bool(form.cleaned_data.get("is_required")),
+                response_type=form.cleaned_data.get("response_type") or "",
+                unit=form.cleaned_data.get("unit") or "",
+                minimum_value=form.cleaned_data.get("minimum_value"),
+                maximum_value=form.cleaned_data.get("maximum_value"),
             )
             messages.success(request, "Item added.")
         except ValidationError as exc:
@@ -532,7 +543,7 @@ def item_add(request: HttpRequest, section_id: uuid.UUID) -> HttpResponse:
                 request, "; ".join(exc.messages) if hasattr(exc, "messages") else str(exc)
             )
     else:
-        messages.error(request, "Item could not be added. Check code and label.")
+        messages.error(request, "Item could not be added. Check required fields.")
     return redirect("checklists:version_detail", version_id=version.id)
 
 
@@ -543,6 +554,7 @@ def item_edit(request: HttpRequest, item_id: uuid.UUID) -> HttpResponse:
         ChecklistItem.objects.select_related(
             "section", "section__version", "section__version__template"
         )
+        .prefetch_related("options")
         .filter(pk=item_id)
         .first()
     )
@@ -552,6 +564,7 @@ def item_edit(request: HttpRequest, item_id: uuid.UUID) -> HttpResponse:
     if not actor_can_manage_version(_actor(request), version) or not version.is_draft:
         raise PermissionDenied("Permission denied.")
     form = ChecklistItemForm(request.POST or None, instance=item)
+    option_form = ChecklistItemOptionForm()
     if request.method == "POST" and form.is_valid():
         try:
             update_checklist_item(
@@ -561,15 +574,29 @@ def item_edit(request: HttpRequest, item_id: uuid.UUID) -> HttpResponse:
                 label=form.cleaned_data["label"],
                 help_text=form.cleaned_data.get("help_text") or "",
                 is_required=bool(form.cleaned_data.get("is_required")),
+                response_type=form.cleaned_data.get("response_type") or "",
+                unit=form.cleaned_data.get("unit") or "",
+                minimum_value=form.cleaned_data.get("minimum_value"),
+                maximum_value=form.cleaned_data.get("maximum_value"),
             )
             messages.success(request, "Item updated.")
-            return redirect("checklists:version_detail", version_id=version.id)
+            return redirect("checklists:item_edit", item_id=item.id)
         except ValidationError as exc:
             _apply_validation_error(form, exc)
+    item.refresh_from_db()
     return render(
         request,
         "checklists/versions/item_form.html",
-        {"form": form, "item": item, "version": version},
+        {
+            "form": form,
+            "option_form": option_form,
+            "item": item,
+            "version": version,
+            "is_select": item.response_type == ChecklistResponseType.SELECT,
+            "show_number_fields": item.response_type == ChecklistResponseType.NUMBER
+            or (form.data.get("response_type") == ChecklistResponseType.NUMBER),
+            "options": list(item.options.order_by("position")),
+        },
     )
 
 
@@ -621,3 +648,128 @@ def item_move(request: HttpRequest, item_id: uuid.UUID) -> HttpResponse:
     except ValidationError as exc:
         messages.error(request, "; ".join(exc.messages) if hasattr(exc, "messages") else str(exc))
     return redirect("checklists:version_detail", version_id=version.id)
+
+
+@login_required
+@require_POST
+def option_add(request: HttpRequest, item_id: uuid.UUID) -> HttpResponse:
+    item = (
+        ChecklistItem.objects.select_related(
+            "section", "section__version", "section__version__template"
+        )
+        .filter(pk=item_id)
+        .first()
+    )
+    if item is None:
+        raise Http404("Item not found.")
+    version = _get_version_or_404(request, item.section.version_id)
+    if not actor_can_manage_version(_actor(request), version) or not version.is_draft:
+        raise PermissionDenied("Permission denied.")
+    form = ChecklistItemOptionForm(request.POST)
+    if form.is_valid():
+        try:
+            add_checklist_item_option(
+                actor=_actor(request),
+                item_id=item.id,
+                value=form.cleaned_data["value"],
+                label=form.cleaned_data["label"],
+            )
+            messages.success(request, "Option added.")
+        except ValidationError as exc:
+            messages.error(
+                request, "; ".join(exc.messages) if hasattr(exc, "messages") else str(exc)
+            )
+    else:
+        messages.error(request, "Option could not be added.")
+    return redirect("checklists:item_edit", item_id=item.id)
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def option_edit(request: HttpRequest, option_id: uuid.UUID) -> HttpResponse:
+    option = (
+        ChecklistItemOption.objects.select_related(
+            "item",
+            "item__section",
+            "item__section__version",
+            "item__section__version__template",
+        )
+        .filter(pk=option_id)
+        .first()
+    )
+    if option is None:
+        raise Http404("Option not found.")
+    version = _get_version_or_404(request, option.item.section.version_id)
+    if not actor_can_manage_version(_actor(request), version) or not version.is_draft:
+        raise PermissionDenied("Permission denied.")
+    form = ChecklistItemOptionForm(request.POST or None, instance=option)
+    if request.method == "POST" and form.is_valid():
+        try:
+            update_checklist_item_option(
+                actor=_actor(request),
+                option_id=option.id,
+                value=form.cleaned_data["value"],
+                label=form.cleaned_data["label"],
+            )
+            messages.success(request, "Option updated.")
+            return redirect("checklists:item_edit", item_id=option.item_id)
+        except ValidationError as exc:
+            _apply_validation_error(form, exc)
+    return render(
+        request,
+        "checklists/versions/option_form.html",
+        {"form": form, "option": option, "item": option.item, "version": version},
+    )
+
+
+@login_required
+@require_POST
+def option_delete(request: HttpRequest, option_id: uuid.UUID) -> HttpResponse:
+    option = (
+        ChecklistItemOption.objects.select_related(
+            "item",
+            "item__section",
+            "item__section__version",
+            "item__section__version__template",
+        )
+        .filter(pk=option_id)
+        .first()
+    )
+    if option is None:
+        raise Http404("Option not found.")
+    version = _get_version_or_404(request, option.item.section.version_id)
+    if not actor_can_manage_version(_actor(request), version) or not version.is_draft:
+        raise PermissionDenied("Permission denied.")
+    item_id = option.item_id
+    try:
+        remove_checklist_item_option(actor=_actor(request), option_id=option.id)
+        messages.success(request, "Option removed.")
+    except ValidationError as exc:
+        messages.error(request, "; ".join(exc.messages) if hasattr(exc, "messages") else str(exc))
+    return redirect("checklists:item_edit", item_id=item_id)
+
+
+@login_required
+@require_POST
+def option_move(request: HttpRequest, option_id: uuid.UUID) -> HttpResponse:
+    option = (
+        ChecklistItemOption.objects.select_related(
+            "item",
+            "item__section",
+            "item__section__version",
+            "item__section__version__template",
+        )
+        .filter(pk=option_id)
+        .first()
+    )
+    if option is None:
+        raise Http404("Option not found.")
+    version = _get_version_or_404(request, option.item.section.version_id)
+    if not actor_can_manage_version(_actor(request), version) or not version.is_draft:
+        raise PermissionDenied("Permission denied.")
+    direction = (request.POST.get("direction") or "").strip().lower()
+    try:
+        move_checklist_item_option(actor=_actor(request), option_id=option.id, direction=direction)
+    except ValidationError as exc:
+        messages.error(request, "; ".join(exc.messages) if hasattr(exc, "messages") else str(exc))
+    return redirect("checklists:item_edit", item_id=option.item_id)

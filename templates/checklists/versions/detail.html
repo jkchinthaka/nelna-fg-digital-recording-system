@@ -83,6 +83,11 @@
             <li class="shift-card">
               <div class="shift-card__header">
                 <strong>{{ item.code }}</strong> — {{ item.label }}
+                {% if item.response_type %}
+                  <span class="status-pill status-pill--muted">{{ item.get_response_type_display }}</span>
+                {% else %}
+                  <span class="status-pill status-pill--muted">Response type unset</span>
+                {% endif %}
                 {% if item.is_required %}
                   <span class="status-pill status-pill--muted">Required</span>
                 {% else %}
@@ -90,6 +95,39 @@
                 {% endif %}
               </div>
               {% if item.help_text %}<p class="shift-card__meta">{{ item.help_text }}</p>{% endif %}
+              {% if item.response_type == 'NUMBER' %}
+                <p class="shift-card__meta">
+                  Unit:
+                  {% if item.unit %}
+                    {{ item.unit }}
+                  {% else %}
+                    unset
+                  {% endif %}
+                  · Min:
+                  {% if item.minimum_value != None %}
+                    {{ item.minimum_value }}
+                  {% else %}
+                    unset
+                  {% endif %}
+                  · Max:
+                  {% if item.maximum_value != None %}
+                    {{ item.maximum_value }}
+                  {% else %}
+                    unset
+                  {% endif %}
+                </p>
+              {% endif %}
+              {% if item.response_type == 'SELECT' %}
+                <p class="shift-card__meta">
+                  Options:
+                  {% for option in item.options.all %}
+                    {{ option.label }}
+                    {% if not forloop.last %},{% endif %}
+                  {% empty %}
+                    none yet
+                  {% endfor %}
+                </p>
+              {% endif %}
               {% if can_edit_structure %}
                 <p class="shift-card__meta data-table__actions">
                   <a href="{% url 'checklists:item_edit' item.id %}">Edit</a>
@@ -161,6 +199,45 @@
                        checked>
                 Required
               </label>
+            </div>
+            <div class="form-field">
+              <label for="id_item_response_{{ section.id }}">Response type</label>
+              <select class="form-input"
+                      name="response_type"
+                      id="id_item_response_{{ section.id }}">
+                <option value="">Select response type</option>
+                <option value="YES_NO">Yes / No</option>
+                <option value="YES_NO_NA">Yes / No / N/A</option>
+                <option value="NUMBER">Number</option>
+                <option value="TEXT">Text</option>
+                <option value="SELECT">Select</option>
+              </select>
+              <p class="form-help">Publish requires a type. Temperature uses Number + optional unit.</p>
+            </div>
+            <div class="form-field">
+              <label for="id_item_unit_{{ section.id }}">Unit (NUMBER only, optional)</label>
+              <input class="form-input"
+                     type="text"
+                     name="unit"
+                     id="id_item_unit_{{ section.id }}"
+                     maxlength="32"
+                     autocomplete="off">
+            </div>
+            <div class="form-field">
+              <label for="id_item_min_{{ section.id }}">Minimum (NUMBER only, optional)</label>
+              <input class="form-input"
+                     type="number"
+                     step="any"
+                     name="minimum_value"
+                     id="id_item_min_{{ section.id }}">
+            </div>
+            <div class="form-field">
+              <label for="id_item_max_{{ section.id }}">Maximum (NUMBER only, optional)</label>
+              <input class="form-input"
+                     type="number"
+                     step="any"
+                     name="maximum_value"
+                     id="id_item_max_{{ section.id }}">
             </div>
             <button type="submit" class="btn btn--secondary btn--inline">Add item</button>
           </form>

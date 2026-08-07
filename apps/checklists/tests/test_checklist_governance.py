@@ -76,8 +76,20 @@ def _seed_version(actor: User, org: Organization, *, code: str = "CHK-GOV") -> C
     )
     version = create_checklist_version(actor=actor, template_id=template.id)
     section = add_checklist_section(actor=actor, version_id=version.id, title="Section Test")
-    add_checklist_item(actor=actor, section_id=section.id, code="ITEM-1", label="Item Test One")
-    add_checklist_item(actor=actor, section_id=section.id, code="ITEM-2", label="Item Test Two")
+    add_checklist_item(
+        actor=actor,
+        section_id=section.id,
+        code="ITEM-1",
+        label="Item Test One",
+        response_type="YES_NO",
+    )
+    add_checklist_item(
+        actor=actor,
+        section_id=section.id,
+        code="ITEM-2",
+        label="Item Test Two",
+        response_type="TEXT",
+    )
     return version
 
 

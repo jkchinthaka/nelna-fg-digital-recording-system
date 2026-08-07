@@ -55,4 +55,16 @@ urlpatterns = [
     path("checklists/items/<uuid:item_id>/edit/", views.item_edit, name="item_edit"),
     path("checklists/items/<uuid:item_id>/delete/", views.item_delete, name="item_delete"),
     path("checklists/items/<uuid:item_id>/move/", views.item_move, name="item_move"),
+    path(
+        "checklists/items/<uuid:item_id>/options/add/",
+        views.option_add,
+        name="option_add",
+    ),
+    path("checklists/options/<uuid:option_id>/edit/", views.option_edit, name="option_edit"),
+    path(
+        "checklists/options/<uuid:option_id>/delete/",
+        views.option_delete,
+        name="option_delete",
+    ),
+    path("checklists/options/<uuid:option_id>/move/", views.option_move, name="option_move"),
 ]

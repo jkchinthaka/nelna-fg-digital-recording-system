@@ -8,6 +8,7 @@ from django.http import HttpRequest
 
 from apps.checklists.models import (
     ChecklistItem,
+    ChecklistItemOption,
     ChecklistSection,
     ChecklistTemplate,
     ChecklistVersion,
@@ -39,7 +40,17 @@ class ChecklistSectionInline(admin.TabularInline):  # type: ignore[type-arg]
 class ChecklistItemInline(admin.TabularInline):  # type: ignore[type-arg]
     model = ChecklistItem
     extra = 0
-    fields = ("code", "label", "help_text", "position", "is_required")
+    fields = (
+        "code",
+        "label",
+        "help_text",
+        "position",
+        "is_required",
+        "response_type",
+        "unit",
+        "minimum_value",
+        "maximum_value",
+    )
 
     def has_add_permission(self, request: HttpRequest, obj: ChecklistSection | None = None) -> bool:
         return bool(obj and obj.version.status == ChecklistVersionStatus.DRAFT)
@@ -53,6 +64,21 @@ class ChecklistItemInline(admin.TabularInline):  # type: ignore[type-arg]
         self, request: HttpRequest, obj: ChecklistSection | None = None
     ) -> bool:
         return bool(obj and obj.version.status == ChecklistVersionStatus.DRAFT)
+
+
+class ChecklistItemOptionInline(admin.TabularInline):  # type: ignore[type-arg]
+    model = ChecklistItemOption
+    extra = 0
+    fields = ("value", "label", "position")
+
+    def has_add_permission(self, request: HttpRequest, obj: ChecklistItem | None = None) -> bool:
+        return bool(obj and obj.section.version.status == ChecklistVersionStatus.DRAFT)
+
+    def has_change_permission(self, request: HttpRequest, obj: ChecklistItem | None = None) -> bool:
+        return bool(obj and obj.section.version.status == ChecklistVersionStatus.DRAFT)
+
+    def has_delete_permission(self, request: HttpRequest, obj: ChecklistItem | None = None) -> bool:
+        return bool(obj and obj.section.version.status == ChecklistVersionStatus.DRAFT)
 
 
 @admin.register(ChecklistTemplate)
@@ -156,9 +182,11 @@ class ChecklistSectionAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
 
 @admin.register(ChecklistItem)
 class ChecklistItemAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
-    list_display = ("code", "label", "section", "position", "is_required")
+    list_display = ("code", "label", "response_type", "section", "position", "is_required")
+    list_filter = ("response_type",)
     search_fields = ("code", "label", "section__title")
     readonly_fields = ("id",)
+    inlines = [ChecklistItemOptionInline]
 
     def has_add_permission(self, request: HttpRequest) -> bool:
         return False
@@ -172,3 +200,27 @@ class ChecklistItemAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
         if obj is None:
             return False
         return obj.section.version.is_draft
+
+
+@admin.register(ChecklistItemOption)
+class ChecklistItemOptionAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
+    list_display = ("value", "label", "item", "position")
+    search_fields = ("value", "label", "item__code")
+    readonly_fields = ("id",)
+
+    def has_add_permission(self, request: HttpRequest) -> bool:
+        return False
+
+    def has_change_permission(
+        self, request: HttpRequest, obj: ChecklistItemOption | None = None
+    ) -> bool:
+        if obj is None:
+            return super().has_change_permission(request, obj)
+        return obj.item.section.version.is_draft
+
+    def has_delete_permission(
+        self, request: HttpRequest, obj: ChecklistItemOption | None = None
+    ) -> bool:
+        if obj is None:
+            return False
+        return obj.item.section.version.is_draft

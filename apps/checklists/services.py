@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import uuid
+from decimal import Decimal, InvalidOperation
 from typing import Any
 
 from django.core.exceptions import PermissionDenied, ValidationError
@@ -14,10 +15,13 @@ from apps.access_control.services import Scope, require_permission
 from apps.accounts.models import User
 from apps.checklists.models import (
     ChecklistItem,
+    ChecklistItemOption,
+    ChecklistResponseType,
     ChecklistSection,
     ChecklistTemplate,
     ChecklistVersion,
     ChecklistVersionStatus,
+    validate_item_response_definition,
 )
 from apps.master_data.models import FGProduct
 from apps.organizations.models import Organization
@@ -190,14 +194,14 @@ def _next_item_position(section: ChecklistSection) -> int:
 
 def _swap_positions(
     *,
-    queryset_model: type[ChecklistSection] | type[ChecklistItem],
+    queryset_model: type[ChecklistSection] | type[ChecklistItem] | type[ChecklistItemOption],
     parent_filter: dict[str, Any],
-    current: ChecklistSection | ChecklistItem,
+    current: ChecklistSection | ChecklistItem | ChecklistItemOption,
     direction: str,
 ) -> None:
     if direction not in {"up", "down"}:
         raise ValidationError({"direction": "Direction must be up or down."})
-    siblings: list[ChecklistSection | ChecklistItem] = list(
+    siblings: list[ChecklistSection | ChecklistItem | ChecklistItemOption] = list(
         queryset_model.objects.select_for_update()
         .filter(**parent_filter)
         .order_by("position", "pk")
@@ -376,8 +380,63 @@ def _allocate_next_version_number(template: ChecklistTemplate) -> int:
     return int(current or 0) + 1
 
 
+def _parse_optional_decimal(value: Any, *, field: str) -> Decimal | None:
+    if value is None or value == "":
+        return None
+    if isinstance(value, Decimal):
+        return value
+    try:
+        return Decimal(str(value).strip())
+    except (InvalidOperation, ValueError, TypeError) as exc:
+        raise ValidationError({field: f"Invalid decimal for {field}."}) from exc
+
+
+def _normalize_response_fields(
+    *,
+    response_type: str | None,
+    unit: str = "",
+    minimum_value: Any = None,
+    maximum_value: Any = None,
+) -> tuple[str, str, Decimal | None, Decimal | None]:
+    normalized_type = (response_type or "").strip()
+    unit_text = (unit or "").strip()
+    min_value = _parse_optional_decimal(minimum_value, field="minimum_value")
+    max_value = _parse_optional_decimal(maximum_value, field="maximum_value")
+    errors = validate_item_response_definition(
+        response_type=normalized_type,
+        unit=unit_text,
+        minimum_value=min_value,
+        maximum_value=max_value,
+        require_response_type=False,
+    )
+    if errors:
+        raise ValidationError(errors)
+    if normalized_type != ChecklistResponseType.NUMBER:
+        unit_text = ""
+        min_value = None
+        max_value = None
+    return normalized_type, unit_text, min_value, max_value
+
+
+def _next_option_position(item: ChecklistItem) -> int:
+    current = item.options.aggregate(m=Max("position"))["m"]
+    return int(current or 0) + 1
+
+
+def _lock_item(item_id: uuid.UUID) -> ChecklistItem:
+    item = (
+        ChecklistItem.objects.select_for_update(of=("self",))
+        .select_related("section", "section__version", "section__version__template")
+        .filter(pk=item_id)
+        .first()
+    )
+    if item is None:
+        raise ValidationError({"item": "Checklist item not found."})
+    return item
+
+
 def _clone_structure(*, source: ChecklistVersion, target: ChecklistVersion) -> None:
-    for section in source.sections.prefetch_related("items").order_by("position", "pk"):
+    for section in source.sections.prefetch_related("items__options").order_by("position", "pk"):
         new_section = ChecklistSection.objects.create(
             version=target,
             title=section.title,
@@ -385,17 +444,27 @@ def _clone_structure(*, source: ChecklistVersion, target: ChecklistVersion) -> N
             position=section.position,
         )
         for item in section.items.order_by("position", "pk"):
-            ChecklistItem.objects.create(
+            new_item = ChecklistItem.objects.create(
                 section=new_section,
                 code=item.code,
                 label=item.label,
                 help_text=item.help_text,
                 position=item.position,
                 is_required=item.is_required,
+                response_type=item.response_type,
+                unit=item.unit,
+                minimum_value=item.minimum_value,
+                maximum_value=item.maximum_value,
             )
+            for option in item.options.order_by("position", "pk"):
+                ChecklistItemOption.objects.create(
+                    item=new_item,
+                    value=option.value,
+                    label=option.label,
+                    position=option.position,
+                )
 
 
-@transaction.atomic
 @transaction.atomic
 def create_checklist_version(
     *,
@@ -606,6 +675,10 @@ def add_checklist_item(
     label: str,
     help_text: str = "",
     is_required: bool = True,
+    response_type: str = "",
+    unit: str = "",
+    minimum_value: Any = None,
+    maximum_value: Any = None,
 ) -> ChecklistItem:
     user = _require_authenticated_actor(actor)
     section = (
@@ -624,6 +697,12 @@ def add_checklist_item(
         raise ValidationError({"code": "Code cannot be blank."})
     if not normalized_label:
         raise ValidationError({"label": "Label cannot be blank."})
+    resp_type, unit_text, min_value, max_value = _normalize_response_fields(
+        response_type=response_type,
+        unit=unit,
+        minimum_value=minimum_value,
+        maximum_value=maximum_value,
+    )
     item = ChecklistItem(
         section=section,
         code=normalized_code,
@@ -631,11 +710,17 @@ def add_checklist_item(
         help_text=(help_text or "").strip(),
         position=_next_item_position(section),
         is_required=is_required,
+        response_type=resp_type,
+        unit=unit_text,
+        minimum_value=min_value,
+        maximum_value=max_value,
     )
     try:
         item.full_clean()
         item.save()
     except (ValidationError, IntegrityError) as exc:
+        if isinstance(exc, ValidationError) and getattr(exc, "message_dict", None):
+            raise
         messages = " ".join(str(m) for m in getattr(exc, "messages", [str(exc)]))
         if "chk_item_section_code_ci_uniq" in messages or "unique" in messages.lower():
             raise ValidationError(
@@ -654,16 +739,13 @@ def update_checklist_item(
     label: str | None = None,
     help_text: Any = _UNSET,
     is_required: bool | None = None,
+    response_type: Any = _UNSET,
+    unit: Any = _UNSET,
+    minimum_value: Any = _UNSET,
+    maximum_value: Any = _UNSET,
 ) -> ChecklistItem:
     user = _require_authenticated_actor(actor)
-    item = (
-        ChecklistItem.objects.select_for_update(of=("self",))
-        .select_related("section", "section__version", "section__version__template")
-        .filter(pk=item_id)
-        .first()
-    )
-    if item is None:
-        raise ValidationError({"item": "Checklist item not found."})
+    item = _lock_item(item_id)
     require_permission(
         user, MANAGE_CHECKLIST, scope=version_authorization_scope(item.section.version)
     )
@@ -682,10 +764,27 @@ def update_checklist_item(
         item.help_text = str(help_text or "").strip()
     if is_required is not None:
         item.is_required = is_required
+
+    next_type = item.response_type if response_type is _UNSET else response_type
+    next_unit = item.unit if unit is _UNSET else unit
+    next_min = item.minimum_value if minimum_value is _UNSET else minimum_value
+    next_max = item.maximum_value if maximum_value is _UNSET else maximum_value
+    resp_type, unit_text, min_value, max_value = _normalize_response_fields(
+        response_type=str(next_type or ""),
+        unit=str(next_unit or ""),
+        minimum_value=next_min,
+        maximum_value=next_max,
+    )
+    item.response_type = resp_type
+    item.unit = unit_text
+    item.minimum_value = min_value
+    item.maximum_value = max_value
     try:
         item.full_clean()
         item.save()
     except (ValidationError, IntegrityError) as exc:
+        if isinstance(exc, ValidationError) and getattr(exc, "message_dict", None):
+            raise
         messages = " ".join(str(m) for m in getattr(exc, "messages", [str(exc)]))
         if "chk_item_section_code_ci_uniq" in messages or "unique" in messages.lower():
             raise ValidationError(
@@ -698,14 +797,7 @@ def update_checklist_item(
 @transaction.atomic
 def remove_checklist_item(*, actor: User | None, item_id: uuid.UUID) -> None:
     user = _require_authenticated_actor(actor)
-    item = (
-        ChecklistItem.objects.select_for_update(of=("self",))
-        .select_related("section", "section__version", "section__version__template")
-        .filter(pk=item_id)
-        .first()
-    )
-    if item is None:
-        raise ValidationError({"item": "Checklist item not found."})
+    item = _lock_item(item_id)
     require_permission(
         user, MANAGE_CHECKLIST, scope=version_authorization_scope(item.section.version)
     )
@@ -726,14 +818,7 @@ def move_checklist_item(
     direction: str,
 ) -> ChecklistItem:
     user = _require_authenticated_actor(actor)
-    item = (
-        ChecklistItem.objects.select_for_update(of=("self",))
-        .select_related("section", "section__version", "section__version__template")
-        .filter(pk=item_id)
-        .first()
-    )
-    if item is None:
-        raise ValidationError({"item": "Checklist item not found."})
+    item = _lock_item(item_id)
     require_permission(
         user, MANAGE_CHECKLIST, scope=version_authorization_scope(item.section.version)
     )
@@ -748,15 +833,174 @@ def move_checklist_item(
     return item
 
 
+@transaction.atomic
+def add_checklist_item_option(
+    *,
+    actor: User | None,
+    item_id: uuid.UUID,
+    value: str,
+    label: str,
+) -> ChecklistItemOption:
+    user = _require_authenticated_actor(actor)
+    item = _lock_item(item_id)
+    require_permission(
+        user, MANAGE_CHECKLIST, scope=version_authorization_scope(item.section.version)
+    )
+    _require_draft(item.section.version)
+    if item.response_type != ChecklistResponseType.SELECT:
+        raise ValidationError({"item": "Options are only allowed for SELECT response types."})
+    normalized_value = normalize_code(value)
+    normalized_label = normalize_name(label)
+    if not normalized_value:
+        raise ValidationError({"value": "Option value cannot be blank."})
+    if not normalized_label:
+        raise ValidationError({"label": "Option label cannot be blank."})
+    option = ChecklistItemOption(
+        item=item,
+        value=normalized_value,
+        label=normalized_label,
+        position=_next_option_position(item),
+    )
+    try:
+        option.full_clean()
+        option.save()
+    except (ValidationError, IntegrityError) as exc:
+        messages = " ".join(str(m) for m in getattr(exc, "messages", [str(exc)]))
+        if "chk_option_item_value_ci_uniq" in messages or "unique" in messages.lower():
+            raise ValidationError(
+                {"value": "An option with this value already exists for the item."}
+            ) from exc
+        raise ValidationError({"option": "Unable to add checklist item option."}) from exc
+    return option
+
+
+@transaction.atomic
+def update_checklist_item_option(
+    *,
+    actor: User | None,
+    option_id: uuid.UUID,
+    value: str | None = None,
+    label: str | None = None,
+) -> ChecklistItemOption:
+    user = _require_authenticated_actor(actor)
+    option = (
+        ChecklistItemOption.objects.select_for_update(of=("self",))
+        .select_related(
+            "item",
+            "item__section",
+            "item__section__version",
+            "item__section__version__template",
+        )
+        .filter(pk=option_id)
+        .first()
+    )
+    if option is None:
+        raise ValidationError({"option": "Checklist item option not found."})
+    require_permission(
+        user,
+        MANAGE_CHECKLIST,
+        scope=version_authorization_scope(option.item.section.version),
+    )
+    _require_draft(option.item.section.version)
+    if value is not None:
+        normalized_value = normalize_code(value)
+        if not normalized_value:
+            raise ValidationError({"value": "Option value cannot be blank."})
+        option.value = normalized_value
+    if label is not None:
+        normalized_label = normalize_name(label)
+        if not normalized_label:
+            raise ValidationError({"label": "Option label cannot be blank."})
+        option.label = normalized_label
+    try:
+        option.full_clean()
+        option.save()
+    except (ValidationError, IntegrityError) as exc:
+        messages = " ".join(str(m) for m in getattr(exc, "messages", [str(exc)]))
+        if "chk_option_item_value_ci_uniq" in messages or "unique" in messages.lower():
+            raise ValidationError(
+                {"value": "An option with this value already exists for the item."}
+            ) from exc
+        raise ValidationError({"option": "Unable to update checklist item option."}) from exc
+    return option
+
+
+@transaction.atomic
+def remove_checklist_item_option(*, actor: User | None, option_id: uuid.UUID) -> None:
+    user = _require_authenticated_actor(actor)
+    option = (
+        ChecklistItemOption.objects.select_for_update(of=("self",))
+        .select_related(
+            "item",
+            "item__section",
+            "item__section__version",
+            "item__section__version__template",
+        )
+        .filter(pk=option_id)
+        .first()
+    )
+    if option is None:
+        raise ValidationError({"option": "Checklist item option not found."})
+    require_permission(
+        user,
+        MANAGE_CHECKLIST,
+        scope=version_authorization_scope(option.item.section.version),
+    )
+    _require_draft(option.item.section.version)
+    item = option.item
+    option.delete()
+    for index, sibling in enumerate(item.options.order_by("position", "pk"), start=1):
+        if sibling.position != index:
+            sibling.position = index
+            sibling.save(update_fields=["position"])
+
+
+@transaction.atomic
+def move_checklist_item_option(
+    *,
+    actor: User | None,
+    option_id: uuid.UUID,
+    direction: str,
+) -> ChecklistItemOption:
+    user = _require_authenticated_actor(actor)
+    option = (
+        ChecklistItemOption.objects.select_for_update(of=("self",))
+        .select_related(
+            "item",
+            "item__section",
+            "item__section__version",
+            "item__section__version__template",
+        )
+        .filter(pk=option_id)
+        .first()
+    )
+    if option is None:
+        raise ValidationError({"option": "Checklist item option not found."})
+    require_permission(
+        user,
+        MANAGE_CHECKLIST,
+        scope=version_authorization_scope(option.item.section.version),
+    )
+    _require_draft(option.item.section.version)
+    _swap_positions(
+        queryset_model=ChecklistItemOption,
+        parent_filter={"item_id": option.item_id},
+        current=option,
+        direction=direction,
+    )
+    option.refresh_from_db()
+    return option
+
+
 def _validate_publish_structure(version: ChecklistVersion) -> None:
     """
     Technical structural checks only — not business completeness rules.
 
     Empty definitions cannot be published because a published version must be a
-    coherent, non-empty definition graph. Minimum question counts / temperature
-    rules remain EVIDENCE REQUIRED and are not enforced here.
+    coherent, non-empty definition graph. Product thresholds / temperature ranges
+    remain EVIDENCE REQUIRED and are not enforced here.
     """
-    sections = list(version.sections.prefetch_related("items").order_by("position"))
+    sections = list(version.sections.prefetch_related("items__options").order_by("position"))
     if not sections:
         raise ValidationError({"version": "A checklist version must have at least one section."})
     if not any(section.items.exists() for section in sections):
@@ -769,6 +1013,35 @@ def _validate_publish_structure(version: ChecklistVersion) -> None:
         for item in section.items.all():
             if not item.code.strip() or not item.label.strip():
                 raise ValidationError({"version": "All items must have a code and label."})
+            errors = validate_item_response_definition(
+                response_type=item.response_type,
+                unit=item.unit,
+                minimum_value=item.minimum_value,
+                maximum_value=item.maximum_value,
+                require_response_type=True,
+            )
+            if errors:
+                raise ValidationError(
+                    {
+                        "version": (
+                            f"Item {item.code} has invalid response definition: "
+                            + "; ".join(errors.values())
+                        )
+                    }
+                )
+            if item.response_type == ChecklistResponseType.SELECT and not item.options.exists():
+                raise ValidationError(
+                    {
+                        "version": (
+                            f"SELECT item {item.code} must have at least one option "
+                            "before publishing."
+                        )
+                    }
+                )
+            if item.response_type != ChecklistResponseType.SELECT and item.options.exists():
+                raise ValidationError(
+                    {"version": (f"Item {item.code} is not SELECT and must not have options.")}
+                )
 
 
 @transaction.atomic

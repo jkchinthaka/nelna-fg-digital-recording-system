@@ -68,15 +68,17 @@ Do **not** invent product catalogues, ERP mappings, or claim MASTER-001 resolved
 
 ## Phase 06 gate summary
 
-TEMPLATE-001 / ASM-003 form inventory and official checklist content remain **EVIDENCE REQUIRED**.
+TEMPLATE-001 / ASM-003 form inventory and official checklist content remain **EVIDENCE REQUIRED**. TEMPLATE-001 now has a **project-proposed draft** for validation only — **not** fully approved.
 
 | Topic | Status |
 | --- | --- |
 | Official checklist forms / questions / limits | Unresolved — EVIDENCE REQUIRED — use [TEMPLATE_001_CHECKLIST_EVIDENCE_INTAKE.md](TEMPLATE_001_CHECKLIST_EVIDENCE_INTAKE.md) |
+| TEMPLATE-001 project proposal | **PROJECT-PROPOSED DRAFT — VALIDATION REQUIRED** — [proposals/FG_QA_001_DRAFT_V0_1.md](proposals/FG_QA_001_DRAFT_V0_1.md) (NOT APPROVED for production; not seeded) |
 | Configurable unseeded definition/versioning engine (Phase 06A) | Implemented (provisional technical only) |
 | Lifecycle governance hardening (Phase 06B) | Implemented — centralized transitions; immutability; concurrency tests |
-| Response-type schema | Deferred — EVIDENCE REQUIRED — see [RESPONSE_TYPE_DECISION_REGISTER.md](RESPONSE_TYPE_DECISION_REGISTER.md) |
-| ASM-001 temperature-class limits | Unresolved — not modeled |
+| Response-type schema (Phase 06C) | Provisional technical primitives for **definition schema only** — see [RESPONSE_TYPE_DECISION_REGISTER.md](RESPONSE_TYPE_DECISION_REGISTER.md); PHOTO/SIGNATURE/etc still deferred |
+| ASM-001 temperature-class limits | Remains **open** — EVIDENCE REQUIRED; limits unset on FG-QA-001 draft |
+| MASTER-001 Product catalogue / fields | Remains **open** — EVIDENCE REQUIRED; no Product codes in FG-QA-001 draft |
 | Scheduling / recording / review | Out of scope — Phase 07 gated by [PHASE_07_READINESS_GATE.md](PHASE_07_READINESS_GATE.md) |
 | Real-content / operational / production use | Remains blocked |
 

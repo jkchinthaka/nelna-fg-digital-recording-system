@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import uuid
+from decimal import Decimal
 
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
@@ -17,6 +18,16 @@ class ChecklistVersionStatus(models.TextChoices):
     DRAFT = "DRAFT", "Draft"
     PUBLISHED = "PUBLISHED", "Published"
     RETIRED = "RETIRED", "Retired"
+
+
+class ChecklistResponseType(models.TextChoices):
+    """Technical response primitives — not product-specific business rules."""
+
+    YES_NO = "YES_NO", "Yes / No"
+    YES_NO_NA = "YES_NO_NA", "Yes / No / N/A"
+    NUMBER = "NUMBER", "Number"
+    TEXT = "TEXT", "Text"
+    SELECT = "SELECT", "Select"
 
 
 class ChecklistTemplate(models.Model):
@@ -177,8 +188,8 @@ class ChecklistItem(models.Model):
     """
     Definition metadata for a checklist prompt/question.
 
-    Response-type schema, limits, instruments, and training are intentionally excluded
-    until TEMPLATE / ASM evidence is supplied.
+    Response primitives are technical definition schema only.
+    Numerical Product limits and release automation remain evidence-gated.
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -194,6 +205,33 @@ class ChecklistItem(models.Model):
     is_required = models.BooleanField(
         default=True,
         help_text="Technical required flag for later recording phases — not a QA rule.",
+    )
+    response_type = models.CharField(
+        max_length=16,
+        choices=ChecklistResponseType.choices,
+        blank=True,
+        default="",
+        help_text="Blank allowed on DRAFT only; publish requires a valid response type.",
+    )
+    unit = models.CharField(
+        max_length=32,
+        blank=True,
+        default="",
+        help_text="Optional unit for NUMBER items (e.g. °C). Not a limit.",
+    )
+    minimum_value = models.DecimalField(
+        max_digits=14,
+        decimal_places=4,
+        null=True,
+        blank=True,
+        help_text="Optional NUMBER lower bound. Unset is allowed.",
+    )
+    maximum_value = models.DecimalField(
+        max_digits=14,
+        decimal_places=4,
+        null=True,
+        blank=True,
+        help_text="Optional NUMBER upper bound. Unset is allowed.",
     )
 
     class Meta:
@@ -221,3 +259,99 @@ class ChecklistItem(models.Model):
             raise ValidationError({"code": "Code cannot be blank."})
         if not (self.label or "").strip():
             raise ValidationError({"label": "Label cannot be blank."})
+        errors = validate_item_response_definition(
+            response_type=self.response_type,
+            unit=self.unit,
+            minimum_value=self.minimum_value,
+            maximum_value=self.maximum_value,
+            require_response_type=False,
+        )
+        if errors:
+            raise ValidationError(errors)
+
+
+class ChecklistItemOption(models.Model):
+    """Ordered SELECT option belonging to exactly one ChecklistItem (version-owned)."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    item = models.ForeignKey(
+        ChecklistItem,
+        on_delete=models.CASCADE,
+        related_name="options",
+    )
+    value = models.CharField(max_length=64)
+    label = models.CharField(max_length=255)
+    position = models.PositiveIntegerField(validators=[MinValueValidator(1)])
+
+    class Meta:
+        ordering = ("position", "value")
+        verbose_name = "Checklist item option"
+        verbose_name_plural = "Checklist item options"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["item", "position"],
+                name="chk_option_item_position_uniq",
+            ),
+            models.UniqueConstraint(
+                Lower("value"),
+                "item",
+                name="chk_option_item_value_ci_uniq",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.value}: {self.label}"
+
+    def clean(self) -> None:
+        super().clean()
+        if not (self.value or "").strip():
+            raise ValidationError({"value": "Option value cannot be blank."})
+        if not (self.label or "").strip():
+            raise ValidationError({"label": "Option label cannot be blank."})
+
+
+def validate_item_response_definition(
+    *,
+    response_type: str,
+    unit: str = "",
+    minimum_value: Decimal | None = None,
+    maximum_value: Decimal | None = None,
+    require_response_type: bool = False,
+) -> dict[str, str]:
+    """
+    Central structural response-definition rules.
+
+    Returns a field→message error map (empty when valid).
+    Does not invent Product limits or release rules.
+    """
+    errors: dict[str, str] = {}
+    normalized_type = (response_type or "").strip()
+    unit_text = (unit or "").strip()
+
+    if not normalized_type:
+        if require_response_type:
+            errors["response_type"] = "Response type is required."
+        elif minimum_value is not None or maximum_value is not None or unit_text:
+            errors["response_type"] = (
+                "Response type is required when unit or numeric limits are set."
+            )
+        return errors
+
+    if normalized_type not in ChecklistResponseType.values:
+        errors["response_type"] = "Unknown response type."
+        return errors
+
+    if normalized_type != ChecklistResponseType.NUMBER:
+        if minimum_value is not None or maximum_value is not None:
+            errors["minimum_value"] = "Numeric limits are only allowed for NUMBER responses."
+        if unit_text:
+            errors["unit"] = "Unit is only applicable for NUMBER responses."
+    else:
+        if (
+            minimum_value is not None
+            and maximum_value is not None
+            and minimum_value > maximum_value
+        ):
+            errors["minimum_value"] = "Minimum value cannot be greater than maximum value."
+
+    return errors

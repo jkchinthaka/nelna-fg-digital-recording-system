@@ -15,6 +15,7 @@ from apps.access_control.services import (
 from apps.accounts.models import User
 from apps.checklists.models import (
     ChecklistItem,
+    ChecklistItemOption,
     ChecklistSection,
     ChecklistTemplate,
     ChecklistVersion,
@@ -188,7 +189,15 @@ def get_version_with_structure(
             Prefetch(
                 "sections",
                 queryset=ChecklistSection.objects.order_by("position").prefetch_related(
-                    Prefetch("items", queryset=ChecklistItem.objects.order_by("position"))
+                    Prefetch(
+                        "items",
+                        queryset=ChecklistItem.objects.order_by("position").prefetch_related(
+                            Prefetch(
+                                "options",
+                                queryset=ChecklistItemOption.objects.order_by("position"),
+                            )
+                        ),
+                    )
                 ),
             )
         )

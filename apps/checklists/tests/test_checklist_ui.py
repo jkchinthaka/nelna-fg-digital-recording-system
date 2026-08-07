@@ -148,11 +148,17 @@ def test_draft_editor_reorder_publish_retire_clone(client: Client) -> None:
     assert section is not None
     client.post(
         reverse("checklists:item_add", args=[section.id]),
-        {"code": "ITEM-A", "label": "Label A", "help_text": "help", "is_required": "on"},
+        {
+            "code": "ITEM-A",
+            "label": "Label A",
+            "help_text": "help",
+            "is_required": "on",
+            "response_type": "YES_NO",
+        },
     )
     client.post(
         reverse("checklists:item_add", args=[section.id]),
-        {"code": "ITEM-B", "label": "Label B"},
+        {"code": "ITEM-B", "label": "Label B", "response_type": "TEXT"},
     )
     items = list(ChecklistItem.objects.filter(section=section).order_by("position"))
     assert len(items) == 2
@@ -160,7 +166,13 @@ def test_draft_editor_reorder_publish_retire_clone(client: Client) -> None:
     assert client.get(reverse("checklists:item_edit", args=[items[0].id])).status_code == 200
     client.post(
         reverse("checklists:item_edit", args=[items[0].id]),
-        {"code": "ITEM-A", "label": "Label A2", "help_text": "", "is_required": "on"},
+        {
+            "code": "ITEM-A",
+            "label": "Label A2",
+            "help_text": "",
+            "is_required": "on",
+            "response_type": "YES_NO",
+        },
     )
     client.post(reverse("checklists:item_delete", args=[items[1].id]))
     assert ChecklistItem.objects.filter(section=section).count() == 1

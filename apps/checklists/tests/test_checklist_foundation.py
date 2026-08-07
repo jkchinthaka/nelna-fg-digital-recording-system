@@ -85,6 +85,7 @@ def _seed_publishable(actor: User, org: Organization) -> ChecklistVersion:
         section_id=section.id,
         code="ITEM-TEST",
         label="Item Test",
+        response_type="YES_NO",
     )
     return version
 
@@ -257,7 +258,12 @@ def test_ui_create_publish_flow_and_csrf(client: Client) -> None:
     section = ChecklistSection.objects.get(version=version)
     client.post(
         reverse("checklists:item_add", args=[section.id]),
-        {"code": "ITEM-1", "label": "Item Test", "is_required": "on"},
+        {
+            "code": "ITEM-1",
+            "label": "Item Test",
+            "is_required": "on",
+            "response_type": "YES_NO",
+        },
     )
     assert client.get(reverse("checklists:version_publish", args=[version.id])).status_code == 405
     client.post(reverse("checklists:version_publish", args=[version.id]))
