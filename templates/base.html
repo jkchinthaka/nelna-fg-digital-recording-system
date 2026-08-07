@@ -1,4 +1,4 @@
-{% load static organizations_extras master_data_extras %}
+{% load static organizations_extras master_data_extras checklists_extras %}
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE|default:'en' }}">
   <head>
@@ -34,6 +34,10 @@
                 {% user_can_view_fg_products as show_products %}
                 {% if show_products %}
                   <a href="{% url 'master_data:product_list' %}">FG Products</a>
+                {% endif %}
+                {% user_can_view_checklists as show_checklists %}
+                {% if show_checklists %}
+                  <a href="{% url 'checklists:template_list' %}">Checklist Definitions</a>
                 {% endif %}
               </nav>
             {% endif %}

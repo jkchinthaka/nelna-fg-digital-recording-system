@@ -66,6 +66,19 @@ MASTER-001 remains **EVIDENCE REQUIRED** for official Product Master inventory a
 
 Do **not** invent product catalogues, ERP mappings, or claim MASTER-001 resolved.
 
-See [PHASE_05_FG_PRODUCT_PROVISIONAL_CONFIGURATION.md](../decisions/PHASE_05_FG_PRODUCT_PROVISIONAL_CONFIGURATION.md) and [ADR-009](../architecture/ADR-009-FG-MASTER-DATA-DOMAIN.md).
+## Phase 06 gate summary
+
+TEMPLATE-001 / ASM-003 form inventory and official checklist content remain **EVIDENCE REQUIRED**.
+
+| Topic | Status |
+| --- | --- |
+| Official checklist forms / questions / limits | Unresolved — EVIDENCE REQUIRED |
+| Configurable unseeded definition/versioning engine (Phase 06A) | Implemented (provisional technical only) |
+| Response-type schema | Deferred — EVIDENCE REQUIRED |
+| ASM-001 temperature-class limits | Unresolved — not modeled in 06A |
+| Scheduling / recording / review | Out of scope for 06A |
+| Real-content / operational / production use | Remains blocked |
+
+See [PHASE_06_CHECKLIST_PROVISIONAL_CONFIGURATION.md](../decisions/PHASE_06_CHECKLIST_PROVISIONAL_CONFIGURATION.md) and [ADR-010](../architecture/ADR-010-CHECKLIST-DEFINITION-VERSIONING.md).
 
 **No row is APPROVED.** Development must not hard-code these as Nelna facts.

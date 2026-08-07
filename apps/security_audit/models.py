@@ -29,6 +29,20 @@ class SecurityAuditEvent(models.Model):
         FG_PRODUCT_UPDATED = "FG_PRODUCT_UPDATED", "FG Product updated"
         FG_PRODUCT_ACTIVATED = "FG_PRODUCT_ACTIVATED", "FG Product activated"
         FG_PRODUCT_DEACTIVATED = "FG_PRODUCT_DEACTIVATED", "FG Product deactivated"
+        CHECKLIST_TEMPLATE_CREATED = "CHECKLIST_TEMPLATE_CREATED", "Checklist template created"
+        CHECKLIST_TEMPLATE_UPDATED = "CHECKLIST_TEMPLATE_UPDATED", "Checklist template updated"
+        CHECKLIST_TEMPLATE_ACTIVATED = (
+            "CHECKLIST_TEMPLATE_ACTIVATED",
+            "Checklist template activated",
+        )
+        CHECKLIST_TEMPLATE_DEACTIVATED = (
+            "CHECKLIST_TEMPLATE_DEACTIVATED",
+            "Checklist template deactivated",
+        )
+        CHECKLIST_VERSION_CREATED = "CHECKLIST_VERSION_CREATED", "Checklist version created"
+        CHECKLIST_VERSION_CLONED = "CHECKLIST_VERSION_CLONED", "Checklist version cloned"
+        CHECKLIST_VERSION_PUBLISHED = "CHECKLIST_VERSION_PUBLISHED", "Checklist version published"
+        CHECKLIST_VERSION_RETIRED = "CHECKLIST_VERSION_RETIRED", "Checklist version retired"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     event_type = models.CharField(max_length=64, choices=EventType.choices)

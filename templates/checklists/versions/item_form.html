@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Edit item — {{ version.template.code }}{% endblock %}
+{% block body_class %}mgmt-shell{% endblock %}
+{% block content %}
+  <section class="mgmt-page" aria-labelledby="item-edit-heading">
+    <header class="mgmt-page__header">
+      <h1 id="item-edit-heading">Edit item</h1>
+      <a class="btn btn--ghost btn--inline"
+         href="{% url 'checklists:version_detail' version.id %}">Back</a>
+    </header>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% include "components/form_field.html" with field=form.code %}
+      {% include "components/form_field.html" with field=form.label %}
+      {% include "components/form_field.html" with field=form.help_text %}
+      {% include "components/form_field.html" with field=form.is_required %}
+      <button type="submit" class="btn btn--primary btn--inline">Save item</button>
+    </form>
+  </section>
+{% endblock %}

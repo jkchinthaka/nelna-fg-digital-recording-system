@@ -84,7 +84,8 @@ def test_landing_page_authenticated_and_logout_post(client: Client) -> None:
     assert "Welcome" in content
     assert "UI004" in content
     assert "Checklist recording remains a later phase" in content
-    assert "No production master data is seeded" in content
+    assert "No production master data or forms are seeded" in content
+    assert "Checklist Definitions" not in content  # no view permission yet
     assert 'method="post"' in content
     assert reverse("accounts:logout") in content
     assert client.get(reverse("accounts:logout")).status_code == 405

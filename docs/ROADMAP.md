@@ -1,12 +1,12 @@
 # Roadmap — Phase Delivery Plan
 
 **Document status:** Governing roadmap for greenfield delivery
-**Phase:** Phase 04A/04B complete · Phase 05A FG Product foundation complete · Phase 05B authz hardening · MASTER-001 still evidence-required
+**Phase:** Phase 04A/04B · Phase 05A/05B · Phase 06A checklist definition foundation · MASTER-001 / TEMPLATE still evidence-required
 **Last updated:** 2026-08-07
 
 Branch naming pattern: `foundation/...`, `design/...`, `feature/phase-NN-short-name`, or `hardening/...` as appropriate. Never commit directly to `main`.
 
-**Progress:** Phase 00–01C complete (01C with deferred Sinhala condition). Phase 02 **Approved with conditions** and merged (PR #5 / #6). Phase 03 accounts/RBAC **Approved with conditions** and merged (PR #7 / related follow-up merges). Authentication UI polish **merged** (PR #8). Phase 04 scope reconciliation **merged** (PR #10). Organization, Site, and Department models exist from Phase 03. Phase **04A** implements a configurable, **unseeded** Shift domain foundation under owner provisional direction (no invented Nelna shift values). Phase **04B** delivers the Shift management web UI. Phase **05A** implements a configurable, **unseeded** FG Product foundation under owner provisional direction (organization-scoped; no invented product catalogues). Phase **05B** hardens Product UI authorization (object-aware manage affordances) and MASTER-001 evidence intake readiness. MASTER-001 remains evidence-required. Real-data configuration and UAT remain pending. **No checklist/recording modules** have started. ASM-004 / ASM-005 / ASM-006 remain partially unresolved for official business values. DEBT-01C-R-NOTO remains **open** (blocking for operator UAT/pilot/production and final Sinhala operator UI). Production readiness **not** claimed. No deployment approval exists.
+**Progress:** Phase 00–01C complete (01C with deferred Sinhala condition). Phase 02 **Approved with conditions** and merged (PR #5 / #6). Phase 03 accounts/RBAC **Approved with conditions** and merged (PR #7 / related follow-up merges). Authentication UI polish **merged** (PR #8). Phase 04 scope reconciliation **merged** (PR #10). Organization, Site, and Department models exist from Phase 03. Phase **04A** implements a configurable, **unseeded** Shift domain foundation under owner provisional direction (no invented Nelna shift values). Phase **04B** delivers the Shift management web UI. Phase **05A** implements a configurable, **unseeded** FG Product foundation under owner provisional direction (organization-scoped; no invented product catalogues). Phase **05B** hardens Product UI authorization (object-aware manage affordances) and MASTER-001 evidence intake readiness. Phase **06A** implements a configurable, **unseeded** checklist definition/versioning foundation (immutable published versions; no invented form content). MASTER-001 and TEMPLATE evidence remain required. Real-data configuration and UAT remain pending. **No recording/scheduling modules** have started. ASM-004 / ASM-005 / ASM-006 remain partially unresolved for official business values. DEBT-01C-R-NOTO remains **open** (blocking for operator UAT/pilot/production and final Sinhala operator UI). Production readiness **not** claimed. No deployment approval exists.
 
 **Numbering rule:** Preserve roadmap phase numbers. Do **not** rename FG master data, checklist templates, recording, review, or evidence work as Phase 04.
 
@@ -160,14 +160,15 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 
 | Field | Content |
 | --- | --- |
-| Objective | Versioned checklist definitions/templates for two approved checklist types |
-| Inputs | Approved forms (TEMPLATE evidence) |
-| Outputs | `checklists` module |
-| Approval gate | QA content approval |
-| Branch naming | `feature/phase-06-checklist-templates` |
-| Exit criteria | Two templates only unless expansion approved |
-| Dependencies | Phase 05; TEMPLATE evidence |
-| Notes | **Not** Phase 04. Definition/versioning only — no operator submission ownership. |
+| Objective | Versioned checklist definitions/templates for later operational use |
+| Inputs | Owner provisional definition-engine decision (2026-08-07); later TEMPLATE / ASM evidence for real forms |
+| Outputs | `checklists` definition foundation (06A); real content later as approved |
+| Approval gate | QA content approval for real forms; technical review of 06A |
+| Branch naming | Direct-main quality-first for 06A |
+| Exit criteria | 06A: configurable unseeded Template/Version/Section/Item with immutable publish, RBAC, UI, audit. Full Phase 06: evidenced forms only after TEMPLATE evidence |
+| Dependencies | Phase 05 technical foundation (Product optional association); TEMPLATE evidence for content |
+| Status | **06A implemented (configurable definition/versioning foundation)** — TEMPLATE/ASM content unresolved; Phase 06 **not** fully complete |
+| Notes | **Not** Phase 04. Definition/versioning only — no operator submission ownership. No invented temperature limits or response-type engine. |
 
 ## Phase 07 — Scheduling and tasks
 

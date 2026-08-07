@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load organizations_extras master_data_extras %}
+{% load organizations_extras master_data_extras checklists_extras %}
 {% block title %}Signed in — Nelna FG Digital Recording System{% endblock %}
 {% block content %}
   <section class="landing-page" aria-labelledby="landing-heading">
@@ -19,8 +19,8 @@
       {% endif %}
       <p class="landing-meta">{{ phase_label }}</p>
       <p class="landing-notice">
-        Shift and FG Product configuration are available to authorized users.
-        Checklist recording remains a later phase. No production master data is seeded.
+        Shift, FG Product, and Checklist Definition configuration are available to authorized users.
+        Checklist recording remains a later phase. No production master data or forms are seeded.
       </p>
       <p class="landing-meta">Keep this session private. Sign out when you finish working on a shared device.</p>
       <div class="landing-actions">
@@ -31,6 +31,10 @@
         {% user_can_view_fg_products as show_products %}
         {% if show_products %}
           <a class="btn btn--primary" href="{% url 'master_data:product_list' %}">FG Products</a>
+        {% endif %}
+        {% user_can_view_checklists as show_checklists %}
+        {% if show_checklists %}
+          <a class="btn btn--primary" href="{% url 'checklists:template_list' %}">Checklist Definitions</a>
         {% endif %}
         <a class="btn btn--secondary"
            href="{% url 'accounts:change_password' %}">Change password</a>
