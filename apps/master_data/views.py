@@ -20,10 +20,10 @@ from apps.master_data.models import FGProduct
 from apps.master_data.selectors import (
     StatusFilter,
     actor_can_manage_fg_product,
-    actor_can_manage_fg_products,
     actor_can_view_fg_products,
     get_fg_product,
     list_fg_products,
+    manageable_organization_ids,
     organizations_for_fg_product_actor,
     organizations_for_fg_product_manage,
 )
@@ -57,7 +57,9 @@ def _require_view_module(request: HttpRequest) -> None:
 
 
 def _require_manage_module(request: HttpRequest) -> None:
-    if not actor_can_manage_fg_products(_actor(request)):
+    # Require at least one Organization where manage_fgproduct applies at org Scope.
+    # Site-only manage grants do not escalate to Product create.
+    if not manageable_organization_ids(_actor(request)):
         raise PermissionDenied("Permission denied.")
 
 
@@ -126,6 +128,7 @@ def product_list(request: HttpRequest) -> HttpResponse:
     paginator = Paginator(products, PAGE_SIZE)
     page_obj = paginator.get_page(request.GET.get("page"))
     filters_active = bool(search or org_id or status != "all")
+    manage_org_ids = manageable_organization_ids(_actor(request))
     context = {
         "page_obj": page_obj,
         "products": page_obj.object_list,
@@ -134,7 +137,8 @@ def product_list(request: HttpRequest) -> HttpResponse:
         "organizations": organizations,
         "selected_organization": organization,
         "filters_active": filters_active,
-        "can_manage": actor_can_manage_fg_products(_actor(request)),
+        "manageable_organization_ids": manage_org_ids,
+        "can_create": bool(manage_org_ids),
         "total_count": paginator.count,
     }
     if request.headers.get("HX-Request") == "true":

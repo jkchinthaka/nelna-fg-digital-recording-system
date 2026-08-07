@@ -1,7 +1,7 @@
 # Traceability Matrix
 
 **Document status:** Living matrix — no testing claimed complete for business UAT
-**Phase:** Phase 04A/04B Shift + Phase 05A FG Product · MASTER-001 / real-data UAT still blocked
+**Phase:** Phase 04A/04B Shift + Phase 05A/05B FG Product · MASTER-001 / real-data UAT still blocked
 **Last updated:** 2026-08-07
 
 ## Rules
@@ -27,7 +27,7 @@
 | ORG-003 | Operations / Business (TBC) | Incorrect Shift definitions | organizations | ADR-008; PHASE_04_SHIFT_PROVISIONAL_CONFIGURATION; SHIFT_MANAGEMENT_UI | PHASE_04A_TEST_PLAN; shift UI tests | TBC | Configurable unseeded Shift foundation (04A) + management UI (04B); official values = ASM-005/006 | Phase 04A/04B technical delivery — ASM-005/006 remain unresolved; no production authorization |
 | RBAC-001 | IT / QA (TBC) | Cross-scope access | access_control | ADR-007 | PHASE_03_TEST_PLAN | TBC | ScopedRoleAssignment | Phase 03 approved with conditions (merged) |
 | ORG-002 | IT / Business (TBC) | Privilege bleed | organizations / accounts | TBC | TBC | TBC | Security baseline | Proposed |
-| MASTER-001 | Business / QA (TBC) | Incorrect master data | master_data | ADR-009; PHASE_05_FG_PRODUCT_PROVISIONAL_CONFIGURATION; FG_PRODUCT_MANAGEMENT_UI | PHASE_05A_TEST_PLAN; FG Product tests | TBC | Configurable unseeded FG Product foundation (05A); official catalogue = MASTER-001 | Phase 05A technical foundation — MASTER-001 remains EVIDENCE REQUIRED; no production authorization |
+| MASTER-001 | Business / QA (TBC) | Incorrect master data | master_data | ADR-009; PHASE_05_FG_PRODUCT_PROVISIONAL_CONFIGURATION; FG_PRODUCT_MANAGEMENT_UI; MASTER_001_FG_PRODUCT_EVIDENCE_INTAKE | PHASE_05A_TEST_PLAN; FG Product authz hardening tests | TBC | Configurable unseeded FG Product foundation (05A); authz hardening (05B); official catalogue = MASTER-001 | Phase 05A/05B technical work — MASTER-001 remains EVIDENCE REQUIRED; schema expansion and real loading blocked; no production authorization |
 | MASTER-002 | QA / IT (TBC) | Untracked changes | master_data / audit | TBC | TBC | TBC | Audit policy | Proposed |
 | TEMPLATE-001 | QA owner (TBC) | Uncontrolled forms | checklists | TBC — Phase 06 | TBC | TBC | EVIDENCE REQUIRED | Proposed |
 | TEMPLATE-002 | QA / Business (TBC) | Scope creep | checklists | MVP scope | TBC | TBC | MVP scope | Proposed |
@@ -66,4 +66,4 @@
 | AI-002 | QA / IT (TBC) | AI hallucination in critical path | ai_assistance | AI safety policy | TBC | TBC | AI safety policy | Proposed |
 | AI-003 | IT / Business (TBC) | AI outage blocks floor | ai_assistance | AI safety policy | TBC | TBC | AI safety policy | Proposed |
 
-**Testing status:** Foundation automated tests run in CI / Docker; business UAT is **not** started. Phase 02 and Phase 03 approval forms are **signed with conditions**. Authentication UI polish merged via PR #8. Phase 04 scope reconciliation merged via PR #10. Phase **04A/04B** Shift foundation + UI; Phase **05A** FG Product foundation — MASTER-001 remains evidence-required. ASM-004/005/006 remain partially unresolved. DEBT-01C-R-NOTO remains **open**. No checklist/recording modules started. No deployment authorization.
+**Testing status:** Foundation automated tests run in CI / Docker; business UAT is **not** started. Phase 02 and Phase 03 approval forms are **signed with conditions**. Authentication UI polish merged via PR #8. Phase 04 scope reconciliation merged via PR #10. Phase **04A/04B** Shift foundation + UI; Phase **05A** FG Product foundation; Phase **05B** Product authorization hardening + MASTER-001 intake readiness — MASTER-001 remains evidence-required. ASM-004/005/006 remain partially unresolved. DEBT-01C-R-NOTO remains **open**. No checklist/recording modules started. No deployment authorization.

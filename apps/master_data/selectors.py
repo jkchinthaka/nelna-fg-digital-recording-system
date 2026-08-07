@@ -11,7 +11,6 @@ from django.db.models import Q, QuerySet
 from apps.access_control.services import (
     organization_ids_with_permission,
     user_has_permission,
-    user_has_permission_any_scope,
 )
 from apps.accounts.models import User
 from apps.master_data.models import FGProduct
@@ -26,11 +25,13 @@ StatusFilter = Literal["all", "active", "inactive"]
 
 
 def actor_can_view_fg_products(actor: User | None) -> bool:
-    return user_has_permission_any_scope(actor, VIEW_FG_PRODUCT)
+    """True when actor has org-level view scope for at least one Organization."""
+    return bool(organization_ids_with_permission(actor, VIEW_FG_PRODUCT))
 
 
 def actor_can_manage_fg_products(actor: User | None) -> bool:
-    return user_has_permission_any_scope(actor, MANAGE_FG_PRODUCT)
+    """True when actor has org-level manage scope for at least one Organization."""
+    return bool(organization_ids_with_permission(actor, MANAGE_FG_PRODUCT))
 
 
 def actor_can_manage_fg_product(actor: User | None, product: FGProduct) -> bool:
@@ -98,17 +99,26 @@ def list_active_fg_products(
 
 
 def organizations_for_fg_product_actor(actor: User | None) -> QuerySet[Organization]:
-    allowed = organization_ids_with_permission(actor, VIEW_FG_PRODUCT)
-    manage_ids = organization_ids_with_permission(actor, MANAGE_FG_PRODUCT)
-    # Form create needs manage; list filters use view. Union for filter dropdowns.
-    org_ids = allowed | manage_ids
+    """Organizations the actor may use for Product list/filter (view scope only)."""
+    org_ids = organization_ids_with_permission(actor, VIEW_FG_PRODUCT)
     if not org_ids:
         return Organization.objects.none()
     return Organization.objects.filter(pk__in=org_ids).order_by("code")
 
 
 def organizations_for_fg_product_manage(actor: User | None) -> QuerySet[Organization]:
+    """Organizations where the actor may create/manage FG Products."""
     org_ids = organization_ids_with_permission(actor, MANAGE_FG_PRODUCT)
     if not org_ids:
         return Organization.objects.none()
     return Organization.objects.filter(pk__in=org_ids).order_by("code")
+
+
+def manageable_organization_ids(actor: User | None) -> frozenset[uuid.UUID]:
+    """
+    Precomputed Organization IDs where actor has manage_fgproduct at org Scope.
+
+    Intended for list/detail UI affordances without per-row permission queries.
+    Server-side services remain authoritative for mutations.
+    """
+    return frozenset(organization_ids_with_permission(actor, MANAGE_FG_PRODUCT))

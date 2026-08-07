@@ -11,7 +11,7 @@
           Official Product Master values are entered by authorized users — none are seeded.
         </p>
       </div>
-      {% if can_manage %}
+      {% if can_create %}
         <a class="btn btn--primary btn--inline"
            href="{% url 'master_data:product_create' %}">Create Product</a>
       {% endif %}

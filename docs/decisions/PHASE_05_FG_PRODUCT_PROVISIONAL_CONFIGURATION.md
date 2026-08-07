@@ -12,7 +12,7 @@
 4. No real product codes, names, catalogues, or ERP mappings may be invented or seeded.
 5. FG Product is **organization-scoped** provisionally.
 6. Normalized Product code uniqueness is **per Organization** provisionally (not claimed as ERP policy).
-7. Site and Department are **not** part of Product ownership in Phase 05A.
+7. Site and Department are **not** part of Product ownership in Phase 05A. Site-only management does **not** imply Product management until business scope is evidenced (confirmed in Phase 05B).
 8. Category, UOM, barcode, ERP IDs, production line, work center, temperature class, instruments, training, and related attributes are **explicitly excluded**.
 9. Real ERP source-of-truth and import/migration formats remain unresolved.
 10. MASTER-001 remains **EVIDENCE REQUIRED**.

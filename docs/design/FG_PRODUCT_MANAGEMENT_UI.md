@@ -1,7 +1,7 @@
-# FG Product Management UI (Phase 05A)
+# FG Product Management UI (Phase 05A / 05B)
 
-**Document status:** Phase 05A operational management UI  
-**Last updated:** 2026-08-07  
+**Document status:** Phase 05A operational management UI + Phase 05B authorization hardening
+**Last updated:** 2026-08-07
 **Language:** English UI pending Sinhala design/UAT resolution (DEBT-01C-R-NOTO remains open)
 
 ## Purpose
@@ -14,16 +14,26 @@ Authorized staff configure and maintain FG Product definitions without Django ad
 - MASTER-001 remains evidence-required.
 - No category/UOM/ERP fields.
 - No checklist/recording functionality.
+- Phase 05A Product ownership is organization-scoped. Site-only management does not imply Product management until business scope is evidenced.
 
 ## Screens
 
 | Screen | Route | Permission |
 | --- | --- | --- |
-| List | `/products/` | `master_data.view_fgproduct` |
-| Create | `/products/new/` | `master_data.manage_fgproduct` |
+| List | `/products/` | org-level `master_data.view_fgproduct` (at least one Organization) |
+| Create | `/products/new/` | org-level `master_data.manage_fgproduct` (at least one Organization) |
 | Detail | `/products/<uuid>/` | view on product organization |
 | Edit | `/products/<uuid>/edit/` | manage on product organization |
-| Activate / Deactivate | POST only | manage |
+| Activate / Deactivate | POST only | manage on product organization |
+
+## Authorization affordances (05B)
+
+- Create CTA: only when actor has ≥1 manageable Organization.
+- List Edit: only when `product.organization_id` is in precomputed `manageable_organization_ids` (no per-row permission queries).
+- Detail Edit / Activate / Deactivate: object-aware manage check.
+- Filter Organization choices: view-scope only.
+- Create Organization choices: manage-scope only.
+- Server-side services remain authoritative; UI absence ≠ authorization.
 
 ## UX notes
 

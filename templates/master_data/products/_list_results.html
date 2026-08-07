@@ -1,6 +1,6 @@
 {% if total_count == 0 and not filters_active %}
   {% include "components/empty_state.html" with title="No FG products have been configured yet." message="Authorized users can create FG Product definitions for their organization. No product catalogue is seeded." %}
-  {% if can_manage %}
+  {% if can_create %}
     <p class="mgmt-empty-cta">
       <a class="btn btn--primary btn--inline"
          href="{% url 'master_data:product_create' %}">Create Product</a>
@@ -46,7 +46,7 @@
             </td>
             <td class="data-table__actions">
               <a href="{% url 'master_data:product_detail' product.id %}">View</a>
-              {% if can_manage %}
+              {% if product.organization_id in manageable_organization_ids %}
                 <a href="{% url 'master_data:product_edit' product.id %}">Edit</a>
               {% endif %}
             </td>
@@ -70,6 +70,12 @@
         </div>
         <p class="shift-card__meta">{{ product.organization.code }} — {{ product.organization.name }}</p>
         {% if product.description %}<p class="shift-card__meta">{{ product.description|truncatechars:100 }}</p>{% endif %}
+        <p class="shift-card__meta data-table__actions">
+          <a href="{% url 'master_data:product_detail' product.id %}">View</a>
+          {% if product.organization_id in manageable_organization_ids %}
+            <a href="{% url 'master_data:product_edit' product.id %}">Edit</a>
+          {% endif %}
+        </p>
       </li>
     {% endfor %}
   </ul>

@@ -1,12 +1,12 @@
 # Roadmap — Phase Delivery Plan
 
 **Document status:** Governing roadmap for greenfield delivery
-**Phase:** Phase 04A/04B complete · Phase 05A FG Product foundation in progress · MASTER-001 still evidence-required
+**Phase:** Phase 04A/04B complete · Phase 05A FG Product foundation complete · Phase 05B authz hardening · MASTER-001 still evidence-required
 **Last updated:** 2026-08-07
 
 Branch naming pattern: `foundation/...`, `design/...`, `feature/phase-NN-short-name`, or `hardening/...` as appropriate. Never commit directly to `main`.
 
-**Progress:** Phase 00–01C complete (01C with deferred Sinhala condition). Phase 02 **Approved with conditions** and merged (PR #5 / #6). Phase 03 accounts/RBAC **Approved with conditions** and merged (PR #7 / related follow-up merges). Authentication UI polish **merged** (PR #8). Phase 04 scope reconciliation **merged** (PR #10). Organization, Site, and Department models exist from Phase 03. Phase **04A** implements a configurable, **unseeded** Shift domain foundation under owner provisional direction (no invented Nelna shift values). Phase **04B** delivers the Shift management web UI. Phase **05A** implements a configurable, **unseeded** FG Product foundation under owner provisional direction (organization-scoped; no invented product catalogues). MASTER-001 remains evidence-required. Real-data configuration and UAT remain pending. **No checklist/recording modules** have started. ASM-004 / ASM-005 / ASM-006 remain partially unresolved for official business values. DEBT-01C-R-NOTO remains **open** (blocking for operator UAT/pilot/production and final Sinhala operator UI). Production readiness **not** claimed. No deployment approval exists.
+**Progress:** Phase 00–01C complete (01C with deferred Sinhala condition). Phase 02 **Approved with conditions** and merged (PR #5 / #6). Phase 03 accounts/RBAC **Approved with conditions** and merged (PR #7 / related follow-up merges). Authentication UI polish **merged** (PR #8). Phase 04 scope reconciliation **merged** (PR #10). Organization, Site, and Department models exist from Phase 03. Phase **04A** implements a configurable, **unseeded** Shift domain foundation under owner provisional direction (no invented Nelna shift values). Phase **04B** delivers the Shift management web UI. Phase **05A** implements a configurable, **unseeded** FG Product foundation under owner provisional direction (organization-scoped; no invented product catalogues). Phase **05B** hardens Product UI authorization (object-aware manage affordances) and MASTER-001 evidence intake readiness. MASTER-001 remains evidence-required. Real-data configuration and UAT remain pending. **No checklist/recording modules** have started. ASM-004 / ASM-005 / ASM-006 remain partially unresolved for official business values. DEBT-01C-R-NOTO remains **open** (blocking for operator UAT/pilot/production and final Sinhala operator UI). Production readiness **not** claimed. No deployment approval exists.
 
 **Numbering rule:** Preserve roadmap phase numbers. Do **not** rename FG master data, checklist templates, recording, review, or evidence work as Phase 04.
 
@@ -148,13 +148,13 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | --- | --- |
 | Objective | Minimal FG / operational master data for MVP templates; instruments/training as approved |
 | Inputs | Owner provisional Product foundation decision (2026-08-07); later MASTER-001 evidence for real catalogues |
-| Outputs | `master_data` FG Product foundation (05A); instruments/training later as approved |
-| Approval gate | Data owner review for real data; technical review of 05A |
-| Branch naming | Direct-main quality-first for 05A |
-| Exit criteria | 05A: configurable unseeded FG Product model/services/selectors/UI/audit without seeded business rows. Full Phase 05: evidenced entities only after MASTER-001 |
+| Outputs | `master_data` FG Product foundation (05A); authz hardening + MASTER-001 intake (05B); instruments/training later as approved |
+| Approval gate | Data owner review for real data; technical review of 05A/05B |
+| Branch naming | Direct-main quality-first for 05A/05B |
+| Exit criteria | 05A: configurable unseeded FG Product model/services/selectors/UI/audit without seeded business rows. 05B: object-aware Product UI affordances + MASTER-001 evidence intake readiness. Full Phase 05: evidenced entities only after MASTER-001 |
 | Dependencies | Phase 04 (04A/04B complete) |
-| Status | **05A implemented (configurable FG Product foundation)** — MASTER-001 unresolved; instruments/training not started; Phase 05 **not** fully complete |
-| Notes | **Not** Phase 04. Do not combine with checklist templates or recording. |
+| Status | **05A + 05B implemented** — MASTER-001 unresolved; instruments/training not started; Product schema expansion blocked; Phase 05 **not** fully complete |
+| Notes | **Not** Phase 04. Do not combine with checklist templates or recording. Site-only RBAC does not imply organization Product management under provisional ownership. |
 
 ## Phase 06 — Checklist definition and versioning
 

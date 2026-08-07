@@ -1,7 +1,7 @@
 # Module Map
 
-**Document status:** Living module boundaries — Phase 04A/04B + Phase 05A FG Product
-**Phase:** 03–04 merged · 05A configurable FG Product · MASTER-001 pending
+**Document status:** Living module boundaries — Phase 04A/04B + Phase 05A/05B FG Product
+**Phase:** 03–04 merged · 05A/05B FG Product · MASTER-001 pending
 **Last updated:** 2026-08-07
 
 This map guides implementation. Do not scaffold future business apps before their phase.
@@ -13,7 +13,7 @@ Do **not** rename FG master data, checklist, recording, review, or evidence work
 | organizations | Organization / site / department scope hierarchy; configurable unseeded Shift (04A) + management UI (04B) | Organization, Site, Department, Shift | Hierarchy + Shift create/update/activate/deactivate services; scoped selectors; Shift management views | Must not invent or seed Nelna org/site/dept/shift business values | **03 complete** + **04A/04B** |
 | access_control | Roles, scoped assignments, authorization API | Role, ScopedRoleAssignment | Permission checks; decorators/mixins | Must not seed business roles or Shift role mappings without evidence | **03 complete** |
 | security_audit | Append-oriented auth/RBAC/Shift security events | SecurityAuditEvent | `record_event` only; no secrets | Must not store credentials | **03 complete** + Shift events in **04A** |
-| master_data | Configurable unseeded FG Product (05A); other masters only when approved | FGProduct | Product create/update/activate/deactivate; scoped selectors; management UI | Must not invent product catalogues; no silent ERP DB import; no unsupported attributes | **05A foundation** |
+| master_data | Configurable unseeded FG Product (05A); object-aware UI authz (05B); other masters only when approved | FGProduct | Product create/update/activate/deactivate; scoped selectors; management UI with precomputed manageable orgs | Must not invent product catalogues; no silent ERP DB import; no unsupported attributes; site-only RBAC does not escalate to org Product manage | **05A/05B** |
 | instruments | Instrument register and calibration status references as approved | Instrument records | Fitness-for-use queries used by recording | Must not invent calibration intervals | **05** (not started) |
 | training | Training completion gates as approved | Training records / qualifications refs | Eligibility checks for task assignment | Must not invent training matrices | **05** (not started) |
 | checklists | Checklist definitions and versions | Templates, items, version snapshots metadata | Template publish/read services | No invented item limits; no record submission logic ownership | **06** |
@@ -38,7 +38,7 @@ Do **not** rename FG master data, checklist, recording, review, or evidence work
 | Phase | Modules / focus |
 | --- | --- |
 | 04 | Residual hierarchy confirmation; **04A** configurable unseeded Shift foundation; **04B** Shift management UI; real-data config after evidence |
-| 05 | **05A** configurable unseeded FG Product (`master_data`); instruments/training later as approved; real catalogues after MASTER-001 |
+| 05 | **05A** configurable unseeded FG Product (`master_data`); **05B** authz hardening + MASTER-001 intake; instruments/training later as approved; real catalogues after MASTER-001 |
 | 06 | `checklists` definition and versioning |
 | 07 | `schedules`, `tasks` |
 | 08 | `records` draft and submission |
