@@ -102,11 +102,11 @@ ASM-001 temperature-class limits remain **open**. Proposed °C units on draft NU
 
 | Question | Answer |
 | --- | --- |
-| Who records / fills? | EVIDENCE REQUIRED |
-| Who performs supervisor review? | EVIDENCE REQUIRED |
-| Who performs QA review? | EVIDENCE REQUIRED |
-| Who holds release authority? | EVIDENCE REQUIRED |
-| Correction / resubmission policy | EVIDENCE REQUIRED |
+| Who records / fills? | OWNER-PROVISIONAL categories: Production Employee / Store Employee / QA — see [PHASE_06E](../decisions/PHASE_06E_FG_QA_001_PROVISIONAL_WORKFLOW.md); RBAC mapping EVIDENCE REQUIRED |
+| Who performs supervisor review? | OWNER-PROVISIONAL: Supervisor review required on every submission (Phase 09); named role mapping EVIDENCE REQUIRED |
+| Who performs QA review? | OWNER-PROVISIONAL: QA final disposition authority (Phase 10); mapping EVIDENCE REQUIRED |
+| Who holds release authority? | OWNER-PROVISIONAL: QA final business disposition (not automated in 07A) |
+| Correction / resubmission policy | OWNER-PROVISIONAL: must not silently overwrite original; preserve history (Phase 08+) — not implemented yet |
 
 SELECT labels RELEASE / HOLD / REJECT on FGQA-41 are **definition labels only** — not automatic release, HOLD, or REJECT.
 
@@ -114,18 +114,18 @@ SELECT labels RELEASE / HOLD / REJECT on FGQA-41 are **definition labels only** 
 
 ## H. Scheduling
 
-Mark or describe the intended trigger. **Do not preselect an answer.**
+Mark or describe the intended trigger. **Do not pretreat owner provisional direction as formal QA sign-off.**
 
 | Option | Selected? | Notes |
 | --- | --- | --- |
-| Per batch | | EVIDENCE REQUIRED |
+| Per batch | OWNER-PROVISIONAL (06E) | Not formal QA/Production approval |
 | Per shift | | EVIDENCE REQUIRED |
 | Per day | | EVIDENCE REQUIRED |
 | Per dispatch | | EVIDENCE REQUIRED |
 | Ad hoc | | EVIDENCE REQUIRED |
 | Other | | EVIDENCE REQUIRED |
 
-Phase 07 scheduling remains blocked until these answers are evidenced.
+Phase **07A** technical task foundation exists (`batch_reference`). Real production generation remains blocked until FG-QA-001 is approved/published and batch source/integration is evidenced.
 
 ---
 
@@ -147,17 +147,21 @@ Existence of this checklist is **not** approval. Check exactly one outcome when 
 
 Until a named decision is recorded with evidence, TEMPLATE-001 remains **PROJECT-PROPOSED DRAFT — VALIDATION REQUIRED**.
 
+Owner-directed provisional workflow (06E) does **not** complete this section.
+
 ---
 
 ## Explicit non-claims
 
 - This worksheet does not close ASM-001 or MASTER-001.
 - A loaded DRAFT in an Organization does not equal business approval.
-- Phase 07 remains blocked pending unresolved readiness items.
+- Phase 06E provisional workflow is not formal QA/Production sign-off.
+- Phase 07A foundation does not authorize real FG-QA-001 production tasks.
 - Do not invent temperature limits, Product catalogues, Shift names, or approval rules.
 
 ## Related
 
+- [PHASE_06E_FG_QA_001_PROVISIONAL_WORKFLOW.md](../decisions/PHASE_06E_FG_QA_001_PROVISIONAL_WORKFLOW.md)
 - [TEMPLATE_001_CHECKLIST_EVIDENCE_INTAKE.md](TEMPLATE_001_CHECKLIST_EVIDENCE_INTAKE.md)
 - [PHASE_07_READINESS_GATE.md](PHASE_07_READINESS_GATE.md)
 - [FG_QA_001_DRAFT_LOADING.md](../operations/FG_QA_001_DRAFT_LOADING.md)

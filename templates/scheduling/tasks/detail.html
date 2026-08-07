@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Task {{ task.batch_reference }} — Nelna FG{% endblock %}
+{% block body_class %}mgmt-shell{% endblock %}
+{% block content %}
+  <section class="mgmt-page" aria-labelledby="task-detail-heading">
+    <header class="mgmt-page__header">
+      <div>
+        <h1 id="task-detail-heading">Batch {{ task.batch_reference }}</h1>
+        <p class="mgmt-page__lead">
+          <span class="status-pill status-pill--muted">{{ task.get_status_display }}</span>
+          — orchestration task only. No checklist execution / recording on this screen.
+        </p>
+      </div>
+      <div class="mgmt-page__actions">
+        <a class="btn btn--ghost btn--inline"
+           href="{% url 'scheduling:task_list' %}">Back to tasks</a>
+        {% if can_cancel %}
+          <form method="post"
+                action="{% url 'scheduling:task_cancel' task.id %}"
+                onsubmit="return confirm('Cancel task for batch {{ task.batch_reference }}?');">
+            {% csrf_token %}
+            <button type="submit" class="btn btn--secondary btn--inline">Cancel task</button>
+          </form>
+        {% endif %}
+      </div>
+    </header>
+    <dl class="mgmt-editor">
+      <div class="form-field">
+        <dt>Organization</dt>
+        <dd>
+          {{ task.organization.code }} — {{ task.organization.name }}
+        </dd>
+      </div>
+      <div class="form-field">
+        <dt>Checklist</dt>
+        <dd>
+          {{ task.checklist_template.code }} — {{ task.checklist_template.name }}
+        </dd>
+      </div>
+      <div class="form-field">
+        <dt>Definition version</dt>
+        <dd>
+          Version {{ task.checklist_version.version_number }}
+          ({{ task.checklist_version.get_status_display }})
+        </dd>
+      </div>
+      <div class="form-field">
+        <dt>Batch reference</dt>
+        <dd>
+          {{ task.batch_reference }}
+        </dd>
+      </div>
+      <div class="form-field">
+        <dt>Created</dt>
+        <dd>
+          {{ task.created_at }}
+        </dd>
+      </div>
+      <div class="form-field">
+        <dt>Updated</dt>
+        <dd>
+          {{ task.updated_at }}
+        </dd>
+      </div>
+    </dl>
+  </section>
+{% endblock %}

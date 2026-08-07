@@ -43,6 +43,8 @@ class SecurityAuditEvent(models.Model):
         CHECKLIST_VERSION_CLONED = "CHECKLIST_VERSION_CLONED", "Checklist version cloned"
         CHECKLIST_VERSION_PUBLISHED = "CHECKLIST_VERSION_PUBLISHED", "Checklist version published"
         CHECKLIST_VERSION_RETIRED = "CHECKLIST_VERSION_RETIRED", "Checklist version retired"
+        CHECKLIST_TASK_CREATED = "CHECKLIST_TASK_CREATED", "Checklist task created"
+        CHECKLIST_TASK_CANCELLED = "CHECKLIST_TASK_CANCELLED", "Checklist task cancelled"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     event_type = models.CharField(max_length=64, choices=EventType.choices)

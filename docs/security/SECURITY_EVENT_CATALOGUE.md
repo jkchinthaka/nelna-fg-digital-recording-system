@@ -32,6 +32,8 @@
 | `CHECKLIST_VERSION_CLONED` | Draft checklist version cloned from a source version |
 | `CHECKLIST_VERSION_PUBLISHED` | Checklist version published (immutable thereafter) |
 | `CHECKLIST_VERSION_RETIRED` | Published checklist version retired |
+| `CHECKLIST_TASK_CREATED` | Batch checklist task created (or idempotent return of existing) |
+| `CHECKLIST_TASK_CANCELLED` | Batch checklist task cancelled (soft cancel) |
 
 ## Safe metadata
 
@@ -42,6 +44,8 @@ Shift events may include: Shift UUID, normalized Shift code, Organization UUID, 
 FG Product events may include: FG Product UUID, normalized Product code, Organization UUID, active status, changed field names.
 
 Checklist events may include: template UUID/code, version UUID/number, organization UUID, optional product UUID, status, changed field names. Do not store full checklist question text in security audit metadata. Lifecycle transitions remain DRAFT→PUBLISHED→RETIRED only (Phase 06B); audit emits once from services, not duplicated from views.
+
+Checklist task events may include: task UUID, organization UUID, template UUID/code, version UUID/number, `batch_reference`, status. Do not store checklist question text or request bodies.
 
 Unknown login identifiers must be masked or hashed — never store raw unknown employee codes in clear text when the account is unknown.
 

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load organizations_extras master_data_extras checklists_extras %}
+{% load organizations_extras master_data_extras checklists_extras scheduling_extras %}
 {% block title %}Signed in — Nelna FG Digital Recording System{% endblock %}
 {% block content %}
   <section class="landing-page" aria-labelledby="landing-heading">
@@ -35,6 +35,10 @@
         {% user_can_view_checklists as show_checklists %}
         {% if show_checklists %}
           <a class="btn btn--primary" href="{% url 'checklists:template_list' %}">Checklist Definitions</a>
+        {% endif %}
+        {% user_can_view_checklist_tasks as show_checklist_tasks %}
+        {% if show_checklist_tasks %}
+          <a class="btn btn--primary" href="{% url 'scheduling:task_list' %}">Checklist Tasks</a>
         {% endif %}
         <a class="btn btn--secondary"
            href="{% url 'accounts:change_password' %}">Change password</a>

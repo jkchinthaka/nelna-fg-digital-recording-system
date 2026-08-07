@@ -1,4 +1,4 @@
-{% load static organizations_extras master_data_extras checklists_extras %}
+{% load static organizations_extras master_data_extras checklists_extras scheduling_extras %}
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE|default:'en' }}">
   <head>
@@ -38,6 +38,10 @@
                 {% user_can_view_checklists as show_checklists %}
                 {% if show_checklists %}
                   <a href="{% url 'checklists:template_list' %}">Checklist Definitions</a>
+                {% endif %}
+                {% user_can_view_checklist_tasks as show_checklist_tasks %}
+                {% if show_checklist_tasks %}
+                  <a href="{% url 'scheduling:task_list' %}">Checklist Tasks</a>
                 {% endif %}
               </nav>
             {% endif %}

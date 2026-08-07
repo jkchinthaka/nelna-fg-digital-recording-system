@@ -12,6 +12,7 @@ ALLOWED_APPS = {
     "organizations",
     "master_data",
     "checklists",
+    "scheduling",
     "access_control",
     "security_audit",
 }

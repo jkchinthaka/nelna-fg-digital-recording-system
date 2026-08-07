@@ -162,25 +162,26 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | --- | --- |
 | Objective | Versioned checklist definitions/templates for later operational use |
 | Inputs | Owner provisional definition-engine decision (2026-08-07); later TEMPLATE / ASM evidence for real forms |
-| Outputs | `checklists` definition foundation (06A); governance hardening + TEMPLATE-001 intake (06B); response-definition schema + FG-QA-001 **proposed draft** artifact (06C); explicit DRAFT loader + internal validation worksheet (06D); real content later as approved |
-| Approval gate | QA content approval for real forms; technical review of 06A/06B/06C/06D |
-| Branch naming | Direct-main quality-first for 06A/06B/06C/06D |
-| Exit criteria | 06A: configurable unseeded Template/Version/Section/Item with immutable publish, RBAC, UI, audit. 06B: centralized lifecycle, concurrency/immutability hardening, evidence intake readiness. 06C: provisional response-definition primitives + draft proposal artifact (not production content). 06D: explicit Organization-scoped DRAFT load (never publish/auto-seed) + stakeholder validation package. Full Phase 06: evidenced forms only after TEMPLATE evidence |
+| Outputs | `checklists` definition foundation (06A); governance hardening + TEMPLATE-001 intake (06B); response-definition schema + FG-QA-001 **proposed draft** artifact (06C); explicit DRAFT loader + internal validation worksheet (06D); owner-directed provisional workflow formalization (06E); real content later as approved |
+| Approval gate | QA content approval for real forms; technical review of 06A/06B/06C/06D/06E |
+| Branch naming | Direct-main quality-first for 06A/06B/06C/06D/06E |
+| Exit criteria | 06A: configurable unseeded Template/Version/Section/Item with immutable publish, RBAC, UI, audit. 06B: centralized lifecycle, concurrency/immutability hardening, evidence intake readiness. 06C: provisional response-definition primitives + draft proposal artifact (not production content). 06D: explicit Organization-scoped DRAFT load (never publish/auto-seed) + stakeholder validation package. 06E: record owner-directed provisional workflow (per-batch trigger; recorder categories; Supervisor/QA authority; future HOLD/correction invariants) without claiming formal QA/Production approval. Full Phase 06: evidenced forms only after TEMPLATE evidence |
 | Dependencies | Phase 05 technical foundation (Product optional association); TEMPLATE evidence for content |
-| Status | **06A + 06B + 06C + 06D** — provisional response schema + FG-QA-001 project-proposed draft + explicit DRAFT loader (validation required); TEMPLATE/ASM/MASTER content unresolved; Phase 06 **not** fully complete |
-| Notes | **Not** Phase 04. Definition/versioning + response **definition** schema only — no operator submission ownership. No invented temperature limits; no automatic RELEASE/HOLD/REJECT. FG-QA-001 draft is **NOT APPROVED**; not auto-seeded; DRAFT load is review-only. Phase 07 evidence-gated. |
+| Status | **06A + 06B + 06C + 06D + 06E** — provisional workflow recorded (not formal sign-off); FG-QA-001 remains project-proposed DRAFT; TEMPLATE/ASM/MASTER content unresolved; Phase 06 **not** fully complete |
+| Notes | **Not** Phase 04. Definition/versioning + response **definition** schema only — no operator submission ownership. No invented temperature limits; no automatic RELEASE/HOLD/REJECT. FG-QA-001 draft is **NOT APPROVED**; not auto-seeded; DRAFT load is review-only. Phase 07A technical foundation may proceed under provisional workflow; full Phase 07 production readiness remains evidence-gated. |
 
 ## Phase 07 — Scheduling and tasks
 
 | Field | Content |
 | --- | --- |
 | Objective | Schedules and task assignment |
-| Inputs | Frequency rules from approved forms |
-| Outputs | `schedules`, `tasks` |
-| Approval gate | Operations review of due logic |
-| Branch naming | `feature/phase-07-scheduling-tasks` |
-| Exit criteria | Operators see correct due work in test |
-| Dependencies | Phase 06 |
+| Inputs | Owner-directed provisional per-batch trigger (06E); later frequency/applicability evidence for production generation |
+| Outputs | **07A:** `scheduling.ChecklistTask` foundation (`batch_reference`, PUBLISHED-only explicit version, PENDING/CANCELLED); later recurrence/`schedules` as approved |
+| Approval gate | Operations review of due logic for full Phase 07; 07A is technical foundation only |
+| Branch naming | Direct-main quality-first for 07A |
+| Exit criteria | **07A:** org-scoped create/cancel/list/detail with RBAC, audit, uniqueness, no recording/HOLD. Full Phase 07: operators see correct due work from evidenced batch source + published approved definitions |
+| Dependencies | Phase 06 technical + 06E provisional workflow; FG-QA-001 publish + batch source for real generation |
+| Status | **07A technical foundation implemented** — real production task generation still **BLOCKED** (FG-QA-001 DRAFT; batch source unresolved; Product/Shift/Site applicability open) |
 
 ## Phase 08 — Checklist recording and submission (draft → submit)
 

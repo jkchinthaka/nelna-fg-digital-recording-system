@@ -76,12 +76,14 @@ TEMPLATE-001 / ASM-003 form inventory and official checklist content remain **EV
 | TEMPLATE-001 project proposal | **PROJECT-PROPOSED DRAFT — VALIDATION REQUIRED** — [proposals/FG_QA_001_DRAFT_V0_1.md](proposals/FG_QA_001_DRAFT_V0_1.md) (NOT APPROVED for production; not auto-seeded) |
 | Explicit DRAFT loader (Phase 06D) | Available — `load_fg_qa_001_draft` loads Organization-scoped DRAFT for review only; never publishes; never auto-seeds — see [FG_QA_001_DRAFT_LOADING.md](../operations/FG_QA_001_DRAFT_LOADING.md) |
 | Internal validation worksheet | Available — [FG_QA_001_INTERNAL_VALIDATION_CHECKLIST.md](FG_QA_001_INTERNAL_VALIDATION_CHECKLIST.md) — existence is not approval |
+| Owner-directed provisional workflow (Phase 06E) | Recorded — per-batch trigger; recorder categories; Supervisor/QA authority outline; future HOLD/correction invariants — **not** formal QA/Production sign-off — see [PHASE_06E_FG_QA_001_PROVISIONAL_WORKFLOW.md](../decisions/PHASE_06E_FG_QA_001_PROVISIONAL_WORKFLOW.md) |
 | Configurable unseeded definition/versioning engine (Phase 06A) | Implemented (provisional technical only) |
 | Lifecycle governance hardening (Phase 06B) | Implemented — centralized transitions; immutability; concurrency tests |
 | Response-type schema (Phase 06C) | Provisional technical primitives for **definition schema only** — see [RESPONSE_TYPE_DECISION_REGISTER.md](RESPONSE_TYPE_DECISION_REGISTER.md); PHOTO/SIGNATURE/etc still deferred |
 | ASM-001 temperature-class limits | Remains **open** — EVIDENCE REQUIRED; limits unset on FG-QA-001 draft |
 | MASTER-001 Product catalogue / fields | Remains **open** — EVIDENCE REQUIRED; no Product codes in FG-QA-001 draft; loader does not assign Products |
-| Scheduling / recording / review | Out of scope — Phase 07 gated by [PHASE_07_READINESS_GATE.md](PHASE_07_READINESS_GATE.md) |
+| Batch checklist task foundation (Phase 07A) | Implemented technically — `scheduling.ChecklistTask` + `batch_reference`; PUBLISHED-only explicit version; no ProductionBatch master; no recording/HOLD |
+| Scheduling / recording / review | Full Phase 07 production generation + Phase 08/09/10 still gated — see [PHASE_07_READINESS_GATE.md](PHASE_07_READINESS_GATE.md) |
 | Real-content / operational / production use | Remains blocked |
 
 See [PHASE_06_CHECKLIST_PROVISIONAL_CONFIGURATION.md](../decisions/PHASE_06_CHECKLIST_PROVISIONAL_CONFIGURATION.md) and [ADR-010](../architecture/ADR-010-CHECKLIST-DEFINITION-VERSIONING.md).
