@@ -1,7 +1,7 @@
 # Traceability Matrix
 
 **Document status:** Living matrix — no testing claimed complete for business UAT
-**Phase:** Phase 04A/04B Shift + Phase 05A/05B FG Product + Phase 06A Checklists · MASTER-001 / TEMPLATE / real-data UAT still blocked
+**Phase:** Phase 04A/04B Shift + Phase 05A/05B FG Product + Phase 06A/06B Checklists · MASTER-001 / TEMPLATE / real-data UAT still blocked
 **Last updated:** 2026-08-07
 
 ## Rules
@@ -29,7 +29,7 @@
 | ORG-002 | IT / Business (TBC) | Privilege bleed | organizations / accounts | TBC | TBC | TBC | Security baseline | Proposed |
 | MASTER-001 | Business / QA (TBC) | Incorrect master data | master_data | ADR-009; PHASE_05_FG_PRODUCT_PROVISIONAL_CONFIGURATION; FG_PRODUCT_MANAGEMENT_UI; MASTER_001_FG_PRODUCT_EVIDENCE_INTAKE | PHASE_05A_TEST_PLAN; FG Product authz hardening tests | TBC | Configurable unseeded FG Product foundation (05A); authz hardening (05B); official catalogue = MASTER-001 | Phase 05A/05B technical work — MASTER-001 remains EVIDENCE REQUIRED; schema expansion and real loading blocked; no production authorization |
 | MASTER-002 | QA / IT (TBC) | Untracked changes | master_data / audit | TBC | TBC | TBC | Audit policy | Proposed |
-| TEMPLATE-001 | Business / QA (TBC) | Uncontrolled forms | checklists | ADR-010; PHASE_06_CHECKLIST_PROVISIONAL_CONFIGURATION; CHECKLIST_DEFINITION_MANAGEMENT_UI | PHASE_06A_TEST_PLAN; checklist foundation tests | TBC | Configurable unseeded definition engine (06A); official forms = TEMPLATE evidence | Phase 06A technical foundation — TEMPLATE remains EVIDENCE REQUIRED; no production authorization |
+| TEMPLATE-001 | Business / QA (TBC) | Uncontrolled forms | checklists | ADR-010; PHASE_06_CHECKLIST_PROVISIONAL_CONFIGURATION; CHECKLIST_DEFINITION_MANAGEMENT_UI; TEMPLATE_001_CHECKLIST_EVIDENCE_INTAKE | PHASE_06A_TEST_PLAN; checklist governance tests | TBC | Configurable unseeded definition engine (06A/06B); official forms = TEMPLATE evidence | Phase 06A/06B technical work — TEMPLATE remains EVIDENCE REQUIRED; no production authorization |
 | TEMPLATE-002 | QA / Business (TBC) | Scope creep | checklists | MVP scope; ADR-010 | TBC | TBC | MVP scope | Proposed — 06A engine only; no invented form expansion |
 | TEMPLATE-003 | QA owner (TBC) | Invented limits | checklists | ADR-010; ASM-001 | PHASE_06A_TEST_PLAN | TBC | Controlled docs — EVIDENCE REQUIRED | Proposed — limits excluded from 06A |
 | TASK-001 | Operations / FG (TBC) | Missed tasks | tasks / schedules | TBC — Phase 07 | TBC | TBC | EVIDENCE REQUIRED | Proposed |
@@ -66,4 +66,4 @@
 | AI-002 | QA / IT (TBC) | AI hallucination in critical path | ai_assistance | AI safety policy | TBC | TBC | AI safety policy | Proposed |
 | AI-003 | IT / Business (TBC) | AI outage blocks floor | ai_assistance | AI safety policy | TBC | TBC | AI safety policy | Proposed |
 
-**Testing status:** Foundation automated tests run in CI / Docker; business UAT is **not** started. Phase 02 and Phase 03 approval forms are **signed with conditions**. Authentication UI polish merged via PR #8. Phase 04 scope reconciliation merged via PR #10. Phase **04A/04B** Shift foundation + UI; Phase **05A/05B** FG Product foundation + authz hardening; Phase **06A** checklist definition/versioning foundation — MASTER-001 / TEMPLATE / ASM-001 remain evidence-required. ASM-004/005/006 remain partially unresolved. DEBT-01C-R-NOTO remains **open**. No scheduling/recording modules started. No deployment authorization.
+**Testing status:** Foundation automated tests run in CI / Docker; business UAT is **not** started. Phase 02 and Phase 03 approval forms are **signed with conditions**. Authentication UI polish merged via PR #8. Phase 04 scope reconciliation merged via PR #10. Phase **04A/04B** Shift foundation + UI; Phase **05A/05B** FG Product foundation + authz hardening; Phase **06A/06B** checklist definition/versioning + governance hardening — MASTER-001 / TEMPLATE / ASM-001 remain evidence-required. ASM-004/005/006 remain partially unresolved. DEBT-01C-R-NOTO remains **open**. No scheduling/recording modules started. No deployment authorization.

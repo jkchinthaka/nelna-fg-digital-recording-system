@@ -172,13 +172,13 @@ def test_draft_editor_reorder_publish_retire_clone(client: Client) -> None:
     body = client.get(reverse("checklists:version_detail", args=[version.id])).content.decode()
     assert "read-only" in body.lower() or "Published" in body
 
-    # Published mutations denied
+    # Published mutations denied (HTTP 403 — not a soft redirect)
     assert (
         client.post(
             reverse("checklists:section_add", args=[version.id]),
             {"title": "Nope"},
         ).status_code
-        == 302
+        == 403
     )
     assert ChecklistSection.objects.filter(version=version, title="Nope").count() == 0
 

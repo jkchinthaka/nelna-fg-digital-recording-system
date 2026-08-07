@@ -29,6 +29,27 @@ MANAGE_CHECKLIST = "checklists.manage_checklist"
 
 _UNSET: Any = object()
 
+# Centralized lifecycle — only these transitions are supported.
+ALLOWED_VERSION_TRANSITIONS: frozenset[tuple[str, str]] = frozenset(
+    {
+        (ChecklistVersionStatus.DRAFT, ChecklistVersionStatus.PUBLISHED),
+        (ChecklistVersionStatus.PUBLISHED, ChecklistVersionStatus.RETIRED),
+    }
+)
+
+
+def assert_version_transition_allowed(*, current: str, target: str) -> None:
+    """Raise ValidationError when ``current`` → ``target`` is not an allowed transition."""
+    if (current, target) not in ALLOWED_VERSION_TRANSITIONS:
+        raise ValidationError(
+            {
+                "version": (
+                    f"Illegal checklist version transition from {current} to {target}. "
+                    "Allowed transitions: DRAFT→PUBLISHED, PUBLISHED→RETIRED."
+                )
+            }
+        )
+
 
 def _require_authenticated_actor(actor: User | None) -> User:
     if actor is None or not getattr(actor, "is_authenticated", False) or not actor.is_active:
@@ -375,6 +396,7 @@ def _clone_structure(*, source: ChecklistVersion, target: ChecklistVersion) -> N
 
 
 @transaction.atomic
+@transaction.atomic
 def create_checklist_version(
     *,
     actor: User | None,
@@ -408,19 +430,34 @@ def create_checklist_version(
         if source is None:
             raise ValidationError({"source_version": "Source version not found for this template."})
 
-    version_number = _allocate_next_version_number(template)
-    version = ChecklistVersion(
-        template=template,
-        version_number=version_number,
-        status=ChecklistVersionStatus.DRAFT,
-    )
-    try:
-        version.full_clean()
-        version.save()
-    except (ValidationError, IntegrityError) as exc:
+    version: ChecklistVersion | None = None
+    last_error: Exception | None = None
+    # Template row lock serializes allocation; unique constraint + savepoint retry
+    # covers residual races if another writer sneaks between max() and insert.
+    for _attempt in range(2):
+        version_number = _allocate_next_version_number(template)
+        candidate = ChecklistVersion(
+            template=template,
+            version_number=version_number,
+            status=ChecklistVersionStatus.DRAFT,
+        )
+        try:
+            with transaction.atomic():
+                candidate.full_clean()
+                candidate.save()
+            version = candidate
+            break
+        except IntegrityError as exc:
+            last_error = exc
+            continue
+        except ValidationError as exc:
+            raise ValidationError(
+                {"version_number": "Unable to allocate the next checklist version number."}
+            ) from exc
+    if version is None:
         raise ValidationError(
             {"version_number": "Unable to allocate the next checklist version number."}
-        ) from exc
+        ) from last_error
 
     if source is not None:
         _clone_structure(source=source, target=version)
@@ -711,13 +748,14 @@ def move_checklist_item(
     return item
 
 
-@transaction.atomic
-def publish_checklist_version(*, actor: User | None, version_id: uuid.UUID) -> ChecklistVersion:
-    user = _require_authenticated_actor(actor)
-    version = _lock_version(version_id)
-    require_permission(user, MANAGE_CHECKLIST, scope=version_authorization_scope(version))
-    if version.status != ChecklistVersionStatus.DRAFT:
-        raise ValidationError({"version": "Only draft versions can be published."})
+def _validate_publish_structure(version: ChecklistVersion) -> None:
+    """
+    Technical structural checks only — not business completeness rules.
+
+    Empty definitions cannot be published because a published version must be a
+    coherent, non-empty definition graph. Minimum question counts / temperature
+    rules remain EVIDENCE REQUIRED and are not enforced here.
+    """
     sections = list(version.sections.prefetch_related("items").order_by("position"))
     if not sections:
         raise ValidationError({"version": "A checklist version must have at least one section."})
@@ -731,6 +769,18 @@ def publish_checklist_version(*, actor: User | None, version_id: uuid.UUID) -> C
         for item in section.items.all():
             if not item.code.strip() or not item.label.strip():
                 raise ValidationError({"version": "All items must have a code and label."})
+
+
+@transaction.atomic
+def publish_checklist_version(*, actor: User | None, version_id: uuid.UUID) -> ChecklistVersion:
+    user = _require_authenticated_actor(actor)
+    version = _lock_version(version_id)
+    require_permission(user, MANAGE_CHECKLIST, scope=version_authorization_scope(version))
+    assert_version_transition_allowed(
+        current=version.status,
+        target=ChecklistVersionStatus.PUBLISHED,
+    )
+    _validate_publish_structure(version)
 
     version.status = ChecklistVersionStatus.PUBLISHED
     version.published_at = timezone.now()
@@ -748,8 +798,10 @@ def retire_checklist_version(*, actor: User | None, version_id: uuid.UUID) -> Ch
     user = _require_authenticated_actor(actor)
     version = _lock_version(version_id)
     require_permission(user, MANAGE_CHECKLIST, scope=version_authorization_scope(version))
-    if version.status != ChecklistVersionStatus.PUBLISHED:
-        raise ValidationError({"version": "Only published versions can be retired."})
+    assert_version_transition_allowed(
+        current=version.status,
+        target=ChecklistVersionStatus.RETIRED,
+    )
     version.status = ChecklistVersionStatus.RETIRED
     version.save(update_fields=["status", "updated_at"])
     record_event(

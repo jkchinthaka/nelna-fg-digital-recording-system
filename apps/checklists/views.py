@@ -400,6 +400,8 @@ def section_add(request: HttpRequest, version_id: uuid.UUID) -> HttpResponse:
     version = _get_version_or_404(request, version_id)
     if not actor_can_manage_version(_actor(request), version):
         raise PermissionDenied("Permission denied.")
+    if not version.is_draft:
+        raise PermissionDenied("Permission denied.")
     form = ChecklistSectionForm(request.POST)
     if form.is_valid():
         try:
@@ -465,6 +467,8 @@ def section_delete(request: HttpRequest, section_id: uuid.UUID) -> HttpResponse:
     version = _get_version_or_404(request, section.version_id)
     if not actor_can_manage_version(_actor(request), version):
         raise PermissionDenied("Permission denied.")
+    if not version.is_draft:
+        raise PermissionDenied("Permission denied.")
     try:
         remove_checklist_section(actor=_actor(request), section_id=section.id)
         messages.success(request, "Section removed.")
@@ -486,6 +490,8 @@ def section_move(request: HttpRequest, section_id: uuid.UUID) -> HttpResponse:
     version = _get_version_or_404(request, section.version_id)
     if not actor_can_manage_version(_actor(request), version):
         raise PermissionDenied("Permission denied.")
+    if not version.is_draft:
+        raise PermissionDenied("Permission denied.")
     direction = (request.POST.get("direction") or "").strip().lower()
     try:
         move_checklist_section(actor=_actor(request), section_id=section.id, direction=direction)
@@ -506,6 +512,8 @@ def item_add(request: HttpRequest, section_id: uuid.UUID) -> HttpResponse:
         raise Http404("Section not found.")
     version = _get_version_or_404(request, section.version_id)
     if not actor_can_manage_version(_actor(request), version):
+        raise PermissionDenied("Permission denied.")
+    if not version.is_draft:
         raise PermissionDenied("Permission denied.")
     form = ChecklistItemForm(request.POST)
     if form.is_valid():
@@ -580,6 +588,8 @@ def item_delete(request: HttpRequest, item_id: uuid.UUID) -> HttpResponse:
     version = _get_version_or_404(request, item.section.version_id)
     if not actor_can_manage_version(_actor(request), version):
         raise PermissionDenied("Permission denied.")
+    if not version.is_draft:
+        raise PermissionDenied("Permission denied.")
     try:
         remove_checklist_item(actor=_actor(request), item_id=item.id)
         messages.success(request, "Item removed.")
@@ -602,6 +612,8 @@ def item_move(request: HttpRequest, item_id: uuid.UUID) -> HttpResponse:
         raise Http404("Item not found.")
     version = _get_version_or_404(request, item.section.version_id)
     if not actor_can_manage_version(_actor(request), version):
+        raise PermissionDenied("Permission denied.")
+    if not version.is_draft:
         raise PermissionDenied("Permission denied.")
     direction = (request.POST.get("direction") or "").strip().lower()
     try:

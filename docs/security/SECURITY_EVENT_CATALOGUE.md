@@ -41,7 +41,7 @@ Shift events may include: Shift UUID, normalized Shift code, Organization UUID, 
 
 FG Product events may include: FG Product UUID, normalized Product code, Organization UUID, active status, changed field names.
 
-Checklist events may include: template UUID/code, version UUID/number, organization UUID, optional product UUID, status, changed field names. Do not store full checklist question text in security audit metadata.
+Checklist events may include: template UUID/code, version UUID/number, organization UUID, optional product UUID, status, changed field names. Do not store full checklist question text in security audit metadata. Lifecycle transitions remain DRAFT→PUBLISHED→RETIRED only (Phase 06B); audit emits once from services, not duplicated from views.
 
 Unknown login identifiers must be masked or hashed — never store raw unknown employee codes in clear text when the account is unknown.
 

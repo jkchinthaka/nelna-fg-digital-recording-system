@@ -72,11 +72,12 @@ TEMPLATE-001 / ASM-003 form inventory and official checklist content remain **EV
 
 | Topic | Status |
 | --- | --- |
-| Official checklist forms / questions / limits | Unresolved — EVIDENCE REQUIRED |
+| Official checklist forms / questions / limits | Unresolved — EVIDENCE REQUIRED — use [TEMPLATE_001_CHECKLIST_EVIDENCE_INTAKE.md](TEMPLATE_001_CHECKLIST_EVIDENCE_INTAKE.md) |
 | Configurable unseeded definition/versioning engine (Phase 06A) | Implemented (provisional technical only) |
-| Response-type schema | Deferred — EVIDENCE REQUIRED |
-| ASM-001 temperature-class limits | Unresolved — not modeled in 06A |
-| Scheduling / recording / review | Out of scope for 06A |
+| Lifecycle governance hardening (Phase 06B) | Implemented — centralized transitions; immutability; concurrency tests |
+| Response-type schema | Deferred — EVIDENCE REQUIRED — see [RESPONSE_TYPE_DECISION_REGISTER.md](RESPONSE_TYPE_DECISION_REGISTER.md) |
+| ASM-001 temperature-class limits | Unresolved — not modeled |
+| Scheduling / recording / review | Out of scope — Phase 07 gated by [PHASE_07_READINESS_GATE.md](PHASE_07_READINESS_GATE.md) |
 | Real-content / operational / production use | Remains blocked |
 
 See [PHASE_06_CHECKLIST_PROVISIONAL_CONFIGURATION.md](../decisions/PHASE_06_CHECKLIST_PROVISIONAL_CONFIGURATION.md) and [ADR-010](../architecture/ADR-010-CHECKLIST-DEFINITION-VERSIONING.md).
