@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load organizations_extras master_data_extras checklists_extras scheduling_extras %}
+{% load organizations_extras master_data_extras checklists_extras scheduling_extras recording_extras reviews_extras %}
 {% block title %}Signed in — Nelna FG Digital Recording System{% endblock %}
 {% block content %}
   <section class="landing-page" aria-labelledby="landing-heading">
@@ -19,8 +19,9 @@
       {% endif %}
       <p class="landing-meta">{{ phase_label }}</p>
       <p class="landing-notice">
-        Shift, FG Product, and Checklist Definition configuration are available to authorized users.
-        Checklist recording remains a later phase. No production master data or forms are seeded.
+        Shift, FG Product, Checklist Definition, Recording, and Supervisor Review
+        technical foundations are available to authorized users when configured.
+        Production use remains gated. No production master data or forms are seeded.
       </p>
       <p class="landing-meta">Keep this session private. Sign out when you finish working on a shared device.</p>
       <div class="landing-actions">
@@ -39,6 +40,14 @@
         {% user_can_view_checklist_tasks as show_checklist_tasks %}
         {% if show_checklist_tasks %}
           <a class="btn btn--primary" href="{% url 'scheduling:task_list' %}">Checklist Tasks</a>
+        {% endif %}
+        {% user_can_record_checklist_tasks as show_recording %}
+        {% if show_recording %}
+          <a class="btn btn--primary" href="{% url 'recording:task_list' %}">Checklist Recording</a>
+        {% endif %}
+        {% user_can_review_checklist_submissions as show_reviews %}
+        {% if show_reviews %}
+          <a class="btn btn--primary" href="{% url 'reviews:queue' %}">Supervisor Review</a>
         {% endif %}
         <a class="btn btn--secondary"
            href="{% url 'accounts:change_password' %}">Change password</a>

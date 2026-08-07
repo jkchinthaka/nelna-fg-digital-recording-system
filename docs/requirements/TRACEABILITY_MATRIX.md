@@ -38,10 +38,10 @@
 | RECORD-002 | Business / QA (TBC) | Slow / unusable UX | recording (UI) | CHECKLIST_RECORDING_UI; CHECKLIST_SUBMISSION_UI; FIGMA_PLAN | PHASE_08A_TEST_PLAN; PHASE_08B_TEST_PLAN | TBC | Save Draft + Submit confirm + submitted read-only | 08A/08B technical |
 | RECORD-003 | QA owner (TBC) | Silent alteration | recording | ADR-014 | PHASE_08B_TEST_PLAN | TBC | Submission snapshots immutable; no overwrite of Submission #1 | 08B technical |
 | RECORD-004 | Business / IT (TBC) | ERP outage blocks floor | recording / integrations | TBC | TBC | TBC | Constitution | Proposed |
-| REVIEW-001 | FG / Operations (TBC) | Weak checking | reviews | TBC — Phase 09 | TBC | TBC | EVIDENCE REQUIRED | Proposed |
-| REVIEW-002 | QA / IT (TBC) | SoD bypass | reviews / accounts | TBC | TBC | TBC | Security baseline | Proposed |
-| REVIEW-003 | QA owner (TBC) | Lost correction history | records / reviews | TBC | TBC | TBC | Architecture principles | Proposed |
-| QA-001 | QA owner (TBC) | Incomplete verification | quality / reviews | TBC — Phase 10 | TBC | TBC | EVIDENCE REQUIRED | Proposed |
+| REVIEW-001 | FG / Operations (TBC) | Weak checking | reviews | ADR-015; PHASE_09_SUPERVISOR_REVIEW_READINESS_GATE; SUPERVISOR_REVIEW_UI; CHECKLIST_RECORDER_ROLE_MAPPING | PHASE_09A_TEST_PLAN | TBC | Immutable SupervisorReview on ChecklistSubmission (09A) | Phase 09A technical — production review blocked; SoD EVIDENCE REQUIRED |
+| REVIEW-002 | QA / IT (TBC) | SoD bypass | reviews / accounts | ADR-015; CHECKLIST_RECORDER_ROLE_MAPPING | PHASE_09A_TEST_PLAN | TBC | SoD rule documented open; architecture keeps submitted_by ≠ reviewed_by fields | Proposed — not enforced in 09A |
+| REVIEW-003 | QA owner (TBC) | Lost correction history | records / reviews | ADR-014; ADR-015 | PHASE_09A_TEST_PLAN | TBC | Submission #1 immutable; RETURNED does not overwrite; 09B creates #2 later | Phase 09A records return decision only |
+| QA-001 | QA owner (TBC) | Incomplete verification | quality / reviews | ADR-015 (contract only) | TBC — Phase 10 | TBC | Future QA eligibility: SupervisorReview(APPROVED) | Proposed — not implemented |
 | QA-002 | QA owner (TBC) | Non-deterministic critical handling | quality | TBC | TBC | TBC | AI safety policy | Proposed |
 | EVIDENCE-001 | IT owner (TBC) | DB bloat / backup failure | evidence | TBC — Phase 11 | TBC | TBC | ADR-002 | Proposed |
 | EVIDENCE-002 | QA / IT (TBC) | Unauthorized evidence access | evidence / audit | TBC | TBC | TBC | Security baseline | Proposed |

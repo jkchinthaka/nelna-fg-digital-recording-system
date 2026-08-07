@@ -37,6 +37,7 @@
 | `CHECKLIST_RECORD_STARTED` | Draft checklist record started for a PENDING task |
 | `CHECKLIST_RECORD_DRAFT_SAVED` | Draft checklist responses saved (aggregate) |
 | `CHECKLIST_RECORD_SUBMITTED` | Checklist record submitted with immutable Submission #1 snapshot |
+| `SUPERVISOR_REVIEW_COMPLETED` | Immutable Supervisor review recorded for a ChecklistSubmission |
 
 ## Safe metadata
 
@@ -53,6 +54,8 @@ Checklist task events may include: task UUID, organization UUID, template UUID/c
 Checklist draft recording events may include: record UUID, task UUID, organization UUID, template UUID, version UUID, `batch_reference`, `changed_item_count`. Do **not** store answer values, question text, remarks, or request bodies.
 
 Checklist submission events may include: record UUID, submission UUID, submission number, task UUID, organization UUID, template UUID, version UUID, `batch_reference`, `answered_item_count`. Do **not** store answer values, question text, remarks, or request bodies.
+
+Supervisor review events may include: review UUID, submission UUID, submission number, record UUID, task UUID, organization UUID, template UUID, version UUID, `batch_reference`, `decision`. Do **not** store review notes, answer values, question text, or request bodies.
 
 Unknown login identifiers must be masked or hashed — never store raw unknown employee codes in clear text when the account is unknown.
 

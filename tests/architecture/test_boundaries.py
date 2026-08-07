@@ -14,6 +14,7 @@ ALLOWED_APPS = {
     "checklists",
     "scheduling",
     "recording",
+    "reviews",
     "access_control",
     "security_audit",
 }

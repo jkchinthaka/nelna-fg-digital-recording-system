@@ -1,4 +1,4 @@
-{% load static organizations_extras master_data_extras checklists_extras scheduling_extras recording_extras %}
+{% load static organizations_extras master_data_extras checklists_extras scheduling_extras recording_extras reviews_extras %}
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE|default:'en' }}">
   <head>
@@ -46,6 +46,10 @@
                 {% user_can_record_checklist_tasks as show_recording %}
                 {% if show_recording %}
                   <a href="{% url 'recording:task_list' %}">Checklist Recording</a>
+                {% endif %}
+                {% user_can_review_checklist_submissions as show_reviews %}
+                {% if show_reviews %}
+                  <a href="{% url 'reviews:queue' %}">Supervisor Review</a>
                 {% endif %}
               </nav>
             {% endif %}

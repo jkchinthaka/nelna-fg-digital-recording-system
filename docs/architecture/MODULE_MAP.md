@@ -1,7 +1,7 @@
 # Module Map
 
-**Document status:** Living module boundaries — Phase 04–08A
-**Phase:** 03–07B complete units · 08A draft recording foundation · MASTER-001 / TEMPLATE pending
+**Document status:** Living module boundaries — Phase 04–09A
+**Phase:** 03–08B complete units · 09A Supervisor review foundation · MASTER-001 / TEMPLATE pending
 **Last updated:** 2026-08-08
 
 This map guides implementation. Do not scaffold future business apps before their phase.
@@ -21,7 +21,7 @@ Do **not** rename FG master data, checklist, recording, review, or evidence work
 | recording | Operator draft checklist recording (08A) + immutable submission snapshots (08B) | ChecklistRecord, ChecklistResponse, ChecklistSubmission, ChecklistSubmissionResponse | start/save draft; submit; scoped selectors; draft + submitted UI | No Supervisor/QA/HOLD in 08B; draft ≠ historical truth; manage ≠ record; no FG-QA-001 publish | **08A/08B** |
 | tasks | Assignment of work to users/roles (deferred — avoid Celery name clash; 07A in `scheduling`) | Future task assignment states | Assign/claim/complete coordination | Must not store full answer payloads | **07** (beyond 07A) |
 | records | Reserved legacy MODULE_MAP label — **do not scaffold**; use `recording` | — | — | Duplicate of `recording` forbidden | superseded by **recording** |
-| reviews | Supervisor checking workflow | Check actions and outcomes | Check/reject/request-amendment services | Must not perform QA verification ownership | **09** |
+| reviews | Supervisor review foundation (09A); correction/amendments later (09B) | SupervisorReview | create immutable review; eligible-submission selectors; review UI | Must not perform QA verification; no HOLD/RELEASE; no Submission #2 in 09A; manage/record ≠ review | **09A** |
 | quality | QA verification workflow | Verification actions | Verify services | No AI final verification | **10** |
 | nonconformance | Holds and NC records | NC/hold entities | Open/update NC services | Post-MVP unless approved | **12** |
 | capa | Corrective and preventive actions | CAPA entities | CAPA lifecycle services | No AI final CAPA closure | **12** |
@@ -40,8 +40,8 @@ Do **not** rename FG master data, checklist, recording, review, or evidence work
 | --- | --- |
 | 06 | **06A–06D** checklist definition/response/proposal loader; **06E** provisional workflow formalization |
 | 07 | **07A** ChecklistTask foundation; **07B** batch-source contract + recorder authorization readiness; later recurrence/assignment as approved |
-| 08 | **08A** draft recording; **08B** immutable submission snapshots; correction/Supervisor later |
-| 09 | `reviews` supervisor checking |
+| 08 | **08A** draft recording; **08B** immutable submission snapshots |
+| 09 | **09A** `reviews` Supervisor review foundation; **09B** correction/resubmission later |
 | 10 | `quality` QA verification |
 
 ## References

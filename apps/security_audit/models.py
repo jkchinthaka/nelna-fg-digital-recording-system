@@ -54,6 +54,10 @@ class SecurityAuditEvent(models.Model):
             "CHECKLIST_RECORD_SUBMITTED",
             "Checklist record submitted",
         )
+        SUPERVISOR_REVIEW_COMPLETED = (
+            "SUPERVISOR_REVIEW_COMPLETED",
+            "Supervisor review completed",
+        )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     event_type = models.CharField(max_length=64, choices=EventType.choices)

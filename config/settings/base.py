@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     "apps.checklists",
     "apps.scheduling",
     "apps.recording",
+    "apps.reviews",
     "apps.access_control",
     "apps.security_audit",
 ]

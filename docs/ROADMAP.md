@@ -197,18 +197,19 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Notes | **Not** Phase 04. Do not include supervisor approval in this phase. **08A+08B technical foundations complete**; **production recording remains BLOCKED** (FG-QA-001 unpublished; role mapping open). |
 | Status | **08A + 08B implemented** — draft + immutable submit; Phase 09+ blocked |
 
-## Phase 09 â€” Supervisor checking and amendments
+## Phase 09 — Supervisor checking and amendments
 
 | Field | Content |
 | --- | --- |
 | Objective | Supervisor check workflow (approve / return for correction / related amendments) and amendment history |
 | Inputs | SoD rules (EVIDENCE REQUIRED) |
-| Outputs | `reviews`; amendment services |
+| Outputs | **09A:** `reviews.SupervisorReview` immutable decisions on `ChecklistSubmission` + review UI; **09B:** correction/resubmission (later) |
 | Approval gate | QA/operations workflow review |
-| Branch naming | `feature/phase-09-supervisor-review` |
-| Exit criteria | SoD tests pass; before/after history stored |
+| Branch naming | Direct-main quality-first for 09A |
+| Exit criteria | **09A:** separate review permission; one review per submission; APPROVED/RETURNED without mutating snapshots. Full Phase 09 production: SoD evidence + role mapping + published definitions |
 | Dependencies | Phase 08 |
-| Notes | **Not** Phase 04. Supervisor rejection/return paths belong here when approved â€” not in master-data or template phases. |
+| Notes | **Not** Phase 04. **09A technical foundation complete**; production Supervisor review **BLOCKED**. SoD self-review rule not invented. No QA/HOLD/RELEASE in 09A. |
+| Status | **09A implemented** — 09B correction/resubmission not started |
 
 ## Phase 10 â€” QA verification
 

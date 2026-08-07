@@ -83,7 +83,7 @@ def test_landing_page_authenticated_and_logout_post(client: Client) -> None:
     content = response.content.decode()
     assert "Welcome" in content
     assert "UI004" in content
-    assert "Checklist recording remains a later phase" in content
+    assert "Production use remains gated" in content
     assert "No production master data or forms are seeded" in content
     assert "Checklist Definitions" not in content  # no view permission yet
     assert 'method="post"' in content
