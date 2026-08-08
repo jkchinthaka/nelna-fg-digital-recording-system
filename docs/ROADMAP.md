@@ -1,12 +1,13 @@
-﻿# Roadmap â€” Phase Delivery Plan
+# Roadmap — Phase Delivery Plan
 
 **Document status:** Governing roadmap for greenfield delivery
-**Phase:** Phase 04A/04B Â· Phase 05A/05B Â· Phase 06A/06B/06C/06D checklist definition + draft loader Â· MASTER-001 / TEMPLATE still evidence-required
-**Last updated:** 2026-08-07
+**Canonical status:** [PROJECT_STATUS.md](PROJECT_STATUS.md) (prefer when summaries conflict)
+**Phase:** Through Phase **10A** technical foundations on `main`; MASTER-001 / TEMPLATE / role mappings / post-QA workflows still evidence-required
+**Last updated:** 2026-08-09
 
-Branch naming pattern: `foundation/...`, `design/...`, `feature/phase-NN-short-name`, or `hardening/...` as appropriate. Never commit directly to `main`.
+Branch naming pattern: `foundation/...`, `design/...`, `feature/phase-NN-short-name`, or `hardening/...` as appropriate. Prefer PR review; some authorized units have used direct-`main` quality-first delivery — see [governance/CHANGE_CONTROL.md](governance/CHANGE_CONTROL.md).
 
-**Progress:** Phase 00â€“01C complete (01C with deferred Sinhala condition). Phase 02 **Approved with conditions** and merged (PR #5 / #6). Phase 03 accounts/RBAC **Approved with conditions** and merged (PR #7 / related follow-up merges). Authentication UI polish **merged** (PR #8). Phase 04 scope reconciliation **merged** (PR #10). Organization, Site, and Department models exist from Phase 03. Phase **04A** implements a configurable, **unseeded** Shift domain foundation under owner provisional direction (no invented Nelna shift values). Phase **04B** delivers the Shift management web UI. Phase **05A** implements a configurable, **unseeded** FG Product foundation under owner provisional direction (organization-scoped; no invented product catalogues). Phase **05B** hardens Product UI authorization (object-aware manage affordances) and MASTER-001 evidence intake readiness. Phase **06A** implements a configurable, **unseeded** checklist definition/versioning foundation (immutable published versions; no invented form content). Phase **06B** hardens checklist lifecycle governance and TEMPLATE-001 evidence intake readiness. Phase **06C** adds provisional checklist response-definition schema and a **project-proposed** FG-QA-001 draft (NOT APPROVED for production; not seeded). Phase **06D** adds an explicit DRAFT-only loader (`load_fg_qa_001_draft`) and internal validation worksheet â€” never auto-seeds, never publishes. MASTER-001 and TEMPLATE evidence remain required. Real-data configuration and UAT remain pending. **No recording/scheduling modules** have started. ASM-004 / ASM-005 / ASM-006 remain partially unresolved for official business values. DEBT-01C-R-NOTO remains **open** (blocking for operator UAT/pilot/production and final Sinhala operator UI). Production readiness **not** claimed. No deployment approval exists.
+**Progress:** Phases **00–10A** technical foundations are on `main` (accounts/RBAC; Shift; FG Product; checklist definition + FG-QA-001 draft loader; ChecklistTask; draft/submit; Supervisor review + correction; QA manual disposition). FG-QA-001 remains **NOT APPROVED** for production. Official master data, role mappings, SoD, batch source/Bileeta, and post-QA RELEASE/HOLD/REJECT operations remain **EVIDENCE REQUIRED**. DEBT-01C-R-NOTO remains **open**. Production readiness **not** claimed. No deployment approval exists. Details: [PROJECT_STATUS.md](PROJECT_STATUS.md).
 
 **Numbering rule:** Preserve roadmap phase numbers. Do **not** rename FG master data, checklist templates, recording, review, or evidence work as Phase 04.
 

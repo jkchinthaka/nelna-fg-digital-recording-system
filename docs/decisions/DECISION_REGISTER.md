@@ -1,8 +1,9 @@
 # Decision Register
 
-**Document status:** Living register — technical direction recorded; business decisions pending where noted  
-**Phase:** 00 — Discovery and governance  
-**Last updated:** 2026-08-04
+**Document status:** Living register — technical direction recorded; business decisions pending where noted
+**Phase:** 00 — Discovery and governance
+**Last updated:** 2026-08-09
+**Canonical chronological log:** [../governance/DECISION_LOG.md](../governance/DECISION_LOG.md) (prefer for new entries; keep DEC-IDs stable here)
 
 ## Status labels
 

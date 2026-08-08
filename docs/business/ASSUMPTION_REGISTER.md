@@ -1,8 +1,9 @@
 # Assumption Register
 
 **Document status:** Open assumptions — confirmation required before treating as fact
-**Phase:** 00 — Discovery and governance (updated after Phase 03 / auth UI merge)
-**Last updated:** 2026-08-07
+**Phase:** Living — still no APPROVED rows; technical foundations through Phase 10A do not resolve these
+**Last updated:** 2026-08-09
+**Approval workflow tracker:** [../governance/APPROVAL_REGISTER.md](../governance/APPROVAL_REGISTER.md)
 
 ## Labels
 

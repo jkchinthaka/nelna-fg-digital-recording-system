@@ -26,10 +26,11 @@ Place approved charter, scope, UAT, design, and release approval records in this
 - Phase 01B and 01C approvals are Project Owner / Developer only — not QA, IT management, or other Nelna stakeholder approval.
 - Phase 01C deferred condition: Noto Sans Sinhala is **not** verified; Abhaya Libre is **not** production-approved; operator UAT / pilot / production remain blocked until DEBT-01C-R-NOTO is closed with evidence.
 - Phase 02 is **approved with conditions** (see form). PostgreSQL remains authoritative.
-- Phase 03 is **approved with conditions** and merged. Organization, Site, and Department models exist. No FG operational modules have started.
+- Phase 03 is **approved with conditions** and merged. Organization, Site, and Department models exist. Later phases through **10A** technical foundations also exist on `main` — see [PROJECT_STATUS.md](../PROJECT_STATUS.md). Those later units do **not** have production go-live approvals in this folder.
 - Authentication UI polish local and Docker validation passed. GitHub Actions evidence was unavailable during a GitHub Actions incident for PR #8 — **do not claim the missing CI check passed**; do not create retroactive approval claims.
-- Phase 04 scope reconciliation is **approved with conditions** (see form). It preserves roadmap numbering; Shift coding remains blocked by ASM-004 / ASM-005 / ASM-006. PR #10 remains open until merge-gate verification. No GitHub Actions checks were reported for the reviewed PR head; the missing check is not treated as passed.
-- A **one-time documentation-only CI exception** for PR #10 baseline head `b1c3f18` is recorded in [PR_10_DOCUMENTATION_CI_EXCEPTION.md](PR_10_DOCUMENTATION_CI_EXCEPTION.md). Missing CI remains missing and is not treated as passed. The exception is approved for final merge verification only; PR #10 is not merged by that record.
+- Phase 04 scope reconciliation is **approved with conditions** (see form). Official Shift **values** remain blocked by ASM-004 / ASM-005 / ASM-006 even though Shift technical foundation was later implemented under provisional direction.
+- A **one-time documentation-only CI exception** for PR #10 baseline head `b1c3f18` is recorded in [PR_10_DOCUMENTATION_CI_EXCEPTION.md](PR_10_DOCUMENTATION_CI_EXCEPTION.md). Missing CI remains missing and is not treated as passed.
+- Outstanding business approvals are tracked in [APPROVAL_REGISTER.md](../governance/APPROVAL_REGISTER.md). Silence is not approval.
 - No deployment or production-readiness approval exists.
 - Do not treat other draft documents as approved unless listed here with a completed approval form.
 - Do not publish the Figma library without final design-system review.

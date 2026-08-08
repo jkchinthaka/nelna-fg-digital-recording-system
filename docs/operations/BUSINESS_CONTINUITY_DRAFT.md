@@ -1,10 +1,11 @@
 # Business Continuity Draft
 
-**Document status:** DRAFT — requires QA approval before operational use  
-**Phase:** 00 — Discovery and governance  
-**Last updated:** 2026-08-04
+**Document status:** DRAFT — requires QA approval before operational use
+**Phase:** 00 — Discovery and governance
+**Last updated:** 2026-08-09
+**Related:** [CONTINUITY_AND_HANDOVER_PLAN.md](CONTINUITY_AND_HANDOVER_PLAN.md) (engineering/handover continuity; not a legal opinion)
 
-This draft outlines expected continuity behaviors. It is **not** an approved SOP.
+This draft outlines expected factory fallback continuity behaviors. It is **not** an approved SOP.
 
 ## System outage
 

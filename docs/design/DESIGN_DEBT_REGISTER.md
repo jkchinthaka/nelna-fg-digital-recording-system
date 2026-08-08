@@ -1,10 +1,11 @@
 # Design Debt Register
 
 **Document status:** Living debt register — DEBT-01C-R-NOTO remains open
-**Phase:** Phase 02–03 approved · authentication UI merged · Phase 04 next
-**Branch:** `feature/accounts-rbac` (debt originated on design phases)
+**Phase:** Design debt still open while application foundations through Phase 10A exist on `main`
+**Branch:** originated on design phases; track against `main`
 **Created:** 2026-08-05
-**Last updated:** 2026-08-06
+**Last updated:** 2026-08-09
+**Canonical project status:** [../PROJECT_STATUS.md](../PROJECT_STATUS.md)
 
 **Related documents:**
 - [PHASE_01B_DESIGN_APPROVAL.md](../approvals/PHASE_01B_DESIGN_APPROVAL.md)

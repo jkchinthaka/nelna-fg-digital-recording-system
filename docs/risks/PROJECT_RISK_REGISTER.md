@@ -1,8 +1,9 @@
 # Project Risk Register
 
-**Document status:** Provisional ratings — for owner review  
-**Phase:** 00 — Discovery and governance  
-**Last updated:** 2026-08-04
+**Document status:** Provisional ratings — for owner review
+**Phase:** 00 — Discovery and governance
+**Last updated:** 2026-08-09
+**Canonical current register:** [../governance/RISK_REGISTER.md](../governance/RISK_REGISTER.md) (prefer for updates; this file retains Phase 00 origin rows)
 
 ## Scoring (provisional)
 

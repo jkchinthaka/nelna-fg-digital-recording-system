@@ -1,0 +1,84 @@
+# Approval Register
+
+**Document status:** Canonical register for business/IT/QA evidence and approvals
+**Created:** 2026-08-09
+**Rule:** No response is **not** approval. Silence must never be recorded as APPROVED.
+
+## Status vocabulary
+
+| Status | Meaning |
+| --- | --- |
+| NOT REQUESTED | Need known; formal request not yet sent |
+| REQUESTED | Request issued to owner; awaiting acknowledgement |
+| PENDING | Acknowledged; decision/evidence not yet returned |
+| EVIDENCE REQUIRED | Controlled document/measurement still missing |
+| APPROVED | Written approval recorded with Approver + date |
+| REJECTED | Explicitly rejected |
+| SUPERSEDED | Replaced by a later decision/approval |
+
+## Columns
+
+ID · Decision / Evidence Needed · Business Owner · Requested Date · Needed By · Status · Blocking · Evidence / Reference · Approved By · Approval Date · Notes
+
+---
+
+## Active items
+
+| ID | Decision / Evidence Needed | Business Owner | Requested Date | Needed By | Status | Blocking | Evidence / Reference | Approved By | Approval Date | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| APR-001 | FG-QA-001 final content approval (publish for production) | QA Manager | — | Before production checklist use | EVIDENCE REQUIRED | Yes | `docs/business/proposals/FG_QA_001_DRAFT_V0_1.md`; TEMPLATE-001 intake | — | — | Draft loader exists; draft ≠ approval |
+| APR-002 | Official Organization / Site / Department names and codes | Management Sponsor / IT Manager | — | Before production config | EVIDENCE REQUIRED | Yes | ASM-004; org models exist unseeded | — | — | Models ≠ official values |
+| APR-003 | Official Shift names / codes | Production Manager / Operations | — | Before production Shift use | EVIDENCE REQUIRED | Yes | ASM-005; ADR-008 | — | — | 04A/04B foundation only |
+| APR-004 | Official Shift times, overnight/operational-day, effective-date rules | Production Manager / QA Manager | — | Before production overnight policy | EVIDENCE REQUIRED | Yes | ASM-006 | — | — | Provisional `end <= start` is technical only |
+| APR-005 | Official Product catalogue (pilot + production scope) | QA Manager / Production Manager | — | Before real Product load | EVIDENCE REQUIRED | Yes | MASTER-001 intake | — | — | 05A/05B unseeded foundation only |
+| APR-006 | Product specification limits (incl. temperature classes where applicable) | QA Manager | — | Before rule/limit config | EVIDENCE REQUIRED | Yes | ASM-001 | — | — | Do not invent limits |
+| APR-007 | Recorder business-category → RBAC role mapping | Production Manager / IT Manager | — | Before production recording | EVIDENCE REQUIRED | Yes | `CHECKLIST_RECORDER_ROLE_MAPPING.md`; `record_checklisttask` | — | — | Permission exists unassigned |
+| APR-008 | Supervisor role mapping | Production Manager / QA Manager | — | Before production Supervisor review | EVIDENCE REQUIRED | Yes | Phase 09 readiness gate; ADR-015 | — | — | Review permission ≠ auto role seed |
+| APR-009 | QA role mapping | QA Manager | — | Before production QA review | EVIDENCE REQUIRED | Yes | Phase 10 readiness gate; ADR-017 | — | — | QA permission ≠ auto role seed |
+| APR-010 | Segregation-of-duties policy (recorder / Supervisor / QA) | QA Manager / Management Sponsor | — | Before UAT/pilot | EVIDENCE REQUIRED | Yes | Phase 09/10 gates | — | — | Not invented in application policy |
+| APR-011 | Production batch source (system / API / event) | IT Manager / Production Manager | — | Before real task generation | EVIDENCE REQUIRED | Yes | `PRODUCTION_BATCH_SOURCE_CONTRACT.md`; Phase 07 gates | — | — | No invented endpoints |
+| APR-012 | Bileeta API / sandbox availability and contract | IT Manager / Bileeta Vendor | — | Before Phase 17 connector work | NOT REQUESTED | Yes (integration) | Integration contract notes Bileeta as unresolved | — | — | No connector implemented |
+| APR-013 | Product applicability policy for checklist tasks | QA Manager | — | Before automated applicability | EVIDENCE REQUIRED | Yes | Phase 07 production gate | — | — | |
+| APR-014 | Site / Shift / Department applicability policy | Production Manager / QA Manager | — | Before automated applicability | EVIDENCE REQUIRED | Yes | Phase 07 production gate | — | — | |
+| APR-015 | Checklist effective-version selection policy | QA Manager | — | Before auto version selection | EVIDENCE REQUIRED | Yes | Phase 07 gates; 07A uses explicit version only | — | — | Auto-latest not implemented |
+| APR-016 | Failure / retry operational owner (batch mapping / poison messages) | IT Manager / Production Manager | — | Before production generation | EVIDENCE REQUIRED | Yes | Phase 07 production gate GATE 10 | — | — | OWNER TO BE CONFIRMED |
+| APR-017 | RELEASE downstream authority (dispatch / ERP / stock / notify) | QA Manager / Stores/Warehouse / Dispatch | — | Before post-QA automation | EVIDENCE REQUIRED | Yes | PHASE_10_POST_QA_WORKFLOW_GATE | — | — | 10A records label only |
+| APR-018 | HOLD workflow (investigation, deviation, CAPA, change rules) | QA Manager | — | Before post-QA HOLD automation | EVIDENCE REQUIRED | Yes | PHASE_10_POST_QA_WORKFLOW_GATE | — | — | HOLD ≠ Supervisor RETURNED |
+| APR-019 | REJECT / rework / disposal workflow | QA Manager / Production Manager | — | Before post-QA REJECT automation | EVIDENCE REQUIRED | Yes | PHASE_10_POST_QA_WORKFLOW_GATE | — | — | |
+| APR-020 | MongoDB company requirement (if any) vs PostgreSQL primary | IT Manager / Management Sponsor | — | Before any DB-platform change | NOT REQUESTED | Conditional | ADR-002 selects PostgreSQL; MongoDB not in Compose | — | — | Do not add MongoDB without written decision |
+| APR-021 | Hosting decision (test / UAT / staging / production) | IT Manager | — | Before non-local envs | EVIDENCE REQUIRED | Yes | ASM-015; DEC-016 | — | — | Local Compose only today |
+| APR-022 | Offline requirement for MVP vs later phase | IT Manager / Production Manager / QA Manager | — | Before Phase 14 start | EVIDENCE REQUIRED | Yes | ASM-010; ADR-003; Phase 14 | — | — | Online MVP assumed until decided |
+| APR-023 | Sinhala (and Tamil if applicable) language approval for operator UI | Business / HR / QA Manager | — | Before operator UAT | EVIDENCE REQUIRED | Yes | ASM-008; DEBT-01C-R-NOTO | — | — | Tamil scope unconfirmed |
+| APR-024 | Production retention period | QA Manager / Legal (TBC) | — | Before production | EVIDENCE REQUIRED | Yes | ASM-013; DEC-017 | — | — | |
+| APR-025 | Repository / company ownership clarification | Management Sponsor | — | Before commercial handover claims | NOT REQUESTED | Continuity | Continuity plan | — | — | Legal conclusion out of scope here |
+| APR-026 | Secret ownership / vault (who stores production secrets) | IT Manager / System Administrator | — | Before production deploy | NOT REQUESTED | Yes | SECURE_CONFIGURATION; continuity plan | — | — | No secrets in git |
+| APR-027 | CCP/OPRP classifications for digital checklists | QA Manager | — | Before critical-rule config | EVIDENCE REQUIRED | Yes | ASM-002 | — | — | |
+| APR-028 | Paper form inventory in MVP scope | QA Manager / FG | — | Before TEMPLATE-002 confirmation | EVIDENCE REQUIRED | Yes | ASM-003 | — | — | |
+| APR-029 | RPO / RTO targets | IT Manager / Management Sponsor | — | Before Phase 19 sign-off | EVIDENCE REQUIRED | Yes | ASM-016 | — | — | |
+| APR-030 | Device ownership model (company vs personal) | IT Manager / Production Manager | — | Before pilot | EVIDENCE REQUIRED | Yes | ASM-009 | — | — | |
+| APR-031 | Wi-Fi coverage evidence in recording areas | IT Manager | — | Before pilot | EVIDENCE REQUIRED | Yes | ASM-010 | — | — | |
+| APR-032 | Hygiene rules for devices in production areas | QA Manager / Production Manager | — | Before pilot | EVIDENCE REQUIRED | Yes | ASM-011 | — | — | |
+| APR-033 | Certification schemes in operational scope | QA Manager | — | Before UAT design | EVIDENCE REQUIRED | Yes | ASM-012 | — | — | No unsupported compliance claims |
+| APR-034 | Pilot site, users, devices, dates | Management Sponsor / QA / IT | — | Before Phase 20 | NOT REQUESTED | Yes | DEC-015 | — | — | |
+| APR-035 | Close DEBT-01C-R-NOTO with Noto Sans Sinhala evidence | Design / Business / IT | — | Before operator Sinhala UAT | EVIDENCE REQUIRED | Yes | DESIGN_DEBT_REGISTER | — | — | Abhaya Libre not production-approved |
+
+---
+
+## Already recorded phase approvals (reference only)
+
+These are **design/technical phase** approvals, not production go-live. Do not re-label them as PRODUCTION READY.
+
+| ID | Item | Status | Evidence |
+| --- | --- | --- | --- |
+| APR-REF-01A | Phase 01A design baseline | APPROVED (proposed baseline) | `docs/approvals/PHASE_01A_DESIGN_APPROVAL.md` |
+| APR-REF-01B | Phase 01B design system | APPROVED with conditions | `docs/approvals/PHASE_01B_DESIGN_APPROVAL.md` |
+| APR-REF-01C | Phase 01C hi-fi | APPROVED with deferred Sinhala condition | `docs/approvals/PHASE_01C_HIGH_FIDELITY_APPROVAL.md` |
+| APR-REF-02 | Phase 02 technical foundation | APPROVED with conditions | `docs/approvals/PHASE_02_TECHNICAL_FOUNDATION_APPROVAL.md` |
+| APR-REF-03 | Phase 03 accounts/RBAC | APPROVED with conditions | `docs/approvals/PHASE_03_ACCOUNTS_RBAC_APPROVAL.md` |
+| APR-REF-04 | Phase 04 scope reconciliation (docs) | APPROVED with conditions | `docs/approvals/PHASE_04_SCOPE_RECONCILIATION_APPROVAL.md` |
+
+---
+
+## Update rule
+
+When an item changes status, update this table and cite the evidence path. If status becomes APPROVED, fill **Approved By** and **Approval Date**. Never mark APPROVED based on chat silence or verbal-only claims without a durable written record in `docs/approvals/` or an owner-signed controlled document referenced here.
