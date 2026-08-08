@@ -26,7 +26,7 @@ ID · Decision / Evidence Needed · Business Owner · Requested Date · Needed B
 
 | ID | Decision / Evidence Needed | Business Owner | Requested Date | Needed By | Status | Blocking | Evidence / Reference | Approved By | Approval Date | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| APR-001 | FG-QA-001 final content approval (publish for production) | QA Manager | — | Before production checklist use | EVIDENCE REQUIRED | Yes | `docs/business/proposals/FG_QA_001_DRAFT_V0_1.md`; TEMPLATE-001 intake | — | — | Draft loader exists; draft ≠ approval |
+| APR-001 | FG-QA-001 final content approval (publish for production) | QA Manager | — | Before production checklist use | EVIDENCE REQUIRED | Yes | `docs/business/proposals/FG_QA_001_DRAFT_V0_1.md`; TEMPLATE-001 intake; [form-discovery/](../business/form-discovery/) | — | — | Draft loader exists; draft ≠ approval; prefer real forms via 06F discovery before Checklist Engine v2 |
 | APR-002 | Official Organization / Site / Department names and codes | Management Sponsor / IT Manager | — | Before production config | EVIDENCE REQUIRED | Yes | ASM-004; org models exist unseeded | — | — | Models ≠ official values |
 | APR-003 | Official Shift names / codes | Production Manager / Operations | — | Before production Shift use | EVIDENCE REQUIRED | Yes | ASM-005; ADR-008 | — | — | 04A/04B foundation only |
 | APR-004 | Official Shift times, overnight/operational-day, effective-date rules | Production Manager / QA Manager | — | Before production overnight policy | EVIDENCE REQUIRED | Yes | ASM-006 | — | — | Provisional `end <= start` is technical only |
@@ -45,7 +45,7 @@ ID · Decision / Evidence Needed · Business Owner · Requested Date · Needed B
 | APR-017 | RELEASE downstream authority (dispatch / ERP / stock / notify) | QA Manager / Stores/Warehouse / Dispatch | — | Before post-QA automation | EVIDENCE REQUIRED | Yes | PHASE_10_POST_QA_WORKFLOW_GATE | — | — | 10A records label only |
 | APR-018 | HOLD workflow (investigation, deviation, CAPA, change rules) | QA Manager | — | Before post-QA HOLD automation | EVIDENCE REQUIRED | Yes | PHASE_10_POST_QA_WORKFLOW_GATE | — | — | HOLD ≠ Supervisor RETURNED |
 | APR-019 | REJECT / rework / disposal workflow | QA Manager / Production Manager | — | Before post-QA REJECT automation | EVIDENCE REQUIRED | Yes | PHASE_10_POST_QA_WORKFLOW_GATE | — | — | |
-| APR-020 | MongoDB company requirement (if any) vs PostgreSQL primary | IT Manager / Management Sponsor | — | Before any DB-platform change | NOT REQUESTED | Conditional | ADR-002 selects PostgreSQL; MongoDB not in Compose | — | — | Do not add MongoDB without written decision |
+| APR-020 | MongoDB / Atlas as operational DB vs PostgreSQL primary (ADR-002) | IT Manager / Management Sponsor | 2026-08-09 | Before any DB-02 cutover | PENDING | Yes (platform) | ADR-018 (POC REQUIRED); compatibility matrix; POC plan | — | — | Company requested MongoDB/Atlas; assessment recorded; **not** approved to replace PostgreSQL; POC mandatory; silence ≠ approval |
 | APR-021 | Hosting decision (test / UAT / staging / production) | IT Manager | — | Before non-local envs | EVIDENCE REQUIRED | Yes | ASM-015; DEC-016 | — | — | Local Compose only today |
 | APR-022 | Offline requirement for MVP vs later phase | IT Manager / Production Manager / QA Manager | — | Before Phase 14 start | EVIDENCE REQUIRED | Yes | ASM-010; ADR-003; Phase 14 | — | — | Online MVP assumed until decided |
 | APR-023 | Sinhala (and Tamil if applicable) language approval for operator UI | Business / HR / QA Manager | — | Before operator UAT | EVIDENCE REQUIRED | Yes | ASM-008; DEBT-01C-R-NOTO | — | — | Tamil scope unconfirmed |
@@ -53,7 +53,7 @@ ID · Decision / Evidence Needed · Business Owner · Requested Date · Needed B
 | APR-025 | Repository / company ownership clarification | Management Sponsor | — | Before commercial handover claims | NOT REQUESTED | Continuity | Continuity plan | — | — | Legal conclusion out of scope here |
 | APR-026 | Secret ownership / vault (who stores production secrets) | IT Manager / System Administrator | — | Before production deploy | NOT REQUESTED | Yes | SECURE_CONFIGURATION; continuity plan | — | — | No secrets in git |
 | APR-027 | CCP/OPRP classifications for digital checklists | QA Manager | — | Before critical-rule config | EVIDENCE REQUIRED | Yes | ASM-002 | — | — | |
-| APR-028 | Paper form inventory in MVP scope | QA Manager / FG | — | Before TEMPLATE-002 confirmation | EVIDENCE REQUIRED | Yes | ASM-003 | — | — | |
+| APR-028 | Paper form inventory in MVP scope | QA Manager / FG | 2026-08-09 | Before TEMPLATE-002 confirmation | EVIDENCE REQUIRED | Yes | ASM-003; [FORM_EVIDENCE_REGISTER.md](../business/form-discovery/FORM_EVIDENCE_REGISTER.md); [FORM_INVENTORY_TEMPLATE.csv](../business/form-discovery/FORM_INVENTORY_TEMPLATE.csv) | — | — | Framework ready; inventory rows still NOT RECEIVED; silence ≠ approval |
 | APR-029 | RPO / RTO targets | IT Manager / Management Sponsor | — | Before Phase 19 sign-off | EVIDENCE REQUIRED | Yes | ASM-016 | — | — | |
 | APR-030 | Device ownership model (company vs personal) | IT Manager / Production Manager | — | Before pilot | EVIDENCE REQUIRED | Yes | ASM-009 | — | — | |
 | APR-031 | Wi-Fi coverage evidence in recording areas | IT Manager | — | Before pilot | EVIDENCE REQUIRED | Yes | ASM-010 | — | — | |
@@ -61,6 +61,8 @@ ID · Decision / Evidence Needed · Business Owner · Requested Date · Needed B
 | APR-033 | Certification schemes in operational scope | QA Manager | — | Before UAT design | EVIDENCE REQUIRED | Yes | ASM-012 | — | — | No unsupported compliance claims |
 | APR-034 | Pilot site, users, devices, dates | Management Sponsor / QA / IT | — | Before Phase 20 | NOT REQUESTED | Yes | DEC-015 | — | — | |
 | APR-035 | Close DEBT-01C-R-NOTO with Noto Sans Sinhala evidence | Design / Business / IT | — | Before operator Sinhala UAT | EVIDENCE REQUIRED | Yes | DESIGN_DEBT_REGISTER | — | — | Abhaya Libre not production-approved |
+| APR-036 | Execute real form discovery package (inventory + item classification returned by owners) | QA Manager / FG / Production | 2026-08-09 | Before Checklist Engine v2 / TEMPLATE-002 confirmation | EVIDENCE REQUIRED | Yes | [form-discovery/README.md](../business/form-discovery/README.md); APR-028; ASM-003 | — | — | Phase 06F framework only; COLLECTED ≠ APPROVED FOR DIGITALIZATION |
+| APR-037 | Approve specific collected forms for digitalization (per-form written approval) | QA Manager | — | Before authoring production ChecklistTemplate content from paper | NOT REQUESTED | Yes (content) | Form status APPROVED FOR DIGITALIZATION in evidence register | — | — | One approval per form/revision; AI research is not evidence |
 
 ---
 

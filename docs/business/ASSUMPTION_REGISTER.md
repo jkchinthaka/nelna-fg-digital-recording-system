@@ -19,7 +19,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | ASM-001 | Product temperature classes used in FG recording will be provided from approved controlled documents | QA owner | Controlled docs | Before Phase 06 content build | EVIDENCE REQUIRED | Blocks template limits and deterministic rules |
 | ASM-002 | CCP/OPRP classifications relevant to digital checklists will be supplied by QA | QA owner | HACCP / related docs | Before Phase 06–10 rule config | EVIDENCE REQUIRED | Blocks critical-rule configuration |
-| ASM-003 | A complete inventory of paper forms in scope will be provided | QA / FG | Form inventory | Before MVP checklist selection | EVIDENCE REQUIRED | Blocks TEMPLATE-002 confirmation |
+| ASM-003 | A complete inventory of paper forms in scope will be provided | QA / FG | Form inventory — use [form-discovery/](form-discovery/) (Phase 06F); APR-028 / APR-036 | Before MVP checklist selection | EVIDENCE REQUIRED | Blocks TEMPLATE-002 confirmation; framework exists; inventory still NOT RECEIVED |
 | ASM-004 | Site/org hierarchy depth and naming will be confirmed for pilot | Business / IT | Org chart / site list | Before inventing hierarchy values and before production Shift configuration | DECISION REQUIRED | Organization/Site/Department **models exist** (Phase 03); official naming/codes remain unconfirmed. Phase 04A uses existing hierarchy FKs only — does **not** resolve official names/codes |
 | ASM-005 | Shift patterns for FG will be documented (names and codes) | Operations | Shift roster policy | Before production Shift configuration / operational use | EVIDENCE REQUIRED | Official Shift names/codes remain unresolved. Phase 04A provisionally unblocks a **configurable, unseeded** technical foundation only — no seeded Day/Night or Nelna business rows |
 | ASM-006 | Night-shift operational day definition (which calendar date a night shift belongs to), timing, and effective-date rules will be confirmed | Operations / QA | Written rule | Before production overnight policy and before Phase 07 due dates | DECISION REQUIRED | Official timings and operational overnight policy remain unresolved. Phase 04A uses provisional technical rules (`end_time <= start_time` ⇒ overnight; one definition per code/scope) — not production policy approval |
@@ -73,7 +73,7 @@ TEMPLATE-001 / ASM-003 form inventory and official checklist content remain **EV
 
 | Topic | Status |
 | --- | --- |
-| Official checklist forms / questions / limits | Unresolved — EVIDENCE REQUIRED — use [TEMPLATE_001_CHECKLIST_EVIDENCE_INTAKE.md](TEMPLATE_001_CHECKLIST_EVIDENCE_INTAKE.md) |
+| Official checklist forms / questions / limits | Unresolved — EVIDENCE REQUIRED — use [TEMPLATE_001_CHECKLIST_EVIDENCE_INTAKE.md](TEMPLATE_001_CHECKLIST_EVIDENCE_INTAKE.md) and [form-discovery/](form-discovery/) (Phase 06F) |
 | TEMPLATE-001 project proposal | **PROJECT-PROPOSED DRAFT — VALIDATION REQUIRED** — [proposals/FG_QA_001_DRAFT_V0_1.md](proposals/FG_QA_001_DRAFT_V0_1.md) (NOT APPROVED for production; not auto-seeded) |
 | Explicit DRAFT loader (Phase 06D) | Available — `load_fg_qa_001_draft` loads Organization-scoped DRAFT for review only; never publishes; never auto-seeds — see [FG_QA_001_DRAFT_LOADING.md](../operations/FG_QA_001_DRAFT_LOADING.md) |
 | Internal validation worksheet | Available — [FG_QA_001_INTERNAL_VALIDATION_CHECKLIST.md](FG_QA_001_INTERNAL_VALIDATION_CHECKLIST.md) — existence is not approval |

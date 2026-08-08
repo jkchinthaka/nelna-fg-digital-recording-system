@@ -3,8 +3,8 @@
 **Document status:** Evidence collection contract — **not** approved business truth
 **Requirement:** TEMPLATE-001 (related: TEMPLATE-002, TEMPLATE-003, ASM-001, ASM-003)
 **Created:** 2026-08-07 (Phase 06B)
-**Updated:** 2026-08-07 — Phase 06D: explicit DRAFT loader available for review only; TEMPLATE remains PROJECT-PROPOSED DRAFT — VALIDATION REQUIRED
-**Technical foundation:** Phase 06A/06B configurable unseeded checklist definition/versioning; Phase 06C provisional response-definition schema; Phase 06D explicit DRAFT proposal loader
+**Updated:** 2026-08-09 — Phase 06F: real form discovery framework added under [form-discovery/](form-discovery/); inventory still NOT RECEIVED
+**Technical foundation:** Phase 06A/06B configurable unseeded checklist definition/versioning; Phase 06C provisional response-definition schema; Phase 06D explicit DRAFT proposal loader; Phase 06F discovery templates (no invented form rows)
 
 ## Purpose
 
@@ -24,6 +24,7 @@ Empty fields are **EVIDENCE REQUIRED**. Do not invent answers.
 - Not auto-seeded into Organizations
 - An explicit DRAFT-only loader exists for controlled review instantiation — see [FG_QA_001_DRAFT_LOADING.md](../operations/FG_QA_001_DRAFT_LOADING.md). Loading a DRAFT is **not** approval.
 - Stakeholder validation worksheet: [FG_QA_001_INTERNAL_VALIDATION_CHECKLIST.md](FG_QA_001_INTERNAL_VALIDATION_CHECKLIST.md) (existence is not approval)
+- **Real-company form discovery (Phase 06F):** [form-discovery/README.md](form-discovery/README.md) — inventory/classification templates; AI reports are research inputs only
 
 Companion per-item worksheet (headers only):
 [templates/CHECKLIST_ITEM_EVIDENCE_INVENTORY.csv](templates/CHECKLIST_ITEM_EVIDENCE_INVENTORY.csv)
