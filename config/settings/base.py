@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     "apps.scheduling",
     "apps.recording",
     "apps.reviews",
+    "apps.quality",
     "apps.access_control",
     "apps.security_audit",
 ]

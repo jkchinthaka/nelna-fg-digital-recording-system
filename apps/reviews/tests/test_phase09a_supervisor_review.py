@@ -28,6 +28,7 @@ from apps.checklists.services import (
     publish_checklist_version,
 )
 from apps.organizations.models import Organization
+from apps.quality.models import QAReview
 from apps.recording.models import (
     ChecklistRecordStatus,
     ChecklistSubmission,
@@ -297,7 +298,7 @@ def test_create_supervisor_review_authz_and_boundaries() -> None:
     task.refresh_from_db()
     assert record.status == ChecklistRecordStatus.SUBMITTED
     assert task.status == ChecklistTaskStatus.PENDING
-    assert not hasattr(approved, "qa_review")
+    assert not QAReview.objects.filter(supervisor_review_id=approved.id).exists()
     assert ChecklistSubmission.objects.filter(checklist_record=record).count() == 1
 
     event = SecurityAuditEvent.objects.filter(event_type="SUPERVISOR_REVIEW_COMPLETED").latest(

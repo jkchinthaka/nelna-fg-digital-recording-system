@@ -209,21 +209,21 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Exit criteria | **09A:** separate review permission; one review per submission; APPROVED/RETURNED without mutating snapshots. **09B:** controlled correction without mutating source submission/review; next submission number race-safe. Full Phase 09 production: SoD evidence + role mapping + published definitions |
 | Dependencies | Phase 08 |
 | Notes | **Not** Phase 04. **09A+09B technical foundations complete**; production Supervisor review/correction **BLOCKED**. SoD self-review rule not invented. No QA/HOLD/RELEASE in Phase 09. Ownership locking for correction remains EVIDENCE REQUIRED. |
-| Status | **09A + 09B implemented** — production use blocked; Phase 10 QA not started |
+| Status | **09A + 09B implemented** — production use blocked |
 
-## Phase 10 â€” QA verification
+## Phase 10 — QA verification
 
 | Field | Content |
 | --- | --- |
-| Objective | QA verify path with deterministic critical-rules hooks; QA reject / hold / reinspection only when approved by QA owner |
+| Objective | QA final review with manual provisional disposition; later operational follow-up only when evidenced |
 | Inputs | QA rules evidence |
-| Outputs | `quality` verification services/UI |
+| Outputs | **10A:** `quality.QAReview` immutable RELEASE/HOLD/REJECT + QA UI; later units for post-QA workflows |
 | Approval gate | QA owner |
-| Branch naming | `feature/phase-10-qa-verification` |
-| Exit criteria | Verify path tested; no AI final decisions |
+| Branch naming | Direct-main quality-first for 10A |
+| Exit criteria | **10A:** separate QA permission; one immutable QAReview per submission; no auto disposition; no ERP side effects. Full production: follow-up evidence + role mapping + published definitions |
 | Dependencies | Phase 09 |
-| Notes | Correction/rejection/return that are **supervisor-owned** remain Phase 09. Do not merge Phases 08–10 into one mega-phase. See [PHASE_10_QA_REVIEW_READINESS_GATE.md](business/PHASE_10_QA_REVIEW_READINESS_GATE.md). Production QA **BLOCKED**. |
-| Status | **Not started** — technical prerequisite: latest Supervisor APPROVED on an immutable ChecklistSubmission |
+| Notes | Supervisor-owned return/correction remains Phase 09. See PHASE_10_QA_REVIEW_READINESS_GATE and PHASE_10_POST_QA_WORKFLOW_GATE. Production QA **BLOCKED**. |
+| Status | **10A implemented** — production use blocked; post-QA operational workflows not started |
 
 ## Phase 11 â€” Attachments and evidence storage
 

@@ -15,6 +15,7 @@ ALLOWED_APPS = {
     "scheduling",
     "recording",
     "reviews",
+    "quality",
     "access_control",
     "security_audit",
 }
@@ -22,7 +23,6 @@ FORBIDDEN_APPS = {
     "tasks",
     "records",
     "evidence",
-    "quality",
     "integrations",
     "reporting",
     "notifications",

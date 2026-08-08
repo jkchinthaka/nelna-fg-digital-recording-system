@@ -1,7 +1,7 @@
 # Module Map
 
-**Document status:** Living module boundaries — Phase 04–09B
-**Phase:** 03–08B complete units · 09A Supervisor review · 09B correction/resubmission · MASTER-001 / TEMPLATE pending
+**Document status:** Living module boundaries — Phase 04–10A
+**Phase:** 03–09B complete units · 10A QA disposition foundation · MASTER-001 / TEMPLATE pending
 **Last updated:** 2026-08-08
 
 This map guides implementation. Do not scaffold future business apps before their phase.
@@ -22,8 +22,8 @@ Do **not** rename FG master data, checklist, recording, review, or evidence work
 | tasks | Assignment of work to users/roles (deferred — avoid Celery name clash; 07A in `scheduling`) | Future task assignment states | Assign/claim/complete coordination | Must not store full answer payloads | **07** (beyond 07A) |
 | records | Reserved legacy MODULE_MAP label — **do not scaffold**; use `recording` | — | — | Duplicate of `recording` forbidden | superseded by **recording** |
 | recording | Draft recording, immutable submissions, controlled correction/resubmission | ChecklistRecord, ChecklistResponse, ChecklistSubmission, ChecklistSubmissionResponse, ChecklistCorrection | start/save/submit; start/resubmit correction; completeness | Must not perform Supervisor/QA decisions; must not mutate immutable snapshots | **08A–09B** |
-| reviews | Supervisor review foundation (09A); no mutable correction state | SupervisorReview | create immutable review; eligible-submission selectors; review UI | Must not perform QA verification; no HOLD/RELEASE; manage/record ≠ review; must not own ChecklistCorrection | **09A** |
-| quality | QA verification workflow | Verification actions | Verify services | No AI final verification | **10** |
+| reviews | Supervisor review foundation (09A); no mutable correction/QA disposition state | SupervisorReview | create immutable review; eligible-submission selectors; review UI | Must not perform QA disposition; manage/record ≠ review; must not own ChecklistCorrection or QAReview | **09A** |
+| quality | QA final review disposition foundation (10A) | QAReview | create immutable QA disposition; eligible selectors; QA UI | No AI final verification; no auto PASS/FAIL; no ERP/warehouse/dispatch side effects; manage/record/supervisor ≠ QA | **10A** |
 | nonconformance | Holds and NC records | NC/hold entities | Open/update NC services | Post-MVP unless approved | **12** |
 | capa | Corrective and preventive actions | CAPA entities | CAPA lifecycle services | No AI final CAPA closure | **12** |
 | loading | Loading controls | Loading check records | Loading workflow services | Post-MVP | **13** |
@@ -43,7 +43,7 @@ Do **not** rename FG master data, checklist, recording, review, or evidence work
 | 07 | **07A** ChecklistTask foundation; **07B** batch-source contract + recorder authorization readiness; later recurrence/assignment as approved |
 | 08 | **08A** draft recording; **08B** immutable submission snapshots |
 | 09 | **09A** `reviews` Supervisor review; **09B** `recording` ChecklistCorrection / resubmission |
-| 10 | `quality` QA verification |
+| 10 | **10A** `quality` QAReview manual disposition; later post-QA operational workflows |
 
 ## References
 

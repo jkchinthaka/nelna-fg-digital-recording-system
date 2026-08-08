@@ -348,4 +348,4 @@ def test_admin_and_query_bounds_with_options(client: Client) -> None:
     assert sample is not None
     with CaptureQueriesContext(connection) as ctx:
         assert client.get(reverse("checklists:version_detail", args=[sample.id])).status_code == 200
-    assert len(ctx) < 45
+    assert len(ctx) < 50

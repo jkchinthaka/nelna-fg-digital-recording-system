@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load organizations_extras master_data_extras checklists_extras scheduling_extras recording_extras reviews_extras %}
+{% load organizations_extras master_data_extras checklists_extras scheduling_extras recording_extras reviews_extras quality_extras %}
 {% block title %}Signed in — Nelna FG Digital Recording System{% endblock %}
 {% block content %}
   <section class="landing-page" aria-labelledby="landing-heading">
@@ -19,7 +19,7 @@
       {% endif %}
       <p class="landing-meta">{{ phase_label }}</p>
       <p class="landing-notice">
-        Shift, FG Product, Checklist Definition, Recording, and Supervisor Review
+        Shift, FG Product, Checklist Definition, Recording, Supervisor Review, and QA Review
         technical foundations are available to authorized users when configured.
         Production use remains gated. No production master data or forms are seeded.
       </p>
@@ -48,6 +48,10 @@
         {% user_can_review_checklist_submissions as show_reviews %}
         {% if show_reviews %}
           <a class="btn btn--primary" href="{% url 'reviews:queue' %}">Supervisor Review</a>
+        {% endif %}
+        {% user_can_qa_review_checklist_submissions as show_qa %}
+        {% if show_qa %}
+          <a class="btn btn--primary" href="{% url 'quality:queue' %}">QA Review</a>
         {% endif %}
         <a class="btn btn--secondary"
            href="{% url 'accounts:change_password' %}">Change password</a>

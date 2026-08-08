@@ -85,7 +85,7 @@ TEMPLATE-001 / ASM-003 form inventory and official checklist content remain **EV
 | Batch checklist task foundation (Phase 07A) | Implemented technically — `scheduling.ChecklistTask` + `batch_reference`; PUBLISHED-only explicit version; no ProductionBatch master; no recording/HOLD |
 | Batch source / ERP connector | Unresolved — EVIDENCE REQUIRED — contract only: [PRODUCTION_BATCH_SOURCE_CONTRACT.md](../integration/PRODUCTION_BATCH_SOURCE_CONTRACT.md); no invented endpoints |
 | Recorder role mapping (Phase 07B) | Permission `scheduling.record_checklisttask` exists unassigned; mapping APPROVAL REQUIRED — [CHECKLIST_RECORDER_ROLE_MAPPING.md](CHECKLIST_RECORDER_ROLE_MAPPING.md) |
-| Scheduling / recording / review | **08A/08B** draft + immutable submission complete; **09A** Supervisor review complete; **09B** correction/resubmission technical foundation complete; production recording/review/correction + Phase 10 still gated — see [PHASE_08_RECORDING_READINESS_GATE.md](PHASE_08_RECORDING_READINESS_GATE.md), [PHASE_09_SUPERVISOR_REVIEW_READINESS_GATE.md](PHASE_09_SUPERVISOR_REVIEW_READINESS_GATE.md), [PHASE_10_QA_REVIEW_READINESS_GATE.md](PHASE_10_QA_REVIEW_READINESS_GATE.md) |
+| Scheduling / recording / review / QA | **08A–09B** recording/submission/correction complete; **09A** Supervisor review complete; **10A** QA disposition technical foundation complete; production recording/review/correction/QA still gated — see readiness gates for Phases 08–10 and PHASE_10_POST_QA_WORKFLOW_GATE |
 | Real-content / operational / production use | Remains blocked |
 
 See [PHASE_06_CHECKLIST_PROVISIONAL_CONFIGURATION.md](../decisions/PHASE_06_CHECKLIST_PROVISIONAL_CONFIGURATION.md) and [ADR-010](../architecture/ADR-010-CHECKLIST-DEFINITION-VERSIONING.md).

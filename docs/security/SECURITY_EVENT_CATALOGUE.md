@@ -40,6 +40,7 @@
 | `SUPERVISOR_REVIEW_COMPLETED` | Immutable Supervisor review recorded for a ChecklistSubmission |
 | `CHECKLIST_CORRECTION_STARTED` | Controlled correction cycle started for a RETURNED submission |
 | `CHECKLIST_CORRECTION_RESUBMITTED` | Correction resubmitted as next immutable ChecklistSubmission |
+| `QA_REVIEW_COMPLETED` | Immutable QA disposition recorded for a ChecklistSubmission |
 
 ## Safe metadata
 
