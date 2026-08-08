@@ -2,9 +2,9 @@
 
 **Document status:** Configuration worksheet — **not** an approved RBAC assignment
 **Created:** 2026-08-07 (Phase 07B)
-**Updated:** 2026-08-08 (Phase 09A)
+**Updated:** 2026-08-08 (Phase 09B)
 **Permission foundation:** `scheduling.record_checklisttask`; `reviews.review_checklistsubmission`
-**Related:** [PHASE_06E_FG_QA_001_PROVISIONAL_WORKFLOW.md](../decisions/PHASE_06E_FG_QA_001_PROVISIONAL_WORKFLOW.md), [ADR-015-SUPERVISOR-REVIEW.md](../architecture/ADR-015-SUPERVISOR-REVIEW.md)
+**Related:** [PHASE_06E_FG_QA_001_PROVISIONAL_WORKFLOW.md](../decisions/PHASE_06E_FG_QA_001_PROVISIONAL_WORKFLOW.md), [ADR-015-SUPERVISOR-REVIEW.md](../architecture/ADR-015-SUPERVISOR-REVIEW.md), [ADR-016-CHECKLIST-CORRECTION-RESUBMISSION.md](../architecture/ADR-016-CHECKLIST-CORRECTION-RESUBMISSION.md)
 
 ## Purpose
 
@@ -82,3 +82,17 @@ A submission may be reviewed only if:
 2. Immutable `ChecklistSubmission` exists
 3. No `SupervisorReview` exists yet for that submission
 4. Actor has `review_checklistsubmission` in the Organization scope
+
+## Correction / resubmission eligibility (Phase 09B contract)
+
+A correction may start only if:
+
+1. Source submission is the latest for the record
+2. Source has `SupervisorReview` with `RETURNED_FOR_CORRECTION`
+3. No newer submission exists
+4. Task is not `CANCELLED`
+5. Actor has `record_checklisttask` in Organization scope
+
+**Ownership locking** (only original submitter may correct): **EVIDENCE REQUIRED** — not enforced.
+Any authorized recorder in the Organization scope may start/edit/resubmit a correction.
+Manage-task and review permissions do **not** imply correction permission.

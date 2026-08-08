@@ -15,13 +15,26 @@ from django.views.decorators.http import require_GET, require_http_methods, requ
 
 from apps.accounts.models import User
 from apps.checklists.models import ChecklistResponseType
+from apps.recording.correction_services import (
+    resubmit_checklist_correction,
+    start_checklist_correction,
+)
 from apps.recording.forms import ChecklistDraftForm, response_field_name
-from apps.recording.models import ChecklistRecord, ChecklistRecordStatus, ChecklistResponse
+from apps.recording.models import (
+    ChecklistCorrectionStatus,
+    ChecklistRecord,
+    ChecklistRecordStatus,
+    ChecklistResponse,
+)
 from apps.recording.selectors import (
     actor_can_access_recording_module,
+    get_checklist_correction,
     get_recordable_task,
     list_recordable_checklist_tasks,
+    load_correction_editor_context,
     load_record_editor_context,
+    load_record_history_context,
+    load_returned_submission_context,
     load_submitted_record_context,
 )
 from apps.recording.services import (
@@ -29,6 +42,7 @@ from apps.recording.services import (
     start_checklist_recording,
     submit_checklist_record,
 )
+from apps.reviews.models import SupervisorReviewDecision
 from apps.scheduling.models import ChecklistTask
 
 PAGE_SIZE = 25
@@ -41,6 +55,33 @@ def _actor(request: HttpRequest) -> User:
 def _require_recording_module(request: HttpRequest) -> None:
     if not actor_can_access_recording_module(_actor(request)):
         raise PermissionDenied("Permission denied.")
+
+
+def _validation_message(exc: ValidationError) -> str:
+    if hasattr(exc, "message_dict"):
+        parts: list[str] = []
+        for msgs in exc.message_dict.values():
+            parts.extend(str(m) for m in msgs)
+        return "; ".join(parts)
+    return "; ".join(str(m) for m in exc.messages)
+
+
+def _render_snapshot_sections(
+    sections: list[Any], snapshots: dict[uuid.UUID, Any]
+) -> list[dict[str, Any]]:
+    rendered: list[dict[str, Any]] = []
+    for section in sections:
+        items_out = []
+        for item in section.items.all():
+            items_out.append(
+                {
+                    "item": item,
+                    "display_value": _display_snapshot_value(item, snapshots.get(item.id)),
+                    "answered": item.id in snapshots,
+                }
+            )
+        rendered.append({"section": section, "items": items_out})
+    return rendered
 
 
 def _initial_from_responses(
@@ -155,6 +196,12 @@ def record_detail(request: HttpRequest, record_id: uuid.UUID) -> HttpResponse:
 
     record: ChecklistRecord = draft_context["record"]
     if record.status == ChecklistRecordStatus.SUBMITTED:
+        history = load_record_history_context(_actor(request), record.id)
+        if history and history["active_correction"] is not None:
+            return redirect(
+                "recording:correction_detail",
+                correction_id=history["active_correction"].id,
+            )
         return redirect("recording:record_submitted", record_id=record.id)
 
     task: ChecklistTask = draft_context["task"]
@@ -265,18 +312,18 @@ def record_submitted(request: HttpRequest, record_id: uuid.UUID) -> HttpResponse
 
     sections = context["sections"]
     snapshots = context["snapshot_responses"]
-    rendered_sections = []
-    for section in sections:
-        items_out = []
-        for item in section.items.all():
-            items_out.append(
-                {
-                    "item": item,
-                    "display_value": _display_snapshot_value(item, snapshots.get(item.id)),
-                    "answered": item.id in snapshots,
-                }
-            )
-        rendered_sections.append({"section": section, "items": items_out})
+    rendered_sections = _render_snapshot_sections(sections, snapshots)
+
+    history = load_record_history_context(_actor(request), record_id)
+    latest_submission = context["submission"]
+    latest_review = None
+    active_correction = None
+    if history is not None:
+        active_correction = history["active_correction"]
+        for row in history["history_rows"]:
+            if row["submission"].id == latest_submission.id:
+                latest_review = row["review"]
+                break
 
     return render(
         request,
@@ -284,7 +331,195 @@ def record_submitted(request: HttpRequest, record_id: uuid.UUID) -> HttpResponse
         {
             "record": context["record"],
             "task": context["task"],
-            "submission": context["submission"],
+            "submission": latest_submission,
+            "rendered_sections": rendered_sections,
+            "latest_review": latest_review,
+            "active_correction": active_correction,
+            "history_rows": history["history_rows"] if history else [],
+            "SupervisorReviewDecision": SupervisorReviewDecision,
+            "ChecklistCorrectionStatus": ChecklistCorrectionStatus,
+        },
+    )
+
+
+@login_required
+@require_GET
+def record_history(request: HttpRequest, record_id: uuid.UUID) -> HttpResponse:
+    _require_recording_module(request)
+    try:
+        context = load_record_history_context(_actor(request), record_id)
+    except PermissionDenied:
+        raise
+    if context is None:
+        raise Http404("Checklist record not found.")
+    return render(
+        request,
+        "recording/records/history.html",
+        context,
+    )
+
+
+@login_required
+@require_GET
+def returned_submission_detail(request: HttpRequest, submission_id: uuid.UUID) -> HttpResponse:
+    _require_recording_module(request)
+    try:
+        context = load_returned_submission_context(_actor(request), submission_id)
+    except PermissionDenied:
+        raise
+    if context is None:
+        raise Http404("Checklist submission not found.")
+    rendered_sections = _render_snapshot_sections(
+        context["sections"], context["snapshot_responses"]
+    )
+    return render(
+        request,
+        "recording/records/returned.html",
+        {
+            **context,
             "rendered_sections": rendered_sections,
         },
+    )
+
+
+@login_required
+@require_POST
+def start_correction(request: HttpRequest, submission_id: uuid.UUID) -> HttpResponse:
+    _require_recording_module(request)
+    try:
+        correction = start_checklist_correction(
+            actor=_actor(request), source_submission_id=submission_id
+        )
+    except PermissionDenied:
+        raise
+    except ValidationError as exc:
+        messages.error(request, _validation_message(exc))
+        return redirect("recording:returned_submission", submission_id=submission_id)
+    messages.success(
+        request,
+        (
+            f"Correction draft ready for Submission "
+            f"#{correction.source_submission.submission_number}."
+        ),
+    )
+    return redirect("recording:correction_detail", correction_id=correction.id)
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def correction_detail(request: HttpRequest, correction_id: uuid.UUID) -> HttpResponse:
+    _require_recording_module(request)
+    try:
+        context = load_correction_editor_context(_actor(request), correction_id)
+    except PermissionDenied:
+        raise
+    if context is None:
+        raise Http404("Checklist correction not found.")
+
+    correction = context["correction"]
+    if correction.status == ChecklistCorrectionStatus.RESUBMITTED:
+        return redirect("recording:correction_result", correction_id=correction.id)
+
+    record = context["record"]
+    sections = context["sections"]
+    responses = context["responses"]
+    items = [item for section in sections for item in section.items.all()]
+    initial = _initial_from_responses(responses, items)
+
+    if request.method == "POST":
+        form = ChecklistDraftForm(request.POST, items=items, initial_responses=initial)
+        if form.is_valid():
+            try:
+                save_checklist_draft_responses(
+                    actor=_actor(request),
+                    record_id=record.id,
+                    answers=form.answers_by_item_id(),
+                )
+                messages.success(request, "Correction draft saved.")
+                return redirect("recording:correction_detail", correction_id=correction.id)
+            except ValidationError as exc:
+                _apply_validation_error(form, exc)
+    else:
+        form = ChecklistDraftForm(items=items, initial_responses=initial)
+
+    return render(
+        request,
+        "recording/corrections/editor.html",
+        {
+            **context,
+            "form": form,
+            "response_field_name": response_field_name,
+            "ChecklistResponseType": ChecklistResponseType,
+        },
+    )
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def correction_resubmit_confirm(request: HttpRequest, correction_id: uuid.UUID) -> HttpResponse:
+    _require_recording_module(request)
+    try:
+        context = load_correction_editor_context(_actor(request), correction_id)
+    except PermissionDenied:
+        raise
+    if context is None:
+        raise Http404("Checklist correction not found.")
+
+    correction = context["correction"]
+    if correction.status == ChecklistCorrectionStatus.RESUBMITTED:
+        return redirect("recording:correction_result", correction_id=correction.id)
+
+    completeness = context["completeness"]
+    missing = completeness["missing_required_items"]
+
+    if request.method == "POST":
+        if missing:
+            messages.error(
+                request,
+                f"{len(missing)} required item(s) remain unanswered. "
+                "Complete them before resubmitting.",
+            )
+            return redirect("recording:correction_detail", correction_id=correction.id)
+        try:
+            submission = resubmit_checklist_correction(
+                actor=_actor(request), correction_id=correction.id
+            )
+        except ValidationError as exc:
+            messages.error(request, _validation_message(exc))
+            return redirect("recording:correction_detail", correction_id=correction.id)
+        messages.success(
+            request,
+            f"Checklist resubmitted (Submission #{submission.submission_number}). "
+            f"Source Submission #{correction.source_submission.submission_number} "
+            "remains unchanged.",
+        )
+        return redirect("recording:record_submitted", record_id=submission.checklist_record_id)
+
+    return render(
+        request,
+        "recording/corrections/resubmit_confirm.html",
+        {
+            **context,
+            "can_resubmit": not missing,
+        },
+    )
+
+
+@login_required
+@require_GET
+def correction_result(request: HttpRequest, correction_id: uuid.UUID) -> HttpResponse:
+    _require_recording_module(request)
+    try:
+        correction = get_checklist_correction(_actor(request), correction_id)
+    except PermissionDenied:
+        raise
+    if correction is None:
+        raise Http404("Checklist correction not found.")
+    if correction.status != ChecklistCorrectionStatus.RESUBMITTED:
+        return redirect("recording:correction_detail", correction_id=correction.id)
+    if correction.resulting_submission_id is None:
+        raise Http404("Resulting submission not found.")
+    return redirect(
+        "recording:record_submitted",
+        record_id=correction.checklist_record_id,
     )

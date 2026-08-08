@@ -38,6 +38,8 @@
 | `CHECKLIST_RECORD_DRAFT_SAVED` | Draft checklist responses saved (aggregate) |
 | `CHECKLIST_RECORD_SUBMITTED` | Checklist record submitted with immutable Submission #1 snapshot |
 | `SUPERVISOR_REVIEW_COMPLETED` | Immutable Supervisor review recorded for a ChecklistSubmission |
+| `CHECKLIST_CORRECTION_STARTED` | Controlled correction cycle started for a RETURNED submission |
+| `CHECKLIST_CORRECTION_RESUBMITTED` | Correction resubmitted as next immutable ChecklistSubmission |
 
 ## Safe metadata
 
@@ -47,7 +49,7 @@ Shift events may include: Shift UUID, normalized Shift code, Organization UUID, 
 
 FG Product events may include: FG Product UUID, normalized Product code, Organization UUID, active status, changed field names.
 
-Checklist events may include: template UUID/code, version UUID/number, organization UUID, optional product UUID, status, changed field names. Do not store full checklist question text in security audit metadata. Lifecycle transitions remain DRAFT→PUBLISHED→RETIRED only (Phase 06B); audit emits once from services, not duplicated from views.
+Checklist / recording / review / correction events may include: template UUID/code, version UUID/number, organization UUID, record/task/submission/correction UUIDs, submission numbers, batch_reference, changed_item_count / answered_item_count. Do **not** store response values, Supervisor review notes, TEXT answers, or numerical measurements in security audit metadata.
 
 Checklist task events may include: task UUID, organization UUID, template UUID/code, version UUID/number, `batch_reference`, status. Do not store checklist question text or request bodies.
 

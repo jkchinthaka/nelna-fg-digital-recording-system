@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% load recording_extras %}
+{% block title %}Correction Draft — Nelna FG Digital Recording System{% endblock %}
+{% block body_class %}mgmt-shell{% endblock %}
+{% block content %}
+  <section class="mgmt-page" aria-labelledby="correction-heading">
+    <header class="mgmt-page__header">
+      <div>
+        <h1 id="correction-heading">Correction draft</h1>
+        <p class="mgmt-page__lead">
+          CORRECTION DRAFT — correcting Submission #{{ source_submission.submission_number }}.
+          Resubmission will create Submission #{{ next_submission_number }}.
+          Source Submission #{{ source_submission.submission_number }} remains immutable.
+        </p>
+      </div>
+      <a class="btn btn--ghost btn--inline"
+         href="{% url 'recording:returned_submission' submission_id=source_submission.id %}">View source submission</a>
+    </header>
+    <dl class="mgmt-meta" aria-label="Correction context">
+      <div>
+        <dt>Recording state</dt>
+        <dd>
+          CORRECTION DRAFT (record remains SUBMITTED)
+        </dd>
+      </div>
+      <div>
+        <dt>Source submission</dt>
+        <dd>
+          #{{ source_submission.submission_number }}
+        </dd>
+      </div>
+      <div>
+        <dt>Future result</dt>
+        <dd>
+          Submission #{{ next_submission_number }}
+        </dd>
+      </div>
+      <div>
+        <dt>Batch reference</dt>
+        <dd>
+          {{ task.batch_reference }}
+        </dd>
+      </div>
+      <div>
+        <dt>Checklist</dt>
+        <dd>
+          {{ task.checklist_template.code }} — {{ task.checklist_template.name }}
+        </dd>
+      </div>
+      <div>
+        <dt>Version</dt>
+        <dd>
+          v{{ task.checklist_version.version_number }}
+        </dd>
+      </div>
+      {% if source_review %}
+        <div>
+          <dt>Supervisor decision</dt>
+          <dd>
+            {{ source_review.decision }}
+          </dd>
+        </div>
+        {% if source_review.review_note %}
+          <div>
+            <dt>Supervisor note</dt>
+            <dd>
+              {{ source_review.review_note }}
+            </dd>
+          </div>
+        {% endif %}
+      {% endif %}
+    </dl>
+    <p class="form-help" role="status">
+      Answered {{ completeness.answered_items }} of {{ completeness.total_items }}.
+      Required answered {{ completeness.answered_required_items }} of {{ completeness.required_items }}.
+      Missing required: {{ completeness.missing_required_items|length }}.
+    </p>
+    <form method="post"
+          action="{% url 'recording:correction_detail' correction_id=correction.id %}"
+          class="mgmt-form">
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <ul class="form-errors">
+          {% for error in form.non_field_errors %}<li>{{ error }}</li>{% endfor %}
+        </ul>
+      {% endif %}
+      {% for section in sections %}
+        <section class="recording-section"
+                 aria-labelledby="corr-section-{{ section.id }}">
+          <h2 id="corr-section-{{ section.id }}">{{ section.title }}</h2>
+          {% for item in section.items.all %}
+            {% with bound=form|response_bound_field:item %}
+              <article class="recording-item">
+                <label for="{% if bound %}{{ bound.id_for_label }}{% endif %}">
+                  {{ item.code }} — {{ item.label }}
+                  {% if item.is_required %}<span class="recording-item__required">Required</span>{% endif %}
+                </label>
+                {% if item.help_text %}<p class="form-help">{{ item.help_text }}</p>{% endif %}
+                {% if item.response_type == "NUMBER" %}
+                  {% if item.unit %}<p class="form-help">Unit: {{ item.unit }}</p>{% endif %}
+                {% endif %}
+                {% if bound %}{{ bound }}{% endif %}
+                {% if bound and bound.errors %}
+                  <ul class="form-errors">
+                    {% for error in bound.errors %}<li>{{ error }}</li>{% endfor %}
+                  </ul>
+                {% endif %}
+              </article>
+            {% endwith %}
+          {% endfor %}
+        </section>
+      {% endfor %}
+      <div class="landing-actions">
+        <button type="submit" class="btn btn--secondary">Save Correction Draft</button>
+        <a class="btn btn--primary"
+           href="{% url 'recording:correction_resubmit' correction_id=correction.id %}">Resubmit Checklist</a>
+      </div>
+    </form>
+  </section>
+{% endblock %}

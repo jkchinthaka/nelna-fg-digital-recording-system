@@ -203,13 +203,13 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | --- | --- |
 | Objective | Supervisor check workflow (approve / return for correction / related amendments) and amendment history |
 | Inputs | SoD rules (EVIDENCE REQUIRED) |
-| Outputs | **09A:** `reviews.SupervisorReview` immutable decisions on `ChecklistSubmission` + review UI; **09B:** correction/resubmission (later) |
+| Outputs | **09A:** `reviews.SupervisorReview` immutable decisions on `ChecklistSubmission` + review UI; **09B:** `ChecklistCorrection` + resubmission as Submission #N+1 |
 | Approval gate | QA/operations workflow review |
-| Branch naming | Direct-main quality-first for 09A |
-| Exit criteria | **09A:** separate review permission; one review per submission; APPROVED/RETURNED without mutating snapshots. Full Phase 09 production: SoD evidence + role mapping + published definitions |
+| Branch naming | Direct-main quality-first for 09A/09B |
+| Exit criteria | **09A:** separate review permission; one review per submission; APPROVED/RETURNED without mutating snapshots. **09B:** controlled correction without mutating source submission/review; next submission number race-safe. Full Phase 09 production: SoD evidence + role mapping + published definitions |
 | Dependencies | Phase 08 |
-| Notes | **Not** Phase 04. **09A technical foundation complete**; production Supervisor review **BLOCKED**. SoD self-review rule not invented. No QA/HOLD/RELEASE in 09A. |
-| Status | **09A implemented** — 09B correction/resubmission not started |
+| Notes | **Not** Phase 04. **09A+09B technical foundations complete**; production Supervisor review/correction **BLOCKED**. SoD self-review rule not invented. No QA/HOLD/RELEASE in Phase 09. Ownership locking for correction remains EVIDENCE REQUIRED. |
+| Status | **09A + 09B implemented** — production use blocked; Phase 10 QA not started |
 
 ## Phase 10 â€” QA verification
 
@@ -222,7 +222,8 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Branch naming | `feature/phase-10-qa-verification` |
 | Exit criteria | Verify path tested; no AI final decisions |
 | Dependencies | Phase 09 |
-| Notes | Correction/rejection/return that are **supervisor-owned** remain Phase 09. Do not merge Phases 08â€“10 into one mega-phase. |
+| Notes | Correction/rejection/return that are **supervisor-owned** remain Phase 09. Do not merge Phases 08–10 into one mega-phase. See [PHASE_10_QA_REVIEW_READINESS_GATE.md](business/PHASE_10_QA_REVIEW_READINESS_GATE.md). Production QA **BLOCKED**. |
+| Status | **Not started** — technical prerequisite: latest Supervisor APPROVED on an immutable ChecklistSubmission |
 
 ## Phase 11 â€” Attachments and evidence storage
 

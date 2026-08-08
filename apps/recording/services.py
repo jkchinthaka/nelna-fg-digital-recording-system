@@ -379,9 +379,11 @@ def save_checklist_draft_responses(
     answers: dict[uuid.UUID, Any],
 ) -> ChecklistRecord:
     """
-    Save/update/clear typed draft responses for a DRAFT ChecklistRecord.
+    Save/update/clear typed draft responses.
 
-    Partial completion is allowed. Rejected when record is SUBMITTED.
+    Allowed when:
+    - ChecklistRecord is DRAFT (initial recording), or
+    - ChecklistRecord is SUBMITTED with an eligible active ChecklistCorrection(DRAFT).
     """
     user = _require_authenticated_actor(actor)
 
@@ -406,7 +408,10 @@ def save_checklist_draft_responses(
         if record.organization_id != task.organization_id:
             raise ValidationError({"organization": "Record organization mismatch."})
         _assert_task_recordable(task)
-        _assert_record_is_draft(record)
+        # Lazy import avoids circular dependency with correction_services.
+        from apps.recording.correction_services import assert_record_editable_for_actor
+
+        assert_record_editable_for_actor(record)
 
         version_id = task.checklist_version_id
         items = {

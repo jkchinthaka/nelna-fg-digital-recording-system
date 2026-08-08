@@ -339,3 +339,114 @@ class ChecklistSubmissionResponse(models.Model):
         ]
         if sum(1 for flag in filled if flag) != 1:
             raise ValidationError("Exactly one typed response value must be set.")
+
+
+class ChecklistCorrectionStatus(models.TextChoices):
+    """Explicit correction-cycle lifecycle — not QA disposition."""
+
+    DRAFT = "DRAFT", "Correction draft"
+    RESUBMITTED = "RESUBMITTED", "Resubmitted"
+
+
+class ChecklistCorrection(models.Model):
+    """
+    Controlled correction cycle for a RETURNED_FOR_CORRECTION submission.
+
+    ChecklistRecord remains SUBMITTED. Mutable ChecklistResponse rows are the
+    working copy while status=DRAFT. Source ChecklistSubmission / snapshot /
+    SupervisorReview stay immutable. Resubmission creates Submission N+1.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    organization = models.ForeignKey(
+        Organization,
+        on_delete=models.PROTECT,
+        related_name="checklist_corrections",
+    )
+    checklist_record = models.ForeignKey(
+        ChecklistRecord,
+        on_delete=models.PROTECT,
+        related_name="corrections",
+    )
+    source_submission = models.OneToOneField(
+        ChecklistSubmission,
+        on_delete=models.PROTECT,
+        related_name="correction_cycle",
+    )
+    status = models.CharField(
+        max_length=16,
+        choices=ChecklistCorrectionStatus.choices,
+        default=ChecklistCorrectionStatus.DRAFT,
+    )
+    started_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="started_checklist_corrections",
+    )
+    started_at = models.DateTimeField(auto_now_add=True)
+    resulting_submission = models.OneToOneField(
+        ChecklistSubmission,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="produced_by_correction",
+    )
+    completed_at = models.DateTimeField(null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ("-started_at",)
+        verbose_name = "Checklist correction"
+        verbose_name_plural = "Checklist corrections"
+        indexes = [
+            models.Index(
+                fields=["organization", "status"],
+                name="rec_corr_org_status_idx",
+            ),
+            models.Index(
+                fields=["checklist_record", "status"],
+                name="rec_corr_record_status_idx",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"Correction {self.status} / source submission {self.source_submission_id}"
+
+    @property
+    def is_draft(self) -> bool:
+        return self.status == ChecklistCorrectionStatus.DRAFT
+
+    @property
+    def is_resubmitted(self) -> bool:
+        return self.status == ChecklistCorrectionStatus.RESUBMITTED
+
+    def clean(self) -> None:
+        super().clean()
+        if self.source_submission_id and self.checklist_record_id:
+            if self.source_submission.checklist_record_id != self.checklist_record_id:
+                raise ValidationError(
+                    {
+                        "source_submission": (
+                            "Source submission must belong to the checklist record."
+                        )
+                    }
+                )
+        if self.checklist_record_id and self.organization_id:
+            if self.checklist_record.organization_id != self.organization_id:
+                raise ValidationError(
+                    {
+                        "organization": (
+                            "Correction organization must match the record organization."
+                        )
+                    }
+                )
+        if self.resulting_submission_id and self.checklist_record_id:
+            resulting = self.resulting_submission
+            if resulting is not None and resulting.checklist_record_id != self.checklist_record_id:
+                raise ValidationError(
+                    {
+                        "resulting_submission": (
+                            "Resulting submission must belong to the checklist record."
+                        )
+                    }
+                )

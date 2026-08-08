@@ -43,7 +43,11 @@
                 <td>
                   {% if task.checklist_record %}
                     {% if task.checklist_record.status == "SUBMITTED" %}
-                      Submitted
+                      {% if task.checklist_record.active_corrections %}
+                        Correction Draft
+                      {% else %}
+                        Submitted
+                      {% endif %}
                     {% else %}
                       Draft Started
                     {% endif %}
@@ -54,10 +58,17 @@
                 <td>
                   {% if task.checklist_record %}
                     {% if task.checklist_record.status == "SUBMITTED" %}
-                      <a class="btn btn--secondary btn--inline"
-                         href="{% url 'recording:record_submitted' record_id=task.checklist_record.id %}">
-                        View Submitted
-                      </a>
+                      {% if task.checklist_record.active_corrections %}
+                        <a class="btn btn--secondary btn--inline"
+                           href="{% url 'recording:correction_detail' correction_id=task.checklist_record.active_corrections.0.id %}">
+                          Continue Correction
+                        </a>
+                      {% else %}
+                        <a class="btn btn--secondary btn--inline"
+                           href="{% url 'recording:record_submitted' record_id=task.checklist_record.id %}">
+                          View Submitted
+                        </a>
+                      {% endif %}
                     {% else %}
                       <a class="btn btn--secondary btn--inline"
                          href="{% url 'recording:record_detail' record_id=task.checklist_record.id %}">

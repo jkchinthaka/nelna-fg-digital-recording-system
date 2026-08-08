@@ -26,4 +26,34 @@ urlpatterns = [
         views.record_submitted,
         name="record_submitted",
     ),
+    path(
+        "recording/<uuid:record_id>/history/",
+        views.record_history,
+        name="record_history",
+    ),
+    path(
+        "recording/submissions/<uuid:submission_id>/returned/",
+        views.returned_submission_detail,
+        name="returned_submission",
+    ),
+    path(
+        "recording/submissions/<uuid:submission_id>/correct/",
+        views.start_correction,
+        name="start_correction",
+    ),
+    path(
+        "recording/corrections/<uuid:correction_id>/",
+        views.correction_detail,
+        name="correction_detail",
+    ),
+    path(
+        "recording/corrections/<uuid:correction_id>/resubmit/",
+        views.correction_resubmit_confirm,
+        name="correction_resubmit",
+    ),
+    path(
+        "recording/corrections/<uuid:correction_id>/result/",
+        views.correction_result,
+        name="correction_result",
+    ),
 ]

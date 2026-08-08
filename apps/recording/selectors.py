@@ -15,6 +15,8 @@ from apps.access_control.services import (
 from apps.accounts.models import User
 from apps.checklists.models import ChecklistItem, ChecklistItemOption, ChecklistSection
 from apps.recording.models import (
+    ChecklistCorrection,
+    ChecklistCorrectionStatus,
     ChecklistRecord,
     ChecklistRecordStatus,
     ChecklistResponse,
@@ -22,6 +24,7 @@ from apps.recording.models import (
     ChecklistSubmissionResponse,
 )
 from apps.recording.services import collect_submission_completeness
+from apps.reviews.models import SupervisorReview, SupervisorReviewDecision
 from apps.scheduling.models import ChecklistTask, ChecklistTaskStatus
 from apps.scheduling.selectors import actor_can_record_task, task_is_eligible_for_recording
 from apps.scheduling.services import RECORD_CHECKLIST_TASK, task_authorization_scope
@@ -35,7 +38,7 @@ def list_recordable_checklist_tasks(actor: User | None) -> QuerySet[ChecklistTas
     """
     PENDING tasks the actor may record, scoped by Organization permission once.
 
-    Includes DRAFT and SUBMITTED records for Continue / View Submitted.
+    Includes DRAFT and SUBMITTED records for Continue / View Submitted / Correction.
     """
     if actor is None or not getattr(actor, "is_authenticated", False) or not actor.is_active:
         return ChecklistTask.objects.none()
@@ -50,6 +53,15 @@ def list_recordable_checklist_tasks(actor: User | None) -> QuerySet[ChecklistTas
             "checklist_template",
             "checklist_version",
             "checklist_record",
+        )
+        .prefetch_related(
+            Prefetch(
+                "checklist_record__corrections",
+                queryset=ChecklistCorrection.objects.filter(
+                    status=ChecklistCorrectionStatus.DRAFT
+                ).select_related("source_submission"),
+                to_attr="active_corrections",
+            )
         )
         .filter(
             organization_id__in=org_ids,
@@ -222,4 +234,189 @@ def load_submitted_record_context(
         "submission": submission,
         "sections": sections,
         "snapshot_responses": snapshot_responses,
+    }
+
+
+def get_checklist_correction(
+    actor: User | None, correction_id: uuid.UUID
+) -> ChecklistCorrection | None:
+    correction = (
+        ChecklistCorrection.objects.select_related(
+            "organization",
+            "started_by",
+            "source_submission",
+            "source_submission__submitted_by",
+            "resulting_submission",
+            "checklist_record",
+            "checklist_record__organization",
+            "checklist_record__checklist_task",
+            "checklist_record__checklist_task__checklist_template",
+            "checklist_record__checklist_task__checklist_version",
+        )
+        .filter(pk=correction_id)
+        .first()
+    )
+    if correction is None:
+        return None
+    if not user_has_permission(
+        actor,
+        RECORD_CHECKLIST_TASK,
+        scope=task_authorization_scope(correction.checklist_record.checklist_task),
+    ):
+        raise PermissionDenied("Permission denied.")
+    return correction
+
+
+def load_correction_editor_context(
+    actor: User | None, correction_id: uuid.UUID
+) -> dict[str, Any] | None:
+    """Correction DRAFT editor using mutable working ChecklistResponse rows."""
+    correction = get_checklist_correction(actor, correction_id)
+    if correction is None:
+        return None
+
+    record = correction.checklist_record
+    version = record.checklist_task.checklist_version
+    sections = _load_sections(version.id)
+    responses = {
+        response.checklist_item_id: response
+        for response in ChecklistResponse.objects.filter(
+            checklist_record_id=record.id
+        ).select_related("selected_option")
+    }
+    items = [item for section in sections for item in section.items.all()]
+    completeness = collect_submission_completeness(record=record, items=items, responses=responses)
+
+    source_review = (
+        SupervisorReview.objects.select_related("reviewed_by")
+        .filter(checklist_submission_id=correction.source_submission_id)
+        .first()
+    )
+    next_number = correction.source_submission.submission_number + 1
+    if correction.resulting_submission_id is not None:
+        resulting = ChecklistSubmission.objects.filter(
+            pk=correction.resulting_submission_id
+        ).first()
+        if resulting is not None:
+            next_number = resulting.submission_number
+
+    return {
+        "correction": correction,
+        "record": record,
+        "task": record.checklist_task,
+        "sections": sections,
+        "responses": responses,
+        "completeness": completeness,
+        "source_submission": correction.source_submission,
+        "source_review": source_review,
+        "next_submission_number": next_number,
+        "SupervisorReviewDecision": SupervisorReviewDecision,
+        "ChecklistCorrectionStatus": ChecklistCorrectionStatus,
+    }
+
+
+def load_record_history_context(actor: User | None, record_id: uuid.UUID) -> dict[str, Any] | None:
+    """Submission / review / correction provenance for a record."""
+    record = get_checklist_record(actor, record_id)
+    if record is None:
+        return None
+
+    submissions = list(
+        ChecklistSubmission.objects.select_related("submitted_by")
+        .filter(checklist_record_id=record.id)
+        .order_by("submission_number")
+    )
+    submission_ids = [s.id for s in submissions]
+    reviews = {
+        review.checklist_submission_id: review
+        for review in SupervisorReview.objects.select_related("reviewed_by").filter(
+            checklist_submission_id__in=submission_ids
+        )
+    }
+    corrections = {
+        c.source_submission_id: c
+        for c in ChecklistCorrection.objects.select_related(
+            "started_by", "resulting_submission"
+        ).filter(checklist_record_id=record.id)
+    }
+    history_rows = []
+    for submission in submissions:
+        history_rows.append(
+            {
+                "submission": submission,
+                "review": reviews.get(submission.id),
+                "correction": corrections.get(submission.id),
+            }
+        )
+    active_correction = (
+        ChecklistCorrection.objects.select_related("source_submission")
+        .filter(
+            checklist_record_id=record.id,
+            status=ChecklistCorrectionStatus.DRAFT,
+        )
+        .first()
+    )
+    return {
+        "record": record,
+        "task": record.checklist_task,
+        "history_rows": history_rows,
+        "active_correction": active_correction,
+        "SupervisorReviewDecision": SupervisorReviewDecision,
+        "ChecklistCorrectionStatus": ChecklistCorrectionStatus,
+    }
+
+
+def load_returned_submission_context(
+    actor: User | None, submission_id: uuid.UUID
+) -> dict[str, Any] | None:
+    """Recorder-facing returned submission context with Start/Continue Correction."""
+    submission = get_checklist_submission(actor, submission_id)
+    if submission is None:
+        return None
+    record = submission.checklist_record
+    if record.status != ChecklistRecordStatus.SUBMITTED:
+        return None
+
+    review = (
+        SupervisorReview.objects.select_related("reviewed_by")
+        .filter(checklist_submission_id=submission.id)
+        .first()
+    )
+    correction = (
+        ChecklistCorrection.objects.select_related("started_by", "resulting_submission")
+        .filter(source_submission_id=submission.id)
+        .first()
+    )
+    version = record.checklist_task.checklist_version
+    sections = _load_sections(version.id)
+    snapshot_responses = {
+        response.checklist_item_id: response
+        for response in ChecklistSubmissionResponse.objects.filter(
+            checklist_submission_id=submission.id
+        ).select_related("selected_option")
+    }
+    latest = (
+        ChecklistSubmission.objects.filter(checklist_record_id=record.id)
+        .order_by("-submission_number")
+        .first()
+    )
+    is_latest = latest is not None and latest.id == submission.id
+    can_start = (
+        is_latest
+        and review is not None
+        and review.decision == SupervisorReviewDecision.RETURNED_FOR_CORRECTION
+        and (correction is None or correction.status == ChecklistCorrectionStatus.DRAFT)
+    )
+    return {
+        "submission": submission,
+        "record": record,
+        "task": record.checklist_task,
+        "review": review,
+        "correction": correction,
+        "sections": sections,
+        "snapshot_responses": snapshot_responses,
+        "is_latest": is_latest,
+        "can_start_or_continue": can_start,
+        "SupervisorReviewDecision": SupervisorReviewDecision,
+        "ChecklistCorrectionStatus": ChecklistCorrectionStatus,
     }

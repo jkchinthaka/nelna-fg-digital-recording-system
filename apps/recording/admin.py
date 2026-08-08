@@ -6,6 +6,7 @@ from django.contrib import admin
 from django.http import HttpRequest
 
 from apps.recording.models import (
+    ChecklistCorrection,
     ChecklistRecord,
     ChecklistResponse,
     ChecklistSubmission,
@@ -218,6 +219,59 @@ class ChecklistSubmissionResponseAdmin(admin.ModelAdmin):  # type: ignore[type-a
 
     def has_delete_permission(
         self, request: HttpRequest, obj: ChecklistSubmissionResponse | None = None
+    ) -> bool:
+        return False
+
+    def get_actions(self, request: HttpRequest):  # type: ignore[no-untyped-def]
+        actions = super().get_actions(request)
+        actions.pop("delete_selected", None)
+        return actions
+
+
+@admin.register(ChecklistCorrection)
+class ChecklistCorrectionAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
+    list_display = (
+        "id",
+        "organization",
+        "checklist_record",
+        "source_submission",
+        "status",
+        "started_by",
+        "started_at",
+        "resulting_submission",
+        "completed_at",
+    )
+    list_filter = ("organization", "status")
+    search_fields = (
+        "id",
+        "checklist_record__checklist_task__batch_reference",
+        "source_submission__id",
+        "started_by__employee_code",
+    )
+    ordering = ("-started_at",)
+    readonly_fields = (
+        "id",
+        "organization",
+        "checklist_record",
+        "source_submission",
+        "status",
+        "started_by",
+        "started_at",
+        "resulting_submission",
+        "completed_at",
+        "updated_at",
+    )
+
+    def has_add_permission(self, request: HttpRequest) -> bool:
+        return False
+
+    def has_change_permission(
+        self, request: HttpRequest, obj: ChecklistCorrection | None = None
+    ) -> bool:
+        return request.method in {"GET", "HEAD", "OPTIONS"}
+
+    def has_delete_permission(
+        self, request: HttpRequest, obj: ChecklistCorrection | None = None
     ) -> bool:
         return False
 

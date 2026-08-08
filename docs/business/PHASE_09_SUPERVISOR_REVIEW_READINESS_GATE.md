@@ -2,10 +2,11 @@
 
 **Document status:** Evidence-driven entry gate — **not** production authorization
 **Created:** 2026-08-08 (Phase 09A)
+**Updated:** 2026-08-08 (Phase 09B)
 
 ## Purpose
 
-Separate **09A technical Supervisor review foundation** from **production Supervisor review readiness**.
+Separate **Phase 09 technical foundations (09A/09B)** from **production Supervisor review / correction readiness**.
 
 ## Technical foundation (09A)
 
@@ -18,32 +19,43 @@ Separate **09A technical Supervisor review foundation** from **production Superv
 | Queue / detail / confirm / result UI | Complete |
 | Audit minimization | Complete |
 
-**PHASE 09A TECHNICAL SUPERVISOR REVIEW FOUNDATION:** may be complete.
+**PHASE 09A TECHNICAL SUPERVISOR REVIEW FOUNDATION:** complete.
 
-**PHASE 09B (correction/resubmission):** not started.
+## Technical foundation (09B)
 
-**PHASE 10 (QA):** not started.
+| Item | Status |
+| --- | --- |
+| `ChecklistCorrection` in `apps.recording` | Complete |
+| Start only from latest RETURNED submission | Complete |
+| Clone working responses from source snapshot once | Complete |
+| Record remains SUBMITTED during correction | Complete |
+| Resubmit as Submission #N+1 full-state snapshot | Complete |
+| Source submission/snapshot/review immutable | Complete |
+| Recorder permission reuse; ownership locking open | Complete (policy EVIDENCE REQUIRED) |
+| Correction UI + history | Complete |
 
-## Production Supervisor review readiness
+**PHASE 09B TECHNICAL CORRECTION/RESUBMISSION FOUNDATION:** complete.
+
+**PHASE 10 (QA):** not started — see [PHASE_10_QA_REVIEW_READINESS_GATE.md](PHASE_10_QA_REVIEW_READINESS_GATE.md).
+
+## Production Supervisor review / correction readiness
 
 | Gate | Status |
 | --- | --- |
 | Actual Supervisor business category → Role mapping | CONFIGURATION / APPROVAL REQUIRED |
+| Recorder role mapping for correction | CONFIGURATION / APPROVAL REQUIRED |
+| Correction ownership (original submitter only?) | **EVIDENCE REQUIRED** — not enforced |
 | FG-QA-001 approved and published | **NOT YET** (DRAFT) |
 | Production batch integration | Not available |
 | Product / Shift / Site applicability | Open |
 | Segregation-of-duties rule | **EVIDENCE REQUIRED** (not enforced in 09A) |
 | ASM-001 temperature limits | Open |
 
-Production Supervisor review remains **BLOCKED**.
+Production Supervisor review and correction remain **BLOCKED**.
 
 ## Future boundaries
 
-### Phase 09B
-
-`RETURNED_FOR_CORRECTION` → controlled correction workspace → preserve Submission #1 →
-Submission #2 → Supervisor reviews Submission #2.
-
 ### Phase 10
 
-`SupervisorReview(APPROVED)` → QA review → future disposition (HOLD/RELEASE/REJECT only when evidenced).
+`SupervisorReview(APPROVED)` on the latest relevant immutable submission → QA review →
+future disposition (HOLD/RELEASE/REJECT only when evidenced).
