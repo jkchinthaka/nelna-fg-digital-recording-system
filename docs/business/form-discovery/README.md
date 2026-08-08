@@ -48,9 +48,12 @@ Checklist Engine v2 schema/work **must not** start from invented form structures
 3. Status **APPROVED FOR DIGITALIZATION** (written)  
 4. Then definition build under existing checklist versioning rules  
 
+Architecture for future capability extensions (repeating, calculated, conditionals, evaluation, control-point metadata, numeric hardening): [ADR-019](../../architecture/ADR-019-CHECKLIST-ENGINE-V2-ARCHITECTURE.md) and [PHASE_06G_ENGINE_V2_IMPLEMENTATION_SPLIT.md](../PHASE_06G_ENGINE_V2_IMPLEMENTATION_SPLIT.md). **06G is design only.**
+
 ## Links
 
 - [TEMPLATE_001_CHECKLIST_EVIDENCE_INTAKE.md](../TEMPLATE_001_CHECKLIST_EVIDENCE_INTAKE.md)
 - [proposals/FG_QA_001_DRAFT_V0_1.md](../proposals/FG_QA_001_DRAFT_V0_1.md)
 - [ASSUMPTION_REGISTER.md](../ASSUMPTION_REGISTER.md) (ASM-003)
 - [APPROVAL_REGISTER.md](../../governance/APPROVAL_REGISTER.md) (APR-001, APR-028, APR-036+)
+- [ADR-019 Checklist Engine v2](../../architecture/ADR-019-CHECKLIST-ENGINE-V2-ARCHITECTURE.md)

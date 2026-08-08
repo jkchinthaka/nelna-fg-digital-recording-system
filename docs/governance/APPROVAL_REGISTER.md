@@ -63,6 +63,7 @@ ID · Decision / Evidence Needed · Business Owner · Requested Date · Needed B
 | APR-035 | Close DEBT-01C-R-NOTO with Noto Sans Sinhala evidence | Design / Business / IT | — | Before operator Sinhala UAT | EVIDENCE REQUIRED | Yes | DESIGN_DEBT_REGISTER | — | — | Abhaya Libre not production-approved |
 | APR-036 | Execute real form discovery package (inventory + item classification returned by owners) | QA Manager / FG / Production | 2026-08-09 | Before Checklist Engine v2 / TEMPLATE-002 confirmation | EVIDENCE REQUIRED | Yes | [form-discovery/README.md](../business/form-discovery/README.md); APR-028; ASM-003 | — | — | Phase 06F framework only; COLLECTED ≠ APPROVED FOR DIGITALIZATION |
 | APR-037 | Approve specific collected forms for digitalization (per-form written approval) | QA Manager | — | Before authoring production ChecklistTemplate content from paper | NOT REQUESTED | Yes (content) | Form status APPROVED FOR DIGITALIZATION in evidence register | — | — | One approval per form/revision; AI research is not evidence |
+| APR-038 | Authorize Checklist Engine v2 implementation units 06H–06M (schema-shaping) against ADR-019 | Technical Lead / QA Manager | 2026-08-09 | Before each unit merge to production content path | PENDING | Conditional | [ADR-019](../architecture/ADR-019-CHECKLIST-ENGINE-V2-ARCHITECTURE.md); [06H–06M split](../business/PHASE_06G_ENGINE_V2_IMPLEMENTATION_SPLIT.md) | — | — | 06G design accepted; implementation still evidence-aware; silence ≠ go-live |
 
 ---
 

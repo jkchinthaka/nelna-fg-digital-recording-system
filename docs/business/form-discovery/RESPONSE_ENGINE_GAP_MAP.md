@@ -54,3 +54,10 @@ The project-proposed FG-QA-001 draft uses only current primitives (YES_NO, YES_N
 - No new response types  
 - No invented CCP/OPRP or limits  
 - No claim that industry research equals company need
+
+## Phase 06G follow-on
+
+Architecture for extending the **existing** versioned checklist domain (not a parallel engine):
+[ADR-019-CHECKLIST-ENGINE-V2-ARCHITECTURE.md](../../architecture/ADR-019-CHECKLIST-ENGINE-V2-ARCHITECTURE.md).
+
+Implementation units **06H–06M** are design-sequenced only; business values remain evidence-gated. AI-suggested JSON Schema / expression languages / new SPA frameworks are **rejected** for v2 (see ADR-019).

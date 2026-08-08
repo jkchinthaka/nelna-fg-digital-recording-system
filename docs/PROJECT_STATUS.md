@@ -52,7 +52,7 @@ This document records **repository evidence**. It does not invent Nelna operatio
 | `access_control` | 03 | IMPLEMENTED · no seeded business roles |
 | `security_audit` | 03–10A | IMPLEMENTED |
 | `master_data` (FG Product) | 05A/05B | IMPLEMENTED · MASTER-001 **EVIDENCE REQUIRED** |
-| `checklists` | 06A–06D (+ 06E docs + **06F form discovery**) | IMPLEMENTED · FG-QA-001 **NOT BUSINESS APPROVED**; real forms **NOT RECEIVED** |
+| `checklists` | 06A–06D (+ 06E–06G docs) | IMPLEMENTED · FG-QA-001 **NOT BUSINESS APPROVED**; Engine v2 **designed** (ADR-019); real forms **NOT RECEIVED** |
 | `scheduling` | 07A/07B | IMPLEMENTED · real batch generation **BLOCKED** |
 | `recording` | 08A/08B + 09B | IMPLEMENTED · production recording **BLOCKED** |
 | `reviews` | 09A | IMPLEMENTED · production Supervisor review **BLOCKED** |
@@ -74,6 +74,7 @@ Not started (by MODULE_MAP): `instruments`, `training`, `evidence`, `nonconforma
 | 05A/05B FG Product | Complete | MASTER-001 unresolved |
 | 06A–06E Checklist definition | Complete (06E provisional docs) | TEMPLATE / FG-QA-001 approval unresolved |
 | 06F Real form discovery framework | Docs complete (templates + registers) | Inventory **NOT RECEIVED**; no forms APPROVED FOR DIGITALIZATION |
+| 06G Checklist Engine v2 design | ADR-019 + 06H–06M split | No schema implementation; evidence still required for business values |
 | 07A/07B Scheduling foundation | Complete | Real generation blocked (batch source, applicability, roles) |
 | 08A/08B Recording/submit | Complete | Production recording blocked |
 | 09A/09B Supervisor review + correction | Complete | Production review/correction blocked |
@@ -178,14 +179,16 @@ Tracked for request/approval workflow: [governance/APPROVAL_REGISTER.md](governa
 | Change control | [governance/CHANGE_CONTROL.md](governance/CHANGE_CONTROL.md) |
 | Continuity / handover | [operations/CONTINUITY_AND_HANDOVER_PLAN.md](operations/CONTINUITY_AND_HANDOVER_PLAN.md) |
 | Real form discovery (06F) | [business/form-discovery/README.md](business/form-discovery/README.md) |
+| Checklist Engine v2 design (06G) | [architecture/ADR-019-CHECKLIST-ENGINE-V2-ARCHITECTURE.md](architecture/ADR-019-CHECKLIST-ENGINE-V2-ARCHITECTURE.md) |
 
 ---
 
 ## Recommended next engineering focus (not authorization)
 
 1. Drive owners to return paper-form inventory via [form-discovery/](business/form-discovery/) (APR-028 / APR-036) — do **not** invent forms for Checklist Engine v2.
-2. Complete Phase 10A Docker/host validation when Docker engine is healthy (**no new business features**).
-3. Drive APPROVAL_REGISTER items with named owners (especially FG-QA-001, mappings, batch source).
-4. Do **not** start Phase 11+ operational features until owners prioritize and evidence gates allow.
+2. Implement Engine v2 units **06H–06M** only when prioritized; keep business values evidence-gated (ADR-019).
+3. Complete Phase 10A Docker/host validation when Docker engine is healthy (**no new business features** required for that gate).
+4. Drive APPROVAL_REGISTER items with named owners (especially FG-QA-001, mappings, batch source).
+5. Do **not** start Phase 11+ operational features until owners prioritize and evidence gates allow.
 
 **Production readiness is not claimed by this document.**
