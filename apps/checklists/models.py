@@ -437,6 +437,14 @@ class ChecklistItem(models.Model):
             "Never auto-assigned. Not a disposition rule."
         ),
     )
+    requires_equipment_reference = models.BooleanField(
+        default=False,
+        help_text=(
+            "When True, future recording may require an equipment reference for this item. "
+            "Default False — does not force existing checklist items. "
+            "Overdue block/warn policy remains EVIDENCE REQUIRED."
+        ),
+    )
 
     class Meta:
         ordering = ("position", "code")

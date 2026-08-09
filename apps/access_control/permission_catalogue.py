@@ -117,6 +117,22 @@ PERMISSION_CATALOGUE: Final[tuple[PermissionCatalogueEntry, ...]] = (
         description="Manage FG Product master-data rows.",
     ),
     PermissionCatalogueEntry(
+        key="view_equipment",
+        permission="instruments.view_equipment",
+        bucket=CapabilityBucket.VIEW,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Inspect equipment master and calibration history (Django default view).",
+        notes="Separate from operator record permissions.",
+    ),
+    PermissionCatalogueEntry(
+        key="manage_equipment",
+        permission="instruments.manage_equipment",
+        bucket=CapabilityBucket.MASTER_DATA,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Manage equipment assets and calibration records.",
+        notes="Not implied by scheduling.record_checklisttask / operator roles.",
+    ),
+    PermissionCatalogueEntry(
         key="manage_shift",
         permission="organizations.manage_shift",
         bucket=CapabilityBucket.MASTER_DATA,

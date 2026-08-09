@@ -1283,6 +1283,7 @@ def add_checklist_item(
     rounding_mode: str = "",
     min_inclusive: bool = True,
     max_inclusive: bool = True,
+    requires_equipment_reference: bool = False,
 ) -> ChecklistItem:
     user = _require_authenticated_actor(actor)
     section = (
@@ -1363,6 +1364,7 @@ def add_checklist_item(
         rounding_mode=mode,
         min_inclusive=min_inc,
         max_inclusive=max_inc,
+        requires_equipment_reference=bool(requires_equipment_reference),
         repeat_min=r_min,
         repeat_max=r_max,
         repeat_default=r_default,
@@ -1418,6 +1420,7 @@ def update_checklist_item(
     rounding_mode: Any = _UNSET,
     min_inclusive: Any = _UNSET,
     max_inclusive: Any = _UNSET,
+    requires_equipment_reference: Any = _UNSET,
 ) -> ChecklistItem:
     user = _require_authenticated_actor(actor)
     item = _lock_item(item_id)
@@ -1544,6 +1547,8 @@ def update_checklist_item(
         item.control_point_class = assert_known_control_point_class(str(control_point_class or ""))
     if criticality is not _UNSET:
         item.criticality = assert_known_criticality(str(criticality or ""))
+    if requires_equipment_reference is not _UNSET:
+        item.requires_equipment_reference = bool(requires_equipment_reference)
 
     try:
         item.full_clean()

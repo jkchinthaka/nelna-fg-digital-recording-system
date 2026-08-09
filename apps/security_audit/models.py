@@ -69,6 +69,22 @@ class SecurityAuditEvent(models.Model):
             "FG_PRODUCT_IMPORT_FAILED",
             "FG Product import failed",
         )
+        EQUIPMENT_CREATED = "EQUIPMENT_CREATED", "Equipment created"
+        EQUIPMENT_UPDATED = "EQUIPMENT_UPDATED", "Equipment updated"
+        EQUIPMENT_ACTIVATED = "EQUIPMENT_ACTIVATED", "Equipment activated"
+        EQUIPMENT_DEACTIVATED = "EQUIPMENT_DEACTIVATED", "Equipment deactivated"
+        EQUIPMENT_STATUS_CHANGED = (
+            "EQUIPMENT_STATUS_CHANGED",
+            "Equipment operational status changed",
+        )
+        CALIBRATION_RECORD_CREATED = (
+            "CALIBRATION_RECORD_CREATED",
+            "Calibration record created",
+        )
+        CALIBRATION_CERTIFICATE_METADATA_UPDATED = (
+            "CALIBRATION_CERTIFICATE_METADATA_UPDATED",
+            "Calibration certificate metadata updated",
+        )
         CHECKLIST_TEMPLATE_CREATED = "CHECKLIST_TEMPLATE_CREATED", "Checklist template created"
         CHECKLIST_TEMPLATE_UPDATED = "CHECKLIST_TEMPLATE_UPDATED", "Checklist template updated"
         CHECKLIST_TEMPLATE_ACTIVATED = (

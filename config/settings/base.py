@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "apps.accounts",
     "apps.organizations",
     "apps.master_data",
+    "apps.instruments",
     "apps.checklists",
     "apps.scheduling",
     "apps.recording",

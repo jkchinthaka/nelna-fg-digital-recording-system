@@ -11,6 +11,7 @@ ALLOWED_APPS = {
     "accounts",
     "organizations",
     "master_data",
+    "instruments",
     "checklists",
     "scheduling",
     "recording",
