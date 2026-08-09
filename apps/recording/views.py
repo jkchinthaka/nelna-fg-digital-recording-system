@@ -289,6 +289,7 @@ def record_detail(request: HttpRequest, record_id: uuid.UUID) -> HttpResponse:
             "completeness": completeness,
             "sample_indexes_by_group": sample_indexes_by_group,
             "children_by_parent": children_by_parent,
+            "responses": responses,
             "response_field_name": response_field_name,
             "ChecklistResponseType": ChecklistResponseType,
         },

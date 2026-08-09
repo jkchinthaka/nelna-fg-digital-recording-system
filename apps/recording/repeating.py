@@ -45,9 +45,15 @@ def is_answerable_item(item: ChecklistItem) -> bool:
 
 def partition_definition_items(
     items: list[ChecklistItem],
-) -> tuple[list[ChecklistItem], list[ChecklistItem], dict[uuid.UUID, list[ChecklistItem]]]:
-    """Return (top-level SIMPLE, REPEATING_GROUP parents, children_by_parent_id)."""
+) -> tuple[
+    list[ChecklistItem],
+    list[ChecklistItem],
+    dict[uuid.UUID, list[ChecklistItem]],
+    list[ChecklistItem],
+]:
+    """Return (top SIMPLE, REPEATING_GROUP parents, children_by_parent, top CALCULATED)."""
     top_simple: list[ChecklistItem] = []
+    top_calculated: list[ChecklistItem] = []
     groups: list[ChecklistItem] = []
     children_by_parent: dict[uuid.UUID, list[ChecklistItem]] = {}
     for item in items:
@@ -59,11 +65,13 @@ def partition_definition_items(
             continue
         if item.item_kind == ChecklistItemKind.SIMPLE:
             top_simple.append(item)
+        elif item.item_kind == ChecklistItemKind.CALCULATED:
+            top_calculated.append(item)
     for parent_id, children in children_by_parent.items():
         children_by_parent[parent_id] = sorted(
             children, key=lambda row: (row.position, str(row.pk))
         )
-    return top_simple, groups, children_by_parent
+    return top_simple, groups, children_by_parent, top_calculated
 
 
 def effective_repeat_min(group: ChecklistItem, children: list[ChecklistItem]) -> int:

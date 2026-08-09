@@ -1,8 +1,8 @@
 # Phase 06G — Checklist Engine v2 Implementation Split (06H–06M)
 
-**Document status:** Sequenced implementation plan — **design authorized by ADR-019**; **06H implemented as technical foundation** (no invented AQL/sample sizes)  
-**Created:** 2026-08-09  
-**Updated:** 2026-08-10 (06H)  
+**Document status:** Sequenced implementation plan — **design authorized by ADR-019**; **06H/06I implemented as technical foundations** (no invented AQL/sample sizes or business formulas)
+**Created:** 2026-08-09
+**Updated:** 2026-08-10 (06I)
 **Rule:** Do not invent Nelna limits, sample sizes, AQL, CCP/OPRP, or role authority. Prefer APPROVED FOR DIGITALIZATION forms (06F) before enabling form-specific structures in production content.
 
 ## 06G (design)
@@ -23,17 +23,17 @@ Architecture + ADR only. No separate engine.
 
 **Out of scope (still):** nested groups, calculated, conditionals, evaluation engine.
 
-## 06I — Calculated fields
+## 06I — Calculated fields — IMPLEMENTED (technical)
 
 **Objective:** `CALCULATED` items with closed operators `SUM|AVERAGE|MIN|MAX|COUNT|RANGE`.
 
 | Deliverable | Notes |
 | --- | --- |
-| Operator + operand refs | Same-version only; cycle detection |
-| Server compute | On save/submit; no `eval()` |
-| Snapshot | Persist computed Decimal (and inputs identity) immutably |
+| Operator + operand refs | Same-version only; cycle detection; sibling/top-level scope |
+| Server compute | On save/submit; no `eval()`; client values ignored |
+| Snapshot | Persist computed Decimal + `calculation_context` immutably |
 
-**Out of scope:** free-form formulas, client-authoritative math.
+**Out of scope:** free-form formulas, client-authoritative math, seeded business formulas.
 
 **Exit:** Deterministic tests for each operator; injection attempts denied.
 
@@ -107,8 +107,8 @@ Architecture + ADR only. No separate engine.
 
 ## Explicit non-goals until evidence
 
-- JSON Schema definition SoR  
-- New SPA framework  
-- MongoDB production cutover  
-- Seeding real CCP/limits/sample sizes  
+- JSON Schema definition SoR
+- New SPA framework
+- MongoDB production cutover
+- Seeding real CCP/limits/sample sizes
 - Manual paper-form module as a second engine (paper remains discovery input via 06F)

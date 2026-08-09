@@ -76,6 +76,7 @@ Not started (by MODULE_MAP): `instruments`, `training`, `evidence`, `nonconforma
 | 06F Real form discovery framework | Docs complete (templates + registers) | Inventory **NOT RECEIVED**; no forms APPROVED FOR DIGITALIZATION |
 | 06G Checklist Engine v2 design | ADR-019 + 06H–06M split | Design complete; evidence still required for business values |
 | 06H Repeating / sample foundation | Schema + recording/snapshot/correction/Supervisor/QA render | Technical foundation complete; **no invented sample counts**; not BUSINESS APPROVED / not UAT |
+| 06I Calculated fields | Closed operators + Decimal + frozen snapshot context | Technical foundation; **no business formulas seeded**; not BUSINESS APPROVED |
 | 07A/07B Scheduling foundation | Complete | Real generation blocked (batch source, applicability, roles) |
 | 08A/08B Recording/submit | Complete | Production recording blocked |
 | 09A/09B Supervisor review + correction | Complete | Production review/correction blocked |
@@ -187,7 +188,7 @@ Tracked for request/approval workflow: [governance/APPROVAL_REGISTER.md](governa
 ## Recommended next engineering focus (not authorization)
 
 1. Drive owners to return paper-form inventory via [form-discovery/](business/form-discovery/) (APR-028 / APR-036) — do **not** invent forms for Checklist Engine v2.
-2. Implement Engine v2 units **06I–06M** only when prioritized; keep business values evidence-gated (ADR-019). **06H** technical foundation is on `main`.
+2. Implement Engine v2 units **06J–06M** only when prioritized; keep business values evidence-gated (ADR-019). **06H/06I** technical foundations are on `main`.
 3. Complete Phase 10A Docker/host validation when Docker engine is healthy (**no new business features** required for that gate).
 4. Drive APPROVAL_REGISTER items with named owners (especially FG-QA-001, mappings, batch source).
 5. Do **not** start Phase 11+ operational features until owners prioritize and evidence gates allow.

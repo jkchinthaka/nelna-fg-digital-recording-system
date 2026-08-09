@@ -342,7 +342,7 @@ def collect_submission_completeness(
             )
         )
 
-    top_simple, groups, children_by_parent = partition_definition_items(items)
+    top_simple, groups, children_by_parent, top_calculated = partition_definition_items(items)
     missing_required: list[ChecklistItem] = []
     answered_count = 0
     required_slots = 0
@@ -360,17 +360,31 @@ def collect_submission_completeness(
             else:
                 missing_required.append(item)
 
+    for item in top_calculated:
+        response = responses.get((item.id, 1))
+        valid = response is not None and response.number_value is not None
+        if valid:
+            answered_count += 1
+        if item.is_required:
+            required_slots += 1
+            if valid:
+                answered_required_slots += 1
+            else:
+                missing_required.append(item)
+
     for group in groups:
         children = children_by_parent.get(group.id, [])
-        n = active_sample_count(children=children, responses=responses)
-        min_required = effective_repeat_min(group, children)
+        simple_children = [c for c in children if c.item_kind == ChecklistItemKind.SIMPLE]
+        calculated_children = [c for c in children if c.item_kind == ChecklistItemKind.CALCULATED]
+        n = active_sample_count(children=simple_children or children, responses=responses)
+        min_required = effective_repeat_min(group, simple_children or children)
         target_n = max(n, min_required)
         if n < min_required:
-            for child in children:
+            for child in simple_children:
                 if child.is_required and child not in missing_required:
                     missing_required.append(child)
         for sample_index in range(1, target_n + 1):
-            for child in children:
+            for child in simple_children:
                 response = responses.get((child.id, sample_index))
                 valid = response is not None and _response_is_structurally_valid(child, response)
                 if valid and sample_index <= n:
@@ -382,8 +396,24 @@ def collect_submission_completeness(
                     elif sample_index <= max(n, min_required):
                         if child not in missing_required:
                             missing_required.append(child)
+            for child in calculated_children:
+                response = responses.get((child.id, sample_index))
+                valid = response is not None and response.number_value is not None
+                if valid and sample_index <= n:
+                    answered_count += 1
+                if child.is_required and sample_index <= target_n:
+                    required_slots += 1
+                    if valid and sample_index <= n:
+                        answered_required_slots += 1
+                    elif sample_index <= max(n, min_required):
+                        if child not in missing_required:
+                            missing_required.append(child)
 
-    answerable = [item for item in items if item.item_kind == ChecklistItemKind.SIMPLE]
+    answerable = [
+        item
+        for item in items
+        if item.item_kind in {ChecklistItemKind.SIMPLE, ChecklistItemKind.CALCULATED}
+    ]
     return {
         "total_items": len(answerable),
         "required_items": required_slots,
@@ -403,7 +433,7 @@ def validate_record_ready_for_submission(
 ) -> dict[str, Any]:
     """Raise ValidationError if required completeness is not met."""
     stats = collect_submission_completeness(record=record, items=items, responses=responses)
-    _, groups, children_by_parent = partition_definition_items(stats["items"])
+    _, groups, children_by_parent, _ = partition_definition_items(stats["items"])
     validate_repeating_submit_shape(
         groups=groups,
         children_by_parent=children_by_parent,
@@ -465,20 +495,39 @@ def save_checklist_draft_responses(
         assert_record_editable_for_actor(record)
 
         version_id = task.checklist_version_id
-        items = {
-            item.id: item
-            for item in ChecklistItem.objects.select_related("section", "parent_item").filter(
-                section__version_id=version_id
-            )
-        }
+        item_rows = list(
+            ChecklistItem.objects.select_related("section", "parent_item")
+            .prefetch_related("calculation_operand_links__source_item__section")
+            .filter(section__version_id=version_id)
+        )
+        items = {item.id: item for item in item_rows}
         existing = responses_by_key(
             list(
                 ChecklistResponse.objects.select_for_update().filter(checklist_record_id=record.id)
             )
         )
 
-        changed = 0
+        # Server is authoritative for CALCULATED — ignore client-supplied values.
         errors: dict[str, list[str]] = {}
+        filtered: dict[tuple[uuid.UUID, int], Any] = {}
+        for key, raw in normalized.items():
+            item = items.get(key[0])
+            if item is None:
+                errors.setdefault(str(key[0]), []).append(
+                    "Item is not part of this checklist definition."
+                )
+                continue
+            if item.item_kind == ChecklistItemKind.CALCULATED:
+                continue
+            if item.item_kind != ChecklistItemKind.SIMPLE:
+                errors.setdefault(str(key[0]), []).append(
+                    "Only SIMPLE items accept operator answers."
+                )
+                continue
+            filtered[key] = raw
+        normalized = filtered
+
+        changed = 0
 
         for (item_id, sample_index), raw in normalized.items():
             item = items.get(item_id)
@@ -510,6 +559,7 @@ def save_checklist_draft_responses(
                 sample_index=sample_index,
             )
             response.sample_index = sample_index
+            response.calculation_context = None
             try:
                 _apply_typed_value(response=response, item=item, raw=raw)
                 response.full_clean()
@@ -526,6 +576,15 @@ def save_checklist_draft_responses(
 
         if errors:
             raise ValidationError(errors)
+
+        from apps.recording.calculation_runtime import apply_calculations_to_draft
+
+        existing = apply_calculations_to_draft(
+            record_id=record.id,
+            items=item_rows,
+            responses=existing,
+        )
+        changed += sum(1 for item in item_rows if item.item_kind == ChecklistItemKind.CALCULATED)
 
         record.save(update_fields=["updated_at"])
         record_event(
@@ -602,7 +661,33 @@ def submit_checklist_record(
                 )
 
             _assert_record_is_draft(record)
-            stats = validate_record_ready_for_submission(record=record)
+            version_id = task.checklist_version_id
+            item_rows = list(
+                ChecklistItem.objects.select_related("section", "parent_item")
+                .prefetch_related(
+                    "options",
+                    "calculation_operand_links__source_item__section",
+                )
+                .filter(section__version_id=version_id)
+                .order_by("section__position", "position")
+            )
+            draft_responses = responses_by_key(
+                list(
+                    ChecklistResponse.objects.select_for_update(of=("self",))
+                    .filter(checklist_record_id=record.id)
+                    .select_related("selected_option")
+                )
+            )
+            from apps.recording.calculation_runtime import apply_calculations_to_draft
+
+            draft_responses = apply_calculations_to_draft(
+                record_id=record.id,
+                items=item_rows,
+                responses=draft_responses,
+            )
+            stats = validate_record_ready_for_submission(
+                record=record, items=item_rows, responses=draft_responses
+            )
             responses: dict[ResponseKey, ChecklistResponse] = stats["responses"]
 
             submission = ChecklistSubmission(
@@ -619,19 +704,36 @@ def submit_checklist_record(
                 responses.items(), key=lambda pair: (str(pair[0][0]), pair[0][1])
             ):
                 item = items_by_id.get(item_id)
-                if item is None or item.item_kind != ChecklistItemKind.SIMPLE:
+                if item is None:
                     continue
-                if not _response_is_structurally_valid(item, response):
+                if item.item_kind == ChecklistItemKind.SIMPLE:
+                    if not _response_is_structurally_valid(item, response):
+                        continue
+                    snapshot = ChecklistSubmissionResponse(
+                        checklist_submission=submission,
+                        checklist_item=item,
+                        sample_index=sample_index,
+                        choice_value=response.choice_value,
+                        number_value=response.number_value,
+                        text_value=response.text_value,
+                        selected_option_id=response.selected_option_id,
+                        calculation_context=None,
+                    )
+                elif item.item_kind == ChecklistItemKind.CALCULATED:
+                    if response.number_value is None:
+                        continue
+                    snapshot = ChecklistSubmissionResponse(
+                        checklist_submission=submission,
+                        checklist_item=item,
+                        sample_index=sample_index,
+                        choice_value="",
+                        number_value=response.number_value,
+                        text_value="",
+                        selected_option_id=None,
+                        calculation_context=response.calculation_context,
+                    )
+                else:
                     continue
-                snapshot = ChecklistSubmissionResponse(
-                    checklist_submission=submission,
-                    checklist_item=item,
-                    sample_index=sample_index,
-                    choice_value=response.choice_value,
-                    number_value=response.number_value,
-                    text_value=response.text_value,
-                    selected_option_id=response.selected_option_id,
-                )
                 snapshot.full_clean()
                 snapshot_rows.append(snapshot)
             ChecklistSubmissionResponse.objects.bulk_create(snapshot_rows)

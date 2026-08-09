@@ -38,7 +38,9 @@ class ChecklistDraftForm(forms.Form):
         self.items = items
         self.sample_indexes_by_group = sample_indexes_by_group or {}
         initial_responses = initial_responses or {}
-        top_simple, groups, children_by_parent = partition_definition_items(items)
+        top_simple, groups, children_by_parent, self.top_calculated = partition_definition_items(
+            items
+        )
         self.top_simple = top_simple
         self.groups = groups
         self.children_by_parent = children_by_parent

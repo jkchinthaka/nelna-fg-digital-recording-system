@@ -15,7 +15,8 @@ Settings module for tests: `config.settings.test` (`DJANGO_SETTINGS_MODULE` / `t
 
 Phase 03 adds identity, authentication, lockout, organization hierarchy, scoped RBAC, and security-audit tests. See [PHASE_03_TEST_PLAN.md](PHASE_03_TEST_PLAN.md).
 
-Phase **06H** repeating/sample foundation tests: [PHASE_06H_TEST_PLAN.md](PHASE_06H_TEST_PLAN.md) (`apps/recording/tests/test_phase06h_repeating_samples.py`). Does not invent AQL or company sample counts.
+Phase **06H** repeating/sample foundation tests: [PHASE_06H_TEST_PLAN.md](PHASE_06H_TEST_PLAN.md).
+Phase **06I** calculated fields: [PHASE_06I_TEST_PLAN.md](PHASE_06I_TEST_PLAN.md). No `eval`; no invented business formulas.
 
 ## Running tests on the host
 

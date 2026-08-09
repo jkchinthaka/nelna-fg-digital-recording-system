@@ -145,6 +145,12 @@ class ChecklistResponse(models.Model):
         blank=True,
         related_name="draft_responses",
     )
+    calculation_context = models.JSONField(
+        null=True,
+        blank=True,
+        default=None,
+        help_text="Server-authored explanation for CALCULATED drafts (operator + inputs).",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -304,6 +310,15 @@ class ChecklistSubmissionResponse(models.Model):
         null=True,
         blank=True,
         related_name="submission_responses",
+    )
+    calculation_context = models.JSONField(
+        null=True,
+        blank=True,
+        default=None,
+        help_text=(
+            "Frozen CALCULATED explanation at submit time. Historical truth — "
+            "do not recompute with future definition rules."
+        ),
     )
     created_at = models.DateTimeField(auto_now_add=True)
 

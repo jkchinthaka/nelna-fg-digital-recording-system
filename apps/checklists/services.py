@@ -13,8 +13,10 @@ from django.utils import timezone
 
 from apps.access_control.services import Scope, require_permission
 from apps.accounts.models import User
+from apps.checklists.calculation import assert_known_operator, validate_calculation_definition
 from apps.checklists.constants import REPEAT_SAMPLE_TECHNICAL_CEILING
 from apps.checklists.models import (
+    ChecklistCalculationOperand,
     ChecklistItem,
     ChecklistItemKind,
     ChecklistItemOption,
@@ -223,6 +225,7 @@ def _normalize_item_kind_fields(
     repeat_min: Any,
     repeat_max: Any,
     repeat_default: Any,
+    calculation_operator: str = "",
 ) -> tuple[
     str,
     ChecklistItem | None,
@@ -233,21 +236,29 @@ def _normalize_item_kind_fields(
     int | None,
     int | None,
     int | None,
+    str,
 ]:
     kind = (item_kind or ChecklistItemKind.SIMPLE).strip()
     if kind not in ChecklistItemKind.values:
         raise ValidationError({"item_kind": "Unknown item kind."})
-    if kind == ChecklistItemKind.CALCULATED:
-        raise ValidationError({"item_kind": "CALCULATED items are not enabled until Phase 06I."})
 
     r_min = _parse_optional_positive_int(repeat_min, field="repeat_min")
     r_max = _parse_optional_positive_int(repeat_max, field="repeat_max")
     r_default = _parse_optional_positive_int(repeat_default, field="repeat_default")
+    operator = (calculation_operator or "").strip().upper()
 
     if kind == ChecklistItemKind.REPEATING_GROUP:
         if parent_item is not None:
             raise ValidationError(
                 {"parent_item": "A REPEATING_GROUP cannot be nested under another item."}
+            )
+        if operator:
+            raise ValidationError(
+                {
+                    "calculation_operator": (
+                        "REPEATING_GROUP items cannot have a calculation operator."
+                    )
+                }
             )
         for field_name, value in (
             ("repeat_min", r_min),
@@ -263,11 +274,38 @@ def _normalize_item_kind_fields(
                         )
                     }
                 )
-        return kind, None, "", "", None, None, r_min, r_max, r_default
+        return kind, None, "", "", None, None, r_min, r_max, r_default, ""
 
     if any(value is not None for value in (r_min, r_max, r_default)):
         raise ValidationError(
             {"repeat_min": "Repeat configuration is only allowed on REPEATING_GROUP items."}
+        )
+
+    if kind == ChecklistItemKind.CALCULATED:
+        if operator:
+            operator = assert_known_operator(operator)
+        if parent_item is not None and parent_item.item_kind != ChecklistItemKind.REPEATING_GROUP:
+            raise ValidationError({"parent_item": "Parent item must be a REPEATING_GROUP."})
+        # Reject formula-like payloads early (security).
+        if any(token in operator for token in ("(", ")", ";", "=", "import", "eval")):
+            raise ValidationError({"calculation_operator": "Malformed calculation operator."})
+        unit_text = (unit or "").strip()
+        return (
+            kind,
+            parent_item,
+            ChecklistResponseType.NUMBER,
+            unit_text,
+            None,
+            None,
+            None,
+            None,
+            None,
+            operator,
+        )
+
+    if operator:
+        raise ValidationError(
+            {"calculation_operator": "calculation_operator is only allowed on CALCULATED items."}
         )
     resp_type, unit_text, min_value, max_value = _normalize_response_fields(
         response_type=response_type,
@@ -275,7 +313,71 @@ def _normalize_item_kind_fields(
         minimum_value=minimum_value,
         maximum_value=maximum_value,
     )
-    return kind, parent_item, resp_type, unit_text, min_value, max_value, None, None, None
+    return kind, parent_item, resp_type, unit_text, min_value, max_value, None, None, None, ""
+
+
+@transaction.atomic
+def set_checklist_calculation_operands(
+    *,
+    actor: User | None,
+    item_id: uuid.UUID,
+    source_item_ids: list[uuid.UUID],
+) -> ChecklistItem:
+    """Replace ordered operands for a CALCULATED draft item (same version only)."""
+    user = _require_authenticated_actor(actor)
+    item = _lock_item(item_id)
+    require_permission(
+        user, MANAGE_CHECKLIST, scope=version_authorization_scope(item.section.version)
+    )
+    _require_draft(item.section.version)
+    if item.item_kind != ChecklistItemKind.CALCULATED:
+        raise ValidationError({"item": "Only CALCULATED items accept calculation operands."})
+
+    version_id = item.section.version_id
+    version_items = {
+        row.id: row
+        for row in ChecklistItem.objects.select_related("section", "parent_item")
+        .prefetch_related("calculation_operand_links")
+        .filter(section__version_id=version_id)
+    }
+    operands: list[ChecklistItem] = []
+    for source_id in source_item_ids:
+        source = version_items.get(source_id)
+        if source is None:
+            raise ValidationError(
+                {"calculation_operands": f"Operand {source_id} is not in this checklist version."}
+            )
+        operands.append(source)
+
+    # Temporarily apply intended links on a copy-like validation using in-memory links.
+    ChecklistCalculationOperand.objects.filter(calculated_item_id=item.id).delete()
+    for position, source in enumerate(operands, start=1):
+        ChecklistCalculationOperand.objects.create(
+            calculated_item=item,
+            source_item=source,
+            position=position,
+        )
+    item = (
+        ChecklistItem.objects.select_related("section", "parent_item")
+        .prefetch_related("calculation_operand_links__source_item__section")
+        .get(pk=item.id)
+    )
+    version_items[item.id] = item
+    validate_calculation_definition(
+        calculated=item,
+        operands=ordered_operands_for_item(item),
+        items_by_id=version_items,
+    )
+    return item
+
+
+def ordered_operands_for_item(item: ChecklistItem) -> list[ChecklistItem]:
+    return [
+        link.source_item
+        for link in item.calculation_operand_links.select_related(
+            "source_item", "source_item__section"
+        ).order_by("position", "pk")
+    ]
 
 
 def _swap_positions(
@@ -527,7 +629,9 @@ def _lock_item(item_id: uuid.UUID) -> ChecklistItem:
 
 
 def _clone_structure(*, source: ChecklistVersion, target: ChecklistVersion) -> None:
-    for section in source.sections.prefetch_related("items__options").order_by("position", "pk"):
+    for section in source.sections.prefetch_related(
+        "items__options", "items__calculation_operand_links"
+    ).order_by("position", "pk"):
         new_section = ChecklistSection.objects.create(
             version=target,
             title=section.title,
@@ -554,6 +658,7 @@ def _clone_structure(*, source: ChecklistVersion, target: ChecklistVersion) -> N
                 repeat_min=item.repeat_min,
                 repeat_max=item.repeat_max,
                 repeat_default=item.repeat_default,
+                calculation_operator=item.calculation_operator,
             )
             item_map[item.id] = new_item
             for option in item.options.order_by("position", "pk"):
@@ -575,6 +680,22 @@ def _clone_structure(*, source: ChecklistVersion, target: ChecklistVersion) -> N
                 )
             child.parent_item = parent
             child.save(update_fields=["parent_item"])
+        # Pass 3: remap calculation operands.
+        for item in ordered_items:
+            if item.item_kind != ChecklistItemKind.CALCULATED:
+                continue
+            new_calc = item_map[item.id]
+            for link in item.calculation_operand_links.order_by("position", "pk"):
+                source_mapped = item_map.get(link.source_item_id)
+                if source_mapped is None:
+                    raise ValidationError(
+                        {"version": (f"Unable to clone calculation operand for item {item.code}.")}
+                    )
+                ChecklistCalculationOperand.objects.create(
+                    calculated_item=new_calc,
+                    source_item=source_mapped,
+                    position=link.position,
+                )
 
 
 @transaction.atomic
@@ -796,6 +917,8 @@ def add_checklist_item(
     repeat_min: Any = None,
     repeat_max: Any = None,
     repeat_default: Any = None,
+    calculation_operator: str = "",
+    calculation_operand_ids: list[uuid.UUID] | None = None,
 ) -> ChecklistItem:
     user = _require_authenticated_actor(actor)
     section = (
@@ -835,6 +958,7 @@ def add_checklist_item(
         r_min,
         r_max,
         r_default,
+        operator,
     ) = _normalize_item_kind_fields(
         item_kind=item_kind,
         parent_item=parent_item,
@@ -845,7 +969,11 @@ def add_checklist_item(
         repeat_min=repeat_min,
         repeat_max=repeat_max,
         repeat_default=repeat_default,
+        calculation_operator=calculation_operator,
     )
+    required_flag = bool(is_required)
+    if kind == ChecklistItemKind.REPEATING_GROUP:
+        required_flag = False
     item = ChecklistItem(
         section=section,
         parent_item=parent_item,
@@ -854,7 +982,7 @@ def add_checklist_item(
         label=normalized_label,
         help_text=(help_text or "").strip(),
         position=_next_item_position(section, parent_item=parent_item),
-        is_required=is_required if kind == ChecklistItemKind.SIMPLE else False,
+        is_required=required_flag,
         response_type=resp_type,
         unit=unit_text,
         minimum_value=min_value,
@@ -862,6 +990,7 @@ def add_checklist_item(
         repeat_min=r_min,
         repeat_max=r_max,
         repeat_default=r_default,
+        calculation_operator=operator,
     )
     try:
         item.full_clean()
@@ -875,6 +1004,13 @@ def add_checklist_item(
                 {"code": "An item with this code already exists in the section."}
             ) from exc
         raise ValidationError({"item": "Unable to add checklist item."}) from exc
+
+    if kind == ChecklistItemKind.CALCULATED and calculation_operand_ids is not None:
+        return set_checklist_calculation_operands(
+            actor=actor,
+            item_id=item.id,
+            source_item_ids=list(calculation_operand_ids),
+        )
     return item
 
 
@@ -896,6 +1032,8 @@ def update_checklist_item(
     repeat_min: Any = _UNSET,
     repeat_max: Any = _UNSET,
     repeat_default: Any = _UNSET,
+    calculation_operator: Any = _UNSET,
+    calculation_operand_ids: Any = _UNSET,
 ) -> ChecklistItem:
     user = _require_authenticated_actor(actor)
     item = _lock_item(item_id)
@@ -939,6 +1077,11 @@ def update_checklist_item(
     next_r_min = item.repeat_min if repeat_min is _UNSET else repeat_min
     next_r_max = item.repeat_max if repeat_max is _UNSET else repeat_max
     next_r_default = item.repeat_default if repeat_default is _UNSET else repeat_default
+    next_operator = (
+        item.calculation_operator
+        if calculation_operator is _UNSET
+        else str(calculation_operator or "")
+    )
 
     (
         kind,
@@ -950,6 +1093,7 @@ def update_checklist_item(
         r_min,
         r_max,
         r_default,
+        operator,
     ) = _normalize_item_kind_fields(
         item_kind=next_kind,
         parent_item=next_parent,
@@ -960,6 +1104,7 @@ def update_checklist_item(
         repeat_min=next_r_min,
         repeat_max=next_r_max,
         repeat_default=next_r_default,
+        calculation_operator=next_operator,
     )
     item.item_kind = kind
     item.parent_item = parent_item
@@ -970,8 +1115,14 @@ def update_checklist_item(
     item.repeat_min = r_min
     item.repeat_max = r_max
     item.repeat_default = r_default
+    item.calculation_operator = operator
     if kind == ChecklistItemKind.REPEATING_GROUP:
         item.is_required = False
+        item.calculation_operator = ""
+        ChecklistCalculationOperand.objects.filter(calculated_item_id=item.id).delete()
+    elif kind == ChecklistItemKind.SIMPLE:
+        item.calculation_operator = ""
+        ChecklistCalculationOperand.objects.filter(calculated_item_id=item.id).delete()
     try:
         item.full_clean()
         item.save()
@@ -984,6 +1135,17 @@ def update_checklist_item(
                 {"code": "An item with this code already exists in the section."}
             ) from exc
         raise ValidationError({"item": "Unable to update checklist item."}) from exc
+
+    if calculation_operand_ids is not _UNSET:
+        if kind != ChecklistItemKind.CALCULATED:
+            raise ValidationError(
+                {"calculation_operands": "Operands are only allowed on CALCULATED items."}
+            )
+        return set_checklist_calculation_operands(
+            actor=actor,
+            item_id=item.id,
+            source_item_ids=list(calculation_operand_ids or []),
+        )
     return item
 
 
@@ -1197,9 +1359,12 @@ def _validate_publish_structure(version: ChecklistVersion) -> None:
     remain EVIDENCE REQUIRED and are not enforced here.
     """
     sections = list(
-        version.sections.prefetch_related("items__options", "items__child_items").order_by(
-            "position"
-        )
+        version.sections.prefetch_related(
+            "items__options",
+            "items__child_items",
+            "items__calculation_operand_links__source_item__section",
+            "items__calculation_operand_links__source_item__parent_item",
+        ).order_by("position")
     )
     if not sections:
         raise ValidationError({"version": "A checklist version must have at least one section."})
@@ -1207,16 +1372,18 @@ def _validate_publish_structure(version: ChecklistVersion) -> None:
         raise ValidationError(
             {"version": "A checklist version must have at least one item before publishing."}
         )
+
+    all_items: list[ChecklistItem] = []
+    for section in sections:
+        all_items.extend(list(section.items.all()))
+    items_by_id = {item.id: item for item in all_items}
+
     for section in sections:
         if not section.title.strip():
             raise ValidationError({"version": "All sections must have a title."})
         for item in section.items.all():
             if not item.code.strip() or not item.label.strip():
                 raise ValidationError({"version": "All items must have a code and label."})
-            if item.item_kind == ChecklistItemKind.CALCULATED:
-                raise ValidationError(
-                    {"version": f"Item {item.code}: CALCULATED is not enabled until Phase 06I."}
-                )
             if item.item_kind == ChecklistItemKind.REPEATING_GROUP:
                 if item.parent_item_id is not None:
                     raise ValidationError(
@@ -1232,15 +1399,28 @@ def _validate_publish_structure(version: ChecklistVersion) -> None:
                         {
                             "version": (
                                 f"Repeating group {item.code} must have at least one "
-                                "SIMPLE child item before publishing."
+                                "SIMPLE or CALCULATED child item before publishing."
                             )
                         }
                     )
-                if any(child.item_kind != ChecklistItemKind.SIMPLE for child in children):
+                if any(
+                    child.item_kind not in {ChecklistItemKind.SIMPLE, ChecklistItemKind.CALCULATED}
+                    for child in children
+                ):
                     raise ValidationError(
                         {
                             "version": (
-                                f"Repeating group {item.code} may only contain SIMPLE children."
+                                f"Repeating group {item.code} may only contain SIMPLE or "
+                                "CALCULATED children."
+                            )
+                        }
+                    )
+                if not any(child.item_kind == ChecklistItemKind.SIMPLE for child in children):
+                    raise ValidationError(
+                        {
+                            "version": (
+                                f"Repeating group {item.code} must include at least one "
+                                "SIMPLE child (operands need numeric inputs)."
                             )
                         }
                     )
@@ -1285,6 +1465,28 @@ def _validate_publish_structure(version: ChecklistVersion) -> None:
                     raise ValidationError(
                         {"version": f"Item {item.code} parent must be in the same section."}
                     )
+
+            if item.item_kind == ChecklistItemKind.CALCULATED:
+                try:
+                    validate_calculation_definition(
+                        calculated=item,
+                        operands=ordered_operands_for_item(item),
+                        items_by_id=items_by_id,
+                    )
+                except ValidationError as exc:
+                    detail = "; ".join(
+                        str(m)
+                        for msgs in getattr(exc, "message_dict", {"error": exc.messages}).values()
+                        for m in (msgs if isinstance(msgs, list) else [msgs])
+                    )
+                    raise ValidationError(
+                        {"version": f"Item {item.code} has invalid calculation: {detail}"}
+                    ) from exc
+                if item.options.exists():
+                    raise ValidationError(
+                        {"version": f"CALCULATED item {item.code} must not have SELECT options."}
+                    )
+                continue
 
             errors = validate_item_response_definition(
                 response_type=item.response_type,

@@ -214,7 +214,7 @@ def load_record_editor_context(
         )
     )
     items = [item for section in sections for item in section.items.all()]
-    _, groups, children_by_parent = partition_definition_items(items)
+    _, groups, children_by_parent, _ = partition_definition_items(items)
     sample_indexes_by_group: dict[uuid.UUID, list[int]] = {}
     for group in groups:
         requested = None
@@ -329,7 +329,7 @@ def load_correction_editor_context(
         )
     )
     items = [item for section in sections for item in section.items.all()]
-    _, groups, children_by_parent = partition_definition_items(items)
+    _, groups, children_by_parent, _ = partition_definition_items(items)
     sample_indexes_by_group: dict[uuid.UUID, list[int]] = {}
     for group in groups:
         requested = None

@@ -27,8 +27,9 @@
 | QA | One `QAReview` per eligible submission; RELEASE/HOLD/REJECT labels only | Works |
 | Audit | Append-oriented events; answer text omitted from audit payloads | Works |
 | Repeating / sample rows (06H) | `item_kind` SIMPLE/REPEATING_GROUP; optional `repeat_min/max/default`; child SIMPLE items | Works (technical foundation; no invented AQL) |
+| Calculated fields (06I) | Closed operators SUM/AVERAGE/MIN/MAX/COUNT/RANGE; Decimal-safe; frozen `calculation_context` | Works (technical; no business formulas seeded) |
 
-**Not present today:** calculated fields (06I), conditional visibility/requiredness (06J), DATE/TIME response type, equipment references, structured CCP/OPRP metadata (06L), item-level PASS/FAIL evaluation engine (06K), precision/rounding modes / inclusive-exclusive bounds hardening (06M).
+**Not present today:** conditional visibility/requiredness (06J), DATE/TIME response type, equipment references, structured CCP/OPRP metadata (06L), item-level PASS/FAIL evaluation engine (06K), precision/rounding modes / inclusive-exclusive bounds hardening (06M).
 
 ### Evidence
 

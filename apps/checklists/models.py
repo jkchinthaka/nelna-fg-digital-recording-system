@@ -32,14 +32,25 @@ class ChecklistResponseType(models.TextChoices):
 
 class ChecklistItemKind(models.TextChoices):
     """
-    Engine v2 item structure (ADR-019 / Phase 06H).
+    Engine v2 item structure (ADR-019 / Phases 06H–06I).
 
-    CALCULATED is reserved for 06I — rejected by services until implemented.
+    CALCULATED uses closed whitelist operators only (no eval / expression language).
     """
 
     SIMPLE = "SIMPLE", "Simple"
     REPEATING_GROUP = "REPEATING_GROUP", "Repeating group"
     CALCULATED = "CALCULATED", "Calculated"
+
+
+class ChecklistCalculationOperator(models.TextChoices):
+    """Closed calculation operators — ADR-019 Phase 06I. Not free-form formulas."""
+
+    SUM = "SUM", "Sum"
+    AVERAGE = "AVERAGE", "Average"
+    MIN = "MIN", "Minimum"
+    MAX = "MAX", "Maximum"
+    COUNT = "COUNT", "Count"
+    RANGE = "RANGE", "Range (max − min)"
 
 
 class ChecklistTemplate(models.Model):
@@ -203,6 +214,7 @@ class ChecklistItem(models.Model):
     Response primitives are technical definition schema only.
     Numerical Product limits and release automation remain evidence-gated.
     Phase 06H adds optional repeating-group structure (ADR-019).
+    Phase 06I adds CALCULATED items with closed operators (no eval).
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -274,6 +286,13 @@ class ChecklistItem(models.Model):
         blank=True,
         help_text="Optional default sample row count when defined — not invented.",
     )
+    calculation_operator = models.CharField(
+        max_length=16,
+        choices=ChecklistCalculationOperator.choices,
+        blank=True,
+        default="",
+        help_text="Closed operator for CALCULATED items only (SUM/AVERAGE/MIN/MAX/COUNT/RANGE).",
+    )
 
     class Meta:
         ordering = ("position", "code")
@@ -309,6 +328,10 @@ class ChecklistItem(models.Model):
     def is_simple(self) -> bool:
         return self.item_kind == ChecklistItemKind.SIMPLE
 
+    @property
+    def is_calculated(self) -> bool:
+        return self.item_kind == ChecklistItemKind.CALCULATED
+
     def clean(self) -> None:
         from apps.checklists.constants import REPEAT_SAMPLE_TECHNICAL_CEILING
 
@@ -321,10 +344,6 @@ class ChecklistItem(models.Model):
         kind = (self.item_kind or "").strip() or ChecklistItemKind.SIMPLE
         if kind not in ChecklistItemKind.values:
             raise ValidationError({"item_kind": "Unknown item kind."})
-        if kind == ChecklistItemKind.CALCULATED:
-            raise ValidationError(
-                {"item_kind": "CALCULATED items are not enabled until Phase 06I."}
-            )
 
         if self.parent_item_id is not None:
             parent = self.parent_item
@@ -338,12 +357,12 @@ class ChecklistItem(models.Model):
                 raise ValidationError({"parent_item": "Parent item must be a REPEATING_GROUP."})
             if parent.parent_item_id is not None:
                 raise ValidationError({"parent_item": "Nested repeating groups are not supported."})
-            if kind != ChecklistItemKind.SIMPLE:
+            if kind not in {ChecklistItemKind.SIMPLE, ChecklistItemKind.CALCULATED}:
                 raise ValidationError(
                     {
                         "item_kind": (
-                            "Only SIMPLE child items are supported under a "
-                            "REPEATING_GROUP in Phase 06H."
+                            "Only SIMPLE or CALCULATED children are supported under a "
+                            "REPEATING_GROUP."
                         )
                     }
                 )
@@ -360,6 +379,14 @@ class ChecklistItem(models.Model):
             if self.unit or self.minimum_value is not None or self.maximum_value is not None:
                 raise ValidationError(
                     {"response_type": "REPEATING_GROUP items cannot have numeric limits or unit."}
+                )
+            if (self.calculation_operator or "").strip():
+                raise ValidationError(
+                    {
+                        "calculation_operator": (
+                            "REPEATING_GROUP items cannot have a calculation operator."
+                        )
+                    }
                 )
             for field_name in ("repeat_min", "repeat_max", "repeat_default"):
                 value = getattr(self, field_name)
@@ -391,12 +418,40 @@ class ChecklistItem(models.Model):
                     )
             return
 
-        # SIMPLE (and future leaf kinds)
         if any(
             value is not None for value in (self.repeat_min, self.repeat_max, self.repeat_default)
         ):
             raise ValidationError(
                 {"repeat_min": "Repeat configuration is only allowed on REPEATING_GROUP items."}
+            )
+
+        if kind == ChecklistItemKind.CALCULATED:
+            operator = (self.calculation_operator or "").strip().upper()
+            if operator and operator not in ChecklistCalculationOperator.values:
+                raise ValidationError({"calculation_operator": "Unknown calculation operator."})
+            # Storage type is always NUMBER for calculated results.
+            if (self.response_type or "").strip() not in ("", ChecklistResponseType.NUMBER):
+                raise ValidationError(
+                    {"response_type": "CALCULATED items must use NUMBER storage (or blank)."}
+                )
+            if self.minimum_value is not None or self.maximum_value is not None:
+                raise ValidationError(
+                    {
+                        "minimum_value": (
+                            "CALCULATED items do not use min/max definition bounds in 06I."
+                        )
+                    }
+                )
+            return
+
+        # SIMPLE leaf
+        if (self.calculation_operator or "").strip():
+            raise ValidationError(
+                {
+                    "calculation_operator": (
+                        "calculation_operator is only allowed on CALCULATED items."
+                    )
+                }
             )
         errors = validate_item_response_definition(
             response_type=self.response_type,
@@ -407,6 +462,61 @@ class ChecklistItem(models.Model):
         )
         if errors:
             raise ValidationError(errors)
+
+
+class ChecklistCalculationOperand(models.Model):
+    """
+    Ordered operand reference for a CALCULATED ChecklistItem.
+
+    Same-version only. No arbitrary object / cross-org references.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    calculated_item = models.ForeignKey(
+        ChecklistItem,
+        on_delete=models.CASCADE,
+        related_name="calculation_operand_links",
+    )
+    source_item = models.ForeignKey(
+        ChecklistItem,
+        on_delete=models.CASCADE,
+        related_name="used_as_calculation_operand_for",
+    )
+    position = models.PositiveIntegerField(validators=[MinValueValidator(1)])
+
+    class Meta:
+        ordering = ("position", "pk")
+        verbose_name = "Checklist calculation operand"
+        verbose_name_plural = "Checklist calculation operands"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["calculated_item", "position"],
+                name="chk_calc_operand_pos_uniq",
+            ),
+            models.UniqueConstraint(
+                fields=["calculated_item", "source_item"],
+                name="chk_calc_operand_source_uniq",
+            ),
+        ]
+        indexes = [
+            models.Index(
+                fields=["calculated_item", "position"],
+                name="chk_calc_operand_item_pos_idx",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"Operand {self.position} → {self.source_item_id}"
+
+    def clean(self) -> None:
+        super().clean()
+        if self.calculated_item_id and self.source_item_id:
+            if self.calculated_item_id == self.source_item_id:
+                raise ValidationError({"source_item": "Cannot reference self as operand."})
+            if self.calculated_item.section.version_id != self.source_item.section.version_id:
+                raise ValidationError(
+                    {"source_item": "Operand must be in the same checklist version."}
+                )
 
 
 class ChecklistItemOption(models.Model):

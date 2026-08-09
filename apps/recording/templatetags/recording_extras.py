@@ -44,3 +44,18 @@ def dict_get(mapping: Any, key: Any) -> Any:
         return mapping.get(key)
     except AttributeError:
         return None
+
+
+@register.simple_tag
+def calculated_preview(responses: Any, item: Any, sample_index: int = 1) -> str:
+    """Read-only preview of a server-computed CALCULATED draft value."""
+    if responses is None or item is None:
+        return "—"
+    try:
+        row = responses.get((item.id, int(sample_index)))
+    except AttributeError:
+        return "—"
+    if row is None or getattr(row, "number_value", None) is None:
+        return "—"
+    unit = f" {item.unit}" if getattr(item, "unit", "") else ""
+    return f"{row.number_value}{unit}"

@@ -17,6 +17,15 @@ from apps.recording.repeating import (
 def display_snapshot_value(item: Any, response: Any) -> str:
     if response is None:
         return "—"
+    if item.item_kind == ChecklistItemKind.CALCULATED:
+        if response.number_value is None:
+            return "—"
+        unit = f" {item.unit}" if item.unit else ""
+        operator = ""
+        context = getattr(response, "calculation_context", None) or {}
+        if isinstance(context, dict) and context.get("operator"):
+            operator = f" [{context['operator']}]"
+        return f"{response.number_value}{unit}{operator}"
     if item.response_type in {
         ChecklistResponseType.YES_NO,
         ChecklistResponseType.YES_NO_NA,
@@ -60,7 +69,7 @@ def render_snapshot_sections(
     rendered: list[dict[str, Any]] = []
     for section in sections:
         items = list(section.items.all())
-        top_simple, groups, children_by_parent = partition_definition_items(items)
+        top_simple, groups, children_by_parent, _ = partition_definition_items(items)
         items_out: list[dict[str, Any]] = []
 
         # Preserve section position order: walk items, skip children (rendered under group).
@@ -100,13 +109,17 @@ def render_snapshot_sections(
                 continue
 
             snap = keyed.get((item.id, 1))
+            kind = "calculated" if item.item_kind == ChecklistItemKind.CALCULATED else "simple"
             items_out.append(
                 {
-                    "kind": "simple",
+                    "kind": kind,
                     "item": item,
                     "sample_index": 1,
                     "display_value": display_snapshot_value(item, snap),
                     "answered": snap is not None,
+                    "calculation_context": getattr(snap, "calculation_context", None)
+                    if snap is not None
+                    else None,
                 }
             )
 

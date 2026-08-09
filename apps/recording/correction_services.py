@@ -11,7 +11,7 @@ from django.utils import timezone
 
 from apps.access_control.services import require_permission
 from apps.accounts.models import User
-from apps.checklists.models import ChecklistItemKind
+from apps.checklists.models import ChecklistItem, ChecklistItemKind
 from apps.recording.models import (
     ChecklistCorrection,
     ChecklistCorrectionStatus,
@@ -21,6 +21,7 @@ from apps.recording.models import (
     ChecklistSubmission,
     ChecklistSubmissionResponse,
 )
+from apps.recording.repeating import responses_by_key
 from apps.recording.services import (
     _assert_task_recordable,
     _record_metadata,
@@ -208,6 +209,7 @@ def _clone_working_responses_from_snapshot(
                 number_value=snap.number_value,
                 text_value=snap.text_value,
                 selected_option_id=snap.selected_option_id,
+                calculation_context=snap.calculation_context,
             )
         )
     if working_rows:
@@ -439,7 +441,33 @@ def resubmit_checklist_correction(
                 record=record, source_submission=correction.source_submission
             )
 
-            stats = validate_record_ready_for_submission(record=record)
+            version_id = task.checklist_version_id
+            item_rows = list(
+                ChecklistItem.objects.select_related("section", "parent_item")
+                .prefetch_related(
+                    "options",
+                    "calculation_operand_links__source_item__section",
+                )
+                .filter(section__version_id=version_id)
+                .order_by("section__position", "position")
+            )
+            existing = responses_by_key(
+                list(
+                    ChecklistResponse.objects.select_for_update(of=("self",))
+                    .filter(checklist_record_id=record.id)
+                    .select_related("selected_option")
+                )
+            )
+            from apps.recording.calculation_runtime import apply_calculations_to_draft
+
+            existing = apply_calculations_to_draft(
+                record_id=record.id,
+                items=item_rows,
+                responses=existing,
+            )
+            stats = validate_record_ready_for_submission(
+                record=record, items=item_rows, responses=existing
+            )
             responses = stats["responses"]
 
             max_number = (
@@ -466,19 +494,34 @@ def resubmit_checklist_correction(
                 item = items_by_id.get(item_id)
                 if item is None:
                     continue
-                if item.item_kind != ChecklistItemKind.SIMPLE:
+                if item.item_kind == ChecklistItemKind.SIMPLE:
+                    if not _response_is_structurally_valid(item, response):
+                        continue
+                    snapshot = ChecklistSubmissionResponse(
+                        checklist_submission=submission,
+                        checklist_item=item,
+                        sample_index=sample_index,
+                        choice_value=response.choice_value,
+                        number_value=response.number_value,
+                        text_value=response.text_value,
+                        selected_option_id=response.selected_option_id,
+                        calculation_context=None,
+                    )
+                elif item.item_kind == ChecklistItemKind.CALCULATED:
+                    if response.number_value is None:
+                        continue
+                    snapshot = ChecklistSubmissionResponse(
+                        checklist_submission=submission,
+                        checklist_item=item,
+                        sample_index=sample_index,
+                        choice_value="",
+                        number_value=response.number_value,
+                        text_value="",
+                        selected_option_id=None,
+                        calculation_context=response.calculation_context,
+                    )
+                else:
                     continue
-                if not _response_is_structurally_valid(item, response):
-                    continue
-                snapshot = ChecklistSubmissionResponse(
-                    checklist_submission=submission,
-                    checklist_item=item,
-                    sample_index=sample_index,
-                    choice_value=response.choice_value,
-                    number_value=response.number_value,
-                    text_value=response.text_value,
-                    selected_option_id=response.selected_option_id,
-                )
                 snapshot.full_clean()
                 snapshot_rows.append(snapshot)
             ChecklistSubmissionResponse.objects.bulk_create(snapshot_rows)
