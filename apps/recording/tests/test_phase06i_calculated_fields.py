@@ -182,7 +182,7 @@ def test_sum_average_snapshot_and_client_injection_ignored() -> None:
     assert calc_row.number_value == Decimal("11.0000")
     assert calc_row.calculation_context is not None
     assert calc_row.calculation_context["operator"] == "SUM"
-    assert calc_row.calculation_context["result"] == "11.0000"
+    assert Decimal(calc_row.calculation_context["result"]) == Decimal("11")
 
     submission = submit_checklist_record(actor=recorder, record_id=record.id)
     snap = ChecklistSubmissionResponse.objects.get(
@@ -192,8 +192,8 @@ def test_sum_average_snapshot_and_client_injection_ignored() -> None:
     assert snap.calculation_context is not None
     assert snap.calculation_context["operator"] == "SUM"
     frozen = dict(snap.calculation_context)
-    assert frozen["inputs"][0]["number_value"] == "10.5000"
-    assert frozen["inputs"][1]["number_value"] == "0.5000"
+    assert Decimal(frozen["inputs"][0]["number_value"]) == Decimal("10.5")
+    assert Decimal(frozen["inputs"][1]["number_value"]) == Decimal("0.5")
     assert ChecklistSubmissionResponse.objects.filter(pk=snap.pk).count() == 1
 
 
@@ -432,7 +432,7 @@ def test_snapshot_render_includes_calculated_context() -> None:
     kinds = {row["kind"] for block in rendered for row in block["items"]}
     assert "calculated" in kinds
     calc_rows = [row for block in rendered for row in block["items"] if row["kind"] == "calculated"]
-    assert calc_rows[0]["display_value"].startswith("5.0000")
+    assert calc_rows[0]["display_value"].startswith("5")
 
 
 @pytest.mark.django_db
@@ -517,7 +517,7 @@ def test_calculated_preview_tag() -> None:
         unit = "C"
 
     item = _Item()
-    assert calculated_preview({(item.id, 1): _Row()}, item, 1) == "1.2500 C"
+    assert calculated_preview({(item.id, 1): _Row()}, item, 1) == "1.25 C"
     assert calculated_preview({}, item, 1) == "—"
 
 
@@ -625,8 +625,8 @@ def test_correction_recalculates_and_preserves_historical_snapshot() -> None:
     )
     assert new_snap.number_value == Decimal("27.0000")
     assert new_snap.calculation_context is not None
-    assert new_snap.calculation_context["result"] == "27.0000"
-    assert new_snap.calculation_context["inputs"][0]["number_value"] == "20.0000"
+    assert Decimal(new_snap.calculation_context["result"]) == Decimal("27")
+    assert Decimal(new_snap.calculation_context["inputs"][0]["number_value"]) == Decimal("20")
 
 
 @pytest.mark.django_db

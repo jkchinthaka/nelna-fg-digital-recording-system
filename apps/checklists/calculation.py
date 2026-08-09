@@ -214,5 +214,5 @@ def build_calculation_context(
     return {
         "operator": assert_known_operator(operator),
         "inputs": inputs,
-        "result": str(result) if result is not None else None,
+        "result": format(result, "f") if result is not None else None,
     }

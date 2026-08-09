@@ -84,7 +84,7 @@ def compute_calculated_value(
                 "item_id": str(operand.id),
                 "code": operand.code,
                 "sample_index": sample_index,
-                "number_value": str(number) if number is not None else None,
+                "number_value": format(number, "f") if number is not None else None,
             }
         )
         if number is not None:
