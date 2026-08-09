@@ -15,6 +15,8 @@
 ## Capability separation (non-negotiable technical)
 
 - `manage_*` does **not** imply `record_checklisttask`
+- `assign_checklisttask` does **not** grant view/manage/record (ownership only; Phase 07G)
+- `manage_checklisttask` does **not** imply `assign_checklisttask`
 - `record_checklisttask` does **not** imply Supervisor or QA review
 - `review_checklistsubmission` does **not** imply QA or record
 - `qa_review_checklistsubmission` does **not** imply Supervisor or record
@@ -28,6 +30,7 @@
 | view_checklisttemplate | `checklists.view_checklisttemplate` | view | Organization / system-wide | TECHNICALLY SUPPORTED | APPROVAL REQUIRED |
 | view_checklistsubmission | `reviews.view_supervisorreview` | view | Organization / Site / Department | TECHNICALLY SUPPORTED | APPROVAL REQUIRED |
 | manage_checklisttask | `scheduling.manage_checklisttask` | manage | Organization / Site / Department | TECHNICALLY SUPPORTED | APPROVAL REQUIRED |
+| assign_checklisttask | `scheduling.assign_checklisttask` | manage | Organization / Site / Department | TECHNICALLY SUPPORTED | APPROVAL REQUIRED |
 | manage_checklist | `checklists.manage_checklist` | checklist_publish | Organization / system-wide | TECHNICALLY SUPPORTED | APPROVAL REQUIRED |
 | manage_fgproduct | `master_data.manage_fgproduct` | master_data | Organization / Site | TECHNICALLY SUPPORTED | APPROVAL REQUIRED |
 | manage_shift | `organizations.manage_shift` | master_data | Organization / Site | TECHNICALLY SUPPORTED | APPROVAL REQUIRED |

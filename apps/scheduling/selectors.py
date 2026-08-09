@@ -26,6 +26,7 @@ from apps.scheduling.models import (
     ChecklistTaskStatus,
 )
 from apps.scheduling.services import (
+    ASSIGN_CHECKLIST_TASK,
     MANAGE_CHECKLIST_TASK,
     RECORD_CHECKLIST_TASK,
     VIEW_CHECKLIST_TASK,
@@ -33,6 +34,7 @@ from apps.scheduling.services import (
 )
 
 StatusFilter = Literal["all", "PENDING", "CANCELLED"]
+AssignmentQueue = Literal["my", "unassigned", "assigned", "all"]
 
 
 def actor_can_view_checklist_tasks(actor: User | None) -> bool:
@@ -52,6 +54,12 @@ def actor_can_manage_task(actor: User | None, task: ChecklistTask) -> bool:
     if actor is None or not getattr(actor, "is_authenticated", False) or not actor.is_active:
         return False
     return user_has_permission(actor, MANAGE_CHECKLIST_TASK, scope=task_authorization_scope(task))
+
+
+def actor_can_assign_task(actor: User | None, task: ChecklistTask) -> bool:
+    if actor is None or not getattr(actor, "is_authenticated", False) or not actor.is_active:
+        return False
+    return user_has_permission(actor, ASSIGN_CHECKLIST_TASK, scope=task_authorization_scope(task))
 
 
 def actor_can_record_task(actor: User | None, task: ChecklistTask) -> bool:
@@ -139,6 +147,7 @@ def list_checklist_tasks(
     template: ChecklistTemplate | None = None,
     status: StatusFilter = "all",
     batch_reference: str | None = None,
+    assignment_queue: AssignmentQueue = "all",
 ) -> QuerySet[ChecklistTask]:
     if actor is None or not getattr(actor, "is_authenticated", False) or not actor.is_active:
         return ChecklistTask.objects.none()
@@ -150,6 +159,11 @@ def list_checklist_tasks(
         "organization",
         "checklist_template",
         "checklist_version",
+        "assigned_user",
+        "assigned_role",
+        "assigned_department",
+        "assigned_shift",
+        "assigned_by",
     ).filter(organization_id__in=allowed)
 
     if organization is not None:
@@ -168,7 +182,56 @@ def list_checklist_tasks(
         term = batch_reference.strip()
         if term:
             qs = qs.filter(batch_reference__icontains=term)
+
+    # Queues are scoped by VIEW RBAC first — assignment never expands visibility.
+    if assignment_queue == "my":
+        # USER ownership only. Role/shift/dept/team membership resolution is DECISION REQUIRED.
+        qs = qs.filter(assignee_kind="USER", assigned_user_id=actor.id)
+    elif assignment_queue == "unassigned":
+        qs = qs.filter(assignee_kind="")
+    elif assignment_queue == "assigned":
+        qs = qs.exclude(assignee_kind="")
+
     return qs.order_by("-created_at")
+
+
+def list_my_checklist_tasks(
+    actor: User | None,
+    *,
+    organization: Organization | None = None,
+) -> QuerySet[ChecklistTask]:
+    """My Tasks queue — USER assignee match within VIEW scope."""
+    return list_checklist_tasks(
+        actor,
+        organization=organization,
+        assignment_queue="my",
+    )
+
+
+def list_unassigned_checklist_tasks(
+    actor: User | None,
+    *,
+    organization: Organization | None = None,
+) -> QuerySet[ChecklistTask]:
+    """Unassigned Tasks queue within VIEW scope."""
+    return list_checklist_tasks(
+        actor,
+        organization=organization,
+        assignment_queue="unassigned",
+    )
+
+
+def list_assigned_checklist_tasks(
+    actor: User | None,
+    *,
+    organization: Organization | None = None,
+) -> QuerySet[ChecklistTask]:
+    """Assigned Tasks queue (any assignee kind) within VIEW scope."""
+    return list_checklist_tasks(
+        actor,
+        organization=organization,
+        assignment_queue="assigned",
+    )
 
 
 def list_pending_checklist_tasks(

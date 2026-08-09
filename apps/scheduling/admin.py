@@ -9,6 +9,7 @@ from apps.scheduling.models import (
     ChecklistApplicabilityRule,
     ChecklistSchedule,
     ChecklistTask,
+    ChecklistTaskAssignmentEvent,
     ExternalBatchEvent,
     ExternalBatchMapping,
 )
@@ -21,8 +22,9 @@ class ChecklistTaskAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
         "trigger_type",
         "batch_reference",
         "checklist_template",
-        "checklist_version",
         "organization",
+        "assignee_kind",
+        "assigned_user",
         "status",
         "due_at",
         "created_at",
@@ -55,6 +57,15 @@ class ChecklistTaskAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
         "window_start_at",
         "window_end_at",
         "due_at",
+        "assignee_kind",
+        "assigned_user",
+        "assigned_role",
+        "assigned_department",
+        "assigned_shift",
+        "assigned_team_code",
+        "assigned_by",
+        "assigned_at",
+        "assignment_reason",
         "created_at",
         "updated_at",
     )
@@ -242,3 +253,54 @@ class ExternalBatchEventAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
         actions = super().get_actions(request)
         actions.pop("delete_selected", None)
         return actions
+
+
+@admin.register(ChecklistTaskAssignmentEvent)
+class ChecklistTaskAssignmentEventAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
+    list_display = (
+        "checklist_task",
+        "action",
+        "assignee_kind",
+        "assigned_user",
+        "assigned_by",
+        "assigned_at",
+        "created_at",
+    )
+    list_filter = ("action", "assignee_kind")
+    search_fields = ("checklist_task__batch_reference", "reason", "assigned_team_code")
+    readonly_fields = (
+        "id",
+        "checklist_task",
+        "action",
+        "assignee_kind",
+        "assigned_user",
+        "assigned_role",
+        "assigned_department",
+        "assigned_shift",
+        "assigned_team_code",
+        "previous_assignee_kind",
+        "previous_assigned_user",
+        "previous_assigned_role",
+        "previous_assigned_department",
+        "previous_assigned_shift",
+        "previous_assigned_team_code",
+        "assigned_by",
+        "assigned_at",
+        "reason",
+        "created_at",
+    )
+    ordering = ("-created_at",)
+
+    def has_add_permission(self, request: HttpRequest) -> bool:
+        return False
+
+    def has_change_permission(
+        self, request: HttpRequest, obj: ChecklistTaskAssignmentEvent | None = None
+    ) -> bool:
+        return False
+
+    def has_delete_permission(
+        self, request: HttpRequest, obj: ChecklistTaskAssignmentEvent | None = None
+    ) -> bool:
+        return False
+

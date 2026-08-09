@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import uuid
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q
 
+from apps.access_control.models import Role
 from apps.checklists.models import ChecklistTemplate, ChecklistVersion, ChecklistVersionStatus
 from apps.master_data.models import FGProduct
 from apps.organizations.models import Department, Organization, Shift, Site
@@ -65,6 +67,29 @@ class ApplicabilityMatchOutcome(models.TextChoices):
     ONE_MATCH = "ONE_MATCH", "One match"
     MULTIPLE_MATCHES = "MULTIPLE_MATCHES", "Multiple matches (conflict)"
     INVALID_INACTIVE_REFERENCE = "INVALID_INACTIVE_REFERENCE", "Invalid or inactive reference"
+
+
+
+class ChecklistTaskAssigneeKind(models.TextChoices):
+    """Ownership target kinds (Phase 07G).
+
+    Assignment is ownership metadata only — it never grants RBAC permission.
+    TEAM uses an opaque code until a Team master is evidenced (EVIDENCE REQUIRED).
+    """
+
+    USER = "USER", "Individual user"
+    ROLE = "ROLE", "Role"
+    TEAM = "TEAM", "Team (opaque code; master EVIDENCE REQUIRED)"
+    SHIFT = "SHIFT", "Shift"
+    DEPARTMENT = "DEPARTMENT", "Department"
+
+
+class ChecklistTaskAssignmentAction(models.TextChoices):
+    """Append-only assignment history actions."""
+
+    ASSIGN = "ASSIGN", "Assign"
+    REASSIGN = "REASSIGN", "Reassign"
+    UNASSIGN = "UNASSIGN", "Unassign"
 
 
 class ChecklistTask(models.Model):
@@ -136,6 +161,60 @@ class ChecklistTask(models.Model):
         choices=ChecklistTaskStatus.choices,
         default=ChecklistTaskStatus.PENDING,
     )
+    # Phase 07G — current ownership snapshot (history is append-only).
+    assignee_kind = models.CharField(
+        max_length=16,
+        blank=True,
+        default="",
+        help_text=(
+            "Empty = unassigned. USER/ROLE/SHIFT/DEPARTMENT/TEAM ownership metadata "
+            "only — never grants RBAC."
+        ),
+    )
+    assigned_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="assigned_checklist_tasks",
+    )
+    assigned_role = models.ForeignKey(
+        Role,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="assigned_checklist_tasks",
+    )
+    assigned_department = models.ForeignKey(
+        Department,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="assigned_checklist_tasks",
+    )
+    assigned_shift = models.ForeignKey(
+        Shift,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="assigned_checklist_tasks_ownership",
+        help_text="Ownership assignee Shift (distinct from generation trigger shift when both set).",
+    )
+    assigned_team_code = models.CharField(
+        max_length=64,
+        blank=True,
+        default="",
+        help_text="Opaque team label only — Team master is EVIDENCE REQUIRED / not modeled.",
+    )
+    assigned_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="checklist_task_assignments_made",
+    )
+    assigned_at = models.DateTimeField(null=True, blank=True)
+    assignment_reason = models.CharField(max_length=255, blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -148,6 +227,10 @@ class ChecklistTask(models.Model):
             (
                 "record_checklisttask",
                 "Can record checklist task responses (Phase 08 capability foundation)",
+            ),
+            (
+                "assign_checklisttask",
+                "Can assign / reassign / unassign checklist tasks (ownership only)",
             ),
         ]
         constraints = [
@@ -185,6 +268,14 @@ class ChecklistTask(models.Model):
             models.Index(
                 fields=["due_at", "status"],
                 name="sched_task_due_status_idx",
+            ),
+            models.Index(
+                fields=["organization", "assignee_kind"],
+                name="sched_task_org_assignee_idx",
+            ),
+            models.Index(
+                fields=["assigned_user", "status"],
+                name="sched_task_assignee_user_idx",
             ),
         ]
 
@@ -871,3 +962,124 @@ class ExternalBatchEvent(models.Model):
             )
         if errors:
             raise ValidationError(errors)
+
+
+class ChecklistTaskAssignmentEvent(models.Model):
+    """
+    Immutable assignment history for a ChecklistTask (Phase 07G).
+
+    Never updated or deleted. Current ownership lives on ChecklistTask;
+    this table preserves every assign / reassign / unassign.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    checklist_task = models.ForeignKey(
+        ChecklistTask,
+        on_delete=models.PROTECT,
+        related_name="assignment_events",
+    )
+    action = models.CharField(max_length=16, choices=ChecklistTaskAssignmentAction.choices)
+    assignee_kind = models.CharField(
+        max_length=16,
+        blank=True,
+        default="",
+        help_text="Post-change kind; blank when UNASSIGN.",
+    )
+    assigned_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="checklist_task_assignment_events_as_assignee",
+    )
+    assigned_role = models.ForeignKey(
+        Role,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="checklist_task_assignment_events",
+    )
+    assigned_department = models.ForeignKey(
+        Department,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="checklist_task_assignment_events",
+    )
+    assigned_shift = models.ForeignKey(
+        Shift,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="checklist_task_assignment_events",
+    )
+    assigned_team_code = models.CharField(max_length=64, blank=True, default="")
+    previous_assignee_kind = models.CharField(max_length=16, blank=True, default="")
+    previous_assigned_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="checklist_task_assignment_events_as_previous",
+    )
+    previous_assigned_role = models.ForeignKey(
+        Role,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="checklist_task_assignment_events_previous_role",
+    )
+    previous_assigned_department = models.ForeignKey(
+        Department,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="checklist_task_assignment_events_previous_dept",
+    )
+    previous_assigned_shift = models.ForeignKey(
+        Shift,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="checklist_task_assignment_events_previous_shift",
+    )
+    previous_assigned_team_code = models.CharField(max_length=64, blank=True, default="")
+    assigned_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="checklist_task_assignment_events_acted",
+    )
+    assigned_at = models.DateTimeField()
+    reason = models.CharField(max_length=255, blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("created_at", "id")
+        verbose_name = "Checklist task assignment event"
+        verbose_name_plural = "Checklist task assignment events"
+        indexes = [
+            models.Index(
+                fields=["checklist_task", "assigned_at"],
+                name="sched_assign_evt_task_at_idx",
+            ),
+            models.Index(
+                fields=["action", "assigned_at"],
+                name="sched_assign_evt_action_idx",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.checklist_task_id}:{self.action}:{self.assigned_at.isoformat()}"
+
+    def save(self, *args, **kwargs):  # type: ignore[no-untyped-def]
+        if not self._state.adding:
+            raise ValidationError(
+                "ChecklistTaskAssignmentEvent rows are immutable — never overwrite history."
+            )
+        return super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):  # type: ignore[no-untyped-def]
+        raise ValidationError(
+            "ChecklistTaskAssignmentEvent rows are immutable — never delete history."
+        )
+

@@ -33,6 +33,7 @@ Inactive roles, inactive assignments, future `valid_from`, and expired `valid_un
 | Rule | Technical meaning |
 | --- | --- |
 | manage ≠ record | `scheduling.manage_checklisttask` does not grant `scheduling.record_checklisttask` |
+| assign ≠ permission | `scheduling.assign_checklisttask` never grants view/manage/record (Phase 07G) |
 | record ≠ Supervisor review | `scheduling.record_checklisttask` does not grant `reviews.review_checklistsubmission` |
 | Supervisor review ≠ QA review | `reviews.review_checklistsubmission` does not grant `quality.qa_review_checklistsubmission` |
 | Django superuser ≠ business QA | `is_superuser` bypasses checks technically; it is **not** approved QA disposition authority |
@@ -49,6 +50,7 @@ Submit and correction currently use the same technical permission as record (`sc
 | View shift | `organizations.view_shift` | Yes | Yes | Yes | Yes | TECHNICALLY SUPPORTED |
 | View Supervisor review object | `reviews.view_supervisorreview` | Yes | Yes | Yes | Yes | TECHNICALLY SUPPORTED |
 | Manage checklist task | `scheduling.manage_checklisttask` | Yes | Yes | Yes | Yes | TECHNICALLY SUPPORTED |
+| Assign / reassign / unassign task ownership | `scheduling.assign_checklisttask` | Yes | Yes | Yes | Yes | TECHNICALLY SUPPORTED |
 | Manage / publish checklist definition | `checklists.manage_checklist` | Yes | — | — | Yes | TECHNICALLY SUPPORTED |
 | Manage FG product (master data) | `master_data.manage_fgproduct` | Yes | — | — | Yes | TECHNICALLY SUPPORTED |
 | Manage shift | `organizations.manage_shift` | Yes | Yes | Yes | Yes | TECHNICALLY SUPPORTED |

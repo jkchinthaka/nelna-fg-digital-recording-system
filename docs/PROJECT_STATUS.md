@@ -55,7 +55,7 @@ This document records **repository evidence**. It does not invent Nelna operatio
 | `instruments` | 05D | IMPLEMENTED foundation · unseeded equipment + calibration; intervals/overdue policy **EVIDENCE REQUIRED** |
 | `training` | 05E | IMPLEMENTED foundation · unseeded competency records; gate OFF by default; matrix/WARN-BLOCK **EVIDENCE REQUIRED** (APR-042) |
 | `checklists` | 06A–06O + **07D** | IMPLEMENTED · FG-QA-001 **NOT BUSINESS APPROVED**; Phase **06N BLOCKED**; optional `SPECIFICATION_PARAMETER` evaluation pin (06O); Engine v2 **designed** (ADR-019); real forms **NOT RECEIVED**; optional `requires_equipment_reference` (05D); **07D** effective-version selection |
-| `scheduling` | 07A/07B/07C | IMPLEMENTED · real batch generation **BLOCKED**; 07D effective-version helper |
+| scheduling | 07A–07G | IMPLEMENTED · assignment ownership + schedules + batch-event adapter; live generation **BLOCKED** (APR-011/012) |
 | `recording` | 08A/08B + 09B | IMPLEMENTED · production recording **BLOCKED** |
 | `reviews` | 09A | IMPLEMENTED · production Supervisor review **BLOCKED** |
 | `quality` | 10A | IMPLEMENTED · production QA **BLOCKED**; no ERP/warehouse/dispatch side effects |
@@ -96,6 +96,7 @@ Not started (by MODULE_MAP): `evidence`, `nonconformance`, `capa`, `loading`, `d
 | 07D Effective version policy | Technical complete — PUBLISHED-only selection; overlap/NO_ELIGIBLE blocked; audited effectivity | APR-015 as-of event still DECISION REQUIRED; historical pins never auto-upgrade |
 | 07E Recurring tasks | Technical complete — BATCH/SHIFT_*/SCHEDULED/MANUAL; idempotent occurrence keys; Celery Beat catch-up; OVERDUE/MISSED without auto-NCR | Frequencies EVIDENCE REQUIRED; production generation still BLOCKED |
 | 07F Batch event → task | Adapter boundary complete — mapping / applicability / effective version / idempotent task; no live connector | **APR-011 LIVE CONTRACT REQUIRED**; production generation still BLOCKED |
+| 07G Task assignment | Technical complete — USER/ROLE/DEPT/SHIFT/TEAM ownership; append-only history; My/Unassigned/Assigned queues; assign ≠ RBAC | Future auto-assign policies EVIDENCE REQUIRED |
 | 08A/08B Recording/submit | Complete | Production recording blocked |
 | 09A/09B Supervisor review + correction | Complete | Production review/correction blocked |
 | 10A QA disposition | Complete (manual RELEASE/HOLD/REJECT only) | Production QA blocked; post-QA workflows not started |
@@ -278,3 +279,10 @@ Technical effective-version selection is implemented: optional inclusive `effect
 **STATUS: PHASE 07F LIVE BATCH CONTRACT REQUIRED**
 
 Adapter/service boundary implemented: external identity (`source_system`, `source_event_id`, `external_batch_id`), configured mappings, applicability ONE_MATCH, Phase 07D effective-version selection, idempotent `ChecklistTask` creation with safe retry and concurrency controls. No live Bileeta/ERP connector, webhooks, or credentials. APR-011 remains **EVIDENCE REQUIRED**.
+
+## Phase 07G delivery status
+
+**STATUS: PHASE 07G TASK ASSIGNMENT COMPLETE**
+
+Checklist task ownership workflow is implemented: assign / reassign / unassign with append-only history, VIEW-scoped My/Unassigned/Assigned queues, and `assign_checklisttask` permission. Assignment never grants RBAC. Team master remains EVIDENCE REQUIRED (opaque team code only).
+

@@ -99,7 +99,18 @@ PERMISSION_CATALOGUE: Final[tuple[PermissionCatalogueEntry, ...]] = (
         bucket=CapabilityBucket.MANAGE,
         scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE, ObjectScope.DEPARTMENT),
         description="Create/cancel administrative checklist tasks.",
-        notes="Does not imply record_checklisttask.",
+        notes="Does not imply record_checklisttask or assign_checklisttask.",
+    ),
+    PermissionCatalogueEntry(
+        key="assign_checklisttask",
+        permission="scheduling.assign_checklisttask",
+        bucket=CapabilityBucket.MANAGE,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE, ObjectScope.DEPARTMENT),
+        description="Assign / reassign / unassign checklist task ownership.",
+        notes=(
+            "Ownership only — assignment never grants view/manage/record permission. "
+            "Assignee must still hold valid scoped RBAC independently."
+        ),
     ),
     PermissionCatalogueEntry(
         key="view_checklistapplicability",

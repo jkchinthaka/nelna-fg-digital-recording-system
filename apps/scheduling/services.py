@@ -28,6 +28,7 @@ from apps.security_audit.services import record_event
 VIEW_CHECKLIST_TASK = "scheduling.view_checklisttask"
 MANAGE_CHECKLIST_TASK = "scheduling.manage_checklisttask"
 RECORD_CHECKLIST_TASK = "scheduling.record_checklisttask"
+ASSIGN_CHECKLIST_TASK = "scheduling.assign_checklisttask"
 
 
 def _require_authenticated_actor(actor: User | None) -> User:
@@ -320,4 +321,7 @@ from apps.scheduling.applicability import (  # noqa: E402
     resolve_checklist_applicability,
     update_checklist_applicability_rule,
 )
+
+# Phase 07G assignment API lives in apps.scheduling.assignment (not re-exported here)
+# to avoid circular import with ASSIGN_CHECKLIST_TASK / task_authorization_scope.
 
