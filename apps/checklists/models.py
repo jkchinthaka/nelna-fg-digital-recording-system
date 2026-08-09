@@ -81,6 +81,30 @@ class ChecklistConditionComparator(models.TextChoices):
     IS_NOT_EMPTY = "IS_NOT_EMPTY", "Is not empty"
 
 
+class ChecklistEvaluationResult(models.TextChoices):
+    """
+    Item-level measurement/checklist evaluation (Phase 06K / ADR-019).
+
+    HARD INVARIANT — these are NOT QA dispositions:
+    PASS ≠ RELEASE, FAIL ≠ HOLD, FAIL ≠ REJECT.
+    Evaluation never creates or modifies QAReview.
+    """
+
+    PASS = "PASS", "Pass (evaluation only — not QA RELEASE)"
+    FAIL = "FAIL", "Fail (evaluation only — not QA HOLD/REJECT)"
+    WARN = "WARN", "Warn (evaluation only — not QA disposition)"
+    NOT_EVALUATED = "NOT_EVALUATED", "Not evaluated"
+
+
+class ChecklistEvaluationRuleKind(models.TextChoices):
+    """Closed evaluation rule categories — no free-form expressions."""
+
+    NUMERIC_BOUNDS = "NUMERIC_BOUNDS", "Numeric bounds"
+    EXPECTED_CHOICE = "EXPECTED_CHOICE", "Expected YES/NO choice"
+    EXPECTED_OPTION = "EXPECTED_OPTION", "Expected SELECT option"
+    CALCULATED_NUMERIC_BOUNDS = "CALCULATED_NUMERIC_BOUNDS", "Calculated numeric bounds"
+
+
 class ChecklistTemplate(models.Model):
     """
     Stable logical identity of a checklist across versions.
@@ -630,6 +654,156 @@ class ChecklistItemRule(models.Model):
             if self.target_item.item_kind == ChecklistItemKind.REPEATING_GROUP:
                 raise ValidationError(
                     {"target_item": "REPEATING_GROUP containers cannot be rule targets."}
+                )
+
+
+class ChecklistItemEvaluationRule(models.Model):
+    """
+    Explicit deterministic evaluation rule for one checklist item (Phase 06K).
+
+    Empty by default — no Nelna limits or expected answers are seeded.
+    Informational ChecklistItem.minimum_value/maximum_value are NOT evaluation
+    authority unless an evaluation rule is configured separately.
+    Results are measurement/checklist evaluation only — never QA disposition.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    item = models.OneToOneField(
+        ChecklistItem,
+        on_delete=models.CASCADE,
+        related_name="evaluation_rule",
+    )
+    rule_kind = models.CharField(
+        max_length=32,
+        choices=ChecklistEvaluationRuleKind.choices,
+    )
+    bound_min = models.DecimalField(max_digits=14, decimal_places=4, null=True, blank=True)
+    bound_max = models.DecimalField(max_digits=14, decimal_places=4, null=True, blank=True)
+    min_inclusive = models.BooleanField(
+        null=True,
+        blank=True,
+        help_text="Required when bound_min is set — no invented default inclusivity.",
+    )
+    max_inclusive = models.BooleanField(
+        null=True,
+        blank=True,
+        help_text="Required when bound_max is set — no invented default inclusivity.",
+    )
+    warn_min = models.DecimalField(max_digits=14, decimal_places=4, null=True, blank=True)
+    warn_max = models.DecimalField(max_digits=14, decimal_places=4, null=True, blank=True)
+    warn_min_inclusive = models.BooleanField(null=True, blank=True)
+    warn_max_inclusive = models.BooleanField(null=True, blank=True)
+    expected_choice = models.CharField(
+        max_length=8,
+        blank=True,
+        default="",
+        help_text="YES or NO for EXPECTED_CHOICE rules.",
+    )
+    expected_option = models.ForeignKey(
+        "ChecklistItemOption",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="evaluation_rule_expectations",
+    )
+    treat_na_as_not_evaluated = models.BooleanField(
+        default=True,
+        help_text="When True, YES_NO_NA answer NA yields NOT_EVALUATED (not FAIL).",
+    )
+
+    class Meta:
+        verbose_name = "Checklist item evaluation rule"
+        verbose_name_plural = "Checklist item evaluation rules"
+
+    def __str__(self) -> str:
+        return f"{self.rule_kind} on {self.item_id}"
+
+    def clean(self) -> None:
+        super().clean()
+        kind = (self.rule_kind or "").strip().upper()
+        if kind and kind not in ChecklistEvaluationRuleKind.values:
+            raise ValidationError({"rule_kind": "Unknown or disallowed evaluation rule kind."})
+        if not self.item_id:
+            return
+        item = self.item
+        if item.item_kind == ChecklistItemKind.REPEATING_GROUP:
+            raise ValidationError({"item": "REPEATING_GROUP cannot have evaluation rules."})
+
+        if kind in {
+            ChecklistEvaluationRuleKind.NUMERIC_BOUNDS,
+            ChecklistEvaluationRuleKind.CALCULATED_NUMERIC_BOUNDS,
+        }:
+            if kind == ChecklistEvaluationRuleKind.NUMERIC_BOUNDS:
+                if item.response_type != ChecklistResponseType.NUMBER:
+                    raise ValidationError(
+                        {"rule_kind": "NUMERIC_BOUNDS requires NUMBER response type."}
+                    )
+                if item.item_kind != ChecklistItemKind.SIMPLE:
+                    raise ValidationError(
+                        {"item": "NUMERIC_BOUNDS applies to SIMPLE NUMBER items."}
+                    )
+            if kind == ChecklistEvaluationRuleKind.CALCULATED_NUMERIC_BOUNDS:
+                if item.item_kind != ChecklistItemKind.CALCULATED:
+                    raise ValidationError(
+                        {"item": "CALCULATED_NUMERIC_BOUNDS requires CALCULATED item."}
+                    )
+            if self.bound_min is None and self.bound_max is None:
+                raise ValidationError(
+                    {"bound_min": "At least one of bound_min or bound_max must be set."}
+                )
+            if self.bound_min is not None and self.min_inclusive is None:
+                raise ValidationError(
+                    {"min_inclusive": "min_inclusive must be set explicitly when bound_min is set."}
+                )
+            if self.bound_max is not None and self.max_inclusive is None:
+                raise ValidationError(
+                    {"max_inclusive": "max_inclusive must be set explicitly when bound_max is set."}
+                )
+            if (
+                self.bound_min is not None
+                and self.bound_max is not None
+                and self.bound_min > self.bound_max
+            ):
+                raise ValidationError({"bound_min": "bound_min cannot exceed bound_max."})
+            if self.warn_min is not None and self.warn_min_inclusive is None:
+                raise ValidationError(
+                    {
+                        "warn_min_inclusive": (
+                            "warn_min_inclusive must be set explicitly when warn_min is set."
+                        )
+                    }
+                )
+            if self.warn_max is not None and self.warn_max_inclusive is None:
+                raise ValidationError(
+                    {
+                        "warn_max_inclusive": (
+                            "warn_max_inclusive must be set explicitly when warn_max is set."
+                        )
+                    }
+                )
+        elif kind == ChecklistEvaluationRuleKind.EXPECTED_CHOICE:
+            if item.response_type not in {
+                ChecklistResponseType.YES_NO,
+                ChecklistResponseType.YES_NO_NA,
+            }:
+                raise ValidationError(
+                    {"rule_kind": "EXPECTED_CHOICE requires YES_NO or YES_NO_NA."}
+                )
+            choice = (self.expected_choice or "").strip().upper()
+            if choice not in {"YES", "NO"}:
+                raise ValidationError(
+                    {"expected_choice": "expected_choice must be YES or NO (explicit)."}
+                )
+            self.expected_choice = choice
+        elif kind == ChecklistEvaluationRuleKind.EXPECTED_OPTION:
+            if item.response_type != ChecklistResponseType.SELECT:
+                raise ValidationError({"rule_kind": "EXPECTED_OPTION requires SELECT."})
+            if self.expected_option_id is None:
+                raise ValidationError({"expected_option": "expected_option is required."})
+            expected_option = self.expected_option
+            if expected_option is None or expected_option.item_id != item.id:
+                raise ValidationError(
+                    {"expected_option": "Option must belong to the same checklist item."}
                 )
 
 

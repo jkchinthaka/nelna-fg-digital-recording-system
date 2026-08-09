@@ -22,6 +22,7 @@ from apps.checklists.constants import REPEAT_SAMPLE_TECHNICAL_CEILING
 from apps.checklists.models import (
     ChecklistCalculationOperand,
     ChecklistItem,
+    ChecklistItemEvaluationRule,
     ChecklistItemKind,
     ChecklistItemOption,
     ChecklistItemRule,
@@ -403,6 +404,105 @@ def clear_checklist_item_rule(
     _require_draft(item.section.version)
     kind = assert_known_rule_kind(rule_kind)
     ChecklistItemRule.objects.filter(target_item_id=item.id, rule_kind=kind).delete()
+
+
+@transaction.atomic
+def set_checklist_item_evaluation_rule(
+    *,
+    actor: User | None,
+    item_id: uuid.UUID,
+    rule_kind: str,
+    bound_min: Decimal | None = None,
+    bound_max: Decimal | None = None,
+    min_inclusive: bool | None = None,
+    max_inclusive: bool | None = None,
+    warn_min: Decimal | None = None,
+    warn_max: Decimal | None = None,
+    warn_min_inclusive: bool | None = None,
+    warn_max_inclusive: bool | None = None,
+    expected_choice: str = "",
+    expected_option_id: uuid.UUID | None = None,
+    treat_na_as_not_evaluated: bool = True,
+) -> ChecklistItemEvaluationRule:
+    """Create or replace the explicit evaluation rule for a draft item."""
+    from apps.checklists.models import ChecklistEvaluationRuleKind
+
+    user = _require_authenticated_actor(actor)
+    item = _lock_item(item_id)
+    require_permission(
+        user, MANAGE_CHECKLIST, scope=version_authorization_scope(item.section.version)
+    )
+    _require_draft(item.section.version)
+    kind = (rule_kind or "").strip().upper()
+    if kind not in ChecklistEvaluationRuleKind.values:
+        raise ValidationError(
+            {
+                "rule_kind": (
+                    f"Unknown evaluation rule kind {rule_kind!r}. "
+                    f"Allowed: {', '.join(sorted(ChecklistEvaluationRuleKind.values))}."
+                )
+            }
+        )
+
+    ChecklistItemEvaluationRule.objects.filter(item_id=item.id).delete()
+    rule = ChecklistItemEvaluationRule(
+        item=item,
+        rule_kind=kind,
+        bound_min=bound_min,
+        bound_max=bound_max,
+        min_inclusive=min_inclusive,
+        max_inclusive=max_inclusive,
+        warn_min=warn_min,
+        warn_max=warn_max,
+        warn_min_inclusive=warn_min_inclusive,
+        warn_max_inclusive=warn_max_inclusive,
+        expected_choice=(expected_choice or "").strip().upper(),
+        expected_option_id=expected_option_id,
+        treat_na_as_not_evaluated=bool(treat_na_as_not_evaluated),
+    )
+    rule.full_clean()
+    rule.save()
+    record_event(
+        event_type="CHECKLIST_ITEM_EVALUATION_RULE_SET",
+        actor=user,
+        metadata=_version_metadata(
+            item.section.version,
+            extra={
+                "checklist_item_id": str(item.id),
+                "checklist_item_code": item.code,
+                "evaluation_rule_id": str(rule.id),
+                "rule_kind": rule.rule_kind,
+            },
+        ),
+    )
+    return rule
+
+
+@transaction.atomic
+def clear_checklist_item_evaluation_rule(
+    *,
+    actor: User | None,
+    item_id: uuid.UUID,
+) -> None:
+    user = _require_authenticated_actor(actor)
+    item = _lock_item(item_id)
+    require_permission(
+        user, MANAGE_CHECKLIST, scope=version_authorization_scope(item.section.version)
+    )
+    _require_draft(item.section.version)
+    deleted, _ = ChecklistItemEvaluationRule.objects.filter(item_id=item.id).delete()
+    if deleted:
+        record_event(
+            event_type="CHECKLIST_ITEM_EVALUATION_RULE_CLEARED",
+            actor=user,
+            metadata=_version_metadata(
+                item.section.version,
+                extra={
+                    "checklist_item_id": str(item.id),
+                    "checklist_item_code": item.code,
+                },
+            ),
+        )
 
 
 @transaction.atomic
@@ -794,6 +894,7 @@ def _clone_structure(*, source: ChecklistVersion, target: ChecklistVersion) -> N
         .prefetch_related(
             "condition_rules__expected_option",
             "condition_rules__operand_item__section",
+            "evaluation_rule__expected_option",
             "options",
         )
         .select_related("section")
@@ -842,6 +943,30 @@ def _clone_structure(*, source: ChecklistVersion, target: ChecklistVersion) -> N
                 expected_option_id=expected_option_id,
                 expected_list=list(rule.expected_list or []),
             )
+        if hasattr(source_item, "evaluation_rule"):
+            try:
+                src_eval = source_item.evaluation_rule
+            except ChecklistItemEvaluationRule.DoesNotExist:
+                src_eval = None
+            if src_eval is not None:
+                expected_option_id = None
+                if src_eval.expected_option_id:
+                    expected_option_id = option_map.get(src_eval.expected_option_id)
+                ChecklistItemEvaluationRule.objects.create(
+                    item=target_item,
+                    rule_kind=src_eval.rule_kind,
+                    bound_min=src_eval.bound_min,
+                    bound_max=src_eval.bound_max,
+                    min_inclusive=src_eval.min_inclusive,
+                    max_inclusive=src_eval.max_inclusive,
+                    warn_min=src_eval.warn_min,
+                    warn_max=src_eval.warn_max,
+                    warn_min_inclusive=src_eval.warn_min_inclusive,
+                    warn_max_inclusive=src_eval.warn_max_inclusive,
+                    expected_choice=src_eval.expected_choice,
+                    expected_option_id=expected_option_id,
+                    treat_na_as_not_evaluated=src_eval.treat_na_as_not_evaluated,
+                )
 
 
 @transaction.atomic
@@ -1513,6 +1638,7 @@ def _validate_publish_structure(version: ChecklistVersion) -> None:
             "items__condition_rules__operand_item__section",
             "items__condition_rules__operand_item__parent_item",
             "items__condition_rules__expected_option",
+            "items__evaluation_rule__expected_option",
         ).order_by("position")
     )
     if not sections:
@@ -1687,6 +1813,24 @@ def _validate_publish_structure(version: ChecklistVersion) -> None:
         detect_visibility_cycles(rules=all_rules)
     except ValidationError as exc:
         raise ValidationError({"version": f"Conditional rules invalid: {exc.messages[0]}"}) from exc
+
+    # Evaluation rules (Phase 06K) — structural validity only; no invented limits.
+    for item in items_by_id.values():
+        try:
+            rule = item.evaluation_rule
+        except ChecklistItemEvaluationRule.DoesNotExist:
+            continue
+        try:
+            rule.full_clean()
+        except ValidationError as exc:
+            detail = "; ".join(
+                str(m)
+                for msgs in getattr(exc, "message_dict", {"error": exc.messages}).values()
+                for m in (msgs if isinstance(msgs, list) else [msgs])
+            )
+            raise ValidationError(
+                {"version": f"Item {item.code} has invalid evaluation rule: {detail}"}
+            ) from exc
 
 
 @transaction.atomic

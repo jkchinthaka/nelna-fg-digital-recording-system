@@ -94,6 +94,12 @@ def render_snapshot_sections(
                                 "sample_index": sample_index,
                                 "display_value": display_snapshot_value(child, snap),
                                 "answered": snap is not None,
+                                "evaluation_result": getattr(snap, "evaluation_result", "")
+                                if snap is not None
+                                else "",
+                                "evaluation_context": getattr(snap, "evaluation_context", None)
+                                if snap is not None
+                                else None,
                             }
                         )
                     sample_rows.append({"sample_index": sample_index, "children": child_cells})
@@ -118,6 +124,12 @@ def render_snapshot_sections(
                     "display_value": display_snapshot_value(item, snap),
                     "answered": snap is not None,
                     "calculation_context": getattr(snap, "calculation_context", None)
+                    if snap is not None
+                    else None,
+                    "evaluation_result": getattr(snap, "evaluation_result", "")
+                    if snap is not None
+                    else "",
+                    "evaluation_context": getattr(snap, "evaluation_context", None)
                     if snap is not None
                     else None,
                 }

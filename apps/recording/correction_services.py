@@ -211,6 +211,8 @@ def _clone_working_responses_from_snapshot(
                 selected_option_id=snap.selected_option_id,
                 calculation_context=snap.calculation_context,
                 condition_context=snap.condition_context,
+                evaluation_result=snap.evaluation_result,
+                evaluation_context=snap.evaluation_context,
             )
         )
     if working_rows:
@@ -460,11 +462,17 @@ def resubmit_checklist_correction(
                 )
             )
             from apps.recording.calculation_runtime import apply_calculations_to_draft
+            from apps.recording.condition_runtime import resolve_condition_flags
+            from apps.recording.evaluation_runtime import apply_evaluations_to_drafts
 
             existing = apply_calculations_to_draft(
                 record_id=record.id,
                 items=item_rows,
                 responses=existing,
+            )
+            flags = resolve_condition_flags(items=item_rows, responses=existing)
+            apply_evaluations_to_drafts(
+                items=item_rows, responses=existing, condition_flags=flags
             )
             stats = validate_record_ready_for_submission(
                 record=record, items=item_rows, responses=existing
@@ -508,6 +516,8 @@ def resubmit_checklist_correction(
                         selected_option_id=response.selected_option_id,
                         calculation_context=None,
                         condition_context=response.condition_context,
+                        evaluation_result=response.evaluation_result,
+                        evaluation_context=response.evaluation_context,
                     )
                 elif item.item_kind == ChecklistItemKind.CALCULATED:
                     if response.number_value is None:
@@ -522,6 +532,8 @@ def resubmit_checklist_correction(
                         selected_option_id=None,
                         calculation_context=response.calculation_context,
                         condition_context=response.condition_context,
+                        evaluation_result=response.evaluation_result,
+                        evaluation_context=response.evaluation_context,
                     )
                 else:
                     continue

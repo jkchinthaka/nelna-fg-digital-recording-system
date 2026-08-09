@@ -616,6 +616,8 @@ def save_checklist_draft_responses(
             response.sample_index = sample_index
             response.calculation_context = None
             response.condition_context = None
+            response.evaluation_result = ""
+            response.evaluation_context = None
             try:
                 _apply_typed_value(response=response, item=item, raw=raw)
                 response.full_clean()
@@ -640,6 +642,7 @@ def save_checklist_draft_responses(
             clear_hidden_draft_responses,
             resolve_condition_flags,
         )
+        from apps.recording.evaluation_runtime import apply_evaluations_to_drafts
 
         existing = apply_calculations_to_draft(
             record_id=record.id,
@@ -651,6 +654,9 @@ def save_checklist_draft_responses(
         assert_no_answers_for_hidden_items(flags=flags, pending_keys=non_blank_pending)
         existing = clear_hidden_draft_responses(flags=flags, existing=existing)
         apply_condition_context_to_drafts(flags=flags, existing=existing)
+        apply_evaluations_to_drafts(
+            items=item_rows, responses=existing, condition_flags=flags
+        )
         changed += sum(1 for item in item_rows if item.item_kind == ChecklistItemKind.CALCULATED)
 
         record.save(update_fields=["updated_at"])
@@ -746,11 +752,17 @@ def submit_checklist_record(
                 )
             )
             from apps.recording.calculation_runtime import apply_calculations_to_draft
+            from apps.recording.condition_runtime import resolve_condition_flags
+            from apps.recording.evaluation_runtime import apply_evaluations_to_drafts
 
             draft_responses = apply_calculations_to_draft(
                 record_id=record.id,
                 items=item_rows,
                 responses=draft_responses,
+            )
+            flags = resolve_condition_flags(items=item_rows, responses=draft_responses)
+            apply_evaluations_to_drafts(
+                items=item_rows, responses=draft_responses, condition_flags=flags
             )
             stats = validate_record_ready_for_submission(
                 record=record, items=item_rows, responses=draft_responses
@@ -786,6 +798,8 @@ def submit_checklist_record(
                         selected_option_id=response.selected_option_id,
                         calculation_context=None,
                         condition_context=response.condition_context,
+                        evaluation_result=response.evaluation_result,
+                        evaluation_context=response.evaluation_context,
                     )
                 elif item.item_kind == ChecklistItemKind.CALCULATED:
                     if response.number_value is None:
@@ -800,6 +814,8 @@ def submit_checklist_record(
                         selected_option_id=None,
                         calculation_context=response.calculation_context,
                         condition_context=response.condition_context,
+                        evaluation_result=response.evaluation_result,
+                        evaluation_context=response.evaluation_context,
                     )
                 else:
                     continue

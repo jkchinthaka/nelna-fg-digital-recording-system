@@ -28,8 +28,10 @@
 | Audit | Append-oriented events; answer text omitted from audit payloads | Works |
 | Repeating / sample rows (06H) | `item_kind` SIMPLE/REPEATING_GROUP; optional `repeat_min/max/default`; child SIMPLE items | Works (technical foundation; no invented AQL) |
 | Calculated fields (06I) | Closed operators SUM/AVERAGE/MIN/MAX/COUNT/RANGE; Decimal-safe; frozen `calculation_context` | Works (technical; no business formulas seeded) |
+| Conditional rules (06J) | Closed VISIBLE_IF / REQUIRED_IF / EVIDENCE_REQUIRED_IF; frozen `condition_context` | Works (technical; no seeded predicates) |
+| Item evaluation (06K) | Explicit `ChecklistItemEvaluationRule`; PASS/FAIL/WARN/NOT_EVALUATED; frozen `evaluation_*` | Works (technical; **not** QA disposition; no seeded limits) |
 
-**Not present today:** conditional visibility/requiredness (06J), DATE/TIME response type, equipment references, structured CCP/OPRP metadata (06L), item-level PASS/FAIL evaluation engine (06K), precision/rounding modes / inclusive-exclusive bounds hardening (06M).
+**Not present today:** DATE/TIME response type, equipment references, structured CCP/OPRP metadata (06L), precision/rounding modes / inclusive-exclusive bounds hardening beyond evaluation rules (06M).
 
 ### Evidence
 
@@ -134,7 +136,7 @@ Client UI may mirror for UX; **server re-evaluates on every save/submit**. Hidde
 
 ### 7. Evaluation vs QA disposition
 
-Optional item evaluation result (design):
+Optional item evaluation result (Phase **06K** implemented):
 
 `PASS` | `FAIL` | `WARN` | `NOT_EVALUATED`
 
@@ -142,9 +144,13 @@ Optional item evaluation result (design):
 
 > Item evaluation result ≠ QA disposition (`RELEASE` / `HOLD` / `REJECT`).
 
-- FAIL must **not** auto-create HOLD/REJECT, CAPA, NCR, ERP, or stock movements.
+- Measurement / checklist evaluation **IS NOT** QA RELEASE / HOLD / REJECT.
+- FAIL must **not** auto-create HOLD/REJECT, CAPA, NCR, ERP, stock movements, or `QAReview`.
 - Completeness submit may remain allowed for FAIL/WARN until an **approved deterministic policy** says otherwise (APR / future ADR).
 - Supervisor/QA workflows stay human-authoritative per ADR-015/017.
+- Rules are explicit definition rows (`ChecklistItemEvaluationRule`); missing rule ⇒ `NOT_EVALUATED`.
+- Inclusivity and warning bands are never invented — they must be configured on the rule.
+- Submission/correction snapshots freeze `evaluation_result` + `evaluation_context`; historical rows are not recomputed when future versions change rules.
 
 ### 8. Food-safety metadata (extensibility only)
 

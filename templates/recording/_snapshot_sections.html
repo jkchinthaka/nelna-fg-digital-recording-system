@@ -1,4 +1,5 @@
 {# Shared immutable snapshot rendering — supports SIMPLE + REPEATING_GROUP + CALCULATED. #}
+{% load recording_extras %}
 {% for block in rendered_sections %}
   <section class="recording-section"
            aria-labelledby="section-{{ block.section.id }}">
@@ -20,6 +21,11 @@
                   <strong>{{ child.item.code }} — {{ child.item.label }}</strong>
                   {% if child.item.item_kind == "CALCULATED" %}<p class="form-help">Calculated (server-authoritative)</p>{% endif %}
                   <p>{{ child.display_value }}</p>
+                  {% if child.evaluation_result %}
+                    {% with evaluation_result=child.evaluation_result evaluation_icon=child.evaluation_result|evaluation_icon_for evaluation_label=child.evaluation_result|evaluation_label_for %}
+                      {% include "recording/_evaluation_indicator.html" %}
+                    {% endwith %}
+                  {% endif %}
                 </div>
               {% endfor %}
             </fieldset>
@@ -51,6 +57,11 @@
             </strong>
             {{ row.display_value }}
           </p>
+          {% if row.evaluation_result %}
+            {% with evaluation_result=row.evaluation_result evaluation_icon=row.evaluation_result|evaluation_icon_for evaluation_label=row.evaluation_result|evaluation_label_for %}
+              {% include "recording/_evaluation_indicator.html" %}
+            {% endwith %}
+          {% endif %}
           {% if not row.answered %}<p class="form-help">Not answered in this snapshot.</p>{% endif %}
         </article>
       {% endif %}

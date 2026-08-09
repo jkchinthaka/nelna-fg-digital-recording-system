@@ -52,19 +52,21 @@ Architecture + ADR only. No separate engine.
 
 **Exit:** Authorization + bypass + org-isolation / snapshot tests.
 
-## 06K — Deterministic evaluation
+## 06K — Deterministic evaluation — IMPLEMENTED (technical)
 
 **Objective:** Optional item result `PASS|FAIL|WARN|NOT_EVALUATED` from bounds/rules.
 
 | Deliverable | Notes |
 | --- | --- |
-| Evaluation service | Domain service; auditable summary counts only |
-| Policy boundary | FAIL does **not** auto HOLD/REJECT/ERP/CAPA |
-| Snapshot | Freeze evaluation at submit if enabled |
+| Evaluation service | Domain service; rule set/clear audited; no per-calculation audit noise |
+| Policy boundary | FAIL does **not** auto HOLD/REJECT/ERP/CAPA; never creates/modifies `QAReview` |
+| Snapshot | Freeze `evaluation_result` + `evaluation_context` at submit/correction |
 
-**Out of scope:** Auto disposition, product-spec engine beyond definition bounds.
+**Hard invariant:** Measurement/checklist evaluation **IS NOT** QA RELEASE / HOLD / REJECT. `PASS≠RELEASE`, `FAIL≠HOLD`, `FAIL≠REJECT`.
 
-**Exit:** Explicit tests that FAIL ≠ QA disposition side effects.
+**Out of scope:** Auto disposition, product-spec engine beyond definition bounds, invented Nelna limits.
+
+**Exit:** Explicit tests that FAIL ≠ QA disposition side effects — covered in `docs/testing/PHASE_06K_TEST_PLAN.md`.
 
 ## 06L — Control-point metadata
 

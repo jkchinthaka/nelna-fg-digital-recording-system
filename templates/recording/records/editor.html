@@ -11,10 +11,12 @@
           Save Draft may remain incomplete. Submit Checklist requires all required
           items answered. Repeating sample rows are technical structure only —
           sample counts are not invented business AQL values. Configured number
-          ranges are informational — out-of-range values may be recorded and
-          submitted. Conditional show/hide is UX only — the server re-evaluates
-          visibility and requiredness on every save and submit. This phase does
-          not evaluate product quality outcomes.
+          ranges on the item definition are informational unless an explicit
+          evaluation rule is configured. Item evaluation (PASS/FAIL/WARN) is a
+          measurement/checklist result only — it is not QA RELEASE, HOLD, or
+          REJECT, and does not create or modify QAReview. Conditional show/hide
+          is UX only — the server re-evaluates visibility, requiredness, and
+          evaluation on every save and submit.
         </p>
       </div>
       <a class="btn btn--ghost btn--inline"
@@ -121,6 +123,10 @@
                             </p>
                             {% calculated_preview responses child sample_index as preview %}
                             <p>Preview: {{ preview }}</p>
+                            {% evaluation_slot responses child sample_index as eval_meta %}
+                            {% with evaluation_result=eval_meta.result evaluation_icon=eval_meta.icon evaluation_label=eval_meta.label %}
+                              {% include "recording/_evaluation_indicator.html" %}
+                            {% endwith %}
                           </div>
                         {% else %}
                           {% condition_slot condition_flags child sample_index as cmeta %}
@@ -137,6 +143,10 @@
                                   {% for error in field.errors %}<li>{{ error }}</li>{% endfor %}
                                 </ul>
                               {% endif %}
+                              {% evaluation_slot responses child sample_index as eval_meta %}
+                              {% with evaluation_result=eval_meta.result evaluation_icon=eval_meta.icon evaluation_label=eval_meta.label %}
+                                {% include "recording/_evaluation_indicator.html" %}
+                              {% endwith %}
                             </div>
                           {% endif %}
                         {% endif %}
@@ -161,7 +171,8 @@
               {% endwith %}
             {% elif item.item_kind == "CALCULATED" %}
               {% condition_slot condition_flags item 1 as cmeta %}
-              <fieldset class="recording-item recording-item--calculated"{% if not cmeta.visible %} hidden{% endif %}>
+              <fieldset class="recording-item recording-item--calculated"
+                        {% if not cmeta.visible %}hidden{% endif %}>
                 <legend>
                   {{ item.code }} — {{ item.label }}
                   {% if cmeta.required %}<span class="recording-item__required">Required</span>{% endif %}
@@ -175,6 +186,10 @@
                 <p>
                   <strong>Preview:</strong> {{ preview }}
                 </p>
+                {% evaluation_slot responses item 1 as eval_meta %}
+                {% with evaluation_result=eval_meta.result evaluation_icon=eval_meta.icon evaluation_label=eval_meta.label %}
+                  {% include "recording/_evaluation_indicator.html" %}
+                {% endwith %}
               </fieldset>
             {% else %}
               {% condition_slot condition_flags item 1 as cmeta %}
@@ -202,7 +217,7 @@
                           —
                         {% endif %}
                         {% if item.unit %}{{ item.unit }}{% endif %}
-                        (informational only)
+                        (informational only — not evaluation authority)
                       </p>
                     {% endif %}
                   {% endif %}
@@ -216,6 +231,10 @@
                       {% endif %}
                     </div>
                   {% endif %}
+                  {% evaluation_slot responses item 1 as eval_meta %}
+                  {% with evaluation_result=eval_meta.result evaluation_icon=eval_meta.icon evaluation_label=eval_meta.label %}
+                    {% include "recording/_evaluation_indicator.html" %}
+                  {% endwith %}
                 </fieldset>
               {% endwith %}
             {% endif %}

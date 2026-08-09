@@ -825,6 +825,23 @@
     margin-left: 0.35rem;
   }
 
+  .recording-evaluation {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.45rem;
+    margin: 0.5rem 0 0;
+    padding: 0.4rem 0.55rem;
+    border: 1px solid var(--color-border-default, #dde4ea);
+    border-radius: 0.35rem;
+    font-size: 0.9rem;
+  }
+
+  .recording-evaluation__icon {
+    font-weight: 700;
+    min-width: 1rem;
+    text-align: center;
+  }
+
   .form-help {
     margin: 0.35rem 0;
     font-size: 0.9rem;

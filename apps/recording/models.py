@@ -157,6 +157,21 @@ class ChecklistResponse(models.Model):
         default=None,
         help_text="Server-authored conditional applicability snapshot (Phase 06J).",
     )
+    evaluation_result = models.CharField(
+        max_length=32,
+        blank=True,
+        default="",
+        help_text=(
+            "Server-authored item evaluation (PASS/FAIL/WARN/NOT_EVALUATED). "
+            "Not a QA disposition — PASS≠RELEASE, FAIL≠HOLD/REJECT."
+        ),
+    )
+    evaluation_context = models.JSONField(
+        null=True,
+        blank=True,
+        default=None,
+        help_text="Server-authored evaluation rule snapshot (Phase 06K).",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -333,6 +348,24 @@ class ChecklistSubmissionResponse(models.Model):
         help_text=(
             "Frozen conditional applicability at submit time. Historical truth — "
             "do not re-evaluate with future definition rules."
+        ),
+    )
+    evaluation_result = models.CharField(
+        max_length=32,
+        blank=True,
+        default="",
+        help_text=(
+            "Frozen item evaluation at submit time. Not QA disposition "
+            "(PASS≠RELEASE, FAIL≠HOLD/REJECT)."
+        ),
+    )
+    evaluation_context = models.JSONField(
+        null=True,
+        blank=True,
+        default=None,
+        help_text=(
+            "Frozen evaluation rule/result context at submit time. Historical truth — "
+            "do not recompute with future definition rules."
         ),
     )
     created_at = models.DateTimeField(auto_now_add=True)

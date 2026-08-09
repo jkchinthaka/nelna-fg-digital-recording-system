@@ -11,6 +11,8 @@
           CORRECTION DRAFT — correcting Submission #{{ source_submission.submission_number }}.
           Resubmission will create Submission #{{ next_submission_number }}.
           Source Submission #{{ source_submission.submission_number }} remains immutable.
+          Item evaluation (PASS/FAIL/WARN) is recalculated for the new submission only —
+          it is not QA RELEASE/HOLD/REJECT.
         </p>
       </div>
       <a class="btn btn--ghost btn--inline"
@@ -110,6 +112,10 @@
                             </p>
                             {% calculated_preview responses child sample_index as preview %}
                             <p>Preview: {{ preview }}</p>
+                            {% evaluation_slot responses child sample_index as eval_meta %}
+                            {% with evaluation_result=eval_meta.result evaluation_icon=eval_meta.icon evaluation_label=eval_meta.label %}
+                              {% include "recording/_evaluation_indicator.html" %}
+                            {% endwith %}
                           </div>
                         {% else %}
                           {% condition_slot condition_flags child sample_index as cmeta %}
@@ -126,6 +132,10 @@
                                   {% for error in field.errors %}<li>{{ error }}</li>{% endfor %}
                                 </ul>
                               {% endif %}
+                              {% evaluation_slot responses child sample_index as eval_meta %}
+                              {% with evaluation_result=eval_meta.result evaluation_icon=eval_meta.icon evaluation_label=eval_meta.label %}
+                                {% include "recording/_evaluation_indicator.html" %}
+                              {% endwith %}
                             </div>
                           {% endif %}
                         {% endif %}
@@ -150,7 +160,8 @@
               {% endwith %}
             {% elif item.item_kind == "CALCULATED" %}
               {% condition_slot condition_flags item 1 as cmeta %}
-              <article class="recording-item recording-item--calculated"{% if not cmeta.visible %} hidden{% endif %}>
+              <article class="recording-item recording-item--calculated"
+                       {% if not cmeta.visible %}hidden{% endif %}>
                 <h3>
                   {{ item.code }} — {{ item.label }}
                   {% if cmeta.required %}<span class="recording-item__required">Required</span>{% endif %}
@@ -160,6 +171,10 @@
                 <p>
                   <strong>Preview:</strong> {{ preview }}
                 </p>
+                {% evaluation_slot responses item 1 as eval_meta %}
+                {% with evaluation_result=eval_meta.result evaluation_icon=eval_meta.icon evaluation_label=eval_meta.label %}
+                  {% include "recording/_evaluation_indicator.html" %}
+                {% endwith %}
               </article>
             {% else %}
               {% condition_slot condition_flags item 1 as cmeta %}
@@ -179,6 +194,10 @@
                       {% for error in bound.errors %}<li>{{ error }}</li>{% endfor %}
                     </ul>
                   {% endif %}
+                  {% evaluation_slot responses item 1 as eval_meta %}
+                  {% with evaluation_result=eval_meta.result evaluation_icon=eval_meta.icon evaluation_label=eval_meta.label %}
+                    {% include "recording/_evaluation_indicator.html" %}
+                  {% endwith %}
                 </article>
               {% endwith %}
             {% endif %}

@@ -82,3 +82,50 @@ def condition_slot(flags: Any, item: Any, sample_index: int = 1) -> dict[str, An
         "required": bool(meta.get("required", default["required"])),
         "evidence_required": bool(meta.get("evidence_required", False)),
     }
+
+
+def _evaluation_icon(result: str) -> str:
+    return {
+        "PASS": "[OK]",
+        "FAIL": "[X]",
+        "WARN": "[!]",
+        "NOT_EVALUATED": "[-]",
+    }.get((result or "").strip().upper(), "[-]")
+
+
+@register.filter
+def evaluation_icon_for(result: str) -> str:
+    """Symbol companion for evaluation result (not color-only)."""
+    return _evaluation_icon(result)
+
+
+@register.filter
+def evaluation_label_for(result: str) -> str:
+    from apps.recording.evaluation_runtime import evaluation_label
+
+    return evaluation_label(result)
+
+
+@register.simple_tag
+def evaluation_slot(responses: Any, item: Any, sample_index: int = 1) -> dict[str, str]:
+    """
+    Server-authored item evaluation indicator (Phase 06K).
+
+    PASS/FAIL/WARN are measurement results only — never QA RELEASE/HOLD/REJECT.
+    """
+    from apps.recording.evaluation_runtime import evaluation_label
+
+    result = ""
+    if responses is not None and item is not None:
+        try:
+            row = responses.get((item.id, int(sample_index)))
+        except AttributeError:
+            row = None
+        if row is not None:
+            result = (getattr(row, "evaluation_result", "") or "").strip().upper()
+    normalized = result or "NOT_EVALUATED"
+    return {
+        "result": normalized,
+        "icon": _evaluation_icon(normalized),
+        "label": evaluation_label(result),
+    }
