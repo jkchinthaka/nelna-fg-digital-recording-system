@@ -18,7 +18,7 @@
 
 | ID | Risk | Category | Probability | Impact | Exposure | Owner | Mitigation | Trigger | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| RSK-G-001 | MongoDB architecture uncertainty (company pressure vs ADR-002 PostgreSQL) | Architecture | 3 | 5 | 15 | IT Manager (OWNER TO BE CONFIRMED) | Keep ADR-002 authoritative; route any Mongo request through APPROVAL_REGISTER APR-020 + architecture review; do not add Mongo to Compose without written decision | Request to replace/dual-write primary store | Open |
+| RSK-G-001 | MongoDB architecture uncertainty (company request vs ADR-002 PostgreSQL) | Architecture | 4 | 5 | 20 | IT Manager (OWNER TO BE CONFIRMED) | ADR-018 POC REQUIRED; matrix + POC plan + migration strategy; forbid blind URI swap; keep PG on `main` until POC + APR-020 | Pressure to cut over without POC / `select_for_update` redesign | Open |
 | RSK-G-002 | Business approval delays block production config and UAT | Delivery / Governance | 5 | 4 | 20 | Management Sponsor / Project Manager (TBC) | Maintain APPROVAL_REGISTER; separate IMPLEMENTED from BUSINESS APPROVED; escalate blockers weekly | Gates remain OPEN past planned pilot window | Open |
 | RSK-G-003 | Bileeta API dependency / unavailability | Integration | 4 | 4 | 16 | IT Manager / Bileeta Vendor (TBC) | Keep recording independent of ERP; contract-only until sandbox exists; no invented endpoints | Connector work starts without API evidence | Open |
 | RSK-G-004 | Bus factor / single-developer dependency | Continuity | 4 | 5 | 20 | Management Sponsor (TBC) | Continuity plan; modular docs; governance baseline; second-person access plan | Developer unavailable mid-delivery | Open |

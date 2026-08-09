@@ -38,6 +38,8 @@ JSONB is **not** a substitute for relational modeling of identity, permissions, 
 
 A document-primary database is not chosen because workflow integrity, constrained relationships, reporting joins, and transactional multi-record updates are central to this product. PostgreSQL covers relational needs and still offers JSONB where flexibility is justified. This is a forward-looking fit assessment for the greenfield system, not a commentary on any prior implementation.
 
+**2026-08-10 update:** The company has requested MongoDB / Atlas. That request is assessed in [ADR-018](ADR-018-DATABASE-PLATFORM-MONGODB-ASSESSMENT.md) with status **POC REQUIRED**. ADR-002 remains the **implemented** primary-database decision until a later accepted ADR supersedes it with POC evidence and written APR-020 approval. Do not treat ADR-018 as an accepted cutover.
+
 ## File storage separation
 
 Evidence binaries go to MinIO (local) or S3-compatible storage (production). PostgreSQL stores metadata, hashes as designed, access linkage, and audit references.

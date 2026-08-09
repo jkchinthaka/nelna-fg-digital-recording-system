@@ -66,7 +66,8 @@
 | DL-041 / DEC-015 | Pilot site, users, devices, dates? | Open | Business + QA + IT | open | DECISION_REGISTER | Pilot planning blocked | — |
 | DL-042 / DEC-016 | Hosting for non-local envs? | Open | IT Manager | open | ASM-015 | UAT/staging blocked | — |
 | DL-043 / DEC-017 | Retention period? | Open | QA / Legal (TBC) | open | ASM-013 | Storage/purge design | — |
-| DL-044 | Require MongoDB despite ADR-002? | Open — **not** selected today | IT / Management | open | APR-020; ADR-002 | Would be major architecture change | — |
+| DL-044 | Require MongoDB despite ADR-002? | Open — company requested; **POC REQUIRED** before SoR change | IT / Management | open | APR-020; ADR-002; ADR-018 | Major architecture change if accepted | — |
+| DL-048 | May Mongo replace PostgreSQL on `main` without POC? | **No** — blind URI swap forbidden | Technical Lead (assessment) | 2026-08-10 | ADR-018; migration strategy | DB-02 NO-GO until POC | — |
 | DL-045 | Bileeta as batch/ERP source? | Open | IT / Vendor | open | APR-012 | Phase 17 / generation | — |
 | DL-046 | Offline required for pilot? | Open | IT / Production / QA | open | APR-022 | May force Phase 14 earlier | — |
 | DL-047 | SoD enforcement rules? | Open | QA / Management | open | APR-010 | UAT/pilot blocked | — |
