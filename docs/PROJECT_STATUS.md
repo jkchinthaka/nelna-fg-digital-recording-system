@@ -255,12 +255,4 @@ FG-QA-001 Draft v0.1 was reviewed against real-evidence gates. No company forms,
 
 **STATUS: PHASE 06O PRODUCT SPECIFICATIONS COMPLETE**
 
-Versioned ProductSpecification / SpecificationVersion / SpecificationParameter foundation is implemented with audited approve/retire/clone, optional checklist `SPECIFICATION_PARAMETER` pins, and OUT_OF_SPEC ≠ QA disposition. No Nelna limits were seeded — APR-006 / ASM-001 remain **EVIDENCE REQUIRED**.
-
----
-
-## Phase 06O delivery status
-
-**STATUS: PHASE 06O PRODUCT SPECIFICATIONS COMPLETE**
-
 Versioned ProductSpecification / SpecificationVersion / SpecificationParameter foundation is implemented with immutability, effectivity overlap policy, org-scoped high-privilege RBAC, audit events, and optional checklist SPECIFICATION_PARAMETER pins. No Nelna limits were seeded — APR-006 / ASM-001 remain **EVIDENCE REQUIRED**. OUT_OF_SPEC does not auto HOLD/REJECT.
