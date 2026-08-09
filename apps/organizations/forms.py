@@ -96,12 +96,11 @@ class ShiftForm(forms.Form):
     ) -> None:
         self.instance = instance
         super().__init__(*args, **kwargs)
-        org_field = self.fields["organization"]
-        site_field = self.fields["site"]
-        dept_field = self.fields["department"]
-        assert isinstance(org_field, forms.ModelChoiceField)
-        assert isinstance(site_field, forms.ModelChoiceField)
-        assert isinstance(dept_field, forms.ModelChoiceField)
+        from apps.core.type_guards import require_model_choice_field
+
+        org_field = require_model_choice_field(self.fields["organization"], name="organization")
+        site_field = require_model_choice_field(self.fields["site"], name="site")
+        dept_field = require_model_choice_field(self.fields["department"], name="department")
         org_field.queryset = (
             organizations if organizations is not None else Organization.objects.none()
         )

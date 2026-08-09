@@ -188,12 +188,15 @@ def _refresh_create_form_querysets(request: HttpRequest, form: ChecklistTaskCrea
         if template is not None
         else ChecklistVersion.objects.none()
     )
-    org_field = form.fields["organization"]
-    template_field = form.fields["checklist_template"]
-    version_field = form.fields["checklist_version"]
-    assert isinstance(org_field, forms.ModelChoiceField)
-    assert isinstance(template_field, forms.ModelChoiceField)
-    assert isinstance(version_field, forms.ModelChoiceField)
+    from apps.core.type_guards import require_model_choice_field
+
+    org_field = require_model_choice_field(form.fields["organization"], name="organization")
+    template_field = require_model_choice_field(
+        form.fields["checklist_template"], name="checklist_template"
+    )
+    version_field = require_model_choice_field(
+        form.fields["checklist_version"], name="checklist_version"
+    )
     org_field.queryset = orgs
     template_field.queryset = templates
     version_field.queryset = versions
@@ -231,8 +234,11 @@ def task_create(request: HttpRequest) -> HttpResponse:
     elif request.method == "POST":
         _refresh_create_form_querysets(request, form)
 
-    version_field = form.fields["checklist_version"]
-    assert isinstance(version_field, forms.ModelChoiceField)
+    from apps.core.type_guards import require_model_choice_field
+
+    version_field = require_model_choice_field(
+        form.fields["checklist_version"], name="checklist_version"
+    )
     version_qs = version_field.queryset
     published_available = bool(version_qs is not None and version_qs.exists())
     return render(

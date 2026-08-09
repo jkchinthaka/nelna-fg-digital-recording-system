@@ -66,7 +66,9 @@ def create_application_user(
         is_active=is_active,
         is_staff=is_staff,
     )
-    assert isinstance(user, User)
+    from apps.core.type_guards import require_user_instance
+
+    user = require_user_instance(user, context="create_user")
     if must_change_password:
         user.must_change_password = True
         user.save(update_fields=["must_change_password"])
@@ -99,7 +101,9 @@ def authenticate_login(
     )
 
     if user is not None:
-        assert isinstance(user, User)
+        from apps.core.type_guards import require_user_instance
+
+        user = require_user_instance(user, context="authenticate_login")
         record_successful_login(user, request=request)
         record_event(
             event_type="LOGIN_SUCCESS",
@@ -172,8 +176,12 @@ def record_failed_login(user: User, *, request: HttpRequest | None = None) -> Us
     """Increment failure counters under row lock; lock account at threshold."""
     from apps.security_audit.services import record_event
 
-    locked_user = User.objects.select_for_update().get(pk=user.pk)
-    assert isinstance(locked_user, User)
+    from apps.core.type_guards import require_user_instance
+
+    locked_user = require_user_instance(
+        User.objects.select_for_update().get(pk=user.pk),
+        context="record_failed_login",
+    )
     if locked_user.is_locked:
         return locked_user
 
@@ -204,8 +212,12 @@ def record_failed_login(user: User, *, request: HttpRequest | None = None) -> Us
 @transaction.atomic
 def record_successful_login(user: User, *, request: HttpRequest) -> User:
     """Reset failure counters, stamp success time, establish session with key cycle."""
-    locked_user = User.objects.select_for_update().get(pk=user.pk)
-    assert isinstance(locked_user, User)
+    from apps.core.type_guards import require_user_instance
+
+    locked_user = require_user_instance(
+        User.objects.select_for_update().get(pk=user.pk),
+        context="record_successful_login",
+    )
     now = timezone.now()
     locked_user.failed_login_count = 0
     locked_user.locked_until = None
@@ -314,8 +326,12 @@ def unlock_account(
 ) -> User:
     from apps.security_audit.services import record_event
 
-    locked_user = User.objects.select_for_update().get(pk=user.pk)
-    assert isinstance(locked_user, User)
+    from apps.core.type_guards import require_user_instance
+
+    locked_user = require_user_instance(
+        User.objects.select_for_update().get(pk=user.pk),
+        context="unlock_user",
+    )
     locked_user.failed_login_count = 0
     locked_user.locked_until = None
     locked_user.save(update_fields=["failed_login_count", "locked_until"])

@@ -52,12 +52,15 @@ class ChecklistTaskCreateForm(forms.Form):
         **kwargs: Any,
     ) -> None:
         super().__init__(data, **kwargs)
-        org_field = self.fields["organization"]
-        template_field = self.fields["checklist_template"]
-        version_field = self.fields["checklist_version"]
-        assert isinstance(org_field, forms.ModelChoiceField)
-        assert isinstance(template_field, forms.ModelChoiceField)
-        assert isinstance(version_field, forms.ModelChoiceField)
+        from apps.core.type_guards import require_model_choice_field
+
+        org_field = require_model_choice_field(self.fields["organization"], name="organization")
+        template_field = require_model_choice_field(
+            self.fields["checklist_template"], name="checklist_template"
+        )
+        version_field = require_model_choice_field(
+            self.fields["checklist_version"], name="checklist_version"
+        )
         org_field.queryset = organizations or Organization.objects.none()
         template_field.queryset = templates or ChecklistTemplate.objects.none()
         version_field.queryset = versions or ChecklistVersion.objects.none()

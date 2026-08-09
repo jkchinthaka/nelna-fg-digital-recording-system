@@ -59,8 +59,9 @@ class FGProductForm(forms.Form):
     ) -> None:
         self.instance = instance
         super().__init__(*args, **kwargs)
-        org_field = self.fields["organization"]
-        assert isinstance(org_field, forms.ModelChoiceField)
+        from apps.core.type_guards import require_model_choice_field
+
+        org_field = require_model_choice_field(self.fields["organization"], name="organization")
         org_field.queryset = (
             organizations if organizations is not None else Organization.objects.none()
         )

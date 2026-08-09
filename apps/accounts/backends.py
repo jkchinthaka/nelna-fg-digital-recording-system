@@ -64,8 +64,9 @@ class EmployeeCodeBackend(ModelBackend):
         if not password_ok:
             return None
 
-        assert isinstance(user, User)
-        return user
+        from apps.core.type_guards import require_user_instance
+
+        return require_user_instance(user, context="authenticate user")
 
     def user_can_authenticate(self, user: User | AnonymousUser | None) -> bool:
         return bool(getattr(user, "is_active", True))

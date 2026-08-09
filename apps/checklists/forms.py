@@ -68,10 +68,10 @@ class ChecklistTemplateForm(forms.Form):
     ) -> None:
         self.instance = instance
         super().__init__(*args, **kwargs)
-        org_field = self.fields["organization"]
-        product_field = self.fields["product"]
-        assert isinstance(org_field, forms.ModelChoiceField)
-        assert isinstance(product_field, forms.ModelChoiceField)
+        from apps.core.type_guards import require_model_choice_field
+
+        org_field = require_model_choice_field(self.fields["organization"], name="organization")
+        product_field = require_model_choice_field(self.fields["product"], name="product")
         org_field.queryset = (
             organizations if organizations is not None else Organization.objects.none()
         )
@@ -105,8 +105,9 @@ class CreateVersionForm(forms.Form):
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
-        field = self.fields["source_version"]
-        assert isinstance(field, forms.ModelChoiceField)
+        from apps.core.type_guards import require_model_choice_field
+
+        field = require_model_choice_field(self.fields["source_version"], name="source_version")
         field.queryset = versions if versions is not None else ChecklistVersion.objects.none()
 
 
