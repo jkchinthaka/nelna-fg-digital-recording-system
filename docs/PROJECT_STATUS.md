@@ -191,7 +191,7 @@ Tracked for request/approval workflow: [governance/APPROVAL_REGISTER.md](governa
 ## Recommended next engineering focus (not authorization)
 
 1. Drive owners to return paper-form inventory via [form-discovery/](business/form-discovery/) (APR-028 / APR-036) — do **not** invent forms for Checklist Engine v2.
-2. Implement Engine v2 units **06L–06M** only when prioritized; keep business values evidence-gated (ADR-019). **06H/06I/06J/06K** technical foundations are on `main`.
+2. Implement Engine v2 unit **06M** when prioritized; keep business values evidence-gated (ADR-019). **06H/06I/06J/06K/06L** technical foundations are on main (06L schema only — HACCP classifications still EVIDENCE REQUIRED).
 3. Complete Phase 10A Docker/host validation when Docker engine is healthy (**no new business features** required for that gate).
 4. Drive APPROVAL_REGISTER items with named owners (especially FG-QA-001, mappings, batch source).
 5. Do **not** start Phase 11+ operational features until owners prioritize and evidence gates allow.
