@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from django import forms
+from typing import Any
 
-from apps.accounts.models import User
+from django import forms
+from django.contrib.auth import get_user_model
 
 
 def require_model_choice_field(field: forms.Field, *, name: str) -> forms.ModelChoiceField:
@@ -14,8 +15,13 @@ def require_model_choice_field(field: forms.Field, *, name: str) -> forms.ModelC
     return field
 
 
-def require_user_instance(value: object, *, context: str = "user") -> User:
-    """Return value as accounts.User or raise TypeError (never rely on assert)."""
-    if not isinstance(value, User):
+def require_user_instance(value: object, *, context: str = "user") -> Any:
+    """Return value as the configured auth user model or raise TypeError.
+
+    Resolves the user model via Django get_user_model() so core stays free of
+    direct accounts-app imports (architecture boundary).
+    """
+    user_model = get_user_model()
+    if not isinstance(value, user_model):
         raise TypeError(f"{context} must be apps.accounts.User, got {type(value)!r}.")
     return value

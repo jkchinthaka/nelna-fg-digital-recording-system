@@ -7,10 +7,10 @@ import sys
 from pathlib import Path
 
 import pytest
-from django import forms
-
 from apps.accounts.models import User
 from apps.core.type_guards import require_model_choice_field, require_user_instance
+from django import forms
+
 from tests.factories import make_user
 
 ROOT = Path(__file__).resolve().parents[2]

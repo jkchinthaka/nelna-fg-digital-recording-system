@@ -129,6 +129,10 @@ omit = [
     "apps/supplier_quality/*",
     "apps/analytics/*",
     "apps/feature_flags/*",
+    "config/asgi.py",
+    "config/wsgi.py",
+    "config/settings/production.py",
+    "config/secrets/*",
 ]
 
 [tool.coverage.report]

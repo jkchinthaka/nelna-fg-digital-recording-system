@@ -174,9 +174,8 @@ def authenticate_login(
 @transaction.atomic
 def record_failed_login(user: User, *, request: HttpRequest | None = None) -> User:
     """Increment failure counters under row lock; lock account at threshold."""
-    from apps.security_audit.services import record_event
-
     from apps.core.type_guards import require_user_instance
+    from apps.security_audit.services import record_event
 
     locked_user = require_user_instance(
         User.objects.select_for_update().get(pk=user.pk),
@@ -324,9 +323,8 @@ def unlock_account(
     actor: User | None = None,
     request: HttpRequest | None = None,
 ) -> User:
-    from apps.security_audit.services import record_event
-
     from apps.core.type_guards import require_user_instance
+    from apps.security_audit.services import record_event
 
     locked_user = require_user_instance(
         User.objects.select_for_update().get(pk=user.pk),
