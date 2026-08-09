@@ -61,6 +61,13 @@ class ChecklistRecord(models.Model):
     )
     started_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    draft_version = models.PositiveIntegerField(
+        default=1,
+        help_text=(
+            "Optimistic concurrency token for DRAFT saves. Clients must send the "
+            "expected version; mismatched saves are rejected (no silent last-write-wins)."
+        ),
+    )
 
     class Meta:
         ordering = ("-updated_at",)
@@ -178,6 +185,26 @@ class ChecklistResponse(models.Model):
         blank=True,
         default=None,
         help_text="Server-authored NUMBER measurement semantics snapshot (Phase 06M).",
+    )
+    equipment = models.ForeignKey(
+        "instruments.Equipment",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="checklist_draft_responses",
+        help_text=(
+            "Optional equipment reference when the item requires it. "
+            "Calibration overdue block/warn remains EVIDENCE REQUIRED — not enforced here."
+        ),
+    )
+    evidence_hook = models.JSONField(
+        null=True,
+        blank=True,
+        default=None,
+        help_text=(
+            "Future evidence/attachment hook metadata only (Phase 11). "
+            "Never stores file bytes — object storage later."
+        ),
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -393,6 +420,20 @@ class ChecklistSubmissionResponse(models.Model):
             "Frozen NUMBER measurement semantics at submit time. Historical truth — "
             "do not recompute with future definition rules."
         ),
+    )
+    equipment = models.ForeignKey(
+        "instruments.Equipment",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="checklist_submission_responses",
+        help_text="Frozen optional equipment reference at submit time.",
+    )
+    evidence_hook = models.JSONField(
+        null=True,
+        blank=True,
+        default=None,
+        help_text="Frozen evidence/attachment hook metadata (no file bytes).",
     )
     created_at = models.DateTimeField(auto_now_add=True)
 

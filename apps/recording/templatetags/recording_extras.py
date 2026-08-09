@@ -7,7 +7,7 @@ from typing import Any
 from django import template
 from django.forms import BoundField, Form
 
-from apps.recording.forms import response_field_name
+from apps.recording.forms import equipment_field_name, response_field_name
 from apps.recording.selectors import actor_can_access_recording_module
 
 register = template.Library()
@@ -31,6 +31,22 @@ def response_bound_field(form: Form, item: Any) -> BoundField | None:
 @register.simple_tag
 def response_bound_field_at(form: Form, item: Any, sample_index: int) -> BoundField | None:
     name = response_field_name(item.id, int(sample_index))
+    if name not in form.fields:
+        return None
+    return form[name]
+
+
+@register.filter
+def equipment_bound_field(form: Form, item: Any) -> BoundField | None:
+    name = equipment_field_name(item.id, 1)
+    if name not in form.fields:
+        return None
+    return form[name]
+
+
+@register.simple_tag
+def equipment_bound_field_at(form: Form, item: Any, sample_index: int = 1) -> BoundField | None:
+    name = equipment_field_name(item.id, int(sample_index))
     if name not in form.fields:
         return None
     return form[name]

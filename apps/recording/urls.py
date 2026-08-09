@@ -17,6 +17,11 @@ urlpatterns = [
         name="record_detail",
     ),
     path(
+        "recording/<uuid:record_id>/autosave/",
+        views.record_autosave,
+        name="record_autosave",
+    ),
+    path(
         "recording/<uuid:record_id>/submit/",
         views.submit_confirm,
         name="submit_confirm",

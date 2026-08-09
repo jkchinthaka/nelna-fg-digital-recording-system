@@ -21,10 +21,13 @@ class ChecklistResponseInline(admin.TabularInline):  # type: ignore[type-arg]
     readonly_fields = (
         "id",
         "checklist_item",
+        "sample_index",
         "choice_value",
         "number_value",
         "text_value",
         "selected_option",
+        "equipment",
+        "evidence_hook",
         "created_at",
         "updated_at",
     )
@@ -41,6 +44,7 @@ class ChecklistRecordAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
         "organization",
         "checklist_task",
         "status",
+        "draft_version",
         "started_by",
         "started_at",
         "updated_at",

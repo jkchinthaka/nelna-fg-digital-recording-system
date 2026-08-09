@@ -401,6 +401,7 @@ def test_recording_ui_save_draft_and_csrf() -> None:
     assert b"status-pill" not in editor.content
 
     payload = {
+        "expected_draft_version": str(record.draft_version),
         response_field_name(published["yes_no"].id): "YES",
         response_field_name(published["yes_no_na"].id): "",
         response_field_name(published["number"].id): "12",

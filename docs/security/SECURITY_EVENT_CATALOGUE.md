@@ -67,7 +67,7 @@
 | `CHECKLIST_APPLICABILITY_RULE_CREATED` / `UPDATED` / `DEACTIVATED` | Checklist applicability rule lifecycle (Phase 07C) |
 | `CHECKLIST_APPLICABILITY_PREVIEWED` | Management applicability preview (Phase 07C; no task mutation) |
 | `CHECKLIST_RECORD_STARTED` | Draft checklist record started for a PENDING task |
-| `CHECKLIST_RECORD_DRAFT_SAVED` | Draft checklist responses saved (aggregate) |
+| `CHECKLIST_RECORD_DRAFT_SAVED` | Draft checklist responses saved (aggregate; may include `draft_version`, `save_mode`, `autosave`) |
 | `CHECKLIST_RECORD_SUBMITTED` | Checklist record submitted with immutable Submission #1 snapshot |
 | `SUPERVISOR_REVIEW_COMPLETED` | Immutable Supervisor review recorded for a ChecklistSubmission |
 | `CHECKLIST_CORRECTION_STARTED` | Controlled correction cycle started for a RETURNED submission |

@@ -12,6 +12,12 @@ from apps.recording.models import ChoiceResponseValue
 from apps.recording.repeating import ResponseKey, partition_definition_items
 
 
+def equipment_field_name(item_id: uuid.UUID, sample_index: int = 1) -> str:
+    if sample_index == 1:
+        return f"equipment_{item_id.hex}"
+    return f"equipment_{item_id.hex}_s{sample_index}"
+
+
 def response_field_name(item_id: uuid.UUID, sample_index: int = 1) -> str:
     if sample_index == 1:
         # Preserve legacy field names for top-level SIMPLE (sample_index=1).
@@ -26,18 +32,32 @@ def sample_count_field_name(group_id: uuid.UUID) -> str:
 class ChecklistDraftForm(forms.Form):
     """Dynamic draft form — blank answers are allowed for required items."""
 
+    expected_draft_version = forms.IntegerField(
+        required=True,
+        min_value=1,
+        widget=forms.HiddenInput,
+    )
+
     def __init__(
         self,
         *args: Any,
         items: list[ChecklistItem],
         initial_responses: dict[ResponseKey, Any] | None = None,
         sample_indexes_by_group: dict[uuid.UUID, list[int]] | None = None,
+        draft_version: int = 1,
+        equipment_choices: list[tuple[str, str]] | None = None,
+        initial_equipment: dict[ResponseKey, Any] | None = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
         self.items = items
         self.sample_indexes_by_group = sample_indexes_by_group or {}
+        self.equipment_choices = equipment_choices or [("", "— No equipment —")]
         initial_responses = initial_responses or {}
+        initial_equipment = initial_equipment or {}
+        self.fields["expected_draft_version"].initial = int(draft_version)
+        if "expected_draft_version" not in (kwargs.get("data") or {}):
+            self.fields["expected_draft_version"].initial = int(draft_version)
         top_simple, groups, children_by_parent, self.top_calculated = partition_definition_items(
             items
         )
@@ -57,6 +77,9 @@ class ChecklistDraftForm(forms.Form):
 
         for item in top_simple:
             self._add_item_field(item, sample_index=1, initial_responses=initial_responses)
+            self._add_equipment_field(
+                item, sample_index=1, initial_equipment=initial_equipment
+            )
 
         for group in groups:
             children = children_by_parent.get(group.id, [])
@@ -67,6 +90,11 @@ class ChecklistDraftForm(forms.Form):
                         child,
                         sample_index=sample_index,
                         initial_responses=initial_responses,
+                    )
+                    self._add_equipment_field(
+                        child,
+                        sample_index=sample_index,
+                        initial_equipment=initial_equipment,
                     )
 
     def _add_item_field(
@@ -86,6 +114,10 @@ class ChecklistDraftForm(forms.Form):
         if item.is_required:
             label = f"{label} (required)"
 
+        # aria-required conveys semantic requirement for screen readers even though
+        # Django validation uses required=False (incomplete drafts are allowed).
+        aria_attrs: dict[str, str] = {"aria-required": "true"} if item.is_required else {}
+
         if item.response_type == ChecklistResponseType.YES_NO:
             self.fields[name] = forms.ChoiceField(
                 label=label,
@@ -95,7 +127,7 @@ class ChecklistDraftForm(forms.Form):
                     (ChoiceResponseValue.YES, "Yes"),
                     (ChoiceResponseValue.NO, "No"),
                 ],
-                widget=forms.RadioSelect,
+                widget=forms.RadioSelect(attrs=aria_attrs),
                 initial=initial or "",
             )
         elif item.response_type == ChecklistResponseType.YES_NO_NA:
@@ -108,7 +140,7 @@ class ChecklistDraftForm(forms.Form):
                     (ChoiceResponseValue.NO, "No"),
                     (ChoiceResponseValue.NA, "N/A"),
                 ],
-                widget=forms.RadioSelect,
+                widget=forms.RadioSelect(attrs=aria_attrs),
                 initial=initial or "",
             )
         elif item.response_type == ChecklistResponseType.NUMBER:
@@ -117,14 +149,14 @@ class ChecklistDraftForm(forms.Form):
                 required=False,
                 max_digits=14,
                 decimal_places=4,
-                widget=forms.NumberInput(attrs={"class": "form-input", "step": "any"}),
+                widget=forms.NumberInput(attrs={"class": "form-input", "step": "any", **aria_attrs}),
                 initial=initial,
             )
         elif item.response_type == ChecklistResponseType.TEXT:
             self.fields[name] = forms.CharField(
                 label=label,
                 required=False,
-                widget=forms.Textarea(attrs={"class": "form-input", "rows": 3}),
+                widget=forms.Textarea(attrs={"class": "form-input", "rows": 3, **aria_attrs}),
                 initial=initial or "",
             )
         elif item.response_type == ChecklistResponseType.SELECT:
@@ -135,7 +167,7 @@ class ChecklistDraftForm(forms.Form):
                 label=label,
                 required=False,
                 choices=choices,
-                widget=forms.Select(attrs={"class": "form-input"}),
+                widget=forms.Select(attrs={"class": "form-input", **aria_attrs}),
                 initial=str(initial) if initial else "",
             )
         else:
@@ -145,6 +177,36 @@ class ChecklistDraftForm(forms.Form):
                 disabled=True,
                 initial="",
             )
+
+    def _add_equipment_field(
+        self,
+        item: ChecklistItem,
+        *,
+        sample_index: int,
+        initial_equipment: dict[ResponseKey, Any],
+    ) -> None:
+        if item.item_kind != ChecklistItemKind.SIMPLE:
+            return
+        if not bool(getattr(item, "requires_equipment_reference", False)):
+            return
+        name = equipment_field_name(item.id, sample_index)
+        initial = initial_equipment.get((item.id, sample_index))
+        self.fields[name] = forms.ChoiceField(
+            label=f"Equipment reference — {item.code}",
+            required=False,
+            choices=self.equipment_choices,
+            widget=forms.Select(
+                attrs={
+                    "class": "form-input recording-equipment-select",
+                    "data-equipment-hook": "1",
+                }
+            ),
+            initial=str(initial) if initial else "",
+            help_text=(
+                "Optional equipment reference. Attachment upload is Phase 11. "
+                "Calibration overdue block/warn remains EVIDENCE REQUIRED."
+            ),
+        )
 
     def answers_by_item_id(self) -> dict[ResponseKey, Any]:
         """Return answers keyed by ``(item_id, sample_index)``."""
@@ -162,3 +224,22 @@ class ChecklistDraftForm(forms.Form):
                     if name in self.fields:
                         answers[(child.id, sample_index)] = self.cleaned_data.get(name)
         return answers
+
+    def equipment_refs_by_key(self) -> dict[ResponseKey, Any]:
+        """Return optional equipment UUIDs for items that require a reference."""
+        refs: dict[ResponseKey, Any] = {}
+        candidates: list[tuple[ChecklistItem, int]] = [
+            (item, 1) for item in self.top_simple
+        ]
+        for group in self.groups:
+            indexes = self.sample_indexes_by_group.get(group.id) or []
+            for sample_index in indexes:
+                for child in self.children_by_parent.get(group.id, []):
+                    candidates.append((child, sample_index))
+        for item, sample_index in candidates:
+            name = equipment_field_name(item.id, sample_index)
+            if name not in self.fields:
+                continue
+            raw = self.cleaned_data.get(name)
+            refs[(item.id, sample_index)] = raw or None
+        return refs

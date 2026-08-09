@@ -8,11 +8,31 @@ from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from apps.accounts import services as account_services
 from apps.accounts.forms import ChangePasswordForm, ForcePasswordChangeForm, LoginForm
 from apps.accounts.services import GENERIC_LOGIN_ERROR
+
+
+def _safe_post_login_redirect(request: HttpRequest) -> str | None:
+    """Return a same-origin path for post-login resume, or None."""
+    candidates: list[str] = []
+    next_raw = request.GET.get("next") or request.POST.get("next")
+    if next_raw:
+        candidates.append(str(next_raw))
+    resume = request.session.get("recording_resume_url")
+    if resume:
+        candidates.append(str(resume))
+    for candidate in candidates:
+        if url_has_allowed_host_and_scheme(
+            url=candidate,
+            allowed_hosts={request.get_host()},
+            require_https=request.is_secure(),
+        ):
+            return candidate
+    return None
 
 
 @require_http_methods(["GET", "POST"])
@@ -30,7 +50,11 @@ def login_view(request: HttpRequest) -> HttpResponse:
         if result.success and result.user is not None:
             if result.user.must_change_password:
                 return redirect("accounts:force_password_change")
-            return redirect("accounts:landing")
+            resume = _safe_post_login_redirect(request)
+            if resume:
+                request.session.pop("recording_resume_url", None)
+                return redirect(resume)
+            return redirect(login_redirect_target(result.user))
         # All denial outcomes share the same status, template, and message.
         form.add_error(None, GENERIC_LOGIN_ERROR)
 

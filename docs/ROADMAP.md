@@ -202,13 +202,13 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | --- | --- |
 | Objective | Online draft and submission UX and record services (DRAFT → SUBMITTED) |
 | Inputs | Figma operator screens; published templates; approved recorder role mapping |
-| Outputs | **08A:** `recording.ChecklistRecord` / `ChecklistResponse` draft foundation + Save Draft UI; **08B:** `ChecklistSubmission` / `ChecklistSubmissionResponse` immutable snapshots + Submit UI |
+| Outputs | **08A:** `recording.ChecklistRecord` / `ChecklistResponse` draft foundation + Save Draft UI; **08B:** `ChecklistSubmission` / `ChecklistSubmissionResponse` immutable snapshots + Submit UI; **08C:** autosave + optimistic `draft_version` + online session recovery + shop-floor UX + optional equipment/evidence hooks |
 | Approval gate | Operator UAT sample (Sinhala UAT still blocked by DEBT-01C-R-NOTO); Phase 08 readiness gate for production use |
-| Branch naming | Direct-main quality-first for 08A/08B |
-| Exit criteria | **08A:** typed draft responses; record permission enforced; partial draft allowed. **08B:** completeness submit; immutable snapshot; post-submit edit blocked; no Submit/HOLD evaluation. Full Phase 08 production: evidenced published definitions + recorder mapping |
+| Branch naming | Direct-main quality-first for 08A/08B/08C |
+| Exit criteria | **08A:** typed draft responses; record permission enforced; partial draft allowed. **08B:** completeness submit; immutable snapshot; post-submit edit blocked; no Submit/HOLD evaluation. **08C:** safe autosave; no silent last-write-wins; online session recovery; UX hardening; no draft leakage. Full Phase 08 production: evidenced published definitions + recorder mapping |
 | Dependencies | Phase 07 technical; Phase 01 progress; published pilot definition + recorder mapping for production |
-| Notes | **Not** Phase 04. Do not include supervisor approval in this phase. **08A+08B technical foundations complete**; **production recording remains BLOCKED** (FG-QA-001 unpublished; role mapping open). |
-| Status | **08A + 08B implemented** — draft + immutable submit; Phase 09+ blocked |
+| Notes | **Not** Phase 04. Do not include supervisor approval in this phase. **08A–08C technical foundations complete**; **production recording remains BLOCKED** (FG-QA-001 unpublished; role mapping open). Offline IndexedDB is Phase 14. |
+| Status | **08A–08C implemented** — draft + immutable submit + shop-floor hardening; Phase 09+ blocked |
 
 ## Phase 09 — Supervisor checking and amendments
 

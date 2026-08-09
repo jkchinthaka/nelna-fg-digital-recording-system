@@ -9,8 +9,9 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.paginator import Paginator
-from django.http import Http404, HttpRequest, HttpResponse
+from django.http import Http404, HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from apps.accounts.models import User
@@ -20,7 +21,17 @@ from apps.recording.correction_services import (
     resubmit_checklist_correction,
     start_checklist_correction,
 )
-from apps.recording.forms import ChecklistDraftForm, response_field_name, sample_count_field_name
+from apps.recording.concurrency import (
+    DraftConcurrencyConflict,
+    SAVE_MODE_AUTOSAVE,
+    SAVE_MODE_MANUAL,
+)
+from apps.recording.forms import (
+    ChecklistDraftForm,
+    equipment_field_name,
+    response_field_name,
+    sample_count_field_name,
+)
 from apps.recording.models import (
     ChecklistCorrectionStatus,
     ChecklistRecord,
@@ -193,13 +204,74 @@ def start_recording(request: HttpRequest, task_id: uuid.UUID) -> HttpResponse:
     return redirect("recording:record_detail", record_id=record.id)
 
 
+
+
+def _equipment_choices_for_org(organization_id: uuid.UUID) -> list[tuple[str, str]]:
+    from apps.instruments.models import Equipment
+
+    rows = (
+        Equipment.objects.filter(organization_id=organization_id, is_active=True)
+        .order_by("code")
+        .values_list("id", "code", "name")[:500]
+    )
+    return [("", "— No equipment —")] + [
+        (str(pk), f"{code} — {name}") for pk, code, name in rows
+    ]
+
+
+def _initial_equipment(responses: list[ChecklistResponse]) -> dict[ResponseKey, str]:
+    initial: dict[ResponseKey, str] = {}
+    for response in responses:
+        if getattr(response, "equipment_id", None):
+            initial[(response.checklist_item_id, response.sample_index)] = str(
+                response.equipment_id
+            )
+    return initial
+
+
+def _section_progress(sections: list[Any], completeness: dict[str, Any]) -> list[dict[str, Any]]:
+    """Per-section answered/required counts for editor UX (top-level SIMPLE only)."""
+    missing_ids = {
+        str(getattr(item, "id", item))
+        for item in (completeness.get("missing_required_items") or [])
+    }
+    progress: list[dict[str, Any]] = []
+    for section in sections:
+        required = 0
+        missing = 0
+        for item in section.items.all():
+            if item.parent_item_id:
+                continue
+            if getattr(item, "item_kind", "") == "REPEATING_GROUP":
+                continue
+            if getattr(item, "item_kind", "") == "CALCULATED":
+                continue
+            if bool(getattr(item, "is_required", False)):
+                required += 1
+                if str(item.id) in missing_ids:
+                    missing += 1
+        answered = max(required - missing, 0)
+        progress.append(
+            {
+                "section": section,
+                "required": required,
+                "answered": answered,
+                "missing": missing,
+                "complete": missing == 0,
+            }
+        )
+    return progress
+
+
+
 @login_required
 @require_http_methods(["GET", "POST"])
 def record_detail(request: HttpRequest, record_id: uuid.UUID) -> HttpResponse:
     _require_recording_module(request)
+    # Online session recovery: remember resume URL for post-login return.
+    request.session["recording_resume_url"] = request.path
     requested_counts: dict[uuid.UUID, int] | None = None
     if request.method == "POST":
-        # Probe groups from a lightweight context load for sample add/remove.
         try:
             probe = load_record_editor_context(_actor(request), record_id)
         except PermissionDenied:
@@ -238,45 +310,52 @@ def record_detail(request: HttpRequest, record_id: uuid.UUID) -> HttpResponse:
     children_by_parent = draft_context["children_by_parent"]
     items = [item for section in sections for item in section.items.all()]
     initial = _initial_from_responses(responses, items)
+    equipment_choices = _equipment_choices_for_org(record.organization_id)
+    initial_equipment = _initial_equipment(responses)
+    conflict = False
+    section_progress = _section_progress(sections, completeness)
+
+    def _form(data: Any = None) -> ChecklistDraftForm:
+        return ChecklistDraftForm(
+            data,
+            items=items,
+            initial_responses=initial,
+            sample_indexes_by_group=sample_indexes_by_group,
+            draft_version=record.draft_version,
+            equipment_choices=equipment_choices,
+            initial_equipment=initial_equipment,
+        )
 
     if request.method == "POST" and request.POST.get("sample_action"):
-        form = ChecklistDraftForm(
-            request.POST,
-            items=items,
-            initial_responses=initial,
-            sample_indexes_by_group=sample_indexes_by_group,
-        )
-        # Re-render with adjusted sample counts without persisting.
+        form = _form(request.POST)
         if not form.is_valid():
-            form = ChecklistDraftForm(
-                items=items,
-                initial_responses=initial,
-                sample_indexes_by_group=sample_indexes_by_group,
-            )
+            form = _form()
     elif request.method == "POST":
-        form = ChecklistDraftForm(
-            request.POST,
-            items=items,
-            initial_responses=initial,
-            sample_indexes_by_group=sample_indexes_by_group,
-        )
+        form = _form(request.POST)
         if form.is_valid():
             try:
                 save_checklist_draft_responses(
                     actor=_actor(request),
                     record_id=record.id,
                     answers=form.answers_by_item_id(),
+                    expected_draft_version=int(form.cleaned_data["expected_draft_version"]),
+                    save_mode=SAVE_MODE_MANUAL,
+                    equipment_refs=form.equipment_refs_by_key(),
                 )
                 messages.success(request, "Draft saved.")
                 return redirect("recording:record_detail", record_id=record.id)
+            except DraftConcurrencyConflict as exc:
+                conflict = True
+                _apply_validation_error(form, exc)
+                messages.error(
+                    request,
+                    "Draft conflict: another tab or user saved first. "
+                    "Reload and re-apply your changes. No silent last-write-wins.",
+                )
             except ValidationError as exc:
                 _apply_validation_error(form, exc)
     else:
-        form = ChecklistDraftForm(
-            items=items,
-            initial_responses=initial,
-            sample_indexes_by_group=sample_indexes_by_group,
-        )
+        form = _form()
 
     return render(
         request,
@@ -292,8 +371,86 @@ def record_detail(request: HttpRequest, record_id: uuid.UUID) -> HttpResponse:
             "children_by_parent": children_by_parent,
             "responses": responses,
             "response_field_name": response_field_name,
+            "equipment_field_name": equipment_field_name,
             "ChecklistResponseType": ChecklistResponseType,
+            "draft_conflict": conflict,
+            "section_progress": section_progress,
+            "autosave_url": reverse("recording:record_autosave", kwargs={"record_id": record.id}),
         },
+    )
+
+
+@login_required
+@require_POST
+def record_autosave(request: HttpRequest, record_id: uuid.UUID) -> HttpResponse:
+    """
+    Safe autosave — server authoritative; optimistic concurrency required.
+
+    JSON response. Conflict → HTTP 409. No offline IndexedDB (Phase 14).
+    """
+    _require_recording_module(request)
+    try:
+        draft_context = load_record_editor_context(_actor(request), record_id)
+    except PermissionDenied:
+        raise
+    if draft_context is None:
+        return JsonResponse({"ok": False, "error": "not_found"}, status=404)
+
+    record: ChecklistRecord = draft_context["record"]
+    if record.status != ChecklistRecordStatus.DRAFT:
+        return JsonResponse({"ok": False, "error": "not_draft"}, status=409)
+
+    sections = draft_context["sections"]
+    responses = draft_context["responses"]
+    sample_indexes_by_group = draft_context["sample_indexes_by_group"]
+    items = [item for section in sections for item in section.items.all()]
+    initial = _initial_from_responses(responses, items)
+    form = ChecklistDraftForm(
+        request.POST,
+        items=items,
+        initial_responses=initial,
+        sample_indexes_by_group=sample_indexes_by_group,
+        draft_version=record.draft_version,
+        equipment_choices=_equipment_choices_for_org(record.organization_id),
+        initial_equipment=_initial_equipment(responses),
+    )
+    if not form.is_valid():
+        return JsonResponse(
+            {"ok": False, "error": "validation", "errors": form.errors.get_json_data()},
+            status=400,
+        )
+    try:
+        saved = save_checklist_draft_responses(
+            actor=_actor(request),
+            record_id=record.id,
+            answers=form.answers_by_item_id(),
+            expected_draft_version=int(form.cleaned_data["expected_draft_version"]),
+            save_mode=SAVE_MODE_AUTOSAVE,
+            equipment_refs=form.equipment_refs_by_key(),
+        )
+    except DraftConcurrencyConflict as exc:
+        return JsonResponse(
+            {
+                "ok": False,
+                "error": "conflict",
+                "code": "draft_concurrency_conflict",
+                "current_version": exc.current_version,
+                "expected_version": exc.expected_version,
+                "message": "Draft was updated elsewhere. Reload before saving.",
+            },
+            status=409,
+        )
+    except ValidationError as exc:
+        payload = getattr(exc, "message_dict", None) or {"__all__": list(exc.messages)}
+        return JsonResponse({"ok": False, "error": "validation", "errors": payload}, status=400)
+
+    return JsonResponse(
+        {
+            "ok": True,
+            "draft_version": saved.draft_version,
+            "save_mode": SAVE_MODE_AUTOSAVE,
+            "server_authoritative": True,
+        }
     )
 
 
@@ -506,12 +663,18 @@ def correction_detail(request: HttpRequest, correction_id: uuid.UUID) -> HttpRes
             items=items,
             initial_responses=initial,
             sample_indexes_by_group=sample_indexes_by_group,
+            draft_version=record.draft_version,
+            equipment_choices=_equipment_choices_for_org(record.organization_id),
+            initial_equipment=_initial_equipment(responses),
         )
         if not form.is_valid():
             form = ChecklistDraftForm(
                 items=items,
                 initial_responses=initial,
                 sample_indexes_by_group=sample_indexes_by_group,
+                draft_version=record.draft_version,
+                equipment_choices=_equipment_choices_for_org(record.organization_id),
+                initial_equipment=_initial_equipment(responses),
             )
     elif request.method == "POST":
         form = ChecklistDraftForm(
@@ -519,6 +682,9 @@ def correction_detail(request: HttpRequest, correction_id: uuid.UUID) -> HttpRes
             items=items,
             initial_responses=initial,
             sample_indexes_by_group=sample_indexes_by_group,
+            draft_version=record.draft_version,
+            equipment_choices=_equipment_choices_for_org(record.organization_id),
+            initial_equipment=_initial_equipment(responses),
         )
         if form.is_valid():
             try:
@@ -526,9 +692,18 @@ def correction_detail(request: HttpRequest, correction_id: uuid.UUID) -> HttpRes
                     actor=_actor(request),
                     record_id=record.id,
                     answers=form.answers_by_item_id(),
+                    expected_draft_version=int(
+                        form.cleaned_data.get("expected_draft_version")
+                        or record.draft_version
+                    ),
+                    save_mode=SAVE_MODE_MANUAL,
+                    equipment_refs=form.equipment_refs_by_key(),
                 )
                 messages.success(request, "Correction draft saved.")
                 return redirect("recording:correction_detail", correction_id=correction.id)
+            except DraftConcurrencyConflict as exc:
+                _apply_validation_error(form, exc)
+                messages.error(request, "Draft conflict — reload and retry.")
             except ValidationError as exc:
                 _apply_validation_error(form, exc)
     else:
@@ -536,6 +711,9 @@ def correction_detail(request: HttpRequest, correction_id: uuid.UUID) -> HttpRes
             items=items,
             initial_responses=initial,
             sample_indexes_by_group=sample_indexes_by_group,
+            draft_version=record.draft_version,
+            equipment_choices=_equipment_choices_for_org(record.organization_id),
+            initial_equipment=_initial_equipment(responses),
         )
 
     return render(

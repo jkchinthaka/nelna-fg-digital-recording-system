@@ -56,7 +56,7 @@ This document records **repository evidence**. It does not invent Nelna operatio
 | `training` | 05E | IMPLEMENTED foundation · unseeded competency records; gate OFF by default; matrix/WARN-BLOCK **EVIDENCE REQUIRED** (APR-042) |
 | `checklists` | 06A–06O + **07D** | IMPLEMENTED · FG-QA-001 **NOT BUSINESS APPROVED**; Phase **06N BLOCKED**; optional `SPECIFICATION_PARAMETER` evaluation pin (06O); Engine v2 **designed** (ADR-019); real forms **NOT RECEIVED**; optional `requires_equipment_reference` (05D); **07D** effective-version selection |
 | scheduling | 07A–07H | IMPLEMENTED · due/overdue foundation + assignment + schedules + batch-event adapter; live generation **BLOCKED** (APR-011/012) |
-| `recording` | 08A/08B + 09B | IMPLEMENTED · production recording **BLOCKED** |
+| `recording` | 08A–08C + 09B | IMPLEMENTED · shop-floor hardening + draft/submit; production recording **BLOCKED** |
 | `reviews` | 09A | IMPLEMENTED · production Supervisor review **BLOCKED** |
 | `quality` | 10A | IMPLEMENTED · production QA **BLOCKED**; no ERP/warehouse/dispatch side effects |
 
@@ -99,6 +99,7 @@ Not started (by MODULE_MAP): `evidence`, `nonconformance`, `capa`, `loading`, `d
 | 07G Task assignment | Technical complete — USER/ROLE/DEPT/SHIFT/TEAM ownership; append-only history; My/Unassigned/Assigned queues; assign ≠ RBAC | Future auto-assign policies EVIDENCE REQUIRED |
 | 07H Due / overdue foundation | Technical complete — configured due_from/due_at/due_soon; derived NOT_DUE/DUE/DUE_SOON/OVERDUE; overdue ≠ NCR; no invented SLAs | Company SLA durations EVIDENCE REQUIRED |
 | 08A/08B Recording/submit | Complete | Production recording blocked |
+| 08C Recording hardening | Technical complete — autosave, optimistic concurrency, session recovery (online), UX | Production recording still BLOCKED; offline IndexedDB is Phase 14 |
 | 09A/09B Supervisor review + correction | Complete | Production review/correction blocked |
 | 10A QA disposition | Complete (manual RELEASE/HOLD/REJECT only) | Production QA blocked; post-QA workflows not started |
 | 10B+ Post-QA operational | Not started | EVIDENCE REQUIRED |
@@ -292,4 +293,10 @@ Checklist task ownership workflow is implemented: assign / reassign / unassign w
 **STATUS: PHASE 07H DUE MANAGEMENT COMPLETE**
 
 Due/overdue foundation: configured `due_from` / `due_at` (`due_to`) / optional `due_soon_minutes`; derived display states (`NOT_DUE` / `DUE` / `DUE_SOON` / `OVERDUE`) without persisted redundant state; overdue queue + UI badges/filters. No invented SLA durations. Overdue never auto-creates NCR.
+
+## Phase 08C delivery status
+
+**STATUS: PHASE 08C RECORDING HARDENING COMPLETE**
+
+Shop-floor recording hardening: preserved start → Save Draft → submit → immutable snapshot; safe autosave; optimistic `draft_version` (no silent last-write-wins); online session recovery (not IndexedDB); sticky save / section progress / validation summary / touch targets; optional equipment + Phase 11 evidence hooks. Production recording remains BLOCKED.
 

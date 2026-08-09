@@ -532,11 +532,72 @@ def validate_record_ready_for_submission(
     return stats
 
 
+
+def _apply_equipment_refs(
+    *,
+    record: ChecklistRecord,
+    items: dict,
+    existing: dict,
+    equipment_refs: dict,
+) -> None:
+    """Attach optional equipment references; never invent calibration policy."""
+    if not equipment_refs:
+        return
+    from apps.instruments.models import Equipment
+
+    def _key(raw_key: Any) -> tuple[Any, int]:
+        if isinstance(raw_key, tuple) and len(raw_key) == 2:
+            item_id = raw_key[0]
+            if not isinstance(item_id, uuid.UUID):
+                item_id = uuid.UUID(str(item_id))
+            return item_id, int(raw_key[1])
+        return uuid.UUID(str(raw_key)), 1
+
+    for raw_key, equipment_id in equipment_refs.items():
+        key = _key(raw_key)
+        item = items.get(key[0])
+        if item is None:
+            continue
+        response = existing.get(key)
+        if response is None:
+            continue
+        requires = bool(getattr(item, "requires_equipment_reference", False))
+        if not requires:
+            continue
+        if equipment_id in (None, ""):
+            response.equipment = None
+            response.evidence_hook = {
+                "status": "EQUIPMENT_REFERENCE_CLEARED",
+                "attachment_module": "Phase 11 - not available",
+            }
+            response.save(update_fields=["equipment", "evidence_hook", "updated_at"])
+            continue
+        equipment = Equipment.objects.filter(pk=equipment_id).first()
+        if equipment is None:
+            raise ValidationError({str(key[0]): ["Equipment not found."]})
+        if equipment.organization_id != record.organization_id:
+            raise ValidationError(
+                {str(key[0]): ["Equipment must belong to the record organization."]}
+            )
+        response.equipment = equipment
+        response.evidence_hook = {
+            "status": "EQUIPMENT_REFERENCE_SET",
+            "equipment_id": str(equipment.id),
+            "equipment_code": equipment.code,
+            "attachment_module": "Phase 11 - not available",
+            "calibration_policy": "EVIDENCE REQUIRED - not enforced on draft save",
+        }
+        response.save(update_fields=["equipment", "evidence_hook", "updated_at"])
+
+
 def save_checklist_draft_responses(
     *,
     actor: User | None,
     record_id: uuid.UUID,
     answers: dict[Any, Any],
+    expected_draft_version: int | None = None,
+    save_mode: str = "manual",
+    equipment_refs: dict[Any, Any] | None = None,
 ) -> ChecklistRecord:
     """
     Save/update/clear typed draft responses.
@@ -544,12 +605,24 @@ def save_checklist_draft_responses(
     ``answers`` keys may be ``item_id`` (legacy sample_index=1) or
     ``(item_id, sample_index)``.
 
+    Optimistic concurrency: when ``expected_draft_version`` is provided it must
+    match ``record.draft_version`` or DraftConcurrencyConflict is raised
+    (no silent last-write-wins). Server remains authoritative.
+
+    ``equipment_refs`` optional map of answer key -> equipment UUID for items
+    with ``requires_equipment_reference`` (calibration policy EVIDENCE REQUIRED).
+
     Allowed when:
     - ChecklistRecord is DRAFT (initial recording), or
     - ChecklistRecord is SUBMITTED with an eligible active ChecklistCorrection(DRAFT).
     """
     user = _require_authenticated_actor(actor)
     normalized = normalize_answers(answers)
+    from apps.recording.concurrency import (
+        SAVE_MODE_AUTOSAVE,
+        assert_expected_draft_version,
+        next_draft_version,
+    )
 
     with transaction.atomic():
         record = (
@@ -575,6 +648,10 @@ def save_checklist_draft_responses(
         from apps.recording.correction_services import assert_record_editable_for_actor
 
         assert_record_editable_for_actor(record)
+        assert_expected_draft_version(
+            record_version=record.draft_version,
+            expected_draft_version=expected_draft_version,
+        )
 
         version_id = task.checklist_version_id
         item_rows = list(
@@ -684,11 +761,22 @@ def save_checklist_draft_responses(
         apply_evaluations_to_drafts(items=item_rows, responses=existing, condition_flags=flags)
         changed += sum(1 for item in item_rows if item.item_kind == ChecklistItemKind.CALCULATED)
 
-        record.save(update_fields=["updated_at"])
+        _apply_equipment_refs(
+            record=record,
+            items=items,
+            existing=existing,
+            equipment_refs=equipment_refs or {},
+        )
+        record.draft_version = next_draft_version(record.draft_version)
+        record.save(update_fields=["updated_at", "draft_version"])
+        meta = _record_metadata(record, changed_item_count=changed)
+        meta["draft_version"] = record.draft_version
+        meta["save_mode"] = save_mode
+        meta["autosave"] = save_mode == SAVE_MODE_AUTOSAVE
         record_event(
             event_type="CHECKLIST_RECORD_DRAFT_SAVED",
             actor=user,
-            metadata=_record_metadata(record, changed_item_count=changed),
+            metadata=meta,
         )
 
     return ChecklistRecord.objects.select_related(
@@ -866,6 +954,8 @@ def submit_checklist_record(
                         evaluation_context=response.evaluation_context,
                         control_point_context=_control_point_context_for_item(item),
                         measurement_context=_measurement_context_for_response(response, item),
+                        equipment_id=response.equipment_id,
+                        evidence_hook=response.evidence_hook,
                     )
                 elif item.item_kind == ChecklistItemKind.CALCULATED:
                     if response.number_value is None:
@@ -884,6 +974,8 @@ def submit_checklist_record(
                         evaluation_context=response.evaluation_context,
                         control_point_context=_control_point_context_for_item(item),
                         measurement_context=_measurement_context_for_response(response, item),
+                        equipment_id=response.equipment_id,
+                        evidence_hook=response.evidence_hook,
                     )
                 else:
                     continue

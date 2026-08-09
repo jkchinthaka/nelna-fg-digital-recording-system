@@ -882,4 +882,265 @@
     gap: 0.75rem;
     margin-top: 1.25rem;
   }
+
+  /* Phase 08C — shop-floor recording hardening */
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .btn--touch,
+  .recording-editor .btn,
+  .recording-editor input[type="radio"],
+  .recording-editor select.form-input,
+  .recording-editor textarea.form-input,
+  .recording-editor input.form-input {
+    min-height: var(--token-size-touch-minimum, 48px);
+  }
+
+  .recording-section-progress {
+    margin: 0 0 1rem;
+  }
+
+  .recording-section-progress ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .recording-section-progress a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-height: var(--token-size-touch-minimum, 48px);
+    padding: 0.35rem 0.75rem;
+    border: 1px solid var(--color-border-default, #dde4ea);
+    border-radius: 0.4rem;
+    text-decoration: none;
+  }
+
+  .recording-section-progress .is-complete a {
+    border-color: var(--color-success, #2f6b3b);
+  }
+
+  .recording-validation-summary a {
+    text-decoration: underline;
+  }
+
+  .recording-sample-stack {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .recording-sample {
+    border: 1px dashed var(--color-border-default, #c5d0da);
+    border-radius: 0.45rem;
+    padding: 0.75rem;
+    margin: 0;
+  }
+
+  .recording-sample-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+
+  .recording-equipment-hook {
+    margin-top: 0.65rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--color-border-default, #e6edf2);
+  }
+
+  .recording-autosave-status {
+    margin: 0 0 0.75rem;
+    font-size: 0.9rem;
+    color: var(--color-text-muted, #4a5b6a);
+  }
+
+  .recording-sticky-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+    padding: 0.75rem 0;
+    background: linear-gradient(
+      to top,
+      var(--color-surface, #fff) 70%,
+      transparent
+    );
+    border-top: 1px solid var(--color-border-default, #dde4ea);
+  }
+
+  .recording-sticky-actions__hint {
+    font-size: 0.85rem;
+    color: var(--color-text-muted, #4a5b6a);
+  }
+
+  @media (max-width: 640px) {
+    .recording-sticky-actions {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .recording-sticky-actions .btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
 }
+
+
+  /* Phase 08C — shop-floor recording hardening */
+  .recording-editor .form-input,
+  .recording-editor .form-input--touch,
+  .recording-editor input[type="text"],
+  .recording-editor input[type="number"],
+  .recording-editor select,
+  .recording-editor textarea {
+    min-height: 48px;
+    font-size: 1rem;
+  }
+
+  .recording-editor input[type="radio"],
+  .recording-editor input[type="checkbox"] {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .btn--touch {
+    min-height: 48px;
+    min-width: 48px;
+    padding: 0.75rem 1rem;
+  }
+
+  .recording-item__required {
+    color: var(--color-status-danger, #c93434);
+    font-weight: 700;
+    margin-right: 0.25rem;
+  }
+
+  .recording-item__required-label {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary, #5c685f);
+  }
+
+  .recording-section-progress {
+    border: 1px solid var(--color-border-default, #dde4df);
+    background: #fff;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin: 1rem 0;
+  }
+
+  .recording-section-progress__title {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+  }
+
+  .recording-section-progress__list {
+    margin: 0;
+    padding-left: 1.1rem;
+  }
+
+  .recording-sample {
+    border: 1px dashed var(--color-border-default, #dde4df);
+    border-radius: 12px;
+    padding: 0.85rem 1rem;
+    margin: 0.75rem 0;
+    background: #fafcfb;
+  }
+
+  .recording-sticky-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 20;
+    background: rgba(255, 255, 255, 0.96);
+    border-top: 1px solid var(--color-border-default, #dde4df);
+    padding: 0.85rem 0.5rem;
+    margin-top: 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+  }
+
+  .recording-sticky-actions__hint {
+    color: var(--color-text-secondary, #5c685f);
+    font-size: 0.875rem;
+  }
+
+  .recording-autosave-status {
+    margin: 0.75rem 0;
+    padding: 0.65rem 0.85rem;
+    border-radius: 8px;
+    background: #e8f1f9;
+    color: #1565c0;
+  }
+
+  .recording-autosave-status--error {
+    background: #fdeaea;
+    color: #c93434;
+  }
+
+  .recording-validation-summary a {
+    text-decoration: underline;
+  }
+
+  .recording-equipment-field {
+    margin-top: 0.75rem;
+  }
+
+  .recording-sample--touch {
+    /* Generous padding + min touch height on each row for shop-floor gloved use. */
+    padding: 1rem 1rem 0.85rem;
+    touch-action: manipulation;
+  }
+
+  .recording-sample--touch legend {
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 0 0.25rem;
+  }
+
+  .recording-sample--touch .form-field {
+    margin-bottom: 0.75rem;
+  }
+
+  .recording-sample--touch input[type="radio"],
+  .recording-sample--touch input[type="checkbox"] {
+    width: 1.5rem;
+    height: 1.5rem;
+    min-height: 1.5rem;
+    cursor: pointer;
+  }
+
+  .recording-sample--touch .form-input,
+  .recording-sample--touch input[type="text"],
+  .recording-sample--touch input[type="number"],
+  .recording-sample--touch select,
+  .recording-sample--touch textarea {
+    min-height: var(--token-size-touch-minimum, 48px);
+    font-size: 1rem;
+  }
+
+  @media (max-width: 767px) {
+    .recording-editor .mgmt-meta {
+      grid-template-columns: 1fr;
+    }
+  }
+
