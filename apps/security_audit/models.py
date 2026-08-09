@@ -21,10 +21,13 @@ class SecurityAuditEvent(models.Model):
         USER_DEACTIVATED = "USER_DEACTIVATED", "User deactivated"
         ROLE_ASSIGNED = "ROLE_ASSIGNED", "Role assigned"
         ROLE_REVOKED = "ROLE_REVOKED", "Role revoked"
-        ROLE_PERMISSIONS_UPDATED = "ROLE_PERMISSIONS_UPDATED", "Role permissions updated"
+        ROLE_PERMISSIONS_SET = "ROLE_PERMISSIONS_SET", "Role permissions set"
         ROLE_TEMPLATE_CREATED = "ROLE_TEMPLATE_CREATED", "Role template created"
         ROLE_TEMPLATE_UPDATED = "ROLE_TEMPLATE_UPDATED", "Role template updated"
-        ROLE_TEMPLATE_APPLIED = "ROLE_TEMPLATE_APPLIED", "Role template applied to role"
+        ROLE_TEMPLATE_PERMISSIONS_SET = (
+            "ROLE_TEMPLATE_PERMISSIONS_SET",
+            "Role template permissions set",
+        )
         SHIFT_CREATED = "SHIFT_CREATED", "Shift created"
         SHIFT_UPDATED = "SHIFT_UPDATED", "Shift updated"
         SHIFT_ACTIVATED = "SHIFT_ACTIVATED", "Shift activated"

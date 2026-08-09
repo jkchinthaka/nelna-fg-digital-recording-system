@@ -1,9 +1,7 @@
-# Generated manually for Phase 03C Role Governance — empty RoleTemplate catalogue (no seed).
-# business_category_hint is documentation only; never company approval evidence.
+# Generated manually for Phase 03C Role Governance - empty RoleTemplate catalogue (no seed).
 
 import django.db.models.functions.text
 import uuid
-
 from django.db import migrations, models
 
 
@@ -29,12 +27,31 @@ class Migration(migrations.Migration):
                 ("description", models.TextField(blank=True, default="")),
                 ("is_active", models.BooleanField(default=True)),
                 (
-                    "business_category_hint",
+                    "business_status",
+                    models.CharField(
+                        choices=[
+                            ("PROPOSED", "Proposed"),
+                            ("PENDING_OWNER_APPROVAL", "Pending owner approval"),
+                            ("OWNER_APPROVED", "Owner approved"),
+                        ],
+                        default="PROPOSED",
+                        help_text=(
+                            "OWNER_APPROVED requires documented APR evidence - never invent. "
+                            "PROPOSED and PENDING_OWNER_APPROVAL are not company authority."
+                        ),
+                        max_length=32,
+                    ),
+                ),
+                (
+                    "evidence_reference",
                     models.CharField(
                         blank=True,
                         default="",
-                        help_text="Documentation hint only. Not business approval.",
-                        max_length=128,
+                        help_text=(
+                            "Required when business_status=OWNER_APPROVED via governance services. "
+                            "APR / controlled-document pointer only."
+                        ),
+                        max_length=512,
                     ),
                 ),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
@@ -62,6 +79,10 @@ class Migration(migrations.Migration):
                 django.db.models.functions.text.Lower("code"),
                 name="ac_role_tmpl_code_lower_idx",
             ),
+        ),
+        migrations.AddIndex(
+            model_name="roletemplate",
+            index=models.Index(fields=["business_status"], name="ac_role_tmpl_biz_idx"),
         ),
         migrations.AddConstraint(
             model_name="roletemplate",

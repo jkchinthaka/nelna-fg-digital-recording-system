@@ -1,7 +1,7 @@
-"""Audited role / role-template governance services (Phase 03C).
+"""Role template and role-permission governance services (Phase 03C).
 
-Technical only: does not seed Nelna job titles, does not auto-assign users,
-and does not invent SoD enforcement. RoleTemplate is not business approval.
+OWNER_APPROVED requires non-blank evidence_reference. No migration seed.
+create_role_from_template copies permissions into a new Role only (no user assignment).
 """
 
 from __future__ import annotations
@@ -13,10 +13,11 @@ from django.contrib.auth.models import Permission
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import transaction
 
-from apps.access_control.models import Role, RoleTemplate, ScopedRoleAssignment
+from apps.access_control.models import Role, RoleTemplate, RoleTemplateBusinessStatus
 from apps.accounts.models import User
 
 SOD_PENDING = "PENDING"
+_UNSET = object()
 
 
 def _request_meta(request: object | None) -> tuple[str | None, str | None, str]:
@@ -31,41 +32,35 @@ def _request_meta(request: object | None) -> tuple[str | None, str | None, str]:
 
 
 def normalize_template_code(value: str) -> str:
-    return value.strip().upper()
+    return (value or "").strip().upper()
 
 
-def _resolve_permission_codenames(permission_codenames: Iterable[str]) -> list[Permission]:
-    """Resolve app_label.codename strings to Permission rows (fail closed on unknown)."""
-    resolved: list[Permission] = []
-    missing: list[str] = []
-    seen: set[str] = set()
-    for raw in permission_codenames:
-        key = (raw or "").strip()
-        if not key:
-            continue
-        if key in seen:
-            continue
-        seen.add(key)
-        if "." not in key:
-            missing.append(key)
-            continue
-        app_label, codename = key.split(".", 1)
-        perm = (
-            Permission.objects.filter(content_type__app_label=app_label, codename=codename)
-            .select_related("content_type")
-            .first()
+def _permission_keys(perms: Iterable[Permission]) -> list[str]:
+    return sorted(f"{p.content_type.app_label}.{p.codename}" for p in perms)
+
+
+def _resolve_permission_ids(permission_ids: Sequence[uuid.UUID | int]) -> list[Permission]:
+    ids = [pid for pid in permission_ids if pid is not None]
+    if not ids:
+        return []
+    found = list(Permission.objects.filter(pk__in=ids).select_related("content_type"))
+    if len(found) != len(set(ids)):
+        raise ValidationError("One or more permission ids are unknown.")
+    return found
+
+
+def _assert_owner_approved_evidence(*, business_status: str, evidence_reference: str) -> str:
+    status = (business_status or "").strip().upper() or RoleTemplateBusinessStatus.PROPOSED
+    evidence = (evidence_reference or "").strip()
+    if status == RoleTemplateBusinessStatus.OWNER_APPROVED and not evidence:
+        raise ValidationError(
+            "OWNER_APPROVED requires a non-blank evidence_reference "
+            "(APR / controlled-document pointer). Do not invent approval."
         )
-        if perm is None:
-            missing.append(key)
-        else:
-            resolved.append(perm)
-    if missing:
-        raise ValidationError(f"Unknown or invalid permission codenames: {sorted(missing)}")
-    return resolved
+    return evidence
 
 
 def list_sod_open_questions() -> list[dict[str, str]]:
-    """Pure documentation helper — all segregation questions remain PENDING."""
     questions = (
         "Can a recorder review their own submission?",
         "Can a Supervisor act as QA for the same submission?",
@@ -74,36 +69,47 @@ def list_sod_open_questions() -> list[dict[str, str]]:
         "Can a user publish checklist definitions and approve their own content?",
         "Can specification editor approve their own change?",
     )
-    return [{"question": q, "status": SOD_PENDING, "response": ""} for q in questions]
+    return [{"question": q, "status": SOD_PENDING} for q in questions]
+
+
+def list_proposed_business_categories() -> list[dict[str, str]]:
+    return [
+        {"category": c, "status": "PROPOSED", "approved": "No"}
+        for c in (
+            "Operator",
+            "Stores",
+            "Supervisor",
+            "QA Officer",
+            "QA Manager",
+            "Site Manager",
+            "System Administrator",
+            "Management",
+            "Auditor",
+        )
+    ]
 
 
 @transaction.atomic
 def set_role_permissions(
+    *,
     actor: User | None,
     role_id: uuid.UUID,
-    permission_codenames: Sequence[str],
-    *,
+    permission_ids: Sequence[uuid.UUID | int],
     request: object | None = None,
 ) -> Role:
-    """Replace Role.permissions from codenames; audit ROLE_PERMISSIONS_UPDATED."""
     from apps.security_audit.services import record_event
 
     try:
         role = Role.objects.select_for_update().get(pk=role_id)
     except ObjectDoesNotExist as exc:
         raise ValidationError("Role not found.") from exc
-
-    perms = _resolve_permission_codenames(permission_codenames)
-    before = sorted(
-        f"{p.content_type.app_label}.{p.codename}"
-        for p in role.permissions.select_related("content_type")
-    )
+    perms = _resolve_permission_ids(permission_ids)
+    before = _permission_keys(role.permissions.select_related("content_type"))
     role.permissions.set(perms)
-    after = sorted(f"{p.content_type.app_label}.{p.codename}" for p in perms)
-
+    after = _permission_keys(perms)
     request_id, ip, ua = _request_meta(request)
     record_event(
-        event_type="ROLE_PERMISSIONS_UPDATED",
+        event_type="ROLE_PERMISSIONS_SET",
         actor=actor,
         request_id=request_id,
         ip_address=ip,
@@ -113,6 +119,7 @@ def set_role_permissions(
             "role_code": role.code,
             "permissions_before": before,
             "permissions_after": after,
+            "user_assigned": False,
         },
     )
     return role
@@ -120,32 +127,37 @@ def set_role_permissions(
 
 @transaction.atomic
 def create_role_template(
-    actor: User | None,
     *,
+    actor: User | None,
     code: str,
     name: str,
     description: str = "",
-    permission_codenames: Sequence[str] | None = None,
-    business_category_hint: str = "",
+    business_status: str = RoleTemplateBusinessStatus.PROPOSED,
+    evidence_reference: str = "",
     is_active: bool = True,
+    permission_ids: Sequence[uuid.UUID | int] | None = None,
     request: object | None = None,
 ) -> RoleTemplate:
-    """Create a technical RoleTemplate. Not business-approved. No user assignment."""
     from apps.security_audit.services import record_event
 
+    status = (business_status or "").strip().upper() or RoleTemplateBusinessStatus.PROPOSED
+    if status not in RoleTemplateBusinessStatus.values:
+        raise ValidationError("Invalid business_status.")
+    evidence = _assert_owner_approved_evidence(
+        business_status=status, evidence_reference=evidence_reference
+    )
     template = RoleTemplate(
         code=normalize_template_code(code),
-        name=name.strip(),
-        description=description,
-        is_active=is_active,
-        business_category_hint=(business_category_hint or "").strip(),
+        name=(name or "").strip(),
+        description=description or "",
+        is_active=bool(is_active),
+        business_status=status,
+        evidence_reference=evidence,
     )
     template.full_clean()
     template.save()
-    codenames = list(permission_codenames or [])
-    if codenames:
-        template.permissions.set(_resolve_permission_codenames(codenames))
-
+    if permission_ids:
+        template.permissions.set(_resolve_permission_ids(permission_ids))
     request_id, ip, ua = _request_meta(request)
     record_event(
         event_type="ROLE_TEMPLATE_CREATED",
@@ -156,39 +168,67 @@ def create_role_template(
         metadata={
             "template_id": str(template.id),
             "template_code": template.code,
-            "permission_codenames": sorted(codenames),
-            "business_category_hint": template.business_category_hint or None,
-            "business_approved": False,
+            "business_status": template.business_status,
+            "evidence_reference": template.evidence_reference or None,
+            "treated_as_company_approved": False,
+            "company_approved": False,
         },
     )
     return template
 
 
 @transaction.atomic
-def update_role_template_permissions(
+def update_role_template(
+    *,
     actor: User | None,
     template_id: uuid.UUID,
-    permission_codenames: Sequence[str],
-    *,
+    name: str | object = _UNSET,
+    description: str | object = _UNSET,
+    is_active: bool | object = _UNSET,
+    business_status: str | object = _UNSET,
+    evidence_reference: str | object = _UNSET,
     request: object | None = None,
 ) -> RoleTemplate:
-    """Replace template permissions; audit ROLE_TEMPLATE_UPDATED."""
     from apps.security_audit.services import record_event
 
     try:
         template = RoleTemplate.objects.select_for_update().get(pk=template_id)
     except ObjectDoesNotExist as exc:
         raise ValidationError("Role template not found.") from exc
-
-    perms = _resolve_permission_codenames(permission_codenames)
-    before = sorted(
-        f"{p.content_type.app_label}.{p.codename}"
-        for p in template.permissions.select_related("content_type")
+    before = {
+        "name": template.name,
+        "description": template.description,
+        "is_active": template.is_active,
+        "business_status": template.business_status,
+        "evidence_reference": template.evidence_reference,
+    }
+    if name is not _UNSET:
+        template.name = str(name or "").strip()
+    if description is not _UNSET:
+        template.description = str(description or "")
+    if is_active is not _UNSET:
+        template.is_active = bool(is_active)
+    if business_status is not _UNSET:
+        next_status = str(business_status or "").strip().upper()
+        if next_status not in RoleTemplateBusinessStatus.values:
+            raise ValidationError("Invalid business_status.")
+        template.business_status = next_status
+    next_evidence = template.evidence_reference
+    if evidence_reference is not _UNSET:
+        next_evidence = str(evidence_reference or "").strip()
+    template.evidence_reference = _assert_owner_approved_evidence(
+        business_status=template.business_status,
+        evidence_reference=next_evidence,
     )
-    template.permissions.set(perms)
-    after = sorted(f"{p.content_type.app_label}.{p.codename}" for p in perms)
-    template.save(update_fields=["updated_at"])
-
+    template.full_clean()
+    template.save()
+    after = {
+        "name": template.name,
+        "description": template.description,
+        "is_active": template.is_active,
+        "business_status": template.business_status,
+        "evidence_reference": template.evidence_reference,
+    }
     request_id, ip, ua = _request_meta(request)
     record_event(
         event_type="ROLE_TEMPLATE_UPDATED",
@@ -199,27 +239,62 @@ def update_role_template_permissions(
         metadata={
             "template_id": str(template.id),
             "template_code": template.code,
-            "permissions_before": before,
-            "permissions_after": after,
-            "business_approved": False,
+            "before": before,
+            "after": after,
+            "treated_as_company_approved": False,
         },
     )
     return template
 
 
 @transaction.atomic
-def apply_role_template_to_role(
+def set_role_template_permissions(
+    *,
     actor: User | None,
     template_id: uuid.UUID,
-    role_id: uuid.UUID,
+    permission_ids: Sequence[uuid.UUID | int],
+    request: object | None = None,
+) -> RoleTemplate:
+    from apps.security_audit.services import record_event
+
+    try:
+        template = RoleTemplate.objects.select_for_update().get(pk=template_id)
+    except ObjectDoesNotExist as exc:
+        raise ValidationError("Role template not found.") from exc
+    perms = _resolve_permission_ids(permission_ids)
+    before = _permission_keys(template.permissions.select_related("content_type"))
+    template.permissions.set(perms)
+    after = _permission_keys(perms)
+    template.save(update_fields=["updated_at"])
+    request_id, ip, ua = _request_meta(request)
+    record_event(
+        event_type="ROLE_TEMPLATE_PERMISSIONS_SET",
+        actor=actor,
+        request_id=request_id,
+        ip_address=ip,
+        user_agent_summary=ua,
+        metadata={
+            "template_id": str(template.id),
+            "template_code": template.code,
+            "business_status": template.business_status,
+            "permissions_before": before,
+            "permissions_after": after,
+        },
+    )
+    return template
+
+
+@transaction.atomic
+def create_role_from_template(
     *,
+    actor: User | None,
+    template_id: uuid.UUID,
+    role_code: str,
+    role_name: str,
+    role_description: str = "",
     request: object | None = None,
 ) -> Role:
-    """
-    Explicitly copy template permissions onto an existing Role.
-
-    Does **not** create ScopedRoleAssignment. Does **not** assign users.
-    """
+    from apps.access_control.services import create_role, normalize_role_code
     from apps.security_audit.services import record_event
 
     try:
@@ -229,41 +304,35 @@ def apply_role_template_to_role(
     except ObjectDoesNotExist as exc:
         raise ValidationError("Role template not found.") from exc
     if not template.is_active:
-        raise ValidationError("Cannot apply an inactive role template.")
-
-    try:
-        role = Role.objects.select_for_update().get(pk=role_id)
-    except ObjectDoesNotExist as exc:
-        raise ValidationError("Role not found.") from exc
-
+        raise ValidationError("Cannot create a role from an inactive template.")
     perms = list(template.permissions.all())
-    before = sorted(
-        f"{p.content_type.app_label}.{p.codename}"
-        for p in role.permissions.select_related("content_type")
+    role = create_role(
+        code=normalize_role_code(role_code),
+        name=(role_name or "").strip(),
+        description=role_description
+        or (
+            f"Created from role template {template.code} "
+            f"(template business_status={template.business_status})."
+        ),
+        permissions=perms,
     )
-    role.permissions.set(perms)
-    after = sorted(f"{p.content_type.app_label}.{p.codename}" for p in perms)
-
-    assignment_count_before = ScopedRoleAssignment.objects.filter(role=role).count()
-
     request_id, ip, ua = _request_meta(request)
     record_event(
-        event_type="ROLE_TEMPLATE_APPLIED",
+        event_type="ROLE_PERMISSIONS_SET",
         actor=actor,
         request_id=request_id,
         ip_address=ip,
         user_agent_summary=ua,
         metadata={
-            "template_id": str(template.id),
-            "template_code": template.code,
             "role_id": str(role.id),
             "role_code": role.code,
-            "permissions_before": before,
-            "permissions_after": after,
+            "source_template_id": str(template.id),
+            "source_template_code": template.code,
+            "source_template_business_status": template.business_status,
+            "permissions_after": _permission_keys(perms),
+            "user_assigned": False,
             "scoped_role_assignments_created": 0,
-            "role_assignment_count_unchanged": assignment_count_before
-            == ScopedRoleAssignment.objects.filter(role=role).count(),
-            "business_approved": False,
+            "treated_as_company_approved": False,
         },
     )
     return role
