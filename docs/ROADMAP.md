@@ -126,11 +126,11 @@ Branch naming pattern: `foundation/...`, `design/...`, `feature/phase-NN-short-n
 | Branch naming | Direct-main for 04A/04B quality-first workflow; feature branches optional |
 | Exit criteria | Phase 04A: configurable Shift model/services/selectors/audit/admin/tests without seeded business rows. Phase 04B: authorized Shift management UI. Full Phase 04: real Shift values configured after evidence; scoped queries remain sound |
 | Dependencies | Phase 03 complete; Phase 04 scope reconciliation (PR #10); owner provisional decision for configurable foundation |
-| Status | **04A + 04B implemented** â€” Phase 04 **not** fully complete; real-data configuration / UAT pending |
+| Status | **04A + 04B + 04C technical foundation implemented** â€” Phase 04 **not** fully complete; real-data configuration / UAT pending |
 
 ### Phase 04 scope statement
 
-Phase 04 completes residual organization-hierarchy confirmation and introduces Shift support. Organization, Site, and Department **already exist** from Phase 03 and are not rebuilt. Phase **04A** delivers a configurable, unseeded Shift domain foundation under owner provisional direction ([PHASE_04_SHIFT_PROVISIONAL_CONFIGURATION.md](decisions/PHASE_04_SHIFT_PROVISIONAL_CONFIGURATION.md), [ADR-008](architecture/ADR-008-CONFIGURABLE-SHIFT-FOUNDATION.md)). Phase **04B** delivers the Shift management UI ([SHIFT_MANAGEMENT_UI.md](design/SHIFT_MANAGEMENT_UI.md)). Administrator entry of real business values after ASM evidence remains outstanding. FG products, checklist definitions, checklist records, review workflows and attachments remain explicitly **outside** Phase 04.
+Phase 04 completes residual organization-hierarchy confirmation and introduces Shift support. Organization, Site, and Department **already exist** from Phase 03 and are not rebuilt. Phase **04A** delivers a configurable, unseeded Shift domain foundation under owner provisional direction ([PHASE_04_SHIFT_PROVISIONAL_CONFIGURATION.md](decisions/PHASE_04_SHIFT_PROVISIONAL_CONFIGURATION.md), [ADR-008](architecture/ADR-008-CONFIGURABLE-SHIFT-FOUNDATION.md)). Phase **04B** delivers the Shift management UI ([SHIFT_MANAGEMENT_UI.md](design/SHIFT_MANAGEMENT_UI.md)). Phase **04C** adds audited Org/Site/Department lifecycle + controlled hierarchy import (no seeded company values). Administrator entry of real business values after ASM evidence remains outstanding. FG products, checklist definitions, checklist records, review workflows and attachments remain explicitly **outside** Phase 04.
 
 ### Phase 04 business gates
 

@@ -23,6 +23,10 @@
 | `SHIFT_UPDATED` | Configurable Shift fields updated via domain service |
 | `SHIFT_ACTIVATED` | Shift reactivated (`is_active=True`) |
 | `SHIFT_DEACTIVATED` | Shift deactivated (`is_active=False`) |
+| `ORGANIZATION_CREATED` / `UPDATED` / `ACTIVATED` / `DEACTIVATED` | Organization lifecycle (Phase 04C) |
+| `SITE_CREATED` / `UPDATED` / `ACTIVATED` / `DEACTIVATED` | Site lifecycle (Phase 04C) |
+| `DEPARTMENT_CREATED` / `UPDATED` / `ACTIVATED` / `DEACTIVATED` | Department lifecycle (Phase 04C) |
+| `ORGANIZATION_HIERARCHY_IMPORT_PREVIEWED` / `COMPLETED` / `FAILED` | Controlled hierarchy import (Phase 04C) |
 | `FG_PRODUCT_CREATED` | Configurable FG Product created via domain service |
 | `FG_PRODUCT_UPDATED` | Configurable FG Product fields updated via domain service |
 | `FG_PRODUCT_ACTIVATED` | FG Product reactivated (`is_active=True`) |
@@ -63,7 +67,7 @@ Checklist submission events may include: record UUID, submission UUID, submissio
 
 Supervisor review events may include: review UUID, submission UUID, submission number, record UUID, task UUID, organization UUID, template UUID, version UUID, `batch_reference`, `decision`. Do **not** store review notes, answer values, question text, or request bodies.
 
-Unknown login identifiers must be masked or hashed — never store raw unknown employee codes in clear text when the account is unknown.
+Unknown login identifiers must be masked or hashed â€” never store raw unknown employee codes in clear text when the account is unknown.
 
 ## Prohibited fields
 
@@ -71,7 +75,7 @@ Passwords, session keys, cookies, Authorization headers, CSRF tokens, raw POST b
 
 ## Privacy and retention
 
-Retention period is **deferred** — not decided in Phase 03. Events are append-oriented and must not be silently editable through normal admin workflows.
+Retention period is **deferred** â€” not decided in Phase 03. Events are append-oriented and must not be silently editable through normal admin workflows.
 
 ## Related
 

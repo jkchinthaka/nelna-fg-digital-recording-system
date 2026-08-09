@@ -16,6 +16,11 @@ from apps.security_audit.services import record_event
 
 VIEW_SHIFT = "organizations.view_shift"
 MANAGE_SHIFT = "organizations.manage_shift"
+MANAGE_ORGANIZATION = "organizations.manage_organization"
+MANAGE_SITE = "organizations.manage_site"
+MANAGE_DEPARTMENT = "organizations.manage_department"
+
+_UNSET: Any = object()
 
 
 def normalize_code(value: str) -> str:
@@ -40,6 +45,51 @@ def shift_authorization_scope(shift: Shift) -> Scope:
         site_id=shift.site_id,
         department_id=shift.department_id,
     )
+
+
+def _org_metadata(
+    organization: Organization,
+    *,
+    changed_fields: list[str] | None = None,
+) -> dict[str, Any]:
+    meta: dict[str, Any] = {
+        "organization_id": str(organization.id),
+        "organization_code": organization.code,
+        "is_active": organization.is_active,
+    }
+    if changed_fields:
+        meta["changed_fields"] = changed_fields
+    return meta
+
+
+def _site_metadata(site: Site, *, changed_fields: list[str] | None = None) -> dict[str, Any]:
+    meta: dict[str, Any] = {
+        "site_id": str(site.id),
+        "site_code": site.code,
+        "organization_id": str(site.organization_id),
+        "is_active": site.is_active,
+    }
+    if changed_fields:
+        meta["changed_fields"] = changed_fields
+    return meta
+
+
+def _department_metadata(
+    department: Department,
+    *,
+    changed_fields: list[str] | None = None,
+) -> dict[str, Any]:
+    meta: dict[str, Any] = {
+        "department_id": str(department.id),
+        "department_code": department.code,
+        "organization_id": str(department.organization_id),
+        "is_active": department.is_active,
+    }
+    if department.site_id:
+        meta["site_id"] = str(department.site_id)
+    if changed_fields:
+        meta["changed_fields"] = changed_fields
+    return meta
 
 
 def _shift_metadata(shift: Shift, *, changed_fields: list[str] | None = None) -> dict[str, Any]:
@@ -77,6 +127,16 @@ def _validate_shift_scope(
         raise ValidationError({"department": "Department must belong to the selected site."})
 
 
+def _prepare_named_code(*, code: str, name: str) -> tuple[str, str]:
+    normalized_code = normalize_code(code)
+    normalized_name = normalize_name(name)
+    if not normalized_code:
+        raise ValidationError({"code": "Code is required."})
+    if not normalized_name:
+        raise ValidationError({"name": "Name is required."})
+    return normalized_code, normalized_name
+
+
 def _prepare_shift_fields(
     *,
     code: str,
@@ -84,12 +144,7 @@ def _prepare_shift_fields(
     effective_from: datetime.date,
     effective_to: datetime.date | None,
 ) -> tuple[str, str]:
-    normalized_code = normalize_code(code)
-    normalized_name = normalize_name(name)
-    if not normalized_code:
-        raise ValidationError({"code": "Shift code is required."})
-    if not normalized_name:
-        raise ValidationError({"name": "Shift name is required."})
+    normalized_code, normalized_name = _prepare_named_code(code=code, name=name)
     if effective_to is not None and effective_to < effective_from:
         raise ValidationError(
             {"effective_to": "effective_to cannot be earlier than effective_from."}
@@ -97,62 +152,152 @@ def _prepare_shift_fields(
     return normalized_code, normalized_name
 
 
-@transaction.atomic
-def deactivate_organization(organization: Organization) -> Organization:
-    organization.is_active = False
-    organization.save(update_fields=["is_active", "updated_at"])
-    return organization
+def _reraise_unique(exc: Exception, *, field_message: str) -> None:
+    if isinstance(exc, ValidationError):
+        messages = " ".join(str(m) for m in exc.messages)
+        if "unique" in messages.lower() or "_ci_uniq" in messages:
+            raise ValidationError({"code": field_message}) from exc
+        raise
+    if isinstance(exc, IntegrityError):
+        raise ValidationError({"code": field_message}) from exc
+    raise
+
+
+# --- Organization lifecycle -------------------------------------------------
 
 
 @transaction.atomic
-def reactivate_organization(organization: Organization) -> Organization:
-    organization.is_active = True
-    organization.save(update_fields=["is_active", "updated_at"])
-    return organization
+def create_organization(
+    *,
+    code: str,
+    name: str,
+    is_active: bool = True,
+    actor: User | None = None,
+) -> Organization:
+    """
+    Create an Organization.
 
+    When ``actor`` is provided, require ``manage_organization`` (system-wide Scope)
+    and emit ORGANIZATION_CREATED. Factories may omit ``actor`` for synthetic rows.
+    """
+    normalized_code, normalized_name = _prepare_named_code(code=code, name=name)
+    user: User | None = None
+    if actor is not None:
+        user = _require_authenticated_actor(actor)
+        require_permission(user, MANAGE_ORGANIZATION, scope=Scope())
 
-@transaction.atomic
-def deactivate_site(site: Site) -> Site:
-    site.is_active = False
-    site.save(update_fields=["is_active", "updated_at"])
-    return site
-
-
-@transaction.atomic
-def reactivate_site(site: Site) -> Site:
-    if not site.organization.is_active:
-        raise ValidationError("Cannot reactivate a site whose organization is inactive.")
-    site.is_active = True
-    site.save(update_fields=["is_active", "updated_at"])
-    return site
-
-
-@transaction.atomic
-def deactivate_department(department: Department) -> Department:
-    department.is_active = False
-    department.save(update_fields=["is_active", "updated_at"])
-    return department
-
-
-@transaction.atomic
-def reactivate_department(department: Department) -> Department:
-    if not department.organization.is_active:
-        raise ValidationError("Cannot reactivate a department whose organization is inactive.")
-    site = department.site
-    if site is not None and not site.is_active:
-        raise ValidationError("Cannot reactivate a department whose site is inactive.")
-    department.is_active = True
-    department.save(update_fields=["is_active", "updated_at"])
-    return department
-
-
-@transaction.atomic
-def create_organization(*, code: str, name: str, is_active: bool = True) -> Organization:
-    return Organization.objects.create(
-        code=normalize_code(code),
-        name=name.strip(),
+    organization = Organization(
+        code=normalized_code,
+        name=normalized_name,
         is_active=is_active,
     )
+    try:
+        organization.full_clean()
+        organization.save()
+    except (ValidationError, IntegrityError) as exc:
+        _reraise_unique(
+            exc,
+            field_message="An Organization with this code already exists.",
+        )
+
+    if user is not None:
+        record_event(
+            event_type="ORGANIZATION_CREATED",
+            actor=user,
+            metadata=_org_metadata(organization),
+        )
+    return organization
+
+
+@transaction.atomic
+def update_organization(
+    *,
+    actor: User | None,
+    organization_id: uuid.UUID,
+    code: str | None = None,
+    name: str | None = None,
+) -> Organization:
+    user = _require_authenticated_actor(actor)
+    organization = Organization.objects.select_for_update().filter(pk=organization_id).first()
+    if organization is None:
+        raise ValidationError({"organization": "Organization not found."})
+    require_permission(user, MANAGE_ORGANIZATION, scope=Scope())
+
+    next_code = organization.code if code is None else code
+    next_name = organization.name if name is None else name
+    normalized_code, normalized_name = _prepare_named_code(code=next_code, name=next_name)
+    changed: list[str] = []
+    if organization.code != normalized_code:
+        organization.code = normalized_code
+        changed.append("code")
+    if organization.name != normalized_name:
+        organization.name = normalized_name
+        changed.append("name")
+    if not changed:
+        return organization
+    try:
+        organization.full_clean()
+        organization.save()
+    except (ValidationError, IntegrityError) as exc:
+        _reraise_unique(
+            exc,
+            field_message="An Organization with this code already exists.",
+        )
+    record_event(
+        event_type="ORGANIZATION_UPDATED",
+        actor=user,
+        metadata=_org_metadata(organization, changed_fields=changed),
+    )
+    return organization
+
+
+@transaction.atomic
+def deactivate_organization(
+    organization: Organization,
+    *,
+    actor: User | None = None,
+) -> Organization:
+    user: User | None = None
+    if actor is not None:
+        user = _require_authenticated_actor(actor)
+        require_permission(user, MANAGE_ORGANIZATION, scope=Scope())
+    if not organization.is_active:
+        return organization
+    organization.is_active = False
+    organization.save(update_fields=["is_active", "updated_at"])
+    if user is not None:
+        record_event(
+            event_type="ORGANIZATION_DEACTIVATED",
+            actor=user,
+            metadata=_org_metadata(organization),
+        )
+    return organization
+
+
+@transaction.atomic
+def reactivate_organization(
+    organization: Organization,
+    *,
+    actor: User | None = None,
+) -> Organization:
+    user: User | None = None
+    if actor is not None:
+        user = _require_authenticated_actor(actor)
+        require_permission(user, MANAGE_ORGANIZATION, scope=Scope())
+    if organization.is_active:
+        return organization
+    organization.is_active = True
+    organization.save(update_fields=["is_active", "updated_at"])
+    if user is not None:
+        record_event(
+            event_type="ORGANIZATION_ACTIVATED",
+            actor=user,
+            metadata=_org_metadata(organization),
+        )
+    return organization
+
+
+# --- Site lifecycle ---------------------------------------------------------
 
 
 @transaction.atomic
@@ -162,13 +307,115 @@ def create_site(
     code: str,
     name: str,
     is_active: bool = True,
+    actor: User | None = None,
 ) -> Site:
-    return Site.objects.create(
+    normalized_code, normalized_name = _prepare_named_code(code=code, name=name)
+    user: User | None = None
+    if actor is not None:
+        user = _require_authenticated_actor(actor)
+        require_permission(
+            user, MANAGE_SITE, scope=Scope(organization_id=organization.id)
+        )
+
+    site = Site(
         organization=organization,
-        code=normalize_code(code),
-        name=name.strip(),
+        code=normalized_code,
+        name=normalized_name,
         is_active=is_active,
     )
+    try:
+        site.full_clean()
+        site.save()
+    except (ValidationError, IntegrityError) as exc:
+        _reraise_unique(
+            exc,
+            field_message="A Site with this code already exists in the selected organization.",
+        )
+    if user is not None:
+        record_event(event_type="SITE_CREATED", actor=user, metadata=_site_metadata(site))
+    return site
+
+
+@transaction.atomic
+def update_site(
+    *,
+    actor: User | None,
+    site_id: uuid.UUID,
+    code: str | None = None,
+    name: str | None = None,
+) -> Site:
+    user = _require_authenticated_actor(actor)
+    site = (
+        Site.objects.select_for_update(of=("self",))
+        .select_related("organization")
+        .filter(pk=site_id)
+        .first()
+    )
+    if site is None:
+        raise ValidationError({"site": "Site not found."})
+    require_permission(user, MANAGE_SITE, scope=Scope(organization_id=site.organization_id))
+
+    next_code = site.code if code is None else code
+    next_name = site.name if name is None else name
+    normalized_code, normalized_name = _prepare_named_code(code=next_code, name=next_name)
+    changed: list[str] = []
+    if site.code != normalized_code:
+        site.code = normalized_code
+        changed.append("code")
+    if site.name != normalized_name:
+        site.name = normalized_name
+        changed.append("name")
+    if not changed:
+        return site
+    try:
+        site.full_clean()
+        site.save()
+    except (ValidationError, IntegrityError) as exc:
+        _reraise_unique(
+            exc,
+            field_message="A Site with this code already exists in the selected organization.",
+        )
+    record_event(
+        event_type="SITE_UPDATED",
+        actor=user,
+        metadata=_site_metadata(site, changed_fields=changed),
+    )
+    return site
+
+
+@transaction.atomic
+def deactivate_site(site: Site, *, actor: User | None = None) -> Site:
+    user: User | None = None
+    if actor is not None:
+        user = _require_authenticated_actor(actor)
+        require_permission(user, MANAGE_SITE, scope=Scope(organization_id=site.organization_id))
+    if not site.is_active:
+        return site
+    site.is_active = False
+    site.save(update_fields=["is_active", "updated_at"])
+    if user is not None:
+        record_event(event_type="SITE_DEACTIVATED", actor=user, metadata=_site_metadata(site))
+    return site
+
+
+@transaction.atomic
+def reactivate_site(site: Site, *, actor: User | None = None) -> Site:
+    user: User | None = None
+    if actor is not None:
+        user = _require_authenticated_actor(actor)
+        require_permission(user, MANAGE_SITE, scope=Scope(organization_id=site.organization_id))
+    if not site.organization.is_active:
+        raise ValidationError("Cannot reactivate a site whose organization is inactive.")
+    if site.is_active:
+        return site
+    site.is_active = True
+    site.save(update_fields=["is_active", "updated_at"])
+    if user is not None:
+        record_event(event_type="SITE_ACTIVATED", actor=user, metadata=_site_metadata(site))
+    return site
+
+
+# --- Department lifecycle ---------------------------------------------------
 
 
 @transaction.atomic
@@ -179,17 +426,174 @@ def create_department(
     name: str,
     site: Site | None = None,
     is_active: bool = True,
+    actor: User | None = None,
 ) -> Department:
+    normalized_code, normalized_name = _prepare_named_code(code=code, name=name)
+    user: User | None = None
+    if actor is not None:
+        user = _require_authenticated_actor(actor)
+        require_permission(
+            user,
+            MANAGE_DEPARTMENT,
+            scope=Scope(
+                organization_id=organization.id,
+                site_id=site.id if site is not None else None,
+            ),
+        )
+
     department = Department(
         organization=organization,
         site=site,
-        code=normalize_code(code),
-        name=name.strip(),
+        code=normalized_code,
+        name=normalized_name,
         is_active=is_active,
     )
-    department.full_clean()
-    department.save()
+    try:
+        department.full_clean()
+        department.save()
+    except (ValidationError, IntegrityError) as exc:
+        _reraise_unique(
+            exc,
+            field_message="A Department with this code already exists in the selected scope.",
+        )
+    if user is not None:
+        record_event(
+            event_type="DEPARTMENT_CREATED",
+            actor=user,
+            metadata=_department_metadata(department),
+        )
     return department
+
+
+@transaction.atomic
+def update_department(
+    *,
+    actor: User | None,
+    department_id: uuid.UUID,
+    code: str | None = None,
+    name: str | None = None,
+    site: Any = _UNSET,
+) -> Department:
+    user = _require_authenticated_actor(actor)
+    department = (
+        Department.objects.select_for_update(of=("self",))
+        .select_related("organization", "site")
+        .filter(pk=department_id)
+        .first()
+    )
+    if department is None:
+        raise ValidationError({"department": "Department not found."})
+    next_site: Site | None = department.site if site is _UNSET else site
+    require_permission(
+        user,
+        MANAGE_DEPARTMENT,
+        scope=Scope(
+            organization_id=department.organization_id,
+            site_id=next_site.id if next_site is not None else None,
+        ),
+    )
+    if next_site is not None and next_site.organization_id != department.organization_id:
+        raise ValidationError(
+            {"site": "Site must belong to the same organization as the department."}
+        )
+
+    next_code = department.code if code is None else code
+    next_name = department.name if name is None else name
+    normalized_code, normalized_name = _prepare_named_code(code=next_code, name=next_name)
+    changed: list[str] = []
+    if department.code != normalized_code:
+        department.code = normalized_code
+        changed.append("code")
+    if department.name != normalized_name:
+        department.name = normalized_name
+        changed.append("name")
+    if department.site_id != (next_site.id if next_site is not None else None):
+        department.site = next_site
+        changed.append("site")
+    if not changed:
+        return department
+    try:
+        department.full_clean()
+        department.save()
+    except (ValidationError, IntegrityError) as exc:
+        _reraise_unique(
+            exc,
+            field_message="A Department with this code already exists in the selected scope.",
+        )
+    record_event(
+        event_type="DEPARTMENT_UPDATED",
+        actor=user,
+        metadata=_department_metadata(department, changed_fields=changed),
+    )
+    return department
+
+
+@transaction.atomic
+def deactivate_department(
+    department: Department,
+    *,
+    actor: User | None = None,
+) -> Department:
+    user: User | None = None
+    if actor is not None:
+        user = _require_authenticated_actor(actor)
+        require_permission(
+            user,
+            MANAGE_DEPARTMENT,
+            scope=Scope(
+                organization_id=department.organization_id,
+                site_id=department.site_id,
+            ),
+        )
+    if not department.is_active:
+        return department
+    department.is_active = False
+    department.save(update_fields=["is_active", "updated_at"])
+    if user is not None:
+        record_event(
+            event_type="DEPARTMENT_DEACTIVATED",
+            actor=user,
+            metadata=_department_metadata(department),
+        )
+    return department
+
+
+@transaction.atomic
+def reactivate_department(
+    department: Department,
+    *,
+    actor: User | None = None,
+) -> Department:
+    user: User | None = None
+    if actor is not None:
+        user = _require_authenticated_actor(actor)
+        require_permission(
+            user,
+            MANAGE_DEPARTMENT,
+            scope=Scope(
+                organization_id=department.organization_id,
+                site_id=department.site_id,
+            ),
+        )
+    if not department.organization.is_active:
+        raise ValidationError("Cannot reactivate a department whose organization is inactive.")
+    site = department.site
+    if site is not None and not site.is_active:
+        raise ValidationError("Cannot reactivate a department whose site is inactive.")
+    if department.is_active:
+        return department
+    department.is_active = True
+    department.save(update_fields=["is_active", "updated_at"])
+    if user is not None:
+        record_event(
+            event_type="DEPARTMENT_ACTIVATED",
+            actor=user,
+            metadata=_department_metadata(department),
+        )
+    return department
+
+
+# --- Shift lifecycle (Phase 04A) --------------------------------------------
 
 
 def _reraise_shift_persistence_error(exc: Exception) -> None:
@@ -264,9 +668,6 @@ def create_shift(
     return shift
 
 
-_UNSET: Any = object()
-
-
 @transaction.atomic
 def update_shift(
     *,
@@ -282,7 +683,6 @@ def update_shift(
     department: Any = _UNSET,
 ) -> Shift:
     user = _require_authenticated_actor(actor)
-    # Lock only Shift rows — nullable site/department joins cannot use FOR UPDATE.
     shift = (
         Shift.objects.select_for_update(of=("self",))
         .select_related("organization", "site", "department")

@@ -21,6 +21,9 @@ class Organization(models.Model):
 
     class Meta:
         ordering = ("code",)
+        permissions = [
+            ("manage_organization", "Can manage organization"),
+        ]
         constraints = [
             models.UniqueConstraint(
                 Lower("code"),
@@ -53,6 +56,9 @@ class Site(models.Model):
 
     class Meta:
         ordering = ("organization__code", "code")
+        permissions = [
+            ("manage_site", "Can manage site"),
+        ]
         constraints = [
             models.UniqueConstraint(
                 Lower("code"),
@@ -99,6 +105,9 @@ class Department(models.Model):
 
     class Meta:
         ordering = ("organization__code", "code")
+        permissions = [
+            ("manage_department", "Can manage department"),
+        ]
         constraints = [
             models.UniqueConstraint(
                 Lower("code"),

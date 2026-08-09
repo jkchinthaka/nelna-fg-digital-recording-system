@@ -8,8 +8,20 @@ from django.http import HttpRequest
 from apps.organizations.models import Department, Organization, Shift, Site
 
 
+class _NoHardDeleteAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
+    """Historical safety: soft-deactivate via services; never hard-delete."""
+
+    def has_delete_permission(self, request: HttpRequest, obj: object | None = None) -> bool:
+        return False
+
+    def get_actions(self, request: HttpRequest):  # type: ignore[no-untyped-def]
+        actions = super().get_actions(request)
+        actions.pop("delete_selected", None)
+        return actions
+
+
 @admin.register(Organization)
-class OrganizationAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
+class OrganizationAdmin(_NoHardDeleteAdmin):
     list_display = ("code", "name", "is_active", "created_at", "updated_at")
     list_filter = ("is_active",)
     search_fields = ("code", "name")
@@ -18,7 +30,7 @@ class OrganizationAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
 
 
 @admin.register(Site)
-class SiteAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
+class SiteAdmin(_NoHardDeleteAdmin):
     list_display = ("code", "name", "organization", "is_active", "created_at")
     list_filter = ("is_active", "organization")
     search_fields = ("code", "name", "organization__code")
@@ -28,7 +40,7 @@ class SiteAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
 
 
 @admin.register(Department)
-class DepartmentAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
+class DepartmentAdmin(_NoHardDeleteAdmin):
     list_display = ("code", "name", "organization", "site", "is_active", "created_at")
     list_filter = ("is_active", "organization")
     search_fields = ("code", "name", "organization__code", "site__code")
@@ -38,7 +50,7 @@ class DepartmentAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
 
 
 @admin.register(Shift)
-class ShiftAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
+class ShiftAdmin(_NoHardDeleteAdmin):
     list_display = (
         "code",
         "name",
@@ -57,11 +69,3 @@ class ShiftAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
     readonly_fields = ("id", "created_at", "updated_at")
     autocomplete_fields = ("organization", "site", "department")
     ordering = ("organization__code", "code", "effective_from")
-
-    def has_delete_permission(self, request: HttpRequest, obj: Shift | None = None) -> bool:
-        return False
-
-    def get_actions(self, request: HttpRequest):  # type: ignore[no-untyped-def]
-        actions = super().get_actions(request)
-        actions.pop("delete_selected", None)
-        return actions

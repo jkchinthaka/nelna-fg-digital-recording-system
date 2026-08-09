@@ -45,6 +45,7 @@ ASM-004 / ASM-005 / ASM-006 remain **partially unresolved** for official busines
 | Official Shift names and codes (ASM-005) | Unresolved |
 | Official timings and operational overnight policy (ASM-006) | Unresolved |
 | Configurable unseeded Shift technical foundation (Phase 04A) | Provisionally unblocked by owner direction (2026-08-07) |
+| Phase 04C controlled import / lifecycle foundation (no seeded company values) | Implemented — real values still pending ASM-004/005/006 |
 | Real-data configuration / operational / production use | Remains blocked |
 
 Do **not** invent Day/Night names, start/end times, shift codes, site/department codes, or claim production overnight policy.

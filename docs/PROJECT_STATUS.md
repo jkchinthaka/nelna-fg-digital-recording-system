@@ -72,6 +72,7 @@ Not started (by MODULE_MAP): `instruments`, `training`, `evidence`, `nonconforma
 | 03 Accounts/RBAC | Complete | Approved with conditions; no seeded users/orgs/roles |
 | 03C Operational role governance | Technical foundation (catalogue, RoleTemplate, audited permission/template services, docs) | **PHASE 03C BUSINESS ROLE APPROVAL PENDING** — SoD all PENDING; APR-007..010/040 EVIDENCE REQUIRED |
 | 04A/04B Shift | Complete | Official Shift values unresolved (ASM-005/006) |
+| 04C Org/Shift configuration foundation | Technical complete | Real company values pending (ASM-004/005/006); controlled import only |
 | 05A/05B FG Product | Complete | MASTER-001 unresolved |
 | 06A–06E Checklist definition | Complete (06E provisional docs) | TEMPLATE / FG-QA-001 approval unresolved |
 | 06F Real form discovery framework | Docs complete (templates + registers) | Inventory **NOT RECEIVED**; no forms APPROVED FOR DIGITALIZATION |
