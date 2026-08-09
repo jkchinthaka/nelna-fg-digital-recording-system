@@ -42,20 +42,12 @@ class Role(models.Model):
         return f"{self.code} — {self.name}"
 
 
-class RoleTemplateBusinessStatus(models.TextChoices):
-    """Business approval state for configurable templates - not automatic authority."""
-
-    PROPOSED = "PROPOSED", "Proposed"
-    PENDING_OWNER_APPROVAL = "PENDING_OWNER_APPROVAL", "Pending owner approval"
-    OWNER_APPROVED = "OWNER_APPROVED", "Owner approved"
-
-
 class RoleTemplate(models.Model):
     """
-    Configurable role permission bundle.
+    Technical permission bundle for optional copy onto a Role.
 
-    Catalogue is empty by default (no migration seed). OWNER_APPROVED requires
-    documented APR evidence - never invent company-approved role names.
+    Not a business-approved role. Does not assign users. Optional
+    ``business_category_hint`` is documentation only — never approval evidence.
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -63,28 +55,16 @@ class RoleTemplate(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True, default="")
     is_active = models.BooleanField(default=True)
-    business_status = models.CharField(
-        max_length=32,
-        choices=RoleTemplateBusinessStatus.choices,
-        default=RoleTemplateBusinessStatus.PROPOSED,
-        help_text=(
-            "OWNER_APPROVED requires documented APR evidence - never invent. "
-            "PROPOSED and PENDING_OWNER_APPROVAL are not company authority."
-        ),
-    )
-    evidence_reference = models.CharField(
-        max_length=512,
-        blank=True,
-        default="",
-        help_text=(
-            "Required when business_status=OWNER_APPROVED via governance services. "
-            "APR / controlled-document pointer only."
-        ),
-    )
     permissions = models.ManyToManyField(
         Permission,
         blank=True,
         related_name="access_role_templates",
+    )
+    business_category_hint = models.CharField(
+        max_length=128,
+        blank=True,
+        default="",
+        help_text="Documentation hint only. Not business approval.",
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -100,11 +80,11 @@ class RoleTemplate(models.Model):
         indexes = [
             models.Index(fields=["is_active"], name="ac_role_tmpl_active_idx"),
             models.Index(Lower("code"), name="ac_role_tmpl_code_lower_idx"),
-            models.Index(fields=["business_status"], name="ac_role_tmpl_biz_idx"),
         ]
 
     def __str__(self) -> str:
-        return f"{self.code} - {self.name} [{self.business_status}]"
+        return f"{self.code} — {self.name}"
+
 
 class ScopedRoleAssignment(models.Model):
     """

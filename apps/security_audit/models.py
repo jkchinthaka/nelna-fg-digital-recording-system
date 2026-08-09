@@ -21,17 +21,38 @@ class SecurityAuditEvent(models.Model):
         USER_DEACTIVATED = "USER_DEACTIVATED", "User deactivated"
         ROLE_ASSIGNED = "ROLE_ASSIGNED", "Role assigned"
         ROLE_REVOKED = "ROLE_REVOKED", "Role revoked"
-        ROLE_PERMISSIONS_SET = "ROLE_PERMISSIONS_SET", "Role permissions set"
+        ROLE_PERMISSIONS_UPDATED = "ROLE_PERMISSIONS_UPDATED", "Role permissions updated"
         ROLE_TEMPLATE_CREATED = "ROLE_TEMPLATE_CREATED", "Role template created"
         ROLE_TEMPLATE_UPDATED = "ROLE_TEMPLATE_UPDATED", "Role template updated"
-        ROLE_TEMPLATE_PERMISSIONS_SET = (
-            "ROLE_TEMPLATE_PERMISSIONS_SET",
-            "Role template permissions set",
-        )
+        ROLE_TEMPLATE_APPLIED = "ROLE_TEMPLATE_APPLIED", "Role template applied to role"
         SHIFT_CREATED = "SHIFT_CREATED", "Shift created"
         SHIFT_UPDATED = "SHIFT_UPDATED", "Shift updated"
         SHIFT_ACTIVATED = "SHIFT_ACTIVATED", "Shift activated"
         SHIFT_DEACTIVATED = "SHIFT_DEACTIVATED", "Shift deactivated"
+        ORGANIZATION_CREATED = "ORGANIZATION_CREATED", "Organization created"
+        ORGANIZATION_UPDATED = "ORGANIZATION_UPDATED", "Organization updated"
+        ORGANIZATION_ACTIVATED = "ORGANIZATION_ACTIVATED", "Organization activated"
+        ORGANIZATION_DEACTIVATED = "ORGANIZATION_DEACTIVATED", "Organization deactivated"
+        SITE_CREATED = "SITE_CREATED", "Site created"
+        SITE_UPDATED = "SITE_UPDATED", "Site updated"
+        SITE_ACTIVATED = "SITE_ACTIVATED", "Site activated"
+        SITE_DEACTIVATED = "SITE_DEACTIVATED", "Site deactivated"
+        DEPARTMENT_CREATED = "DEPARTMENT_CREATED", "Department created"
+        DEPARTMENT_UPDATED = "DEPARTMENT_UPDATED", "Department updated"
+        DEPARTMENT_ACTIVATED = "DEPARTMENT_ACTIVATED", "Department activated"
+        DEPARTMENT_DEACTIVATED = "DEPARTMENT_DEACTIVATED", "Department deactivated"
+        ORGANIZATION_HIERARCHY_IMPORT_PREVIEWED = (
+            "ORGANIZATION_HIERARCHY_IMPORT_PREVIEWED",
+            "Organization hierarchy import previewed",
+        )
+        ORGANIZATION_HIERARCHY_IMPORT_COMPLETED = (
+            "ORGANIZATION_HIERARCHY_IMPORT_COMPLETED",
+            "Organization hierarchy import completed",
+        )
+        ORGANIZATION_HIERARCHY_IMPORT_FAILED = (
+            "ORGANIZATION_HIERARCHY_IMPORT_FAILED",
+            "Organization hierarchy import failed",
+        )
         FG_PRODUCT_CREATED = "FG_PRODUCT_CREATED", "FG Product created"
         FG_PRODUCT_UPDATED = "FG_PRODUCT_UPDATED", "FG Product updated"
         FG_PRODUCT_ACTIVATED = "FG_PRODUCT_ACTIVATED", "FG Product activated"
