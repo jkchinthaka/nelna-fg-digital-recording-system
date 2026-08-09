@@ -67,13 +67,15 @@ def test_numeric_pass_fail_warn_and_boundaries() -> None:
 
 
 def test_missing_rule_and_hidden_not_evaluated() -> None:
-    item = SimpleNamespace(response_type=ChecklistResponseType.NUMBER)
+    item = SimpleNamespace(response_type=ChecklistResponseType.NUMBER, item_kind="SIMPLE")
     result, ctx = evaluate_item_response(
         item=item, rule=None, visible=True, number_value=Decimal("1")
     )
     assert result == ChecklistEvaluationResult.NOT_EVALUATED
     assert ctx["reason"] == "no_evaluation_rule_configured"
     assert ctx["not_qa_disposition"] is True
+    assert ctx["captured"]["number_value"] == "1"
+    assert ctx["captured"]["number_is_calculated"] is False
 
     rule = _rule(
         bound_min=Decimal("0"),

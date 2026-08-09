@@ -110,12 +110,32 @@ def evaluate_expected_option(
     return ChecklistEvaluationResult.FAIL
 
 
+def _captured_values_snapshot(
+    *,
+    choice_value: str = "",
+    number_value: Decimal | None = None,
+    selected_option_id: Any = None,
+    is_calculated: bool = False,
+) -> dict[str, Any]:
+    """Freeze captured/calculated answers into the evaluation snapshot."""
+    return {
+        "choice_value": (choice_value or "").strip().upper(),
+        "number_value": str(number_value) if number_value is not None else None,
+        "selected_option_id": str(selected_option_id) if selected_option_id else None,
+        "number_is_calculated": bool(is_calculated),
+    }
+
+
 def build_evaluation_context(
     *,
     result: str,
     rule: ChecklistItemEvaluationRule | None,
     visible: bool,
     reason: str,
+    choice_value: str = "",
+    number_value: Decimal | None = None,
+    selected_option_id: Any = None,
+    is_calculated: bool = False,
 ) -> dict[str, Any]:
     ctx: dict[str, Any] = {
         "result": result,
@@ -126,6 +146,12 @@ def build_evaluation_context(
         "qa_disposition_note": (
             "PASS≠RELEASE; FAIL≠HOLD; FAIL≠REJECT. "
             "Item evaluation does not create or modify QAReview."
+        ),
+        "captured": _captured_values_snapshot(
+            choice_value=choice_value,
+            number_value=number_value,
+            selected_option_id=selected_option_id,
+            is_calculated=is_calculated,
         ),
     }
     if rule is None:
@@ -162,6 +188,15 @@ def evaluate_item_response(
     Server-authoritative evaluation. Missing rule ⇒ NOT_EVALUATED.
     Hidden/non-applicable ⇒ NOT_EVALUATED.
     """
+    from apps.checklists.models import ChecklistItemKind
+
+    is_calculated = getattr(item, "item_kind", None) == ChecklistItemKind.CALCULATED
+    common_kwargs: dict[str, Any] = {
+        "choice_value": choice_value,
+        "number_value": number_value,
+        "selected_option_id": selected_option_id,
+        "is_calculated": is_calculated,
+    }
     if not visible:
         return (
             ChecklistEvaluationResult.NOT_EVALUATED,
@@ -170,6 +205,7 @@ def evaluate_item_response(
                 rule=rule,
                 visible=False,
                 reason="not_applicable_under_conditions",
+                **common_kwargs,
             ),
         )
     if rule is None:
@@ -180,6 +216,7 @@ def evaluate_item_response(
                 rule=None,
                 visible=True,
                 reason="no_evaluation_rule_configured",
+                **common_kwargs,
             ),
         )
 
@@ -205,7 +242,9 @@ def evaluate_item_response(
 
     return (
         result,
-        build_evaluation_context(result=result, rule=rule, visible=True, reason=reason),
+        build_evaluation_context(
+            result=result, rule=rule, visible=True, reason=reason, **common_kwargs
+        ),
     )
 
 
