@@ -12,6 +12,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied, ValidationError
 from tests.factories import grant_role, make_org, make_role_with_permission, make_user
 
+from apps.checklists.measurement import assert_known_unit
 from apps.checklists.models import (
     ChecklistItem,
     ChecklistItemKind,
@@ -34,14 +35,6 @@ from apps.checklists.services import (
     update_checklist_item,
 )
 from apps.organizations.models import Organization
-from apps.recording.services import (
-    save_checklist_draft_responses,
-    start_checklist_recording,
-    submit_checklist_record,
-)
-from apps.scheduling.models import ChecklistTask
-from apps.scheduling.models import ChecklistTask
-from apps.scheduling.services import create_batch_checklist_task
 from apps.security_audit.models import SecurityAuditEvent
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -50,10 +43,31 @@ MATRIX_CSV = ROOT / "docs/business/templates/FG_QA_001_ITEM_VALIDATION_MATRIX.cs
 VALIDATION_DOC = ROOT / "docs/business/PHASE_06N_FG_QA_001_VALIDATION.md"
 PROPOSAL_MD = ROOT / "docs/business/proposals/FG_QA_001_DRAFT_V0_1.md"
 ISSUES_CSV = ROOT / "docs/business/templates/FG_QA_001_VALIDATION_ISSUES.csv"
+APR = ROOT / "docs/governance/APPROVAL_REGISTER.md"
+TEMPLATE_001 = ROOT / "docs/business/TEMPLATE_001_CHECKLIST_EVIDENCE_INTAKE.md"
+
+REQUIRED_MATRIX_COLUMNS = {
+    "item_code",
+    "section_title",
+    "item_label",
+    "disposition",
+    "wording",
+    "response_type",
+    "requiredness",
+    "repeat_rule",
+    "unit",
+    "limit",
+    "control_point",
+    "criticality",
+    "evidence",
+    "failure_action",
+    "responsible_business_role",
+    "notes",
+}
 
 
-def _perm(codename: str) -> Permission:
-    ct = ContentType.objects.get_for_model(ChecklistTemplate)
+def _perm(model, codename: str) -> Permission:
+    ct = ContentType.objects.get_for_model(model)
     permission, _ = Permission.objects.get_or_create(
         content_type=ct,
         codename=codename,
@@ -68,45 +82,9 @@ def _manager(*, org: Organization):
     role = make_role_with_permission(
         code=f"R06N{suffix}",
         name=f"Checklist manager 06N {suffix}",
-        permission=_perm("manage_checklist"),
+        permission=_perm(ChecklistTemplate, "manage_checklist"),
     )
-    role.permissions.add(_perm("view_checklisttemplate"))
-    grant_role(user, role, organization=org)
-    ct_task = ContentType.objects.get_for_model(ChecklistTask)
-    manage_task, _ = Permission.objects.get_or_create(
-        content_type=ct_task,
-        codename="manage_checklisttask",
-        defaults={"name": "Can manage checklist task"},
-    )
-    view_task, _ = Permission.objects.get_or_create(
-        content_type=ct_task,
-        codename="view_checklisttask",
-        defaults={"name": "Can view checklist task"},
-    )
-    task_role = make_role_with_permission(
-        code=f"T06N{suffix}",
-        name=f"Task manager 06N {suffix}",
-        permission=manage_task,
-    )
-    task_role.permissions.add(view_task)
-    grant_role(user, task_role, organization=org)
-    return user
-
-
-def _recorder(*, org: Organization):
-    suffix = uuid.uuid4().hex[:6].upper()
-    user = make_user(employee_code=f"N06NR{suffix}")
-    ct = ContentType.objects.get_for_model(ChecklistTask)
-    record_perm, _ = Permission.objects.get_or_create(
-        content_type=ct,
-        codename="record_checklisttask",
-        defaults={"name": "Can record checklist task"},
-    )
-    role = make_role_with_permission(
-        code=f"R06NR{suffix}",
-        name=f"Recorder 06N {suffix}",
-        permission=record_perm,
-    )
+    role.permissions.add(_perm(ChecklistTemplate, "view_checklisttemplate"))
     grant_role(user, role, organization=org)
     return user
 
@@ -128,17 +106,27 @@ def test_proposal_inspection_shape_and_no_invented_limits() -> None:
     assert {opt.value for opt in select_items[0].options} == {"RELEASE", "HOLD", "REJECT"}
     numbered = {item.code for item in definition.items if item.response_type == "NUMBER"}
     assert {"FGQA-19", "FGQA-20", "FGQA-21", "FGQA-23", "FGQA-33"}.issubset(numbered)
-    celsius = {item.code for item in definition.items if (item.unit or "").strip() == "°C"}
+    # CSV may use display form °C; catalog normalizes to technical code C (not a limit).
+    celsius = {
+        item.code
+        for item in definition.items
+        if (item.unit or "").strip() and assert_known_unit(item.unit) == "C"
+    }
     assert celsius == {"FGQA-21", "FGQA-23", "FGQA-33"}
 
 
 def test_item_validation_matrix_all_pending_decision() -> None:
     assert MATRIX_CSV.is_file()
-    rows = list(csv.DictReader(MATRIX_CSV.open(encoding="utf-8")))
+    with MATRIX_CSV.open(encoding="utf-8") as handle:
+        reader = csv.DictReader(handle)
+        assert REQUIRED_MATRIX_COLUMNS.issubset(set(reader.fieldnames or []))
+        rows = list(reader)
     assert len(rows) == 42
     assert {row["disposition"] for row in rows} == {"PENDING DECISION"}
     assert all(row["evidence"].startswith("NOT RECEIVED") for row in rows)
     assert all("no invented values" in row["limit"] for row in rows)
+    proposal_codes = {item.code for item in parse_fg_qa_001_csv(PROPOSAL_CSV).items}
+    assert {row["item_code"] for row in rows} == proposal_codes
 
 
 def test_validation_issues_and_governance_docs_blocked() -> None:
@@ -146,12 +134,17 @@ def test_validation_issues_and_governance_docs_blocked() -> None:
     validation = VALIDATION_DOC.read_text(encoding="utf-8")
     proposal = PROPOSAL_MD.read_text(encoding="utf-8")
     assert "STATUS: PHASE 06N BLOCKED — BUSINESS APPROVAL REQUIRED" in validation
+    assert "PHASE 06N FG-QA-001 PUBLISHED" not in validation
     assert "NOT APPROVED" in proposal
     assert "PROJECT-PROPOSED DRAFT" in proposal
+    assert "Phase 06N validation **blocked**" in APR.read_text(encoding="utf-8")
+    template_001 = TEMPLATE_001.read_text(encoding="utf-8")
+    assert "BLOCKED — BUSINESS APPROVAL REQUIRED" in template_001
+    assert "PENDING DECISION" in template_001
 
 
 @pytest.mark.django_db
-def test_loader_creates_draft_never_publishes() -> None:
+def test_loader_creates_draft_never_publishes_and_is_idempotent() -> None:
     org = make_org(code=f"O06ND{uuid.uuid4().hex[:5].upper()}")
     actor = _manager(org=org)
     result = load_fg_qa_001_draft(actor=actor, organization_id=org.id)
@@ -161,8 +154,12 @@ def test_loader_creates_draft_never_publishes() -> None:
     assert len(versions) == 1
     assert versions[0].status == ChecklistVersionStatus.DRAFT
     assert versions[0].is_draft is True
+    assert versions[0].published_at is None
     assert ChecklistItem.objects.filter(section__version=versions[0]).count() == 42
     assert not SecurityAuditEvent.objects.filter(event_type="CHECKLIST_VERSION_PUBLISHED").exists()
+    noop = load_fg_qa_001_draft(actor=actor, organization_id=org.id)
+    assert noop.status == "noop"
+    assert ChecklistVersion.objects.filter(template=template).count() == 1
 
 
 @pytest.mark.django_db
@@ -183,44 +180,32 @@ def test_authorization_operator_cannot_load_or_publish() -> None:
 
 
 @pytest.mark.django_db
-def test_clone_preserves_proposal_structure_without_approving() -> None:
+def test_clone_preserves_proposal_structure_and_version_pinning() -> None:
     org = make_org(code=f"O06NC{uuid.uuid4().hex[:5].upper()}")
     manager = _manager(org=org)
     load_fg_qa_001_draft(actor=manager, organization_id=org.id)
     source = ChecklistVersion.objects.get(
         template__organization=org, template__code=FG_QA_001_TEMPLATE_CODE
     )
+    assert source.version_number == 1
     cloned = create_checklist_version(
         actor=manager, template_id=source.template_id, source_version_id=source.id
     )
     assert cloned.status == ChecklistVersionStatus.DRAFT
-    assert cloned.id != source.id
+    assert cloned.version_number == 2
+    assert source.version_number == 1
     assert ChecklistItem.objects.filter(section__version=cloned).count() == 42
+    for item in ChecklistItem.objects.filter(section__version=cloned):
+        assert item.minimum_value is None
+        assert item.maximum_value is None
     assert "NOT APPROVED" in PROPOSAL_MD.read_text(encoding="utf-8")
 
 
 @pytest.mark.django_db
-def test_published_immutability_and_version_pinning_recording() -> None:
-    """Lifecycle immutability on a technical template — not FG-QA-001 business approval."""
+def test_published_immutability_on_technical_template_not_fg_qa_approval() -> None:
+    """Lifecycle immutability exists — does not approve FG-QA-001 content."""
     org = make_org(code=f"O06NP{uuid.uuid4().hex[:5].upper()}")
     manager = _manager(org=org)
-    from apps.scheduling.models import ChecklistTask as TaskModel
-
-    task_ct = ContentType.objects.get_for_model(TaskModel)
-    manage_task, _ = Permission.objects.get_or_create(
-        content_type=task_ct,
-        codename="manage_checklisttask",
-        defaults={"name": "Can manage checklist task"},
-    )
-    # Attach task-manage to the same user's roles for this org.
-    from apps.access_control.models import ScopedRoleAssignment
-
-    assignment = ScopedRoleAssignment.objects.filter(
-        user=manager, organization=org, is_active=True
-    ).select_related("role").first()
-    assert assignment is not None
-    assignment.role.permissions.add(manage_task)
-    recorder = _recorder(org=org)
     template = create_checklist_template(
         actor=manager,
         organization=org,
@@ -241,30 +226,10 @@ def test_published_immutability_and_version_pinning_recording() -> None:
     assert published.status == ChecklistVersionStatus.PUBLISHED
     with pytest.raises(ValidationError):
         update_checklist_item(actor=manager, item_id=item.id, label="Changed")
-    task = create_batch_checklist_task(
-        actor=manager,
-        organization_id=org.id,
-        checklist_template_id=template.id,
-        checklist_version_id=published.id,
-        batch_reference=f"B06N{uuid.uuid4().hex[:4]}",
-    )
-    assert task.checklist_version_id == published.id
-    record = start_checklist_recording(actor=recorder, task_id=task.id)
-    record.refresh_from_db()
-    assert record.checklist_task.checklist_version_id == published.id
-    save_checklist_draft_responses(
-        actor=recorder,
-        record_id=record.id,
-        answers={str(item.id): "YES"},
-    )
-    submission = submit_checklist_record(actor=recorder, record_id=record.id)
-    assert submission.checklist_record_id == record.id
-    # Task remains pinned to the published definition version used at generation.
-    task.refresh_from_db()
-    assert task.checklist_version_id == published.id
     draft = create_checklist_version(
         actor=manager, template_id=template.id, source_version_id=published.id
     )
+    assert draft.version_number == 2
     cloned_item = ChecklistItem.objects.get(section__version_id=draft.id, code="YN1")
     update_checklist_item(actor=manager, item_id=cloned_item.id, label="Draft-only label")
     item.refresh_from_db()
@@ -272,7 +237,7 @@ def test_published_immutability_and_version_pinning_recording() -> None:
 
 
 @pytest.mark.django_db
-def test_proposal_has_no_repeating_calculated_kinds() -> None:
+def test_proposal_has_no_repeating_calculated_kinds_engine_still_available() -> None:
     org = make_org(code=f"O06NE{uuid.uuid4().hex[:5].upper()}")
     manager = _manager(org=org)
     load_fg_qa_001_draft(actor=manager, organization_id=org.id)

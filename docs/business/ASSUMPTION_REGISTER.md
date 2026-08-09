@@ -80,7 +80,7 @@ TEMPLATE-001 / ASM-003 form inventory and official checklist content remain **EV
 | Topic | Status |
 | --- | --- |
 | Official checklist forms / questions / limits | Unresolved — EVIDENCE REQUIRED — use [TEMPLATE_001_CHECKLIST_EVIDENCE_INTAKE.md](TEMPLATE_001_CHECKLIST_EVIDENCE_INTAKE.md) and [form-discovery/](form-discovery/) (Phase 06F) |
-| TEMPLATE-001 project proposal | **PROJECT-PROPOSED DRAFT — VALIDATION REQUIRED** — [proposals/FG_QA_001_DRAFT_V0_1.md](proposals/FG_QA_001_DRAFT_V0_1.md) (NOT APPROVED for production; not auto-seeded) |
+| TEMPLATE-001 project proposal | **PROJECT-PROPOSED DRAFT — VALIDATION REQUIRED** — Phase 06N **BLOCKED — BUSINESS APPROVAL REQUIRED**; [proposals/FG_QA_001_DRAFT_V0_1.md](proposals/FG_QA_001_DRAFT_V0_1.md); matrix all PENDING DECISION (NOT APPROVED; not auto-seeded; not published) |
 | Explicit DRAFT loader (Phase 06D) | Available — `load_fg_qa_001_draft` loads Organization-scoped DRAFT for review only; never publishes; never auto-seeds — see [FG_QA_001_DRAFT_LOADING.md](../operations/FG_QA_001_DRAFT_LOADING.md) |
 | Internal validation worksheet | Available — [FG_QA_001_INTERNAL_VALIDATION_CHECKLIST.md](FG_QA_001_INTERNAL_VALIDATION_CHECKLIST.md) — existence is not approval |
 | Owner-directed provisional workflow (Phase 06E) | Recorded — per-batch trigger; recorder categories; Supervisor/QA authority outline; future HOLD/correction invariants — **not** formal QA/Production sign-off — see [PHASE_06E_FG_QA_001_PROVISIONAL_WORKFLOW.md](../decisions/PHASE_06E_FG_QA_001_PROVISIONAL_WORKFLOW.md) |

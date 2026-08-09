@@ -3,11 +3,11 @@
 **Document status:** Governing roadmap for greenfield delivery
 **Canonical status:** [PROJECT_STATUS.md](PROJECT_STATUS.md) (prefer when summaries conflict)
 **Phase:** Through Phase **10A** technical foundations on `main`; MASTER-001 / TEMPLATE / role mappings / post-QA workflows still evidence-required
-**Last updated:** 2026-08-09
+**Last updated:** 2026-08-10
 
 Branch naming pattern: `foundation/...`, `design/...`, `feature/phase-NN-short-name`, or `hardening/...` as appropriate. Prefer PR review; some authorized units have used direct-`main` quality-first delivery — see [governance/CHANGE_CONTROL.md](governance/CHANGE_CONTROL.md).
 
-**Progress:** Phases **00–10A** technical foundations are on `main` (accounts/RBAC; Shift; FG Product; checklist definition + FG-QA-001 draft loader; ChecklistTask; draft/submit; Supervisor review + correction; QA manual disposition). FG-QA-001 remains **NOT APPROVED** for production. Official master data, role mappings, SoD, batch source/Bileeta, and post-QA RELEASE/HOLD/REJECT operations remain **EVIDENCE REQUIRED**. DEBT-01C-R-NOTO remains **open**. Production readiness **not** claimed. No deployment approval exists. Details: [PROJECT_STATUS.md](PROJECT_STATUS.md).
+**Progress:** Phases **00–10A** technical foundations are on `main` (accounts/RBAC; Shift; FG Product; checklist definition + FG-QA-001 draft loader; ChecklistTask; draft/submit; Supervisor review + correction; QA manual disposition). FG-QA-001 remains **NOT APPROVED** for production (Phase **06N BLOCKED — BUSINESS APPROVAL REQUIRED**). Official master data, role mappings, SoD, batch source/Bileeta, and post-QA RELEASE/HOLD/REJECT operations remain **EVIDENCE REQUIRED**. DEBT-01C-R-NOTO remains **open**. Production readiness **not** claimed. No deployment approval exists. Details: [PROJECT_STATUS.md](PROJECT_STATUS.md).
 
 **Numbering rule:** Preserve roadmap phase numbers. Do **not** rename FG master data, checklist templates, recording, review, or evidence work as Phase 04.
 

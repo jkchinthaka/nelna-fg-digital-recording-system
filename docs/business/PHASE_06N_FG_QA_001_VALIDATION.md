@@ -23,7 +23,7 @@ FG-QA-001 was **not** published. The proposal remains **PROJECT-PROPOSED DRAFT �
 | Sections | 7 (Area & Hygiene; Product Identity & Traceability; Packaging & Product Condition; Measurements & Temperature; Storage & Stock Control; Dispatch; Final Review / Disposition) |
 | Items | 42 (`FGQA-01` … `FGQA-42`) |
 | Response types | YES_NO, YES_NO_NA, NUMBER, SELECT (one item) |
-| Units | Mostly unset; °C proposed on FGQA-21 / 23 / 33 only (unit proposal, not a limit) |
+| Units | Mostly unset; temperature NUMBER items propose °C in CSV (stored/normalized as technical unit `C`) — unit proposal only, **not** a limit |
 | Limits (min/max) | **All unset** — correct non-invention posture |
 | Required flags | All `true` in proposal |
 | SELECT options | FGQA-41: RELEASE \| HOLD \| REJECT (workflow labels only) |
