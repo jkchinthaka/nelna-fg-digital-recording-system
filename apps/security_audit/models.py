@@ -51,6 +51,10 @@ class SecurityAuditEvent(models.Model):
             "CHECKLIST_ITEM_EVALUATION_RULE_CLEARED",
             "Checklist item evaluation rule cleared",
         )
+        CHECKLIST_ITEM_CONTROL_POINT_METADATA_UPDATED = (
+            "CHECKLIST_ITEM_CONTROL_POINT_METADATA_UPDATED",
+            "Checklist item control-point metadata updated",
+        )
         CHECKLIST_TASK_CREATED = "CHECKLIST_TASK_CREATED", "Checklist task created"
         CHECKLIST_TASK_CANCELLED = "CHECKLIST_TASK_CANCELLED", "Checklist task cancelled"
         CHECKLIST_RECORD_STARTED = "CHECKLIST_RECORD_STARTED", "Checklist record started"

@@ -842,6 +842,19 @@
     text-align: center;
   }
 
+  .recording-control-point {
+    margin: 0.35rem 0 0;
+    padding: 0.3rem 0.5rem;
+    border-left: 3px solid var(--color-border-default, #c5d0da);
+    font-size: 0.85rem;
+    color: var(--color-text-muted, #4a5b6a);
+  }
+
+  .recording-control-point__note {
+    font-weight: 400;
+    opacity: 0.9;
+  }
+
   .form-help {
     margin: 0.35rem 0;
     font-size: 0.9rem;

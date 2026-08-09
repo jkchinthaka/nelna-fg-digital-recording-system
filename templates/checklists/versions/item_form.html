@@ -18,9 +18,13 @@
       {% include "components/form_field.html" with field=form.unit %}
       {% include "components/form_field.html" with field=form.minimum_value %}
       {% include "components/form_field.html" with field=form.maximum_value %}
+      {% include "components/form_field.html" with field=form.control_point_class %}
+      {% include "components/form_field.html" with field=form.criticality %}
       <p class="mgmt-page__lead">
         Unit and min/max apply only to NUMBER responses. Leave limits blank when Product
-        specifications are not yet approved.
+        specifications are not yet approved. Control-point / criticality metadata is
+        display/reporting only until ASM-002 / APR-027 evidence exists — it does not
+        HOLD, REJECT, RELEASE, or create NCR.
       </p>
       <button type="submit" class="btn btn--primary btn--inline">Save item</button>
     </form>

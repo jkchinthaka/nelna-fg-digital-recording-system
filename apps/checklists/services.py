@@ -19,8 +19,13 @@ from apps.checklists.conditions import (
     validate_rule_definition,
 )
 from apps.checklists.constants import REPEAT_SAMPLE_TECHNICAL_CEILING
+from apps.checklists.control_point import (
+    assert_known_control_point_class,
+    assert_known_criticality,
+)
 from apps.checklists.models import (
     ChecklistCalculationOperand,
+    ChecklistControlPointClass,
     ChecklistItem,
     ChecklistItemEvaluationRule,
     ChecklistItemKind,
@@ -850,6 +855,8 @@ def _clone_structure(*, source: ChecklistVersion, target: ChecklistVersion) -> N
                 repeat_max=item.repeat_max,
                 repeat_default=item.repeat_default,
                 calculation_operator=item.calculation_operator,
+                control_point_class=item.control_point_class,
+                criticality=item.criticality,
             )
             item_map[item.id] = new_item
             for option in item.options.order_by("position", "pk"):
@@ -1190,6 +1197,8 @@ def add_checklist_item(
     repeat_default: Any = None,
     calculation_operator: str = "",
     calculation_operand_ids: list[uuid.UUID] | None = None,
+    control_point_class: str = ChecklistControlPointClass.NONE,
+    criticality: str = "",
 ) -> ChecklistItem:
     user = _require_authenticated_actor(actor)
     section = (
@@ -1262,6 +1271,8 @@ def add_checklist_item(
         repeat_max=r_max,
         repeat_default=r_default,
         calculation_operator=operator,
+        control_point_class=assert_known_control_point_class(control_point_class),
+        criticality=assert_known_criticality(criticality),
     )
     try:
         item.full_clean()
@@ -1305,6 +1316,8 @@ def update_checklist_item(
     repeat_default: Any = _UNSET,
     calculation_operator: Any = _UNSET,
     calculation_operand_ids: Any = _UNSET,
+    control_point_class: Any = _UNSET,
+    criticality: Any = _UNSET,
 ) -> ChecklistItem:
     user = _require_authenticated_actor(actor)
     item = _lock_item(item_id)
@@ -1394,6 +1407,16 @@ def update_checklist_item(
     elif kind == ChecklistItemKind.SIMPLE:
         item.calculation_operator = ""
         ChecklistCalculationOperand.objects.filter(calculated_item_id=item.id).delete()
+
+    before_cp = item.control_point_class
+    before_crit = item.criticality
+    if control_point_class is not _UNSET:
+        item.control_point_class = assert_known_control_point_class(
+            str(control_point_class or "")
+        )
+    if criticality is not _UNSET:
+        item.criticality = assert_known_criticality(str(criticality or ""))
+
     try:
         item.full_clean()
         item.save()
@@ -1406,6 +1429,30 @@ def update_checklist_item(
                 {"code": "An item with this code already exists in the section."}
             ) from exc
         raise ValidationError({"item": "Unable to update checklist item."}) from exc
+
+    if (
+        item.control_point_class != before_cp
+        or item.criticality != before_crit
+    ):
+        record_event(
+            event_type="CHECKLIST_ITEM_CONTROL_POINT_METADATA_UPDATED",
+            actor=user,
+            metadata=_version_metadata(
+                item.section.version,
+                extra={
+                    "checklist_item_id": str(item.id),
+                    "checklist_item_code": item.code,
+                    "before": {
+                        "control_point_class": before_cp,
+                        "criticality": before_crit,
+                    },
+                    "after": {
+                        "control_point_class": item.control_point_class,
+                        "criticality": item.criticality,
+                    },
+                },
+            ),
+        )
 
     if calculation_operand_ids is not _UNSET:
         if kind != ChecklistItemKind.CALCULATED:

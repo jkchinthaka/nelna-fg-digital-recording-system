@@ -368,6 +368,15 @@ class ChecklistSubmissionResponse(models.Model):
             "do not recompute with future definition rules."
         ),
     )
+    control_point_context = models.JSONField(
+        null=True,
+        blank=True,
+        default=None,
+        help_text=(
+            "Frozen control-point / criticality metadata at submit time. "
+            "Not a QA disposition — does not HOLD/REJECT/RELEASE."
+        ),
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

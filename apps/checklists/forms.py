@@ -8,7 +8,9 @@ from django import forms
 from django.db.models import QuerySet
 
 from apps.checklists.models import (
+    ChecklistControlPointClass,
     ChecklistItem,
+    ChecklistItemCriticality,
     ChecklistItemOption,
     ChecklistResponseType,
     ChecklistSection,
@@ -191,6 +193,25 @@ class ChecklistItemForm(forms.Form):
         widget=forms.NumberInput(attrs={"class": "form-input", "step": "any"}),
         help_text="Optional. Do not invent Product limits.",
     )
+    control_point_class = forms.ChoiceField(
+        label="Control-point class",
+        choices=ChecklistControlPointClass.choices,
+        initial=ChecklistControlPointClass.NONE,
+        required=False,
+        widget=forms.Select(attrs={"class": "form-input"}),
+        help_text=(
+            "Default NONE. Non-NONE production values require ASM-002 / APR-027. "
+            "Metadata does not HOLD/REJECT/RELEASE."
+        ),
+    )
+    criticality = forms.ChoiceField(
+        label="Criticality (optional)",
+        choices=[("", "Unset"), *ChecklistItemCriticality.choices],
+        required=False,
+        initial="",
+        widget=forms.Select(attrs={"class": "form-input"}),
+        help_text="Optional display metadata only. Blank = unset. Not a disposition.",
+    )
 
     def __init__(self, *args: Any, instance: ChecklistItem | None = None, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
@@ -203,6 +224,8 @@ class ChecklistItemForm(forms.Form):
             self.fields["unit"].initial = instance.unit
             self.fields["minimum_value"].initial = instance.minimum_value
             self.fields["maximum_value"].initial = instance.maximum_value
+            self.fields["control_point_class"].initial = instance.control_point_class
+            self.fields["criticality"].initial = instance.criticality
 
 
 class ChecklistItemOptionForm(forms.Form):

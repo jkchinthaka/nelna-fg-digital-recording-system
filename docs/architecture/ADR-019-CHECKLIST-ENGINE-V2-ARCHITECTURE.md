@@ -154,11 +154,15 @@ Optional item evaluation result (Phase **06K** implemented):
 
 ### 8. Food-safety metadata (extensibility only)
 
-Additive nullable/defaulted classification on items (or dedicated metadata row):
+**Implementation status (06L):** `ChecklistItem.control_point_class` and `criticality` exist with default `NONE` / blank. Submission snapshots freeze `control_point_context`. Schema only — **no Nelna CCP/OPRP values invented**; production non-NONE still **EVIDENCE REQUIRED** (ASM-002 / APR-027). AI-generated reports are **not** approval evidence.
+
+Additive nullable/defaulted classification on items:
 
 `NONE` | `CCP` | `OPRP` | `PRP` | `GMP` | `QUALITY`
 
-Default `NONE`. Populating non-NONE requires ASM-002 / APR-027 evidence. Metadata does not by itself change evaluation or disposition.
+Optional criticality: blank | `MINOR` | `MAJOR` | `CRITICAL`.
+
+Default `NONE`. Populating non-NONE requires ASM-002 / APR-027 evidence. Metadata does **not** by itself HOLD/REJECT/RELEASE, create NCR, or block dispatch. Item evaluation PASS/FAIL ≠ QA disposition; control-point metadata ≠ disposition.
 
 ### 9. Immutability & historical interpretation
 

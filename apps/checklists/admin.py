@@ -50,6 +50,8 @@ class ChecklistItemInline(admin.TabularInline):  # type: ignore[type-arg]
         "unit",
         "minimum_value",
         "maximum_value",
+        "control_point_class",
+        "criticality",
     )
 
     def has_add_permission(self, request: HttpRequest, obj: ChecklistSection | None = None) -> bool:
@@ -182,8 +184,17 @@ class ChecklistSectionAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
 
 @admin.register(ChecklistItem)
 class ChecklistItemAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
-    list_display = ("code", "label", "response_type", "section", "position", "is_required")
-    list_filter = ("response_type",)
+    list_display = (
+        "code",
+        "label",
+        "response_type",
+        "control_point_class",
+        "criticality",
+        "section",
+        "position",
+        "is_required",
+    )
+    list_filter = ("response_type", "control_point_class", "criticality")
     search_fields = ("code", "label", "section__title")
     readonly_fields = ("id",)
     inlines = [ChecklistItemOptionInline]

@@ -675,6 +675,16 @@ def save_checklist_draft_responses(
     ).get(pk=record.id)
 
 
+def _control_point_context_for_item(item: ChecklistItem) -> dict:
+    """Frozen definition metadata snapshot (Phase 06L). Not a disposition."""
+    from apps.checklists.control_point import build_control_point_snapshot
+
+    return build_control_point_snapshot(
+        control_point_class=getattr(item, "control_point_class", "NONE") or "NONE",
+        criticality=getattr(item, "criticality", "") or "",
+    )
+
+
 def submit_checklist_record(
     *,
     actor: User | None,
@@ -800,6 +810,7 @@ def submit_checklist_record(
                         condition_context=response.condition_context,
                         evaluation_result=response.evaluation_result,
                         evaluation_context=response.evaluation_context,
+                        control_point_context=_control_point_context_for_item(item),
                     )
                 elif item.item_kind == ChecklistItemKind.CALCULATED:
                     if response.number_value is None:
@@ -816,6 +827,7 @@ def submit_checklist_record(
                         condition_context=response.condition_context,
                         evaluation_result=response.evaluation_result,
                         evaluation_context=response.evaluation_context,
+                        control_point_context=_control_point_context_for_item(item),
                     )
                 else:
                     continue

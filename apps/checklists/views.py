@@ -540,6 +540,8 @@ def item_add(request: HttpRequest, section_id: uuid.UUID) -> HttpResponse:
                 unit=form.cleaned_data.get("unit") or "",
                 minimum_value=form.cleaned_data.get("minimum_value"),
                 maximum_value=form.cleaned_data.get("maximum_value"),
+                control_point_class=form.cleaned_data.get("control_point_class") or "NONE",
+                criticality=form.cleaned_data.get("criticality") or "",
             )
             messages.success(request, "Item added.")
         except ValidationError as exc:
@@ -582,6 +584,8 @@ def item_edit(request: HttpRequest, item_id: uuid.UUID) -> HttpResponse:
                 unit=form.cleaned_data.get("unit") or "",
                 minimum_value=form.cleaned_data.get("minimum_value"),
                 maximum_value=form.cleaned_data.get("maximum_value"),
+                control_point_class=form.cleaned_data.get("control_point_class") or "NONE",
+                criticality=form.cleaned_data.get("criticality") or "",
             )
             messages.success(request, "Item updated.")
             return redirect("checklists:item_edit", item_id=item.id)

@@ -129,3 +129,19 @@ def evaluation_slot(responses: Any, item: Any, sample_index: int = 1) -> dict[st
         "icon": _evaluation_icon(normalized),
         "label": evaluation_label(result),
     }
+
+@register.filter
+def control_point_label_for(control_point_class: str | None) -> str:
+    """Human label for frozen or live control-point class."""
+    from apps.checklists.control_point import control_point_display_label
+
+    return control_point_display_label(control_point_class)
+
+
+@register.filter
+def criticality_label_for(criticality: str | None) -> str:
+    """Human label for criticality metadata (blank => Unset)."""
+    from apps.checklists.control_point import criticality_display_label
+
+    return criticality_display_label(criticality)
+

@@ -105,6 +105,36 @@ class ChecklistEvaluationRuleKind(models.TextChoices):
     CALCULATED_NUMERIC_BOUNDS = "CALCULATED_NUMERIC_BOUNDS", "Calculated numeric bounds"
 
 
+class ChecklistControlPointClass(models.TextChoices):
+    """
+    Generic control-point classification taxonomy (Phase 06L / ADR-019 section 8).
+
+    Default NONE. Non-NONE production values require ASM-002 / APR-027 HACCP/QMS
+    evidence — never invent Nelna CCP/OPRP/PRP mappings. Metadata alone never
+    HOLD/REJECT/RELEASE, creates NCR, or blocks dispatch.
+    """
+
+    NONE = "NONE", "None (unset / not classified)"
+    CCP = "CCP", "CCP (evidence-gated)"
+    OPRP = "OPRP", "OPRP (evidence-gated)"
+    PRP = "PRP", "PRP (evidence-gated)"
+    GMP = "GMP", "GMP (evidence-gated)"
+    QUALITY = "QUALITY", "Quality (evidence-gated)"
+
+
+class ChecklistItemCriticality(models.TextChoices):
+    """
+    Optional criticality metadata for display/reporting extensibility (Phase 06L).
+
+    Blank default — never auto-classified. Production use is EVIDENCE REQUIRED.
+    Does not by itself trigger HOLD/REJECT/RELEASE or NCR.
+    """
+
+    MINOR = "MINOR", "Minor"
+    MAJOR = "MAJOR", "Major"
+    CRITICAL = "CRITICAL", "Critical"
+
+
 class ChecklistTemplate(models.Model):
     """
     Stable logical identity of a checklist across versions.
@@ -345,6 +375,26 @@ class ChecklistItem(models.Model):
         default="",
         help_text="Closed operator for CALCULATED items only (SUM/AVERAGE/MIN/MAX/COUNT/RANGE).",
     )
+    control_point_class = models.CharField(
+        max_length=16,
+        choices=ChecklistControlPointClass.choices,
+        default=ChecklistControlPointClass.NONE,
+        help_text=(
+            "Generic control-point taxonomy (ADR-019). Default NONE. "
+            "Non-NONE production classifications require ASM-002 / APR-027 evidence. "
+            "Does not auto HOLD/REJECT/RELEASE."
+        ),
+    )
+    criticality = models.CharField(
+        max_length=16,
+        choices=ChecklistItemCriticality.choices,
+        blank=True,
+        default="",
+        help_text=(
+            "Optional criticality metadata (MINOR/MAJOR/CRITICAL). Blank = unset. "
+            "Never auto-assigned. Not a disposition rule."
+        ),
+    )
 
     class Meta:
         ordering = ("position", "code")
@@ -396,6 +446,16 @@ class ChecklistItem(models.Model):
         kind = (self.item_kind or "").strip() or ChecklistItemKind.SIMPLE
         if kind not in ChecklistItemKind.values:
             raise ValidationError({"item_kind": "Unknown item kind."})
+
+        cp = (self.control_point_class or "").strip().upper() or ChecklistControlPointClass.NONE
+        if cp not in ChecklistControlPointClass.values:
+            raise ValidationError({"control_point_class": "Unknown control-point class."})
+        self.control_point_class = cp
+
+        crit = (self.criticality or "").strip().upper()
+        if crit and crit not in ChecklistItemCriticality.values:
+            raise ValidationError({"criticality": "Unknown criticality value."})
+        self.criticality = crit
 
         if self.parent_item_id is not None:
             parent = self.parent_item

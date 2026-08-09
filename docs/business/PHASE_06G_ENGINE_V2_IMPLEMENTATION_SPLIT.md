@@ -70,16 +70,20 @@ Architecture + ADR only. No separate engine.
 
 ## 06L — Control-point metadata
 
-**Objective:** Extensibility field `NONE|CCP|OPRP|PRP|GMP|QUALITY` default `NONE`.
+**Status:** technical foundation on `main` (schema + clone/audit/snapshot/UI markers). **Not BUSINESS APPROVED.** Non-NONE classifications remain **EVIDENCE REQUIRED** (ASM-002 / APR-027). AI reports are not approval.
+
+**Objective:** Extensibility field `NONE|CCP|OPRP|PRP|GMP|QUALITY` default `NONE`, plus optional criticality blank|MINOR|MAJOR|CRITICAL.
 
 | Deliverable | Notes |
 | --- | --- |
-| Metadata on item (or side table) | No invented classifications in loaders |
-| Publish | Allows NONE without evidence; non-NONE may require future evidence gate flag |
+| Metadata on `ChecklistItem` | Default NONE/blank; no invented classifications in loaders |
+| Frozen `control_point_context` on submission snapshot | Historical reference only |
+| Audit on metadata change | `CHECKLIST_ITEM_CONTROL_POINT_METADATA_UPDATED` |
+| Publish | Allows NONE without evidence; non-NONE production use gated by APR-027 |
 
-**Out of scope:** HACCP plan management module.
+**Out of scope:** HACCP plan management module; auto HOLD/REJECT/RELEASE/NCR/dispatch.
 
-**Exit:** Defaulting + immutability + no auto-disposition coupling.
+**Exit:** Defaulting + immutability + no auto-disposition coupling — met for technical schema.
 
 ## 06M — Precision / units / boundaries
 

@@ -256,6 +256,34 @@
                      name="maximum_value"
                      id="id_item_max_{{ section.id }}">
             </div>
+            <div class="form-field">
+              <label for="id_item_cp_{{ section.id }}">Control-point class</label>
+              <select class="form-input"
+                      name="control_point_class"
+                      id="id_item_cp_{{ section.id }}">
+                <option value="NONE" selected>None (unset / not classified)</option>
+                <option value="CCP">CCP (evidence-gated)</option>
+                <option value="OPRP">OPRP (evidence-gated)</option>
+                <option value="PRP">PRP (evidence-gated)</option>
+                <option value="GMP">GMP (evidence-gated)</option>
+                <option value="QUALITY">Quality (evidence-gated)</option>
+              </select>
+              <p class="form-help">
+                Default NONE. Non-NONE production values require ASM-002 / APR-027.
+                Metadata does not HOLD/REJECT/RELEASE.
+              </p>
+            </div>
+            <div class="form-field">
+              <label for="id_item_crit_{{ section.id }}">Criticality (optional)</label>
+              <select class="form-input"
+                      name="criticality"
+                      id="id_item_crit_{{ section.id }}">
+                <option value="" selected>Unset</option>
+                <option value="MINOR">Minor</option>
+                <option value="MAJOR">Major</option>
+                <option value="CRITICAL">Critical</option>
+              </select>
+            </div>
             <button type="submit" class="btn btn--secondary btn--inline">Add item</button>
           </form>
         {% endif %}

@@ -79,6 +79,7 @@ Not started (by MODULE_MAP): `instruments`, `training`, `evidence`, `nonconforma
 | 06I Calculated fields | Closed operators + Decimal + frozen snapshot context | Technical foundation; **no business formulas seeded**; not BUSINESS APPROVED |
 | 06J Conditional rules | VISIBLE_IF / REQUIRED_IF / EVIDENCE_REQUIRED_IF (fail-closed evidence stub) | Technical foundation; **no seeded predicates**; not BUSINESS APPROVED |
 | 06K Item evaluation | Explicit bounds/choice/option/calculated rules → PASS/FAIL/WARN/NOT_EVALUATED | Technical foundation; **PASS≠RELEASE / FAIL≠HOLD/REJECT**; never auto-creates QAReview; **no seeded limits**; not BUSINESS APPROVED |
+| 06L Control-point metadata | `control_point_class` + `criticality` + frozen `control_point_context` | Technical schema on `main`; default NONE; **no invented CCP/OPRP**; metadata ≠ disposition; **APR-027 / ASM-002 still EVIDENCE REQUIRED**; not BUSINESS APPROVED |
 | 07A/07B Scheduling foundation | Complete | Real generation blocked (batch source, applicability, roles) |
 | 08A/08B Recording/submit | Complete | Production recording blocked |
 | 09A/09B Supervisor review + correction | Complete | Production review/correction blocked |
