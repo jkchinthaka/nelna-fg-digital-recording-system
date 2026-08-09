@@ -117,6 +117,15 @@ def _version_metadata(
         "organization_id": str(version.template.organization_id),
         "version_number": version.version_number,
         "status": version.status,
+        "effective_from": (
+            version.effective_from.isoformat() if version.effective_from else None
+        ),
+        "effective_to": (
+            version.effective_to.isoformat() if version.effective_to else None
+        ),
+        "published_at": (
+            version.published_at.isoformat() if version.published_at else None
+        ),
     }
     if extra:
         meta.update(extra)
@@ -2062,6 +2071,8 @@ def publish_checklist_version(*, actor: User | None, version_id: uuid.UUID) -> C
         target=ChecklistVersionStatus.PUBLISHED,
     )
     _validate_publish_structure(version)
+    # Phase 07D: overlapping PUBLISHED windows are blocked at selection / effectivity
+    # update — not at publish — so 07A explicit multi-publish + UUID bind remains valid.
 
     version.status = ChecklistVersionStatus.PUBLISHED
     version.published_at = timezone.now()

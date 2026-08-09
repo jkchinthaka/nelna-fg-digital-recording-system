@@ -54,8 +54,8 @@ This document records **repository evidence**. It does not invent Nelna operatio
 | `master_data` (FG Product + specs) | 05A/05B/05C + **06O** | IMPLEMENTED foundation · MASTER-001 **EVIDENCE REQUIRED**; versioned ProductSpecification (06O) unseeded — APR-006 **EVIDENCE REQUIRED** |
 | `instruments` | 05D | IMPLEMENTED foundation · unseeded equipment + calibration; intervals/overdue policy **EVIDENCE REQUIRED** |
 | `training` | 05E | IMPLEMENTED foundation · unseeded competency records; gate OFF by default; matrix/WARN-BLOCK **EVIDENCE REQUIRED** (APR-042) |
-| `checklists` | 06A–06O | IMPLEMENTED · FG-QA-001 **NOT BUSINESS APPROVED**; Phase **06N BLOCKED**; optional `SPECIFICATION_PARAMETER` evaluation pin (06O); Engine v2 **designed** (ADR-019); real forms **NOT RECEIVED**; optional `requires_equipment_reference` (05D) |
-| `scheduling` | 07A/07B | IMPLEMENTED · real batch generation **BLOCKED** |
+| `checklists` | 06A–06O + **07D** | IMPLEMENTED · FG-QA-001 **NOT BUSINESS APPROVED**; Phase **06N BLOCKED**; optional `SPECIFICATION_PARAMETER` evaluation pin (06O); Engine v2 **designed** (ADR-019); real forms **NOT RECEIVED**; optional `requires_equipment_reference` (05D); **07D** effective-version selection |
+| `scheduling` | 07A/07B/07C | IMPLEMENTED · real batch generation **BLOCKED**; 07D effective-version helper |
 | `recording` | 08A/08B + 09B | IMPLEMENTED · production recording **BLOCKED** |
 | `reviews` | 09A | IMPLEMENTED · production Supervisor review **BLOCKED** |
 | `quality` | 10A | IMPLEMENTED · production QA **BLOCKED**; no ERP/warehouse/dispatch side effects |
@@ -93,6 +93,7 @@ Not started (by MODULE_MAP): `evidence`, `nonconformance`, `capa`, `loading`, `d
 | 06O Product specifications | Versioned ProductSpecification + optional checklist pin | Technical complete; **no invented limits**; APR-006/ASM-001 still EVIDENCE REQUIRED |
 | 07A/07B Scheduling foundation | Complete | Real generation blocked (batch source, applicability, roles) |
 | 07C Checklist applicability engine | Technical complete — version-safe rules + preview | APR-013/014/015 EVIDENCE REQUIRED; no Line/Process masters; production generation still BLOCKED |
+| 07D Effective version policy | Technical complete — PUBLISHED-only selection; overlap/NO_ELIGIBLE blocked; audited effectivity | APR-015 as-of event still DECISION REQUIRED; historical pins never auto-upgrade |
 | 08A/08B Recording/submit | Complete | Production recording blocked |
 | 09A/09B Supervisor review + correction | Complete | Production review/correction blocked |
 | 10A QA disposition | Complete (manual RELEASE/HOLD/REJECT only) | Production QA blocked; post-QA workflows not started |
@@ -160,7 +161,7 @@ Tracked for request/approval workflow: [governance/APPROVAL_REGISTER.md](governa
 6. Recorder / Supervisor / QA business-role mapping
 7. Segregation-of-duties policy evidence
 8. Product / Site / Shift / Department applicability rules
-9. Checklist effective-version policy beyond explicit version FK
+9. Checklist effective-version **as-of business event** (APR-015) — technical engine exists (07D); policy still DECISION REQUIRED
 10. RELEASE / HOLD / REJECT operational meaning and downstream authority
 
 ---
@@ -257,3 +258,12 @@ FG-QA-001 Draft v0.1 was reviewed against real-evidence gates. No company forms,
 **STATUS: PHASE 06O PRODUCT SPECIFICATIONS COMPLETE**
 
 Versioned ProductSpecification / SpecificationVersion / SpecificationParameter foundation is implemented with immutability, effectivity overlap policy, org-scoped high-privilege RBAC, audit events, and optional checklist SPECIFICATION_PARAMETER pins. No Nelna limits were seeded — APR-006 / ASM-001 remain **EVIDENCE REQUIRED**. OUT_OF_SPEC does not auto HOLD/REJECT.
+
+---
+
+## Phase 07D delivery status
+
+**STATUS: PHASE 07D EFFECTIVE VERSION POLICY COMPLETE**
+
+Technical effective-version selection is implemented: optional inclusive `effective_from` / `effective_to` on `ChecklistVersion`, deterministic `ONE_ELIGIBLE_VERSION` resolution, explicit `NO_ELIGIBLE_VERSION` / `OVERLAPPING_ELIGIBLE_VERSIONS` blocks (never silent fallback or arbitrary pick), audited effectivity updates, and optional task helper that pins the resolved PUBLISHED version. APR-015 (which business event supplies `as_of`) remains **DECISION REQUIRED** — not invented. Existing `ChecklistTask` pins never auto-upgrade.
+

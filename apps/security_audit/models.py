@@ -149,6 +149,10 @@ class SecurityAuditEvent(models.Model):
         CHECKLIST_VERSION_CLONED = "CHECKLIST_VERSION_CLONED", "Checklist version cloned"
         CHECKLIST_VERSION_PUBLISHED = "CHECKLIST_VERSION_PUBLISHED", "Checklist version published"
         CHECKLIST_VERSION_RETIRED = "CHECKLIST_VERSION_RETIRED", "Checklist version retired"
+        CHECKLIST_VERSION_EFFECTIVITY_UPDATED = (
+            "CHECKLIST_VERSION_EFFECTIVITY_UPDATED",
+            "Checklist version effectivity updated",
+        )
         CHECKLIST_ITEM_EVALUATION_RULE_SET = (
             "CHECKLIST_ITEM_EVALUATION_RULE_SET",
             "Checklist item evaluation rule set",

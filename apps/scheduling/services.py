@@ -199,6 +199,43 @@ def create_batch_checklist_task(
     ).get(pk=task.id)
 
 
+def create_batch_checklist_task_using_effective_version(
+    *,
+    actor: User | None,
+    organization_id: uuid.UUID,
+    checklist_template_id: uuid.UUID,
+    batch_reference: str,
+    as_of=None,
+) -> ChecklistTask:
+    """
+    Create a task using Phase 07D deterministic effective-version selection.
+
+    ``as_of`` is caller-supplied (APR-015 unresolved — do not invent which
+    business event supplies it). Raises ValidationError when outcome is not
+    exactly ONE_ELIGIBLE_VERSION (NO_ELIGIBLE_VERSION / OVERLAPPING / BLOCKED).
+
+    Explicit UUID path ``create_batch_checklist_task`` remains for 07A.
+    """
+    from datetime import datetime
+
+    from apps.checklists.effective_version import assert_exactly_one_effective_version
+
+    if as_of is not None and not isinstance(as_of, datetime):
+        raise ValidationError({"as_of": "as_of must be a datetime or None."})
+
+    version = assert_exactly_one_effective_version(
+        template_id=checklist_template_id,
+        as_of=as_of,
+    )
+    return create_batch_checklist_task(
+        actor=actor,
+        organization_id=organization_id,
+        checklist_template_id=checklist_template_id,
+        checklist_version_id=version.id,
+        batch_reference=batch_reference,
+    )
+
+
 def cancel_checklist_task(*, actor: User | None, task_id: uuid.UUID) -> ChecklistTask:
     """Cancel a PENDING task. Soft cancel only — never hard-delete."""
     user = _require_authenticated_actor(actor)

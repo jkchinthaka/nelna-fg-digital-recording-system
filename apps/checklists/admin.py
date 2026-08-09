@@ -109,7 +109,15 @@ class ChecklistTemplateAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
 
 @admin.register(ChecklistVersion)
 class ChecklistVersionAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
-    list_display = ("template", "version_number", "status", "published_at", "updated_at")
+    list_display = (
+        "template",
+        "version_number",
+        "status",
+        "effective_from",
+        "effective_to",
+        "published_at",
+        "updated_at",
+    )
     list_filter = ("status",)
     search_fields = ("template__code", "template__name")
     readonly_fields = (
@@ -119,6 +127,17 @@ class ChecklistVersionAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
         "published_at",
         "version_number",
         "template",
+    )
+    fields = (
+        "id",
+        "template",
+        "version_number",
+        "status",
+        "effective_from",
+        "effective_to",
+        "published_at",
+        "created_at",
+        "updated_at",
     )
     inlines = [ChecklistSectionInline]
 

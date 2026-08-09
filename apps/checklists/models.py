@@ -243,6 +243,23 @@ class ChecklistVersion(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     published_at = models.DateTimeField(null=True, blank=True)
+    # Phase 07D — technical effectivity (APR-015 as-of policy unresolved).
+    effective_from = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text=(
+            "Optional inclusive start of PUBLISHED eligibility (UTC). "
+            "Blank = unbounded start. APR-015 as-of policy unresolved."
+        ),
+    )
+    effective_to = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text=(
+            "Optional inclusive end of PUBLISHED eligibility (UTC). "
+            "Blank = unbounded end. APR-015 as-of policy unresolved."
+        ),
+    )
 
     class Meta:
         ordering = ("template__code", "-version_number")
@@ -253,11 +270,23 @@ class ChecklistVersion(models.Model):
                 fields=["template", "version_number"],
                 name="chk_version_template_number_uniq",
             ),
+            models.CheckConstraint(
+                condition=(
+                    models.Q(effective_to__isnull=True)
+                    | models.Q(effective_from__isnull=True)
+                    | models.Q(effective_to__gte=models.F("effective_from"))
+                ),
+                name="chk_version_effective_window_valid",
+            ),
         ]
         indexes = [
             models.Index(
                 fields=["template", "status"],
                 name="chk_version_tmpl_status_idx",
+            ),
+            models.Index(
+                fields=["template", "status", "effective_from", "effective_to"],
+                name="chk_version_tmpl_effect_idx",
             ),
         ]
 
@@ -274,6 +303,25 @@ class ChecklistVersion(models.Model):
             ChecklistVersionStatus.PUBLISHED,
             ChecklistVersionStatus.RETIRED,
         }
+
+    def is_effective_at(self, as_of) -> bool:
+        """True when as_of falls within the inclusive technical effectivity window."""
+        if self.effective_from is not None and as_of < self.effective_from:
+            return False
+        if self.effective_to is not None and as_of > self.effective_to:
+            return False
+        return True
+
+    def clean(self) -> None:
+        super().clean()
+        if (
+            self.effective_to is not None
+            and self.effective_from is not None
+            and self.effective_to < self.effective_from
+        ):
+            raise ValidationError(
+                {"effective_to": "effective_to cannot be earlier than effective_from."}
+            )
 
 
 class ChecklistSection(models.Model):

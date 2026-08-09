@@ -44,8 +44,10 @@
 | `CHECKLIST_TEMPLATE_DEACTIVATED` | Checklist template deactivated |
 | `CHECKLIST_VERSION_CREATED` | Blank draft checklist version created |
 | `CHECKLIST_VERSION_CLONED` | Draft checklist version cloned from a source version |
-| `CHECKLIST_VERSION_PUBLISHED` | Checklist version published (immutable thereafter) |
+| `CHECKLIST_VERSION_PUBLISHED` | Checklist version published (immutable thereafter); metadata includes effectivity |
+| `CHECKLIST_VERSION_EFFECTIVITY_UPDATED` | Checklist version effective_from/to changed (Phase 07D) |
 | `CHECKLIST_VERSION_RETIRED` | Published checklist version retired |
+| `CHECKLIST_VERSION_EFFECTIVITY_UPDATED` | Checklist version `effective_from` / `effective_to` changed (Phase 07D) |
 | `CHECKLIST_TASK_CREATED` | Batch checklist task created (or idempotent return of existing) |
 | `CHECKLIST_TASK_CANCELLED` | Batch checklist task cancelled (soft cancel) |
 | `CHECKLIST_APPLICABILITY_RULE_CREATED` / `UPDATED` / `DEACTIVATED` | Checklist applicability rule lifecycle (Phase 07C) |
