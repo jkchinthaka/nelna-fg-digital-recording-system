@@ -16,6 +16,7 @@ from django.db import transaction
 from django.db.models.functions import Lower
 
 from apps.accounts.models import User
+from apps.checklists.measurement import assert_known_unit
 from apps.checklists.models import (
     ChecklistItem,
     ChecklistResponseType,
@@ -359,7 +360,9 @@ def _normalized_structure_payload_from_proposal(definition: ProposalDefinition) 
                         "label": item.label,
                         "is_required": item.is_required,
                         "response_type": item.response_type,
-                        "unit": item.unit,
+                        "unit": (
+                            assert_known_unit(item.unit) if (item.unit or "").strip() else item.unit
+                        ),
                         "minimum_value": (
                             str(item.minimum_value) if item.minimum_value is not None else None
                         ),
