@@ -42,9 +42,57 @@ class Role(models.Model):
         return f"{self.code} — {self.name}"
 
 
+class RoleTemplate(models.Model):
+    """
+    Technical permission bundle for optional copy onto a Role.
+
+    Not a business-approved role. Does not assign users. Optional
+    ``business_category_hint`` is documentation only — never approval evidence.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    code = models.CharField(max_length=64)
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True, default="")
+    is_active = models.BooleanField(default=True)
+    permissions = models.ManyToManyField(
+        Permission,
+        blank=True,
+        related_name="access_role_templates",
+    )
+    business_category_hint = models.CharField(
+        max_length=128,
+        blank=True,
+        default="",
+        help_text="Documentation hint only. Not business approval.",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ("code",)
+        constraints = [
+            models.UniqueConstraint(
+                Lower("code"),
+                name="ac_role_template_code_ci_uniq",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["is_active"], name="ac_role_tmpl_active_idx"),
+            models.Index(Lower("code"), name="ac_role_tmpl_code_lower_idx"),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.code} — {self.name}"
+
+
 class ScopedRoleAssignment(models.Model):
     """
     Assign a role to a user within an optional organization/site/department scope.
+
+    valid_from / valid_until are temporary/effective windows for the assignment
+    (documented in Phase 03C; field names preserved). Inactive or outside-window
+    assignments grant nothing.
 
     Hierarchy rules (fail closed):
     - site requires organization; site must belong to organization

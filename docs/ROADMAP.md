@@ -103,6 +103,18 @@ Branch naming pattern: `foundation/...`, `design/...`, `feature/phase-NN-short-n
 | Dependencies | Phase 02 |
 | Status | **Approved with conditions (2026-08-06)** â€” merged via PR #7 (and related follow-ups); DEBT-01C-R-NOTO remains open; authentication UI polish merged via PR #8 |
 
+## Phase 03C — Operational role governance
+
+| Field | Content |
+| --- | --- |
+| Objective | Strengthen operational permission catalogue, RoleTemplate technical bundles, audited role-permission updates, and SoD question register without inventing approved Nelna roles |
+| Inputs | Phase 03 RBAC; APR-007..010 open; CHECKLIST_RECORDER_ROLE_MAPPING |
+| Outputs | `permission_catalogue.py`; `RoleTemplate`; governance services; PERMISSION_MATRIX; PHASE_03C docs/tests; APR-040 |
+| Approval gate | Business role mappings remain EVIDENCE REQUIRED — final status **PHASE 03C BUSINESS ROLE APPROVAL PENDING** |
+| Exit criteria | Technical gates pass; no seeded company-approved roles; SoD questions PENDING; manage≠record≠review≠QA preserved |
+| Dependencies | Phase 03 |
+| Status | **Technical foundation** — BUSINESS ROLE APPROVAL PENDING |
+
 ## Phase 04 â€” Organization hierarchy and shifts
 
 | Field | Content |

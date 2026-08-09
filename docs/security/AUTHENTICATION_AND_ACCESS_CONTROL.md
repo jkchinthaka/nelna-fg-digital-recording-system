@@ -1,7 +1,7 @@
 # Authentication and Access Control
 
-**Document status:** Phase 03–07B foundation guidance
-**Last updated:** 2026-08-07
+**Document status:** Phase 03–07B foundation guidance (+ Phase 03C operational role governance)
+**Last updated:** 2026-08-10
 
 ## Login lifecycle
 
@@ -58,7 +58,9 @@ Checklist task capabilities (Phase 07A/07B):
 | `scheduling.manage_checklisttask` | Administrative create/cancel |
 | `scheduling.record_checklisttask` | Phase 08A draft recording — catalogue permission; not auto-assigned to business roles |
 
-Manage does **not** imply record. Business categories (Production Employee / Store Employee / QA) require explicit approved role mapping before assignment.
+Manage does **not** imply record. Record does **not** imply Supervisor review. Supervisor review does **not** imply QA review. Django superuser is **not** business QA authority.
+
+Phase **03C** adds a frozen operational permission catalogue, technical `RoleTemplate` bundles (optional `business_category_hint` only — not approval), and audited services to set role permissions / apply templates onto Roles **without** auto-assigning employees. Business mapping remains **APPROVAL REQUIRED** — see [OPERATIONAL_PERMISSION_MATRIX.md](OPERATIONAL_PERMISSION_MATRIX.md) and [PHASE_03C_OPERATIONAL_ROLE_GOVERNANCE.md](../business/PHASE_03C_OPERATIONAL_ROLE_GOVERNANCE.md).
 
 ## Security audit
 
@@ -68,4 +70,7 @@ See [SECURITY_EVENT_CATALOGUE.md](SECURITY_EVENT_CATALOGUE.md). Prohibited: pass
 
 - ADR-006, ADR-007, ADR-011, ADR-012
 - [CHECKLIST_RECORDER_ROLE_MAPPING.md](../business/CHECKLIST_RECORDER_ROLE_MAPPING.md)
+- [OPERATIONAL_PERMISSION_MATRIX.md](OPERATIONAL_PERMISSION_MATRIX.md)
+- [PHASE_03C_OPERATIONAL_ROLE_GOVERNANCE.md](../business/PHASE_03C_OPERATIONAL_ROLE_GOVERNANCE.md)
 - [PHASE_03_TEST_PLAN.md](../testing/PHASE_03_TEST_PLAN.md)
+- [PHASE_03C_TEST_PLAN.md](../testing/PHASE_03C_TEST_PLAN.md)

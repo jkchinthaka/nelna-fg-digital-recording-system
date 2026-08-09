@@ -6,6 +6,18 @@
 **Permission foundation:** `scheduling.record_checklisttask`; `reviews.review_checklistsubmission`; `quality.qa_review_checklistsubmission`
 **Related:** [PHASE_06E_FG_QA_001_PROVISIONAL_WORKFLOW.md](../decisions/PHASE_06E_FG_QA_001_PROVISIONAL_WORKFLOW.md), [ADR-015-SUPERVISOR-REVIEW.md](../architecture/ADR-015-SUPERVISOR-REVIEW.md), [ADR-016-CHECKLIST-CORRECTION-RESUBMISSION.md](../architecture/ADR-016-CHECKLIST-CORRECTION-RESUBMISSION.md), [ADR-017-QA-FINAL-REVIEW-DISPOSITION.md](../architecture/ADR-017-QA-FINAL-REVIEW-DISPOSITION.md)
 
+
+
+## Phase 03C governance pointers
+
+Technical permission catalogue and proposed (not approved) business categories:
+
+- [PHASE_03C_ROLE_GOVERNANCE.md](../governance/PHASE_03C_ROLE_GOVERNANCE.md)
+- [PERMISSION_MATRIX.md](../security/PERMISSION_MATRIX.md)
+- [SOD_DECISION_REGISTER.md](../governance/SOD_DECISION_REGISTER.md)
+
+Status: **PHASE 03C BUSINESS ROLE APPROVAL PENDING** (APR-007/008/009/010 remain EVIDENCE REQUIRED).
+
 ## Purpose
 
 Map owner-directed **logical** recorder and Supervisor-review business categories to

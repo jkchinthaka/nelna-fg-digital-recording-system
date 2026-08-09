@@ -1,4 +1,4 @@
-"""Django admin for roles and scoped assignments."""
+"""Django admin for roles, role templates, and scoped assignments."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.http import HttpRequest
 
-from apps.access_control.models import Role, ScopedRoleAssignment
+from apps.access_control.models import Role, RoleTemplate, ScopedRoleAssignment
 
 
 @admin.register(Role)
@@ -15,6 +15,23 @@ class RoleAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
     list_display = ("code", "name", "is_active", "created_at", "updated_at")
     list_filter = ("is_active",)
     search_fields = ("code", "name")
+    filter_horizontal = ("permissions",)
+    readonly_fields = ("id", "created_at", "updated_at")
+    ordering = ("code",)
+
+
+@admin.register(RoleTemplate)
+class RoleTemplateAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
+    list_display = (
+        "code",
+        "name",
+        "is_active",
+        "business_category_hint",
+        "created_at",
+        "updated_at",
+    )
+    list_filter = ("is_active",)
+    search_fields = ("code", "name", "business_category_hint")
     filter_horizontal = ("permissions",)
     readonly_fields = ("id", "created_at", "updated_at")
     ordering = ("code",)

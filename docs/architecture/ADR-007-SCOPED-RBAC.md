@@ -29,3 +29,26 @@ Finished Goods recording requires organization, site, and department isolation. 
 
 - [ADR-006-IDENTITY-AND-EMPLOYEE-CODE-AUTHENTICATION.md](ADR-006-IDENTITY-AND-EMPLOYEE-CODE-AUTHENTICATION.md)
 - [AUTHENTICATION_AND_ACCESS_CONTROL.md](../security/AUTHENTICATION_AND_ACCESS_CONTROL.md)
+
+
+## Addendum — Phase 03C RoleTemplate (ADR-007a)
+
+**Status:** Accepted as technical extension (2026-08-10)
+**Does not:** approve Nelna business roles, seed templates, or enforce SoD policy.
+
+1. **RoleTemplate:** Configurable empty permission bundle with `business_status`
+   PROPOSED | PENDING_OWNER_APPROVAL | OWNER_APPROVED (default PROPOSED).
+2. **OWNER_APPROVED:** Service layer requires non-blank `evidence_reference` (APR path).
+   Never invent company-approved template content.
+3. **create_role_from_template:** Copies permissions into a new `Role` only; does not
+   assign users; does not treat PROPOSED as company authority.
+4. **set_role_permissions:** Audited mutation path (`ROLE_PERMISSIONS_SET`). Prefer
+   services over ad-hoc admin M2M edits (admin save_related routes to the service).
+5. **Assignment windows:** `ScopedRoleAssignment.valid_from` / `valid_until` remain the
+   temporary/effective windows (names unchanged).
+6. **SoD:** Documented in `SOD_DECISION_REGISTER.md` as PENDING — not approved policy.
+
+### Related Phase 03C docs
+
+- [PHASE_03C_ROLE_GOVERNANCE.md](../governance/PHASE_03C_ROLE_GOVERNANCE.md)
+- [PERMISSION_MATRIX.md](../security/PERMISSION_MATRIX.md)

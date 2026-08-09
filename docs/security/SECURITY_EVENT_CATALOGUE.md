@@ -16,6 +16,9 @@
 | `PASSWORD_RESET_BY_ADMIN` | Admin sets a new password |
 | `USER_ACTIVATED` / `USER_DEACTIVATED` | Active-flag changes |
 | `ROLE_ASSIGNED` / `ROLE_REVOKED` | Scoped role assignment lifecycle |
+| `ROLE_PERMISSIONS_UPDATED` | Role permission set replaced via governance service |
+| `ROLE_TEMPLATE_CREATED` / `ROLE_TEMPLATE_UPDATED` | RoleTemplate lifecycle (technical; not business approval) |
+| `ROLE_TEMPLATE_APPLIED` | Template permissions copied onto a Role (no user assignment) |
 | `SHIFT_CREATED` | Configurable Shift created via domain service |
 | `SHIFT_UPDATED` | Configurable Shift fields updated via domain service |
 | `SHIFT_ACTIVATED` | Shift reactivated (`is_active=True`) |

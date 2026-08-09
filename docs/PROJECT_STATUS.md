@@ -35,7 +35,7 @@ This document records **repository evidence**. It does not invent Nelna operatio
 | FG-QA-001 | Project-proposed **DRAFT** only — **NOT APPROVED** for production; not auto-published |
 | Phase 10A QA foundation | **IMPLEMENTED** on `main` at baseline SHA above |
 | Phase 10A Docker full validation | **NOT confirmed complete** in this governance pass (prior Docker Desktop engine failures reported; re-validation remains outstanding) |
-| Business role mappings (recorder / Supervisor / QA) | **NOT BUSINESS APPROVED** — permissions exist unassigned / mapping docs open |
+| Business role mappings (recorder / Supervisor / QA) | **NOT BUSINESS APPROVED** — Phase 03C technical governance exists; permissions unassigned; mapping tables empty |
 | Segregation of duties | **EVIDENCE REQUIRED** — not invented in code as Nelna policy |
 | Offline / PWA | **NOT IMPLEMENTED** (ADR-003 direction only) |
 | ERP / Bileeta connector | **NOT IMPLEMENTED** — contract docs only |
@@ -49,7 +49,7 @@ This document records **repository evidence**. It does not invent Nelna operatio
 | `core` | 02+ | IMPLEMENTED |
 | `accounts` | 03 | IMPLEMENTED · Phase 03 **Approved with conditions** (not production-configured) |
 | `organizations` (incl. Shift) | 03 + 04A/04B | IMPLEMENTED · official org/site/dept/shift values **EVIDENCE REQUIRED** |
-| `access_control` | 03 | IMPLEMENTED · no seeded business roles |
+| `access_control` | 03 + **03C** | IMPLEMENTED · RoleTemplate + permission catalogue + governance services; **no** seeded business roles; **PHASE 03C BUSINESS ROLE APPROVAL PENDING** |
 | `security_audit` | 03–10A | IMPLEMENTED |
 | `master_data` (FG Product) | 05A/05B | IMPLEMENTED · MASTER-001 **EVIDENCE REQUIRED** |
 | `checklists` | 06A–06D (+ 06E–06G docs) | IMPLEMENTED · FG-QA-001 **NOT BUSINESS APPROVED**; Engine v2 **designed** (ADR-019); real forms **NOT RECEIVED** |
@@ -70,6 +70,7 @@ Not started (by MODULE_MAP): `instruments`, `training`, `evidence`, `nonconforma
 | 01A–01C Design | Complete; 01C deferred Sinhala condition | Design approvals recorded; DEBT-01C-R-NOTO **open** |
 | 02 Foundation | Complete | Approved with conditions |
 | 03 Accounts/RBAC | Complete | Approved with conditions; no seeded users/orgs/roles |
+| 03C Operational role governance | Technical foundation (catalogue, RoleTemplate, audited permission/template services, docs) | **PHASE 03C BUSINESS ROLE APPROVAL PENDING** — SoD all PENDING; APR-007..010/040 EVIDENCE REQUIRED |
 | 04A/04B Shift | Complete | Official Shift values unresolved (ASM-005/006) |
 | 05A/05B FG Product | Complete | MASTER-001 unresolved |
 | 06A–06E Checklist definition | Complete (06E provisional docs) | TEMPLATE / FG-QA-001 approval unresolved |
