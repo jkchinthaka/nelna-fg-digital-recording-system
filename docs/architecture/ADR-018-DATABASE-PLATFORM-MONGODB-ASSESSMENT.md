@@ -1,11 +1,11 @@
 # ADR-018 — Database Platform: MongoDB / Atlas Compatibility Assessment
 
-**Status:** POC REQUIRED
-**Date:** 2026-08-09
+**Status:** POC PARTIAL (isolated) — CUTOVER BLOCKED
+**Date:** 2026-08-09 (updated 2026-08-10 after DB-02)
 **Phase:** Architecture assessment (no production migration)
-**Baseline commit:** `8acfc68` (`main` — includes Phase 06H repeating samples + Phase 06I calculated fields; PostgreSQL remains SoR)
-**Supersedes:** Nothing. **Does not supersede** [ADR-002](ADR-002-POSTGRESQL-PRIMARY-DATABASE.md) until a later accepted decision with POC evidence.
-**Related:** APR-020, DEC-003, DL-044, RSK-G-001, [MONGODB_COMPATIBILITY_MATRIX.md](../migration/MONGODB_COMPATIBILITY_MATRIX.md), [MONGODB_POC_PLAN.md](../migration/MONGODB_POC_PLAN.md), [POSTGRESQL_TO_MONGODB_MIGRATION_STRATEGY.md](../migration/POSTGRESQL_TO_MONGODB_MIGRATION_STRATEGY.md)
+**Baseline commit:** `8ff44e2` DB-01; DB-02 evidence in [MONGODB_POC_RESULTS.md](../migration/MONGODB_POC_RESULTS.md)
+**Supersedes:** Nothing. **Does not supersede** [ADR-002](ADR-002-POSTGRESQL-PRIMARY-DATABASE.md) until a later accepted decision with full-app POC evidence.
+**Related:** APR-020, DEC-003, DL-044, RSK-G-001, [MONGODB_COMPATIBILITY_MATRIX.md](../migration/MONGODB_COMPATIBILITY_MATRIX.md), [MONGODB_POC_PLAN.md](../migration/MONGODB_POC_PLAN.md), [MONGODB_POC_RESULTS.md](../migration/MONGODB_POC_RESULTS.md), [POSTGRESQL_TO_MONGODB_MIGRATION_STRATEGY.md](../migration/POSTGRESQL_TO_MONGODB_MIGRATION_STRATEGY.md)
 
 ## Context
 
@@ -42,14 +42,15 @@ https://www.mongodb.com/docs/languages/python/django-mongodb/v5.2/limitations-up
 
 ## Decision (current)
 
-**Status = POC REQUIRED.**
+**Status = POC PARTIAL (isolated invariants) — DO NOT MIGRATE.**
 
 1. PostgreSQL remains the **implemented system of record** on `main`.
-2. MongoDB / Atlas is treated as a **company-requested platform change under assessment**, not an accepted replacement.
-3. A bounded **proof-of-concept** must validate highest-risk workflows before any DB-02 migration design is authorized.
-4. No production data migration, secret materialization, or wholesale model rewrite in this phase.
+2. MongoDB / Atlas remains a **company-requested platform change under assessment**, not an accepted replacement.
+3. DB-02 isolated POC (`apps/mongo_poc` + `compose.mongo-poc.yaml` + official `django-mongodb-backend`) proved unique-index + Mongo `atomic` + WriteConflict retry patterns for **mirror** models — see [MONGODB_POC_RESULTS.md](../migration/MONGODB_POC_RESULTS.md).
+4. **DB-03 cutover is blocked:** production-path guarantees (`select_for_update`, nested savepoints, `prefetch_related`, Subquery/OuterRef queues, stock `auth.User` AutoField, full suite on Mongo) remain FAIL or NOT_TESTED.
+5. No production data migration, secret materialization, or wholesale model rewrite authorized by this ADR.
 
-This ADR is **not ACCEPTED** as a platform switch. Acceptance requires successful POC evidence plus written owner approval (APR-020).
+This ADR is **not ACCEPTED** as a platform switch. Acceptance requires full-application POC evidence plus written owner approval (APR-020).
 
 ## Repository evidence summary (audit)
 

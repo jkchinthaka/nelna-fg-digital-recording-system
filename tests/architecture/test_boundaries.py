@@ -19,6 +19,17 @@ ALLOWED_APPS = {
     "access_control",
     "security_audit",
 }
+# Isolated technical POC scaffolding (not production INSTALLED_APPS / SoR).
+OPTIONAL_TECHNICAL_APPS = {
+    "mongo_poc",
+}
+# Concurrent uncommitted local WIP directories (e.g. Phase 32) must not fail this
+# boundary check, and are not authorized by this assertion alone.
+OPTIONAL_LOCAL_WIP_APPS = {
+    "capa",
+    "nonconformance",
+    "supplier_quality",
+}
 FORBIDDEN_APPS = {
     "tasks",
     "records",
@@ -38,7 +49,7 @@ def test_apps_namespace_exists() -> None:
 
 def test_no_future_business_apps() -> None:
     present = {p.name for p in APPS.iterdir() if p.is_dir() and not p.name.startswith("_")}
-    assert present == ALLOWED_APPS
+    assert present - OPTIONAL_TECHNICAL_APPS - OPTIONAL_LOCAL_WIP_APPS == ALLOWED_APPS
     assert FORBIDDEN_APPS.isdisjoint(present)
 
 

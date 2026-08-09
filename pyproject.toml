@@ -1,7 +1,7 @@
 [project]
 name = "nelna-fg-digital-recording-system"
 version = "0.2.0"
-description = "Nelna FG Digital Recording System — Django and PostgreSQL technical foundation"
+description = "Nelna FG Digital Recording System ΓÇö Django and PostgreSQL technical foundation"
 readme = "README.md"
 requires-python = ">=3.13,<3.14"
 dependencies = [
@@ -33,6 +33,10 @@ security = [
     "bandit==1.9.2",
     "pip-audit==2.10.0",
 ]
+# Optional — never required for default PostgreSQL CI on main.
+mongo-poc = [
+    "django-mongodb-backend==5.2.3",
+]
 
 [build-system]
 requires = ["hatchling"]
@@ -62,6 +66,8 @@ ignore = ["S101"]
 "apps/accounts/middleware.py" = ["S110"]
 "config/settings/**" = ["S105"]
 "scripts/build_design_tokens.py" = ["S105"]
+"apps/mongo_poc/models.py" = ["DJ008"]
+"apps/mongo_poc/admin.py" = ["DJ008"]
 
 [tool.ruff.format]
 quote-style = "double"
@@ -80,10 +86,11 @@ exclude = [
     "static/",
     "node_modules/",
     "design/generated/",
+    "apps/mongo_poc/",
 ]
 
 [[tool.mypy.overrides]]
-module = ["celery.*", "django_htmx.*", "environ.*"]
+module = ["celery.*", "django_htmx.*", "environ.*", "django_mongodb_backend.*"]
 ignore_missing_imports = true
 
 [tool.django-stubs]
@@ -104,6 +111,7 @@ testpaths = ["tests", "apps"]
 markers = [
     "integration: tests requiring PostgreSQL and/or Redis",
     "architecture: architecture boundary checks",
+    "mongo_poc: isolated MongoDB POC (requires config.settings.mongo_poc + replica set)",
 ]
 
 [tool.coverage.run]
@@ -114,6 +122,7 @@ omit = [
     "*/tests/*",
     "*/apps.py",
     "manage.py",
+    "apps/mongo_poc/*",
 ]
 
 [tool.coverage.report]

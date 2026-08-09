@@ -29,7 +29,7 @@ This document records **repository evidence**. It does not invent Nelna operatio
 
 | Item | Evidence-based status |
 | --- | --- |
-| Current DB platform | **PostgreSQL** (authoritative; ADR-002). Redis for cache/Celery. MongoDB/Atlas **requested by company** — DB-01 assessed in ADR-018 (**POC REQUIRED**); **not** implemented; **not** accepted as SoR |
+| Current DB platform | **PostgreSQL** (authoritative; ADR-002). Redis for cache/Celery. MongoDB/Atlas **requested by company** — DB-01 ADR-018; DB-02 isolated POC evidence in `docs/migration/MONGODB_POC_RESULTS.md` (**CUTOVER BLOCKED / DO NOT MIGRATE**); **not** application SoR |
 | Current deployment | **Local / developer Docker Compose only**. No staging/UAT/production deployment recorded |
 | Production readiness | **NOT claimed** |
 | FG-QA-001 | Project-proposed **DRAFT** only — **NOT APPROVED** for production; not auto-published |
