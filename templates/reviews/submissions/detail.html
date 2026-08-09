@@ -63,53 +63,7 @@
         </dd>
       </div>
     </dl>
-    {% for block in rendered_sections %}
-      <section class="recording-section"
-               aria-labelledby="section-{{ block.section.id }}">
-        <h2 id="section-{{ block.section.id }}">{{ block.section.title }}</h2>
-        {% if block.section.description %}
-          <p class="recording-section__description">{{ block.section.description }}</p>
-        {% endif %}
-        {% for row in block.items %}
-          <article class="recording-item">
-            <h3>
-              {{ row.item.code }} — {{ row.item.label }}
-              {% if row.item.is_required %}<span class="recording-item__required">Required</span>{% endif %}
-            </h3>
-            {% if row.item.help_text %}<p class="form-help">{{ row.item.help_text }}</p>{% endif %}
-            {% if row.item.response_type == "NUMBER" %}
-              {% if row.item.unit %}<p class="form-help">Unit: {{ row.item.unit }}</p>{% endif %}
-              {% if row.item.minimum_value is not None or row.item.maximum_value is not None %}
-                <p class="form-help">
-                  Configured range:
-                  {% if row.item.minimum_value is not None %}
-                    {{ row.item.minimum_value }}
-                  {% else %}
-                    —
-                  {% endif %}
-                  –
-                  {% if row.item.maximum_value is not None %}
-                    {{ row.item.maximum_value }}
-                  {% else %}
-                    —
-                  {% endif %}
-                  {% if row.item.unit %}{{ row.item.unit }}{% endif %}
-                  (informational only)
-                </p>
-              {% endif %}
-            {% endif %}
-            <p>
-              <strong>Submitted answer:</strong>
-              {% if row.answered %}
-                {{ row.display_value }}
-              {% else %}
-                <em>Not answered (optional)</em>
-              {% endif %}
-            </p>
-          </article>
-        {% endfor %}
-      </section>
-    {% endfor %}
+    {% include "recording/_snapshot_sections.html" %}
     <section class="mgmt-actions" aria-labelledby="review-actions-heading">
       <h2 id="review-actions-heading">Supervisor decision</h2>
       <p class="form-help">

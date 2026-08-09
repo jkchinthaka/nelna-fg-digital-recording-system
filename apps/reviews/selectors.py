@@ -19,6 +19,8 @@ from apps.recording.models import (
     ChecklistSubmission,
     ChecklistSubmissionResponse,
 )
+from apps.recording.repeating import responses_by_key
+from apps.recording.snapshot_display import render_snapshot_sections
 from apps.reviews.models import SupervisorReview
 from apps.reviews.services import (
     REVIEW_CHECKLIST_SUBMISSION,
@@ -151,12 +153,13 @@ def load_submission_review_context(
 
     version = record.checklist_task.checklist_version
     sections = _load_sections(version.id)
-    snapshot_responses = {
-        response.checklist_item_id: response
-        for response in ChecklistSubmissionResponse.objects.filter(
-            checklist_submission_id=submission.id
-        ).select_related("selected_option")
-    }
+    snapshot_responses = responses_by_key(
+        list(
+            ChecklistSubmissionResponse.objects.filter(
+                checklist_submission_id=submission.id
+            ).select_related("selected_option")
+        )
+    )
 
     existing_review = (
         SupervisorReview.objects.select_related("reviewed_by")
@@ -170,5 +173,6 @@ def load_submission_review_context(
         "task": record.checklist_task,
         "sections": sections,
         "snapshot_responses": snapshot_responses,
+        "rendered_sections": render_snapshot_sections(sections, snapshot_responses),
         "review": existing_review,
     }

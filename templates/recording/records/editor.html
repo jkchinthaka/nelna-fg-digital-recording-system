@@ -9,9 +9,10 @@
         <h1 id="recording-editor-heading">Draft Checklist Recording</h1>
         <p class="mgmt-page__lead">
           Save Draft may remain incomplete. Submit Checklist requires all required
-          items answered. Configured number ranges are informational — out-of-range
-          values may be recorded and submitted. This phase does not evaluate product
-          quality outcomes.
+          items answered. Repeating sample rows are technical structure only —
+          sample counts are not invented business AQL values. Configured number
+          ranges are informational — out-of-range values may be recorded and
+          submitted. This phase does not evaluate product quality outcomes.
         </p>
       </div>
       <a class="btn btn--ghost btn--inline"
@@ -20,33 +21,23 @@
     <dl class="mgmt-meta" aria-label="Recording context">
       <div>
         <dt>Template</dt>
-        <dd>
-          {{ task.checklist_template.code }} — {{ task.checklist_template.name }}
-        </dd>
+        <dd>{{ task.checklist_template.code }} — {{ task.checklist_template.name }}</dd>
       </div>
       <div>
         <dt>Version</dt>
-        <dd>
-          v{{ task.checklist_version.version_number }} ({{ task.checklist_version.status }})
-        </dd>
+        <dd>v{{ task.checklist_version.version_number }} ({{ task.checklist_version.status }})</dd>
       </div>
       <div>
         <dt>Batch reference</dt>
-        <dd>
-          {{ task.batch_reference }}
-        </dd>
+        <dd>{{ task.batch_reference }}</dd>
       </div>
       <div>
         <dt>Organization</dt>
-        <dd>
-          {{ task.organization.code }} — {{ task.organization.name }}
-        </dd>
+        <dd>{{ task.organization.code }} — {{ task.organization.name }}</dd>
       </div>
       <div>
         <dt>Recording state</dt>
-        <dd>
-          DRAFT
-        </dd>
+        <dd>DRAFT</dd>
       </div>
       <div>
         <dt>Required progress</dt>
@@ -80,53 +71,99 @@
           <h2 id="section-{{ section.id }}">{{ section.title }}</h2>
           {% if section.description %}<p class="recording-section__description">{{ section.description }}</p>{% endif %}
           {% for item in section.items.all %}
-            {% with field=form|response_bound_field:item %}
-              <fieldset class="recording-item">
-                <legend>
-                  {{ item.code }} — {{ item.label }}
-                  {% if item.is_required %}<span class="recording-item__required">Required</span>{% endif %}
-                </legend>
-                {% if item.help_text %}<p class="form-help">{{ item.help_text }}</p>{% endif %}
-                {% if item.response_type == "NUMBER" %}
-                  {% if item.unit %}<p class="form-help">Unit: {{ item.unit }}</p>{% endif %}
-                  {% if item.minimum_value is not None or item.maximum_value is not None %}
+            {% if item.parent_item_id %}
+            {% elif item.item_kind == "REPEATING_GROUP" %}
+              {% with indexes=sample_indexes_by_group|dict_get:item.id children=children_by_parent|dict_get:item.id %}
+                <fieldset class="recording-item recording-item--repeating">
+                  <legend>{{ item.code }} — {{ item.label }}</legend>
+                  {% if item.help_text %}<p class="form-help">{{ item.help_text }}</p>{% endif %}
+                  {% if item.repeat_min is not None or item.repeat_max is not None %}
                     <p class="form-help">
-                      Configured range:
-                      {% if item.minimum_value is not None %}
-                        {{ item.minimum_value }}
-                      {% else %}
-                        —
-                      {% endif %}
-                      –
-                      {% if item.maximum_value is not None %}
-                        {{ item.maximum_value }}
-                      {% else %}
-                        —
-                      {% endif %}
-                      {% if item.unit %}{{ item.unit }}{% endif %}
-                      (informational only)
+                      Configured sample bounds:
+                      {% if item.repeat_min is not None %}min {{ item.repeat_min }}{% else %}min —{% endif %}
+                      /
+                      {% if item.repeat_max is not None %}max {{ item.repeat_max }}{% else %}max —{% endif %}
+                      (evidence-defined when set; not invented)
                     </p>
                   {% endif %}
-                {% endif %}
-                {% if field %}
-                  <div class="form-field">
-                    {{ field }}
-                    {% if field.errors %}
-                      <ul class="form-errors" role="alert">
-                        {% for error in field.errors %}<li>{{ error }}</li>{% endfor %}
-                      </ul>
+                  <input type="hidden" name="sample_count_{{ item.id.hex }}" value="{{ indexes|length }}">
+                  {% for sample_index in indexes %}
+                    <fieldset class="recording-sample">
+                      <legend>Sample {{ sample_index }}</legend>
+                      {% for child in children %}
+                        {% response_bound_field_at form child sample_index as field %}
+                        {% if field %}
+                          <div class="form-field">
+                            <label for="{{ field.id_for_label }}">
+                              {{ child.code }} — {{ child.label }}
+                              {% if child.is_required %}(required){% endif %}
+                            </label>
+                            {{ field }}
+                            {% if field.errors %}
+                              <ul class="form-errors" role="alert">
+                                {% for error in field.errors %}<li>{{ error }}</li>{% endfor %}
+                              </ul>
+                            {% endif %}
+                          </div>
+                        {% endif %}
+                      {% endfor %}
+                    </fieldset>
+                  {% empty %}
+                    <p class="form-help">No sample rows yet. Add a sample row to begin.</p>
+                  {% endfor %}
+                  <div class="landing-actions">
+                    <button type="submit" class="btn btn--ghost btn--inline" name="sample_action" value="add:{{ item.id }}">
+                      Add sample row
+                    </button>
+                    {% if indexes %}
+                      <button type="submit" class="btn btn--ghost btn--inline" name="sample_action" value="remove:{{ item.id }}">
+                        Remove last sample row
+                      </button>
                     {% endif %}
                   </div>
-                {% endif %}
-              </fieldset>
-            {% endwith %}
+                </fieldset>
+              {% endwith %}
+            {% else %}
+              {% with field=form|response_bound_field:item %}
+                <fieldset class="recording-item">
+                  <legend>
+                    {{ item.code }} — {{ item.label }}
+                    {% if item.is_required %}<span class="recording-item__required">Required</span>{% endif %}
+                  </legend>
+                  {% if item.help_text %}<p class="form-help">{{ item.help_text }}</p>{% endif %}
+                  {% if item.response_type == "NUMBER" %}
+                    {% if item.unit %}<p class="form-help">Unit: {{ item.unit }}</p>{% endif %}
+                    {% if item.minimum_value is not None or item.maximum_value is not None %}
+                      <p class="form-help">
+                        Configured range:
+                        {% if item.minimum_value is not None %}{{ item.minimum_value }}{% else %}—{% endif %}
+                        –
+                        {% if item.maximum_value is not None %}{{ item.maximum_value }}{% else %}—{% endif %}
+                        {% if item.unit %}{{ item.unit }}{% endif %}
+                        (informational only)
+                      </p>
+                    {% endif %}
+                  {% endif %}
+                  {% if field %}
+                    <div class="form-field">
+                      {{ field }}
+                      {% if field.errors %}
+                        <ul class="form-errors" role="alert">
+                          {% for error in field.errors %}<li>{{ error }}</li>{% endfor %}
+                        </ul>
+                      {% endif %}
+                    </div>
+                  {% endif %}
+                </fieldset>
+              {% endwith %}
+            {% endif %}
           {% endfor %}
         </section>
       {% endfor %}
-      <div class="mgmt-actions">
+      <div class="landing-actions">
         <button type="submit" class="btn btn--primary">Save Draft</button>
         <a class="btn btn--secondary"
-           href="{% url 'recording:submit_confirm' record_id=record.id %}">Submit Checklist</a>
+           href="{% url 'recording:submit_confirm' record_id=record.id %}">Submit Checklist…</a>
       </div>
     </form>
   </section>

@@ -30,6 +30,18 @@ class ChecklistResponseType(models.TextChoices):
     SELECT = "SELECT", "Select"
 
 
+class ChecklistItemKind(models.TextChoices):
+    """
+    Engine v2 item structure (ADR-019 / Phase 06H).
+
+    CALCULATED is reserved for 06I — rejected by services until implemented.
+    """
+
+    SIMPLE = "SIMPLE", "Simple"
+    REPEATING_GROUP = "REPEATING_GROUP", "Repeating group"
+    CALCULATED = "CALCULATED", "Calculated"
+
+
 class ChecklistTemplate(models.Model):
     """
     Stable logical identity of a checklist across versions.
@@ -190,6 +202,7 @@ class ChecklistItem(models.Model):
 
     Response primitives are technical definition schema only.
     Numerical Product limits and release automation remain evidence-gated.
+    Phase 06H adds optional repeating-group structure (ADR-019).
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -197,6 +210,19 @@ class ChecklistItem(models.Model):
         ChecklistSection,
         on_delete=models.CASCADE,
         related_name="items",
+    )
+    parent_item = models.ForeignKey(
+        "self",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="child_items",
+        help_text="Set only for children of a REPEATING_GROUP (one level).",
+    )
+    item_kind = models.CharField(
+        max_length=32,
+        choices=ChecklistItemKind.choices,
+        default=ChecklistItemKind.SIMPLE,
     )
     code = models.CharField(max_length=64)
     label = models.CharField(max_length=500)
@@ -233,6 +259,21 @@ class ChecklistItem(models.Model):
         blank=True,
         help_text="Optional NUMBER upper bound. Unset is allowed.",
     )
+    repeat_min = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text="Optional minimum sample rows when defined by evidence — not invented.",
+    )
+    repeat_max = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text="Optional maximum sample rows when defined by evidence — not invented.",
+    )
+    repeat_default = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text="Optional default sample row count when defined — not invented.",
+    )
 
     class Meta:
         ordering = ("position", "code")
@@ -249,16 +290,114 @@ class ChecklistItem(models.Model):
                 name="chk_item_section_code_ci_uniq",
             ),
         ]
+        indexes = [
+            models.Index(
+                fields=["section", "parent_item", "position"],
+                name="chk_item_sect_parent_pos_idx",
+            ),
+            models.Index(fields=["item_kind"], name="chk_item_kind_idx"),
+        ]
 
     def __str__(self) -> str:
         return f"{self.code}: {self.label}"
 
+    @property
+    def is_repeating_group(self) -> bool:
+        return self.item_kind == ChecklistItemKind.REPEATING_GROUP
+
+    @property
+    def is_simple(self) -> bool:
+        return self.item_kind == ChecklistItemKind.SIMPLE
+
     def clean(self) -> None:
+        from apps.checklists.constants import REPEAT_SAMPLE_TECHNICAL_CEILING
+
         super().clean()
         if not (self.code or "").strip():
             raise ValidationError({"code": "Code cannot be blank."})
         if not (self.label or "").strip():
             raise ValidationError({"label": "Label cannot be blank."})
+
+        kind = (self.item_kind or "").strip() or ChecklistItemKind.SIMPLE
+        if kind not in ChecklistItemKind.values:
+            raise ValidationError({"item_kind": "Unknown item kind."})
+        if kind == ChecklistItemKind.CALCULATED:
+            raise ValidationError(
+                {"item_kind": "CALCULATED items are not enabled until Phase 06I."}
+            )
+
+        if self.parent_item_id is not None:
+            parent = self.parent_item
+            if parent is None:
+                raise ValidationError({"parent_item": "Parent item not found."})
+            if parent.section_id != self.section_id:
+                raise ValidationError(
+                    {"parent_item": "Parent item must belong to the same section."}
+                )
+            if parent.item_kind != ChecklistItemKind.REPEATING_GROUP:
+                raise ValidationError({"parent_item": "Parent item must be a REPEATING_GROUP."})
+            if parent.parent_item_id is not None:
+                raise ValidationError({"parent_item": "Nested repeating groups are not supported."})
+            if kind != ChecklistItemKind.SIMPLE:
+                raise ValidationError(
+                    {
+                        "item_kind": (
+                            "Only SIMPLE child items are supported under a "
+                            "REPEATING_GROUP in Phase 06H."
+                        )
+                    }
+                )
+
+        if kind == ChecklistItemKind.REPEATING_GROUP:
+            if self.parent_item_id is not None:
+                raise ValidationError(
+                    {"parent_item": "A REPEATING_GROUP cannot be nested under another item."}
+                )
+            if (self.response_type or "").strip():
+                raise ValidationError(
+                    {"response_type": "REPEATING_GROUP items do not take a response type."}
+                )
+            if self.unit or self.minimum_value is not None or self.maximum_value is not None:
+                raise ValidationError(
+                    {"response_type": "REPEATING_GROUP items cannot have numeric limits or unit."}
+                )
+            for field_name in ("repeat_min", "repeat_max", "repeat_default"):
+                value = getattr(self, field_name)
+                if value is not None and value > REPEAT_SAMPLE_TECHNICAL_CEILING:
+                    raise ValidationError(
+                        {
+                            field_name: (
+                                f"Cannot exceed technical sample ceiling "
+                                f"({REPEAT_SAMPLE_TECHNICAL_CEILING})."
+                            )
+                        }
+                    )
+            if (
+                self.repeat_min is not None
+                and self.repeat_max is not None
+                and self.repeat_min > self.repeat_max
+            ):
+                raise ValidationError(
+                    {"repeat_min": "repeat_min cannot be greater than repeat_max."}
+                )
+            if self.repeat_default is not None:
+                if self.repeat_min is not None and self.repeat_default < self.repeat_min:
+                    raise ValidationError(
+                        {"repeat_default": "repeat_default cannot be less than repeat_min."}
+                    )
+                if self.repeat_max is not None and self.repeat_default > self.repeat_max:
+                    raise ValidationError(
+                        {"repeat_default": "repeat_default cannot exceed repeat_max."}
+                    )
+            return
+
+        # SIMPLE (and future leaf kinds)
+        if any(
+            value is not None for value in (self.repeat_min, self.repeat_max, self.repeat_default)
+        ):
+            raise ValidationError(
+                {"repeat_min": "Repeat configuration is only allowed on REPEATING_GROUP items."}
+            )
         errors = validate_item_response_definition(
             response_type=self.response_type,
             unit=self.unit,

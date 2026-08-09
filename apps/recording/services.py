@@ -13,6 +13,7 @@ from apps.access_control.services import require_permission
 from apps.accounts.models import User
 from apps.checklists.models import (
     ChecklistItem,
+    ChecklistItemKind,
     ChecklistItemOption,
     ChecklistResponseType,
     ChecklistVersionStatus,
@@ -24,6 +25,16 @@ from apps.recording.models import (
     ChecklistSubmission,
     ChecklistSubmissionResponse,
     ChoiceResponseValue,
+)
+from apps.recording.repeating import (
+    ResponseKey,
+    active_sample_count,
+    assert_sample_index_allowed,
+    effective_repeat_min,
+    normalize_answers,
+    partition_definition_items,
+    responses_by_key,
+    validate_repeating_submit_shape,
 )
 from apps.scheduling.models import ChecklistTask, ChecklistTaskStatus
 from apps.scheduling.services import RECORD_CHECKLIST_TASK, task_authorization_scope
@@ -306,46 +317,77 @@ def collect_submission_completeness(
     *,
     record: ChecklistRecord,
     items: list[ChecklistItem] | None = None,
-    responses: dict[uuid.UUID, ChecklistResponse] | None = None,
+    responses: dict[ResponseKey, ChecklistResponse] | None = None,
 ) -> dict[str, Any]:
     """
     Completeness metrics for submission UX / validation.
 
     Does not evaluate PASS/FAIL or min/max conformance.
+    REPEATING_GROUP containers are not answerable; child SIMPLE rows use sample_index.
     """
     version_id = record.checklist_task.checklist_version_id
     if items is None:
         items = list(
-            ChecklistItem.objects.select_related("section")
+            ChecklistItem.objects.select_related("section", "parent_item")
             .prefetch_related("options")
             .filter(section__version_id=version_id)
             .order_by("section__position", "position")
         )
     if responses is None:
-        responses = {
-            response.checklist_item_id: response
-            for response in ChecklistResponse.objects.filter(
-                checklist_record_id=record.id
-            ).select_related("selected_option")
-        }
+        responses = responses_by_key(
+            list(
+                ChecklistResponse.objects.filter(checklist_record_id=record.id).select_related(
+                    "selected_option"
+                )
+            )
+        )
 
-    required_items = [item for item in items if item.is_required]
+    top_simple, groups, children_by_parent = partition_definition_items(items)
     missing_required: list[ChecklistItem] = []
-    for item in required_items:
-        response = responses.get(item.id)
-        if response is None or not _response_is_structurally_valid(item, response):
-            missing_required.append(item)
+    answered_count = 0
+    required_slots = 0
+    answered_required_slots = 0
 
-    answered_count = sum(
-        1
-        for item in items
-        if (resp := responses.get(item.id)) is not None
-        and _response_is_structurally_valid(item, resp)
-    )
+    for item in top_simple:
+        response = responses.get((item.id, 1))
+        valid = response is not None and _response_is_structurally_valid(item, response)
+        if valid:
+            answered_count += 1
+        if item.is_required:
+            required_slots += 1
+            if valid:
+                answered_required_slots += 1
+            else:
+                missing_required.append(item)
+
+    for group in groups:
+        children = children_by_parent.get(group.id, [])
+        n = active_sample_count(children=children, responses=responses)
+        min_required = effective_repeat_min(group, children)
+        target_n = max(n, min_required)
+        if n < min_required:
+            for child in children:
+                if child.is_required and child not in missing_required:
+                    missing_required.append(child)
+        for sample_index in range(1, target_n + 1):
+            for child in children:
+                response = responses.get((child.id, sample_index))
+                valid = response is not None and _response_is_structurally_valid(child, response)
+                if valid and sample_index <= n:
+                    answered_count += 1
+                if child.is_required and sample_index <= target_n:
+                    required_slots += 1
+                    if valid and sample_index <= n:
+                        answered_required_slots += 1
+                    elif sample_index <= max(n, min_required):
+                        if child not in missing_required:
+                            missing_required.append(child)
+
+    answerable = [item for item in items if item.item_kind == ChecklistItemKind.SIMPLE]
     return {
-        "total_items": len(items),
-        "required_items": len(required_items),
-        "answered_required_items": len(required_items) - len(missing_required),
+        "total_items": len(answerable),
+        "required_items": required_slots,
+        "answered_required_items": answered_required_slots,
         "missing_required_items": missing_required,
         "answered_items": answered_count,
         "items": items,
@@ -357,10 +399,16 @@ def validate_record_ready_for_submission(
     *,
     record: ChecklistRecord,
     items: list[ChecklistItem] | None = None,
-    responses: dict[uuid.UUID, ChecklistResponse] | None = None,
+    responses: dict[ResponseKey, ChecklistResponse] | None = None,
 ) -> dict[str, Any]:
     """Raise ValidationError if required completeness is not met."""
     stats = collect_submission_completeness(record=record, items=items, responses=responses)
+    _, groups, children_by_parent = partition_definition_items(stats["items"])
+    validate_repeating_submit_shape(
+        groups=groups,
+        children_by_parent=children_by_parent,
+        responses=stats["responses"],
+    )
     missing = stats["missing_required_items"]
     if missing:
         errors: dict[str, list[str]] = {
@@ -376,16 +424,20 @@ def save_checklist_draft_responses(
     *,
     actor: User | None,
     record_id: uuid.UUID,
-    answers: dict[uuid.UUID, Any],
+    answers: dict[Any, Any],
 ) -> ChecklistRecord:
     """
     Save/update/clear typed draft responses.
+
+    ``answers`` keys may be ``item_id`` (legacy sample_index=1) or
+    ``(item_id, sample_index)``.
 
     Allowed when:
     - ChecklistRecord is DRAFT (initial recording), or
     - ChecklistRecord is SUBMITTED with an eligible active ChecklistCorrection(DRAFT).
     """
     user = _require_authenticated_actor(actor)
+    normalized = normalize_answers(answers)
 
     with transaction.atomic():
         record = (
@@ -408,7 +460,6 @@ def save_checklist_draft_responses(
         if record.organization_id != task.organization_id:
             raise ValidationError({"organization": "Record organization mismatch."})
         _assert_task_recordable(task)
-        # Lazy import avoids circular dependency with correction_services.
         from apps.recording.correction_services import assert_record_editable_for_actor
 
         assert_record_editable_for_actor(record)
@@ -416,47 +467,59 @@ def save_checklist_draft_responses(
         version_id = task.checklist_version_id
         items = {
             item.id: item
-            for item in ChecklistItem.objects.select_related("section").filter(
+            for item in ChecklistItem.objects.select_related("section", "parent_item").filter(
                 section__version_id=version_id
             )
         }
-        existing = {
-            response.checklist_item_id: response
-            for response in ChecklistResponse.objects.select_for_update().filter(
-                checklist_record_id=record.id
+        existing = responses_by_key(
+            list(
+                ChecklistResponse.objects.select_for_update().filter(checklist_record_id=record.id)
             )
-        }
+        )
 
         changed = 0
         errors: dict[str, list[str]] = {}
 
-        for item_id, raw in answers.items():
+        for (item_id, sample_index), raw in normalized.items():
             item = items.get(item_id)
             if item is None:
                 errors[str(item_id)] = ["Item is not part of this checklist definition."]
                 continue
+            try:
+                assert_sample_index_allowed(item=item, sample_index=sample_index, items_by_id=items)
+            except ValidationError as exc:
+                if hasattr(exc, "message_dict"):
+                    for err_key, msgs in exc.message_dict.items():
+                        errors.setdefault(str(err_key), []).extend(str(m) for m in msgs)
+                else:
+                    errors.setdefault(str(item_id), []).extend(str(m) for m in exc.messages)
+                continue
 
+            response_key = (item_id, sample_index)
             if _is_blank_answer(raw):
-                current = existing.get(item_id)
+                current = existing.get(response_key)
                 if current is not None:
                     current.delete()
+                    existing.pop(response_key, None)
                     changed += 1
                 continue
 
-            response = existing.get(item_id) or ChecklistResponse(
+            response = existing.get(response_key) or ChecklistResponse(
                 checklist_record=record,
                 checklist_item=item,
+                sample_index=sample_index,
             )
+            response.sample_index = sample_index
             try:
                 _apply_typed_value(response=response, item=item, raw=raw)
                 response.full_clean()
                 response.save()
-                existing[item_id] = response
+                existing[response_key] = response
                 changed += 1
             except ValidationError as exc:
                 if hasattr(exc, "message_dict"):
-                    for key, msgs in exc.message_dict.items():
-                        bucket = errors.setdefault(str(key), [])
+                    for key_name, msgs in exc.message_dict.items():
+                        bucket = errors.setdefault(str(key_name), [])
                         bucket.extend(str(m) for m in msgs)
                 else:
                     errors.setdefault(str(item_id), []).extend(str(m) for m in exc.messages)
@@ -540,7 +603,7 @@ def submit_checklist_record(
 
             _assert_record_is_draft(record)
             stats = validate_record_ready_for_submission(record=record)
-            responses: dict[uuid.UUID, ChecklistResponse] = stats["responses"]
+            responses: dict[ResponseKey, ChecklistResponse] = stats["responses"]
 
             submission = ChecklistSubmission(
                 checklist_record=record,
@@ -551,15 +614,19 @@ def submit_checklist_record(
             submission.save()
 
             snapshot_rows: list[ChecklistSubmissionResponse] = []
-            for item in stats["items"]:
-                response = responses.get(item.id)
-                if response is None:
+            items_by_id = {item.id: item for item in stats["items"]}
+            for (item_id, sample_index), response in sorted(
+                responses.items(), key=lambda pair: (str(pair[0][0]), pair[0][1])
+            ):
+                item = items_by_id.get(item_id)
+                if item is None or item.item_kind != ChecklistItemKind.SIMPLE:
                     continue
                 if not _response_is_structurally_valid(item, response):
                     continue
                 snapshot = ChecklistSubmissionResponse(
                     checklist_submission=submission,
                     checklist_item=item,
+                    sample_index=sample_index,
                     choice_value=response.choice_value,
                     number_value=response.number_value,
                     text_value=response.text_value,

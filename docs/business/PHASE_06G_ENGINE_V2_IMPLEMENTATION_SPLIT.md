@@ -1,38 +1,27 @@
 # Phase 06G — Checklist Engine v2 Implementation Split (06H–06M)
 
-**Document status:** Sequenced implementation plan — **design authorized by ADR-019**; units not started  
+**Document status:** Sequenced implementation plan — **design authorized by ADR-019**; **06H implemented as technical foundation** (no invented AQL/sample sizes)  
 **Created:** 2026-08-09  
+**Updated:** 2026-08-10 (06H)  
 **Rule:** Do not invent Nelna limits, sample sizes, AQL, CCP/OPRP, or role authority. Prefer APPROVED FOR DIGITALIZATION forms (06F) before enabling form-specific structures in production content.
 
-## 06G (this phase)
+## 06G (design)
 
-Architecture + ADR only. No schema-shaping feature implementation. No separate engine.
+Architecture + ADR only. No separate engine.
 
-## Shared exit rules for every later unit
-
-- Additive migrations; default preserves existing SIMPLE behavior  
-- PUBLISHED/RETIRED immutability preserved  
-- Org-scoped RBAC + audit events  
-- Tests: unit, authorization, cross-org, concurrency/idempotency where uniqueness changes  
-- Item evaluation ≠ QA disposition  
-- Coverage gate unchanged (≥80% app baseline)  
-- Mongo cutover **out of scope** unless DB-02 PASS and separate authorization  
-
-## 06H — Repeating / sample foundation
+## 06H — Repeating / sample foundation — IMPLEMENTED (technical)
 
 **Objective:** Support `REPEATING_GROUP` + child SIMPLE items + runtime `sample_index`.
 
 | Deliverable | Notes |
 | --- | --- |
 | `item_kind` + `parent_item` | Default SIMPLE; one-level groups |
-| `repeat_min` / `repeat_max` | Nullable; technical ceiling required; no invented AQL |
+| `repeat_min` / `repeat_max` / `repeat_default` | Nullable; technical ceiling 100; no invented AQL |
 | Draft/snapshot uniqueness | `(record\|submission, item, sample_index)` |
-| UI | Add/remove sample rows via HTMX; server validates counts |
-| Clone/publish | Copy group graph |
+| UI | Add/remove sample rows; server validates indexes |
+| Clone/publish | Copies group graph |
 
-**Out of scope:** nested groups, calculated, conditionals, evaluation engine.
-
-**Exit:** Synthetic tests prove multi-sample save/submit/immutability; legacy one-answer rows remain valid (`sample_index=1` or equivalent).
+**Out of scope (still):** nested groups, calculated, conditionals, evaluation engine.
 
 ## 06I — Calculated fields
 

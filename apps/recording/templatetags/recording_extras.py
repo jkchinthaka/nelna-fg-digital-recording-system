@@ -22,7 +22,25 @@ def user_can_record_checklist_tasks(context: dict[str, Any]) -> bool:
 
 @register.filter
 def response_bound_field(form: Form, item: Any) -> BoundField | None:
-    name = response_field_name(item.id)
+    name = response_field_name(item.id, 1)
     if name not in form.fields:
         return None
     return form[name]
+
+
+@register.simple_tag
+def response_bound_field_at(form: Form, item: Any, sample_index: int) -> BoundField | None:
+    name = response_field_name(item.id, int(sample_index))
+    if name not in form.fields:
+        return None
+    return form[name]
+
+
+@register.filter
+def dict_get(mapping: Any, key: Any) -> Any:
+    if mapping is None:
+        return None
+    try:
+        return mapping.get(key)
+    except AttributeError:
+        return None

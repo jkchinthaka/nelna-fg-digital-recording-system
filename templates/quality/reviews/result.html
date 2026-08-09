@@ -112,24 +112,6 @@
       </div>
     </dl>
     <h2>Submitted answers (immutable snapshot)</h2>
-    {% for block in rendered_sections %}
-      <section class="recording-section"
-               aria-labelledby="qa-result-section-{{ block.section.id }}">
-        <h3 id="qa-result-section-{{ block.section.id }}">{{ block.section.title }}</h3>
-        {% for row in block.items %}
-          <article class="recording-item">
-            <h4>{{ row.item.code }} — {{ row.item.label }}</h4>
-            <p>
-              <strong>Submitted answer:</strong>
-              {% if row.answered %}
-                {{ row.display_value }}
-              {% else %}
-                <em>Not answered (optional)</em>
-              {% endif %}
-            </p>
-          </article>
-        {% endfor %}
-      </section>
-    {% endfor %}
+    {% include "recording/_snapshot_sections.html" %}
   </section>
 {% endblock %}

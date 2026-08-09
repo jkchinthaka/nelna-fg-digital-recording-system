@@ -1,0 +1,117 @@
+"""Shared immutable snapshot section rendering for recording / Supervisor / QA."""
+
+from __future__ import annotations
+
+import uuid
+from typing import Any, cast
+
+from apps.checklists.models import ChecklistItemKind, ChecklistResponseType
+from apps.recording.repeating import (
+    ResponseKey,
+    active_sample_count,
+    partition_definition_items,
+    responses_by_key,
+)
+
+
+def display_snapshot_value(item: Any, response: Any) -> str:
+    if response is None:
+        return "—"
+    if item.response_type in {
+        ChecklistResponseType.YES_NO,
+        ChecklistResponseType.YES_NO_NA,
+    }:
+        return response.choice_value or "—"
+    if item.response_type == ChecklistResponseType.NUMBER:
+        if response.number_value is None:
+            return "—"
+        unit = f" {item.unit}" if item.unit else ""
+        return f"{response.number_value}{unit}"
+    if item.response_type == ChecklistResponseType.TEXT:
+        return response.text_value or "—"
+    if item.response_type == ChecklistResponseType.SELECT:
+        option = response.selected_option
+        return option.label if option is not None else "—"
+    return "—"
+
+
+def index_snapshot_rows(rows: list[Any]) -> dict[ResponseKey, Any]:
+    return responses_by_key(rows)
+
+
+def render_snapshot_sections(
+    sections: list[Any],
+    snapshots: dict[ResponseKey, Any] | dict[uuid.UUID, Any],
+) -> list[dict[str, Any]]:
+    """
+    Build read-only section trees including repeating sample rows.
+
+    Accepts legacy ``{item_id: row}`` maps (treated as sample_index=1) or
+    ``{(item_id, sample_index): row}`` maps.
+    """
+    keyed: dict[ResponseKey, Any]
+    first_key = next(iter(snapshots.keys()), None)
+    if first_key is not None and not isinstance(first_key, tuple):
+        legacy = cast(dict[uuid.UUID, Any], snapshots)
+        keyed = {(item_id, 1): row for item_id, row in legacy.items()}
+    else:
+        keyed = cast(dict[ResponseKey, Any], snapshots)
+
+    rendered: list[dict[str, Any]] = []
+    for section in sections:
+        items = list(section.items.all())
+        top_simple, groups, children_by_parent = partition_definition_items(items)
+        items_out: list[dict[str, Any]] = []
+
+        # Preserve section position order: walk items, skip children (rendered under group).
+        seen_groups: set[uuid.UUID] = set()
+        for item in items:
+            if item.parent_item_id is not None:
+                continue
+            if item.item_kind == ChecklistItemKind.REPEATING_GROUP:
+                if item.id in seen_groups:
+                    continue
+                seen_groups.add(item.id)
+                children = children_by_parent.get(item.id, [])
+                n = active_sample_count(children=children, responses=keyed)
+                sample_rows: list[dict[str, Any]] = []
+                for sample_index in range(1, n + 1):
+                    child_cells = []
+                    for child in children:
+                        snap = keyed.get((child.id, sample_index))
+                        child_cells.append(
+                            {
+                                "item": child,
+                                "sample_index": sample_index,
+                                "display_value": display_snapshot_value(child, snap),
+                                "answered": snap is not None,
+                            }
+                        )
+                    sample_rows.append({"sample_index": sample_index, "children": child_cells})
+                items_out.append(
+                    {
+                        "kind": "repeating_group",
+                        "item": item,
+                        "sample_rows": sample_rows,
+                        "answered": n > 0,
+                        "display_value": f"{n} sample row(s)",
+                    }
+                )
+                continue
+
+            snap = keyed.get((item.id, 1))
+            items_out.append(
+                {
+                    "kind": "simple",
+                    "item": item,
+                    "sample_index": 1,
+                    "display_value": display_snapshot_value(item, snap),
+                    "answered": snap is not None,
+                }
+            )
+
+        # Safety: include any top_simple missed (should not happen if position walk is complete).
+        _ = top_simple
+        _ = groups
+        rendered.append({"section": section, "items": items_out})
+    return rendered

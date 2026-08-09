@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import uuid
-from typing import Any
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -14,7 +13,7 @@ from django.shortcuts import redirect, render
 from django.views.decorators.http import require_GET, require_http_methods
 
 from apps.accounts.models import User
-from apps.checklists.models import ChecklistResponseType
+from apps.recording.snapshot_display import render_snapshot_sections
 from apps.reviews.forms import SupervisorReviewConfirmForm
 from apps.reviews.models import SupervisorReviewDecision
 from apps.reviews.selectors import (
@@ -35,43 +34,6 @@ def _actor(request: HttpRequest) -> User:
 def _require_review_module(request: HttpRequest) -> None:
     if not actor_can_access_review_module(_actor(request)):
         raise PermissionDenied("Permission denied.")
-
-
-def _display_snapshot_value(item: Any, response: Any) -> str:
-    if response is None:
-        return "—"
-    if item.response_type in {
-        ChecklistResponseType.YES_NO,
-        ChecklistResponseType.YES_NO_NA,
-    }:
-        return response.choice_value or "—"
-    if item.response_type == ChecklistResponseType.NUMBER:
-        if response.number_value is None:
-            return "—"
-        unit = f" {item.unit}" if item.unit else ""
-        return f"{response.number_value}{unit}"
-    if item.response_type == ChecklistResponseType.TEXT:
-        return response.text_value or "—"
-    if item.response_type == ChecklistResponseType.SELECT:
-        option = response.selected_option
-        return option.label if option is not None else "—"
-    return "—"
-
-
-def _render_sections(sections: list[Any], snapshots: dict[uuid.UUID, Any]) -> list[dict[str, Any]]:
-    rendered: list[dict[str, Any]] = []
-    for section in sections:
-        items_out = []
-        for item in section.items.all():
-            items_out.append(
-                {
-                    "item": item,
-                    "display_value": _display_snapshot_value(item, snapshots.get(item.id)),
-                    "answered": item.id in snapshots,
-                }
-            )
-        rendered.append({"section": section, "items": items_out})
-    return rendered
 
 
 def _validation_message(exc: ValidationError) -> str:
@@ -120,9 +82,8 @@ def submission_detail(request: HttpRequest, submission_id: uuid.UUID) -> HttpRes
             "submission": context["submission"],
             "record": context["record"],
             "task": context["task"],
-            "rendered_sections": _render_sections(
-                context["sections"], context["snapshot_responses"]
-            ),
+            "rendered_sections": context.get("rendered_sections")
+            or render_snapshot_sections(context["sections"], context["snapshot_responses"]),
             "SupervisorReviewDecision": SupervisorReviewDecision,
         },
     )
@@ -214,9 +175,8 @@ def review_result(request: HttpRequest, review_id: uuid.UUID) -> HttpResponse:
             "submission": submission,
             "record": context["record"],
             "task": context["task"],
-            "rendered_sections": _render_sections(
-                context["sections"], context["snapshot_responses"]
-            ),
+            "rendered_sections": context.get("rendered_sections")
+            or render_snapshot_sections(context["sections"], context["snapshot_responses"]),
             "SupervisorReviewDecision": SupervisorReviewDecision,
         },
     )

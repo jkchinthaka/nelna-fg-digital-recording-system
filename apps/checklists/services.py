@@ -13,8 +13,10 @@ from django.utils import timezone
 
 from apps.access_control.services import Scope, require_permission
 from apps.accounts.models import User
+from apps.checklists.constants import REPEAT_SAMPLE_TECHNICAL_CEILING
 from apps.checklists.models import (
     ChecklistItem,
+    ChecklistItemKind,
     ChecklistItemOption,
     ChecklistResponseType,
     ChecklistSection,
@@ -187,9 +189,93 @@ def _next_section_position(version: ChecklistVersion) -> int:
     return int(current or 0) + 1
 
 
-def _next_item_position(section: ChecklistSection) -> int:
+def _next_item_position(
+    section: ChecklistSection,
+    *,
+    parent_item: ChecklistItem | None = None,
+) -> int:
+    # Positions remain unique per section (existing constraint); allocate from section max.
+    _ = parent_item
     current = section.items.aggregate(m=Max("position"))["m"]
     return int(current or 0) + 1
+
+
+def _parse_optional_positive_int(value: Any, *, field: str) -> int | None:
+    if value is None or value == "":
+        return None
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError) as exc:
+        raise ValidationError({field: f"Invalid integer for {field}."}) from exc
+    if parsed < 0:
+        raise ValidationError({field: f"{field} cannot be negative."})
+    return parsed
+
+
+def _normalize_item_kind_fields(
+    *,
+    item_kind: str,
+    parent_item: ChecklistItem | None,
+    response_type: str | None,
+    unit: str,
+    minimum_value: Any,
+    maximum_value: Any,
+    repeat_min: Any,
+    repeat_max: Any,
+    repeat_default: Any,
+) -> tuple[
+    str,
+    ChecklistItem | None,
+    str,
+    str,
+    Decimal | None,
+    Decimal | None,
+    int | None,
+    int | None,
+    int | None,
+]:
+    kind = (item_kind or ChecklistItemKind.SIMPLE).strip()
+    if kind not in ChecklistItemKind.values:
+        raise ValidationError({"item_kind": "Unknown item kind."})
+    if kind == ChecklistItemKind.CALCULATED:
+        raise ValidationError({"item_kind": "CALCULATED items are not enabled until Phase 06I."})
+
+    r_min = _parse_optional_positive_int(repeat_min, field="repeat_min")
+    r_max = _parse_optional_positive_int(repeat_max, field="repeat_max")
+    r_default = _parse_optional_positive_int(repeat_default, field="repeat_default")
+
+    if kind == ChecklistItemKind.REPEATING_GROUP:
+        if parent_item is not None:
+            raise ValidationError(
+                {"parent_item": "A REPEATING_GROUP cannot be nested under another item."}
+            )
+        for field_name, value in (
+            ("repeat_min", r_min),
+            ("repeat_max", r_max),
+            ("repeat_default", r_default),
+        ):
+            if value is not None and value > REPEAT_SAMPLE_TECHNICAL_CEILING:
+                raise ValidationError(
+                    {
+                        field_name: (
+                            f"Cannot exceed technical sample ceiling "
+                            f"({REPEAT_SAMPLE_TECHNICAL_CEILING})."
+                        )
+                    }
+                )
+        return kind, None, "", "", None, None, r_min, r_max, r_default
+
+    if any(value is not None for value in (r_min, r_max, r_default)):
+        raise ValidationError(
+            {"repeat_min": "Repeat configuration is only allowed on REPEATING_GROUP items."}
+        )
+    resp_type, unit_text, min_value, max_value = _normalize_response_fields(
+        response_type=response_type,
+        unit=unit,
+        minimum_value=minimum_value,
+        maximum_value=maximum_value,
+    )
+    return kind, parent_item, resp_type, unit_text, min_value, max_value, None, None, None
 
 
 def _swap_positions(
@@ -426,7 +512,12 @@ def _next_option_position(item: ChecklistItem) -> int:
 def _lock_item(item_id: uuid.UUID) -> ChecklistItem:
     item = (
         ChecklistItem.objects.select_for_update(of=("self",))
-        .select_related("section", "section__version", "section__version__template")
+        .select_related(
+            "section",
+            "section__version",
+            "section__version__template",
+            "parent_item",
+        )
         .filter(pk=item_id)
         .first()
     )
@@ -443,9 +534,14 @@ def _clone_structure(*, source: ChecklistVersion, target: ChecklistVersion) -> N
             description=section.description,
             position=section.position,
         )
-        for item in section.items.order_by("position", "pk"):
+        item_map: dict[uuid.UUID, ChecklistItem] = {}
+        ordered_items = list(section.items.order_by("position", "pk"))
+        # Pass 1: create rows without parent links so FK remapping is safe.
+        for item in ordered_items:
             new_item = ChecklistItem.objects.create(
                 section=new_section,
+                parent_item=None,
+                item_kind=item.item_kind,
                 code=item.code,
                 label=item.label,
                 help_text=item.help_text,
@@ -455,7 +551,11 @@ def _clone_structure(*, source: ChecklistVersion, target: ChecklistVersion) -> N
                 unit=item.unit,
                 minimum_value=item.minimum_value,
                 maximum_value=item.maximum_value,
+                repeat_min=item.repeat_min,
+                repeat_max=item.repeat_max,
+                repeat_default=item.repeat_default,
             )
+            item_map[item.id] = new_item
             for option in item.options.order_by("position", "pk"):
                 ChecklistItemOption.objects.create(
                     item=new_item,
@@ -463,6 +563,18 @@ def _clone_structure(*, source: ChecklistVersion, target: ChecklistVersion) -> N
                     label=option.label,
                     position=option.position,
                 )
+        # Pass 2: remap parent_item within the cloned section.
+        for item in ordered_items:
+            if item.parent_item_id is None:
+                continue
+            parent = item_map.get(item.parent_item_id)
+            child = item_map[item.id]
+            if parent is None:
+                raise ValidationError(
+                    {"version": f"Unable to clone parent link for item {item.code}."}
+                )
+            child.parent_item = parent
+            child.save(update_fields=["parent_item"])
 
 
 @transaction.atomic
@@ -679,6 +791,11 @@ def add_checklist_item(
     unit: str = "",
     minimum_value: Any = None,
     maximum_value: Any = None,
+    item_kind: str = ChecklistItemKind.SIMPLE,
+    parent_item_id: uuid.UUID | None = None,
+    repeat_min: Any = None,
+    repeat_max: Any = None,
+    repeat_default: Any = None,
 ) -> ChecklistItem:
     user = _require_authenticated_actor(actor)
     section = (
@@ -697,23 +814,54 @@ def add_checklist_item(
         raise ValidationError({"code": "Code cannot be blank."})
     if not normalized_label:
         raise ValidationError({"label": "Label cannot be blank."})
-    resp_type, unit_text, min_value, max_value = _normalize_response_fields(
+
+    parent_item: ChecklistItem | None = None
+    if parent_item_id is not None:
+        parent_item = (
+            ChecklistItem.objects.select_for_update(of=("self",))
+            .filter(pk=parent_item_id, section_id=section.id)
+            .first()
+        )
+        if parent_item is None:
+            raise ValidationError({"parent_item": "Parent item not found in this section."})
+
+    (
+        kind,
+        parent_item,
+        resp_type,
+        unit_text,
+        min_value,
+        max_value,
+        r_min,
+        r_max,
+        r_default,
+    ) = _normalize_item_kind_fields(
+        item_kind=item_kind,
+        parent_item=parent_item,
         response_type=response_type,
         unit=unit,
         minimum_value=minimum_value,
         maximum_value=maximum_value,
+        repeat_min=repeat_min,
+        repeat_max=repeat_max,
+        repeat_default=repeat_default,
     )
     item = ChecklistItem(
         section=section,
+        parent_item=parent_item,
+        item_kind=kind,
         code=normalized_code,
         label=normalized_label,
         help_text=(help_text or "").strip(),
-        position=_next_item_position(section),
-        is_required=is_required,
+        position=_next_item_position(section, parent_item=parent_item),
+        is_required=is_required if kind == ChecklistItemKind.SIMPLE else False,
         response_type=resp_type,
         unit=unit_text,
         minimum_value=min_value,
         maximum_value=max_value,
+        repeat_min=r_min,
+        repeat_max=r_max,
+        repeat_default=r_default,
     )
     try:
         item.full_clean()
@@ -743,6 +891,11 @@ def update_checklist_item(
     unit: Any = _UNSET,
     minimum_value: Any = _UNSET,
     maximum_value: Any = _UNSET,
+    item_kind: Any = _UNSET,
+    parent_item_id: Any = _UNSET,
+    repeat_min: Any = _UNSET,
+    repeat_max: Any = _UNSET,
+    repeat_default: Any = _UNSET,
 ) -> ChecklistItem:
     user = _require_authenticated_actor(actor)
     item = _lock_item(item_id)
@@ -765,20 +918,60 @@ def update_checklist_item(
     if is_required is not None:
         item.is_required = is_required
 
+    next_kind = item.item_kind if item_kind is _UNSET else str(item_kind or "")
+    next_parent = item.parent_item
+    if parent_item_id is not _UNSET:
+        if parent_item_id in (None, ""):
+            next_parent = None
+        else:
+            next_parent = (
+                ChecklistItem.objects.filter(pk=parent_item_id, section_id=item.section_id)
+                .exclude(pk=item.id)
+                .first()
+            )
+            if next_parent is None:
+                raise ValidationError({"parent_item": "Parent item not found in this section."})
+
     next_type = item.response_type if response_type is _UNSET else response_type
     next_unit = item.unit if unit is _UNSET else unit
     next_min = item.minimum_value if minimum_value is _UNSET else minimum_value
     next_max = item.maximum_value if maximum_value is _UNSET else maximum_value
-    resp_type, unit_text, min_value, max_value = _normalize_response_fields(
+    next_r_min = item.repeat_min if repeat_min is _UNSET else repeat_min
+    next_r_max = item.repeat_max if repeat_max is _UNSET else repeat_max
+    next_r_default = item.repeat_default if repeat_default is _UNSET else repeat_default
+
+    (
+        kind,
+        parent_item,
+        resp_type,
+        unit_text,
+        min_value,
+        max_value,
+        r_min,
+        r_max,
+        r_default,
+    ) = _normalize_item_kind_fields(
+        item_kind=next_kind,
+        parent_item=next_parent,
         response_type=str(next_type or ""),
         unit=str(next_unit or ""),
         minimum_value=next_min,
         maximum_value=next_max,
+        repeat_min=next_r_min,
+        repeat_max=next_r_max,
+        repeat_default=next_r_default,
     )
+    item.item_kind = kind
+    item.parent_item = parent_item
     item.response_type = resp_type
     item.unit = unit_text
     item.minimum_value = min_value
     item.maximum_value = max_value
+    item.repeat_min = r_min
+    item.repeat_max = r_max
+    item.repeat_default = r_default
+    if kind == ChecklistItemKind.REPEATING_GROUP:
+        item.is_required = False
     try:
         item.full_clean()
         item.save()
@@ -825,7 +1018,10 @@ def move_checklist_item(
     _require_draft(item.section.version)
     _swap_positions(
         queryset_model=ChecklistItem,
-        parent_filter={"section_id": item.section_id},
+        parent_filter={
+            "section_id": item.section_id,
+            "parent_item_id": item.parent_item_id,
+        },
         current=item,
         direction=direction,
     )
@@ -1000,7 +1196,11 @@ def _validate_publish_structure(version: ChecklistVersion) -> None:
     coherent, non-empty definition graph. Product thresholds / temperature ranges
     remain EVIDENCE REQUIRED and are not enforced here.
     """
-    sections = list(version.sections.prefetch_related("items__options").order_by("position"))
+    sections = list(
+        version.sections.prefetch_related("items__options", "items__child_items").order_by(
+            "position"
+        )
+    )
     if not sections:
         raise ValidationError({"version": "A checklist version must have at least one section."})
     if not any(section.items.exists() for section in sections):
@@ -1013,6 +1213,79 @@ def _validate_publish_structure(version: ChecklistVersion) -> None:
         for item in section.items.all():
             if not item.code.strip() or not item.label.strip():
                 raise ValidationError({"version": "All items must have a code and label."})
+            if item.item_kind == ChecklistItemKind.CALCULATED:
+                raise ValidationError(
+                    {"version": f"Item {item.code}: CALCULATED is not enabled until Phase 06I."}
+                )
+            if item.item_kind == ChecklistItemKind.REPEATING_GROUP:
+                if item.parent_item_id is not None:
+                    raise ValidationError(
+                        {"version": f"Repeating group {item.code} cannot be nested."}
+                    )
+                if (item.response_type or "").strip():
+                    raise ValidationError(
+                        {"version": (f"Repeating group {item.code} must not have a response type.")}
+                    )
+                children = [child for child in item.child_items.all()]
+                if not children:
+                    raise ValidationError(
+                        {
+                            "version": (
+                                f"Repeating group {item.code} must have at least one "
+                                "SIMPLE child item before publishing."
+                            )
+                        }
+                    )
+                if any(child.item_kind != ChecklistItemKind.SIMPLE for child in children):
+                    raise ValidationError(
+                        {
+                            "version": (
+                                f"Repeating group {item.code} may only contain SIMPLE children."
+                            )
+                        }
+                    )
+                for field_name in ("repeat_min", "repeat_max", "repeat_default"):
+                    value = getattr(item, field_name)
+                    if value is not None and value > REPEAT_SAMPLE_TECHNICAL_CEILING:
+                        raise ValidationError(
+                            {
+                                "version": (
+                                    f"Repeating group {item.code} {field_name} exceeds "
+                                    f"technical ceiling ({REPEAT_SAMPLE_TECHNICAL_CEILING})."
+                                )
+                            }
+                        )
+                if (
+                    item.repeat_min is not None
+                    and item.repeat_max is not None
+                    and item.repeat_min > item.repeat_max
+                ):
+                    raise ValidationError(
+                        {
+                            "version": (
+                                f"Repeating group {item.code} has repeat_min greater than "
+                                "repeat_max."
+                            )
+                        }
+                    )
+                continue
+
+            if item.parent_item_id is not None:
+                parent = item.parent_item
+                if parent is None or parent.item_kind != ChecklistItemKind.REPEATING_GROUP:
+                    raise ValidationError(
+                        {
+                            "version": (
+                                f"Item {item.code} parent must be a REPEATING_GROUP "
+                                "in the same section."
+                            )
+                        }
+                    )
+                if parent.section_id != item.section_id:
+                    raise ValidationError(
+                        {"version": f"Item {item.code} parent must be in the same section."}
+                    )
+
             errors = validate_item_response_definition(
                 response_type=item.response_type,
                 unit=item.unit,

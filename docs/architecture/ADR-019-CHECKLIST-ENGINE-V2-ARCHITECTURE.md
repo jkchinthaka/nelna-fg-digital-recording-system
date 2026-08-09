@@ -20,14 +20,15 @@
 | Numeric definition | Optional `unit`, `minimum_value`, `maximum_value` as `Decimal` | Works; values evidence-gated |
 | Clone / publish | Service-centralized clone; publish integrity checks | Works |
 | Tasks | `ChecklistTask` pins exact `ChecklistVersion` | Works |
-| Draft recording | `ChecklistRecord` + typed `ChecklistResponse` (1:1 task; 1 response/item) | Works |
-| Immutable submit | `ChecklistSubmission` + typed `ChecklistSubmissionResponse` snapshots | Works |
-| Correction | New submission N+1; source immutable | Works |
+| Draft recording | `ChecklistRecord` + typed `ChecklistResponse` (1:1 task; keyed by item + `sample_index`) | Works |
+| Immutable submit | `ChecklistSubmission` + typed `ChecklistSubmissionResponse` snapshots (incl. `sample_index`) | Works |
+| Correction | New submission N+1; source immutable; sample rows restored | Works |
 | Supervisor | One review per exact submission; APPROVED/RETURNED immutable | Works |
 | QA | One `QAReview` per eligible submission; RELEASE/HOLD/REJECT labels only | Works |
 | Audit | Append-oriented events; answer text omitted from audit payloads | Works |
+| Repeating / sample rows (06H) | `item_kind` SIMPLE/REPEATING_GROUP; optional `repeat_min/max/default`; child SIMPLE items | Works (technical foundation; no invented AQL) |
 
-**Not present today:** repeating/sample groups, calculated fields, conditional visibility/requiredness, DATE/TIME response type, equipment references, structured CCP/OPRP metadata, item-level PASS/FAIL evaluation engine, precision/rounding modes, inclusive/exclusive bound semantics beyond simple min/max.
+**Not present today:** calculated fields (06I), conditional visibility/requiredness (06J), DATE/TIME response type, equipment references, structured CCP/OPRP metadata (06L), item-level PASS/FAIL evaluation engine (06K), precision/rounding modes / inclusive-exclusive bounds hardening (06M).
 
 ### Evidence
 

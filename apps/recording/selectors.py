@@ -23,7 +23,13 @@ from apps.recording.models import (
     ChecklistSubmission,
     ChecklistSubmissionResponse,
 )
+from apps.recording.repeating import (
+    editor_sample_indexes,
+    partition_definition_items,
+    responses_by_key,
+)
 from apps.recording.services import collect_submission_completeness
+from apps.recording.snapshot_display import render_snapshot_sections
 from apps.reviews.models import SupervisorReview, SupervisorReviewDecision
 from apps.scheduling.models import ChecklistTask, ChecklistTaskStatus
 from apps.scheduling.selectors import actor_can_record_task, task_is_eligible_for_recording
@@ -160,19 +166,35 @@ def _load_sections(version_id: uuid.UUID) -> list[ChecklistSection]:
         .prefetch_related(
             Prefetch(
                 "items",
-                queryset=ChecklistItem.objects.prefetch_related(
+                queryset=ChecklistItem.objects.select_related("parent_item")
+                .prefetch_related(
                     Prefetch(
                         "options",
                         queryset=ChecklistItemOption.objects.order_by("position"),
-                    )
-                ).order_by("position"),
+                    ),
+                    Prefetch(
+                        "child_items",
+                        queryset=ChecklistItem.objects.prefetch_related(
+                            Prefetch(
+                                "options",
+                                queryset=ChecklistItemOption.objects.order_by("position"),
+                            )
+                        ).order_by("position"),
+                    ),
+                )
+                .order_by("position"),
             )
         )
         .order_by("position")
     )
 
 
-def load_record_editor_context(actor: User | None, record_id: uuid.UUID) -> dict[str, Any] | None:
+def load_record_editor_context(
+    actor: User | None,
+    record_id: uuid.UUID,
+    *,
+    requested_sample_counts: dict[uuid.UUID, int] | None = None,
+) -> dict[str, Any] | None:
     """
     Efficient editor payload for DRAFT records.
 
@@ -184,13 +206,26 @@ def load_record_editor_context(actor: User | None, record_id: uuid.UUID) -> dict
 
     version = record.checklist_task.checklist_version
     sections = _load_sections(version.id)
-    responses = {
-        response.checklist_item_id: response
-        for response in ChecklistResponse.objects.filter(
-            checklist_record_id=record.id
-        ).select_related("selected_option")
-    }
+    responses = responses_by_key(
+        list(
+            ChecklistResponse.objects.filter(checklist_record_id=record.id).select_related(
+                "selected_option"
+            )
+        )
+    )
     items = [item for section in sections for item in section.items.all()]
+    _, groups, children_by_parent = partition_definition_items(items)
+    sample_indexes_by_group: dict[uuid.UUID, list[int]] = {}
+    for group in groups:
+        requested = None
+        if requested_sample_counts and group.id in requested_sample_counts:
+            requested = requested_sample_counts[group.id]
+        sample_indexes_by_group[group.id] = editor_sample_indexes(
+            group=group,
+            children=children_by_parent.get(group.id, []),
+            responses=responses,
+            requested_count=requested,
+        )
     completeness = collect_submission_completeness(record=record, items=items, responses=responses)
     return {
         "record": record,
@@ -198,6 +233,9 @@ def load_record_editor_context(actor: User | None, record_id: uuid.UUID) -> dict
         "sections": sections,
         "responses": responses,
         "completeness": completeness,
+        "sample_indexes_by_group": sample_indexes_by_group,
+        "groups": groups,
+        "children_by_parent": children_by_parent,
     }
 
 
@@ -222,18 +260,20 @@ def load_submitted_record_context(
 
     version = record.checklist_task.checklist_version
     sections = _load_sections(version.id)
-    snapshot_responses = {
-        response.checklist_item_id: response
-        for response in ChecklistSubmissionResponse.objects.filter(
-            checklist_submission_id=submission.id
-        ).select_related("selected_option")
-    }
+    snapshot_responses = responses_by_key(
+        list(
+            ChecklistSubmissionResponse.objects.filter(
+                checklist_submission_id=submission.id
+            ).select_related("selected_option")
+        )
+    )
     return {
         "record": record,
         "task": record.checklist_task,
         "submission": submission,
         "sections": sections,
         "snapshot_responses": snapshot_responses,
+        "rendered_sections": render_snapshot_sections(sections, snapshot_responses),
     }
 
 
@@ -268,7 +308,10 @@ def get_checklist_correction(
 
 
 def load_correction_editor_context(
-    actor: User | None, correction_id: uuid.UUID
+    actor: User | None,
+    correction_id: uuid.UUID,
+    *,
+    requested_sample_counts: dict[uuid.UUID, int] | None = None,
 ) -> dict[str, Any] | None:
     """Correction DRAFT editor using mutable working ChecklistResponse rows."""
     correction = get_checklist_correction(actor, correction_id)
@@ -278,13 +321,26 @@ def load_correction_editor_context(
     record = correction.checklist_record
     version = record.checklist_task.checklist_version
     sections = _load_sections(version.id)
-    responses = {
-        response.checklist_item_id: response
-        for response in ChecklistResponse.objects.filter(
-            checklist_record_id=record.id
-        ).select_related("selected_option")
-    }
+    responses = responses_by_key(
+        list(
+            ChecklistResponse.objects.filter(checklist_record_id=record.id).select_related(
+                "selected_option"
+            )
+        )
+    )
     items = [item for section in sections for item in section.items.all()]
+    _, groups, children_by_parent = partition_definition_items(items)
+    sample_indexes_by_group: dict[uuid.UUID, list[int]] = {}
+    for group in groups:
+        requested = None
+        if requested_sample_counts and group.id in requested_sample_counts:
+            requested = requested_sample_counts[group.id]
+        sample_indexes_by_group[group.id] = editor_sample_indexes(
+            group=group,
+            children=children_by_parent.get(group.id, []),
+            responses=responses,
+            requested_count=requested,
+        )
     completeness = collect_submission_completeness(record=record, items=items, responses=responses)
 
     source_review = (
@@ -307,6 +363,9 @@ def load_correction_editor_context(
         "sections": sections,
         "responses": responses,
         "completeness": completeness,
+        "sample_indexes_by_group": sample_indexes_by_group,
+        "groups": groups,
+        "children_by_parent": children_by_parent,
         "source_submission": correction.source_submission,
         "source_review": source_review,
         "next_submission_number": next_number,
@@ -389,12 +448,13 @@ def load_returned_submission_context(
     )
     version = record.checklist_task.checklist_version
     sections = _load_sections(version.id)
-    snapshot_responses = {
-        response.checklist_item_id: response
-        for response in ChecklistSubmissionResponse.objects.filter(
-            checklist_submission_id=submission.id
-        ).select_related("selected_option")
-    }
+    snapshot_responses = responses_by_key(
+        list(
+            ChecklistSubmissionResponse.objects.filter(
+                checklist_submission_id=submission.id
+            ).select_related("selected_option")
+        )
+    )
     latest = (
         ChecklistSubmission.objects.filter(checklist_record_id=record.id)
         .order_by("-submission_number")
@@ -415,6 +475,7 @@ def load_returned_submission_context(
         "correction": correction,
         "sections": sections,
         "snapshot_responses": snapshot_responses,
+        "rendered_sections": render_snapshot_sections(sections, snapshot_responses),
         "is_latest": is_latest,
         "can_start_or_continue": can_start,
         "SupervisorReviewDecision": SupervisorReviewDecision,

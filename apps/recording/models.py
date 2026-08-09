@@ -103,9 +103,10 @@ class ChecklistRecord(models.Model):
 
 class ChecklistResponse(models.Model):
     """
-    Typed mutable draft answer for one ChecklistItem on a ChecklistRecord.
+    Typed mutable draft answer for one ChecklistItem (+ sample_index) on a record.
 
     Not historical truth after submission — see ChecklistSubmissionResponse.
+    Top-level SIMPLE items use sample_index=1. Repeating-group children use 1..N.
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -118,6 +119,11 @@ class ChecklistResponse(models.Model):
         ChecklistItem,
         on_delete=models.PROTECT,
         related_name="draft_responses",
+    )
+    sample_index = models.PositiveIntegerField(
+        default=1,
+        validators=[MinValueValidator(1)],
+        help_text="1 for non-repeating answers; sample/row index for repeating children.",
     )
     choice_value = models.CharField(
         max_length=8,
@@ -143,13 +149,17 @@ class ChecklistResponse(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ("checklist_item__section__position", "checklist_item__position")
+        ordering = (
+            "checklist_item__section__position",
+            "checklist_item__position",
+            "sample_index",
+        )
         verbose_name = "Checklist response"
         verbose_name_plural = "Checklist responses"
         constraints = [
             models.UniqueConstraint(
-                fields=["checklist_record", "checklist_item"],
-                name="rec_response_record_item_uniq",
+                fields=["checklist_record", "checklist_item", "sample_index"],
+                name="rec_response_record_item_sample_uniq",
             ),
             models.CheckConstraint(
                 condition=(
@@ -186,10 +196,14 @@ class ChecklistResponse(models.Model):
                 fields=["checklist_record", "updated_at"],
                 name="rec_response_record_upd_idx",
             ),
+            models.Index(
+                fields=["checklist_record", "checklist_item", "sample_index"],
+                name="rec_response_item_sample_idx",
+            ),
         ]
 
     def __str__(self) -> str:
-        return f"Response {self.id} / item {self.checklist_item_id}"
+        return f"Response {self.id} / item {self.checklist_item_id} / sample {self.sample_index}"
 
     def clean(self) -> None:
         super().clean()
@@ -201,6 +215,8 @@ class ChecklistResponse(models.Model):
         ]
         if sum(1 for flag in filled if flag) != 1:
             raise ValidationError("Exactly one typed response value must be set.")
+        if self.sample_index < 1:
+            raise ValidationError({"sample_index": "sample_index must be >= 1."})
 
 
 class ChecklistSubmission(models.Model):
@@ -248,7 +264,7 @@ class ChecklistSubmission(models.Model):
 
 class ChecklistSubmissionResponse(models.Model):
     """
-    Immutable typed snapshot of one answered item at submission time.
+    Immutable typed snapshot of one answered item (+ sample_index) at submission.
 
     Survives future mutation/correction of working ChecklistResponse rows.
     """
@@ -263,6 +279,11 @@ class ChecklistSubmissionResponse(models.Model):
         ChecklistItem,
         on_delete=models.PROTECT,
         related_name="submission_responses",
+    )
+    sample_index = models.PositiveIntegerField(
+        default=1,
+        validators=[MinValueValidator(1)],
+        help_text="Preserved sample/row index for repeating children; 1 for SIMPLE.",
     )
     choice_value = models.CharField(
         max_length=8,
@@ -287,13 +308,17 @@ class ChecklistSubmissionResponse(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ("checklist_item__section__position", "checklist_item__position")
+        ordering = (
+            "checklist_item__section__position",
+            "checklist_item__position",
+            "sample_index",
+        )
         verbose_name = "Checklist submission response"
         verbose_name_plural = "Checklist submission responses"
         constraints = [
             models.UniqueConstraint(
-                fields=["checklist_submission", "checklist_item"],
-                name="rec_sub_resp_submission_item_uniq",
+                fields=["checklist_submission", "checklist_item", "sample_index"],
+                name="rec_sub_resp_sub_item_sample_uniq",
             ),
             models.CheckConstraint(
                 condition=(
@@ -325,9 +350,18 @@ class ChecklistSubmissionResponse(models.Model):
                 name="rec_sub_resp_exactly_one_value",
             ),
         ]
+        indexes = [
+            models.Index(
+                fields=["checklist_submission", "checklist_item", "sample_index"],
+                name="rec_sub_resp_item_sample_idx",
+            ),
+        ]
 
     def __str__(self) -> str:
-        return f"Submission response {self.id} / item {self.checklist_item_id}"
+        return (
+            f"Submission response {self.id} / item {self.checklist_item_id} "
+            f"/ sample {self.sample_index}"
+        )
 
     def clean(self) -> None:
         super().clean()
@@ -339,6 +373,8 @@ class ChecklistSubmissionResponse(models.Model):
         ]
         if sum(1 for flag in filled if flag) != 1:
             raise ValidationError("Exactly one typed response value must be set.")
+        if self.sample_index < 1:
+            raise ValidationError({"sample_index": "sample_index must be >= 1."})
 
 
 class ChecklistCorrectionStatus(models.TextChoices):

@@ -11,6 +11,7 @@ from django.utils import timezone
 
 from apps.access_control.services import require_permission
 from apps.accounts.models import User
+from apps.checklists.models import ChecklistItemKind
 from apps.recording.models import (
     ChecklistCorrection,
     ChecklistCorrectionStatus,
@@ -202,6 +203,7 @@ def _clone_working_responses_from_snapshot(
             ChecklistResponse(
                 checklist_record=record,
                 checklist_item_id=snap.checklist_item_id,
+                sample_index=snap.sample_index,
                 choice_value=snap.choice_value,
                 number_value=snap.number_value,
                 text_value=snap.text_value,
@@ -438,7 +440,7 @@ def resubmit_checklist_correction(
             )
 
             stats = validate_record_ready_for_submission(record=record)
-            responses: dict[uuid.UUID, ChecklistResponse] = stats["responses"]
+            responses = stats["responses"]
 
             max_number = (
                 ChecklistSubmission.objects.filter(checklist_record_id=record.id).aggregate(
@@ -456,16 +458,22 @@ def resubmit_checklist_correction(
             submission.full_clean()
             submission.save()
 
+            items_by_id = {item.id: item for item in stats["items"]}
             snapshot_rows: list[ChecklistSubmissionResponse] = []
-            for item in stats["items"]:
-                response = responses.get(item.id)
-                if response is None:
+            for (item_id, sample_index), response in sorted(
+                responses.items(), key=lambda pair: (str(pair[0][0]), pair[0][1])
+            ):
+                item = items_by_id.get(item_id)
+                if item is None:
+                    continue
+                if item.item_kind != ChecklistItemKind.SIMPLE:
                     continue
                 if not _response_is_structurally_valid(item, response):
                     continue
                 snapshot = ChecklistSubmissionResponse(
                     checklist_submission=submission,
                     checklist_item=item,
+                    sample_index=sample_index,
                     choice_value=response.choice_value,
                     number_value=response.number_value,
                     text_value=response.text_value,

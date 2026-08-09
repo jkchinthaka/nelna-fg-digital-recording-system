@@ -14,18 +14,20 @@ from django.shortcuts import redirect, render
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from apps.accounts.models import User
+from apps.checklists.constants import REPEAT_SAMPLE_TECHNICAL_CEILING
 from apps.checklists.models import ChecklistResponseType
 from apps.recording.correction_services import (
     resubmit_checklist_correction,
     start_checklist_correction,
 )
-from apps.recording.forms import ChecklistDraftForm, response_field_name
+from apps.recording.forms import ChecklistDraftForm, response_field_name, sample_count_field_name
 from apps.recording.models import (
     ChecklistCorrectionStatus,
     ChecklistRecord,
     ChecklistRecordStatus,
     ChecklistResponse,
 )
+from apps.recording.repeating import ResponseKey
 from apps.recording.selectors import (
     actor_can_access_recording_module,
     get_checklist_correction,
@@ -42,6 +44,7 @@ from apps.recording.services import (
     start_checklist_recording,
     submit_checklist_record,
 )
+from apps.recording.snapshot_display import render_snapshot_sections
 from apps.reviews.models import SupervisorReviewDecision
 from apps.scheduling.models import ChecklistTask
 
@@ -66,45 +69,73 @@ def _validation_message(exc: ValidationError) -> str:
     return "; ".join(str(m) for m in exc.messages)
 
 
-def _render_snapshot_sections(
-    sections: list[Any], snapshots: dict[uuid.UUID, Any]
-) -> list[dict[str, Any]]:
-    rendered: list[dict[str, Any]] = []
-    for section in sections:
-        items_out = []
-        for item in section.items.all():
-            items_out.append(
-                {
-                    "item": item,
-                    "display_value": _display_snapshot_value(item, snapshots.get(item.id)),
-                    "answered": item.id in snapshots,
-                }
-            )
-        rendered.append({"section": section, "items": items_out})
-    return rendered
-
-
 def _initial_from_responses(
-    responses: dict[uuid.UUID, ChecklistResponse],
+    responses: dict[ResponseKey, ChecklistResponse],
     items: list[Any],
-) -> dict[uuid.UUID, Any]:
-    initial: dict[uuid.UUID, Any] = {}
-    for item in items:
-        response = responses.get(item.id)
-        if response is None:
+) -> dict[ResponseKey, Any]:
+    initial: dict[ResponseKey, Any] = {}
+    for (item_id, sample_index), response in responses.items():
+        item = next((row for row in items if row.id == item_id), None)
+        if item is None:
             continue
         if item.response_type in {
             ChecklistResponseType.YES_NO,
             ChecklistResponseType.YES_NO_NA,
         }:
-            initial[item.id] = response.choice_value
+            initial[(item_id, sample_index)] = response.choice_value
         elif item.response_type == ChecklistResponseType.NUMBER:
-            initial[item.id] = response.number_value
+            initial[(item_id, sample_index)] = response.number_value
         elif item.response_type == ChecklistResponseType.TEXT:
-            initial[item.id] = response.text_value
+            initial[(item_id, sample_index)] = response.text_value
         elif item.response_type == ChecklistResponseType.SELECT:
-            initial[item.id] = response.selected_option_id
+            initial[(item_id, sample_index)] = response.selected_option_id
     return initial
+
+
+def _parse_requested_sample_counts(
+    post_data: Any,
+    groups: list[Any],
+) -> dict[uuid.UUID, int]:
+    requested: dict[uuid.UUID, int] = {}
+    for group in groups:
+        raw = post_data.get(sample_count_field_name(group.id))
+        if raw in (None, ""):
+            continue
+        try:
+            count = int(raw)
+        except (TypeError, ValueError):
+            continue
+        if group.repeat_max is not None:
+            count = min(count, int(group.repeat_max))
+        count = max(0, min(count, REPEAT_SAMPLE_TECHNICAL_CEILING))
+        requested[group.id] = count
+    action = str(post_data.get("sample_action") or "")
+    if action.startswith("add:"):
+        try:
+            group_id = uuid.UUID(action.split(":", 1)[1])
+        except (ValueError, IndexError):
+            return requested
+        group = next((row for row in groups if row.id == group_id), None)
+        if group is None:
+            return requested
+        current = requested.get(group_id, 1)
+        current += 1
+        if group.repeat_max is not None:
+            current = min(current, int(group.repeat_max))
+        current = min(current, REPEAT_SAMPLE_TECHNICAL_CEILING)
+        requested[group_id] = current
+    elif action.startswith("remove:"):
+        try:
+            group_id = uuid.UUID(action.split(":", 1)[1])
+        except (ValueError, IndexError):
+            return requested
+        group = next((row for row in groups if row.id == group_id), None)
+        if group is None:
+            return requested
+        current = requested.get(group_id, 1)
+        floor = int(group.repeat_min) if group.repeat_min is not None else 0
+        requested[group_id] = max(floor, current - 1)
+    return requested
 
 
 def _apply_validation_error(form: ChecklistDraftForm, exc: ValidationError) -> None:
@@ -122,27 +153,6 @@ def _apply_validation_error(form: ChecklistDraftForm, exc: ValidationError) -> N
                 form.add_error(target, error)
         return
     form.add_error(None, "; ".join(str(m) for m in exc.messages))
-
-
-def _display_snapshot_value(item: Any, response: Any) -> str:
-    if response is None:
-        return "—"
-    if item.response_type in {
-        ChecklistResponseType.YES_NO,
-        ChecklistResponseType.YES_NO_NA,
-    }:
-        return response.choice_value or "—"
-    if item.response_type == ChecklistResponseType.NUMBER:
-        if response.number_value is None:
-            return "—"
-        unit = f" {item.unit}" if item.unit else ""
-        return f"{response.number_value}{unit}"
-    if item.response_type == ChecklistResponseType.TEXT:
-        return response.text_value or "—"
-    if item.response_type == ChecklistResponseType.SELECT:
-        option = response.selected_option
-        return option.label if option is not None else "—"
-    return "—"
 
 
 @login_required
@@ -187,8 +197,24 @@ def start_recording(request: HttpRequest, task_id: uuid.UUID) -> HttpResponse:
 @require_http_methods(["GET", "POST"])
 def record_detail(request: HttpRequest, record_id: uuid.UUID) -> HttpResponse:
     _require_recording_module(request)
+    requested_counts: dict[uuid.UUID, int] | None = None
+    if request.method == "POST":
+        # Probe groups from a lightweight context load for sample add/remove.
+        try:
+            probe = load_record_editor_context(_actor(request), record_id)
+        except PermissionDenied:
+            raise
+        if probe is not None:
+            requested_counts = _parse_requested_sample_counts(
+                request.POST, probe.get("groups") or []
+            )
+
     try:
-        draft_context = load_record_editor_context(_actor(request), record_id)
+        draft_context = load_record_editor_context(
+            _actor(request),
+            record_id,
+            requested_sample_counts=requested_counts,
+        )
     except PermissionDenied:
         raise
     if draft_context is None:
@@ -208,11 +234,32 @@ def record_detail(request: HttpRequest, record_id: uuid.UUID) -> HttpResponse:
     sections = draft_context["sections"]
     responses = draft_context["responses"]
     completeness = draft_context["completeness"]
+    sample_indexes_by_group = draft_context["sample_indexes_by_group"]
+    children_by_parent = draft_context["children_by_parent"]
     items = [item for section in sections for item in section.items.all()]
     initial = _initial_from_responses(responses, items)
 
-    if request.method == "POST":
-        form = ChecklistDraftForm(request.POST, items=items, initial_responses=initial)
+    if request.method == "POST" and request.POST.get("sample_action"):
+        form = ChecklistDraftForm(
+            request.POST,
+            items=items,
+            initial_responses=initial,
+            sample_indexes_by_group=sample_indexes_by_group,
+        )
+        # Re-render with adjusted sample counts without persisting.
+        if not form.is_valid():
+            form = ChecklistDraftForm(
+                items=items,
+                initial_responses=initial,
+                sample_indexes_by_group=sample_indexes_by_group,
+            )
+    elif request.method == "POST":
+        form = ChecklistDraftForm(
+            request.POST,
+            items=items,
+            initial_responses=initial,
+            sample_indexes_by_group=sample_indexes_by_group,
+        )
         if form.is_valid():
             try:
                 save_checklist_draft_responses(
@@ -225,7 +272,11 @@ def record_detail(request: HttpRequest, record_id: uuid.UUID) -> HttpResponse:
             except ValidationError as exc:
                 _apply_validation_error(form, exc)
     else:
-        form = ChecklistDraftForm(items=items, initial_responses=initial)
+        form = ChecklistDraftForm(
+            items=items,
+            initial_responses=initial,
+            sample_indexes_by_group=sample_indexes_by_group,
+        )
 
     return render(
         request,
@@ -236,6 +287,8 @@ def record_detail(request: HttpRequest, record_id: uuid.UUID) -> HttpResponse:
             "sections": sections,
             "form": form,
             "completeness": completeness,
+            "sample_indexes_by_group": sample_indexes_by_group,
+            "children_by_parent": children_by_parent,
             "response_field_name": response_field_name,
             "ChecklistResponseType": ChecklistResponseType,
         },
@@ -312,7 +365,9 @@ def record_submitted(request: HttpRequest, record_id: uuid.UUID) -> HttpResponse
 
     sections = context["sections"]
     snapshots = context["snapshot_responses"]
-    rendered_sections = _render_snapshot_sections(sections, snapshots)
+    rendered_sections = context.get("rendered_sections") or render_snapshot_sections(
+        sections, snapshots
+    )
 
     history = load_record_history_context(_actor(request), record_id)
     latest_submission = context["submission"]
@@ -369,7 +424,7 @@ def returned_submission_detail(request: HttpRequest, submission_id: uuid.UUID) -
         raise
     if context is None:
         raise Http404("Checklist submission not found.")
-    rendered_sections = _render_snapshot_sections(
+    rendered_sections = context.get("rendered_sections") or render_snapshot_sections(
         context["sections"], context["snapshot_responses"]
     )
     return render(
@@ -409,8 +464,23 @@ def start_correction(request: HttpRequest, submission_id: uuid.UUID) -> HttpResp
 @require_http_methods(["GET", "POST"])
 def correction_detail(request: HttpRequest, correction_id: uuid.UUID) -> HttpResponse:
     _require_recording_module(request)
+    requested_counts: dict[uuid.UUID, int] | None = None
+    if request.method == "POST":
+        try:
+            probe = load_correction_editor_context(_actor(request), correction_id)
+        except PermissionDenied:
+            raise
+        if probe is not None:
+            requested_counts = _parse_requested_sample_counts(
+                request.POST, probe.get("groups") or []
+            )
+
     try:
-        context = load_correction_editor_context(_actor(request), correction_id)
+        context = load_correction_editor_context(
+            _actor(request),
+            correction_id,
+            requested_sample_counts=requested_counts,
+        )
     except PermissionDenied:
         raise
     if context is None:
@@ -423,11 +493,30 @@ def correction_detail(request: HttpRequest, correction_id: uuid.UUID) -> HttpRes
     record = context["record"]
     sections = context["sections"]
     responses = context["responses"]
+    sample_indexes_by_group = context["sample_indexes_by_group"]
     items = [item for section in sections for item in section.items.all()]
     initial = _initial_from_responses(responses, items)
 
-    if request.method == "POST":
-        form = ChecklistDraftForm(request.POST, items=items, initial_responses=initial)
+    if request.method == "POST" and request.POST.get("sample_action"):
+        form = ChecklistDraftForm(
+            request.POST,
+            items=items,
+            initial_responses=initial,
+            sample_indexes_by_group=sample_indexes_by_group,
+        )
+        if not form.is_valid():
+            form = ChecklistDraftForm(
+                items=items,
+                initial_responses=initial,
+                sample_indexes_by_group=sample_indexes_by_group,
+            )
+    elif request.method == "POST":
+        form = ChecklistDraftForm(
+            request.POST,
+            items=items,
+            initial_responses=initial,
+            sample_indexes_by_group=sample_indexes_by_group,
+        )
         if form.is_valid():
             try:
                 save_checklist_draft_responses(
@@ -440,7 +529,11 @@ def correction_detail(request: HttpRequest, correction_id: uuid.UUID) -> HttpRes
             except ValidationError as exc:
                 _apply_validation_error(form, exc)
     else:
-        form = ChecklistDraftForm(items=items, initial_responses=initial)
+        form = ChecklistDraftForm(
+            items=items,
+            initial_responses=initial,
+            sample_indexes_by_group=sample_indexes_by_group,
+        )
 
     return render(
         request,

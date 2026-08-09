@@ -89,24 +89,69 @@
                  aria-labelledby="corr-section-{{ section.id }}">
           <h2 id="corr-section-{{ section.id }}">{{ section.title }}</h2>
           {% for item in section.items.all %}
-            {% with bound=form|response_bound_field:item %}
-              <article class="recording-item">
-                <label for="{% if bound %}{{ bound.id_for_label }}{% endif %}">
-                  {{ item.code }} — {{ item.label }}
-                  {% if item.is_required %}<span class="recording-item__required">Required</span>{% endif %}
-                </label>
-                {% if item.help_text %}<p class="form-help">{{ item.help_text }}</p>{% endif %}
-                {% if item.response_type == "NUMBER" %}
-                  {% if item.unit %}<p class="form-help">Unit: {{ item.unit }}</p>{% endif %}
-                {% endif %}
-                {% if bound %}{{ bound }}{% endif %}
-                {% if bound and bound.errors %}
-                  <ul class="form-errors">
-                    {% for error in bound.errors %}<li>{{ error }}</li>{% endfor %}
-                  </ul>
-                {% endif %}
-              </article>
-            {% endwith %}
+            {% if item.parent_item_id %}
+            {% elif item.item_kind == "REPEATING_GROUP" %}
+              {% with indexes=sample_indexes_by_group|dict_get:item.id children=children_by_parent|dict_get:item.id %}
+                <fieldset class="recording-item recording-item--repeating">
+                  <legend>{{ item.code }} — {{ item.label }}</legend>
+                  {% if item.help_text %}<p class="form-help">{{ item.help_text }}</p>{% endif %}
+                  <input type="hidden" name="sample_count_{{ item.id.hex }}" value="{{ indexes|length }}">
+                  {% for sample_index in indexes %}
+                    <fieldset class="recording-sample">
+                      <legend>Sample {{ sample_index }}</legend>
+                      {% for child in children %}
+                        {% response_bound_field_at form child sample_index as field %}
+                        {% if field %}
+                          <div class="form-field">
+                            <label for="{{ field.id_for_label }}">
+                              {{ child.code }} — {{ child.label }}
+                              {% if child.is_required %}(required){% endif %}
+                            </label>
+                            {{ field }}
+                            {% if field.errors %}
+                              <ul class="form-errors">
+                                {% for error in field.errors %}<li>{{ error }}</li>{% endfor %}
+                              </ul>
+                            {% endif %}
+                          </div>
+                        {% endif %}
+                      {% endfor %}
+                    </fieldset>
+                  {% empty %}
+                    <p class="form-help">No sample rows yet.</p>
+                  {% endfor %}
+                  <div class="landing-actions">
+                    <button type="submit" class="btn btn--ghost btn--inline" name="sample_action" value="add:{{ item.id }}">
+                      Add sample row
+                    </button>
+                    {% if indexes %}
+                      <button type="submit" class="btn btn--ghost btn--inline" name="sample_action" value="remove:{{ item.id }}">
+                        Remove last sample row
+                      </button>
+                    {% endif %}
+                  </div>
+                </fieldset>
+              {% endwith %}
+            {% else %}
+              {% with bound=form|response_bound_field:item %}
+                <article class="recording-item">
+                  <label for="{% if bound %}{{ bound.id_for_label }}{% endif %}">
+                    {{ item.code }} — {{ item.label }}
+                    {% if item.is_required %}<span class="recording-item__required">Required</span>{% endif %}
+                  </label>
+                  {% if item.help_text %}<p class="form-help">{{ item.help_text }}</p>{% endif %}
+                  {% if item.response_type == "NUMBER" %}
+                    {% if item.unit %}<p class="form-help">Unit: {{ item.unit }}</p>{% endif %}
+                  {% endif %}
+                  {% if bound %}{{ bound }}{% endif %}
+                  {% if bound and bound.errors %}
+                    <ul class="form-errors">
+                      {% for error in bound.errors %}<li>{{ error }}</li>{% endfor %}
+                    </ul>
+                  {% endif %}
+                </article>
+              {% endwith %}
+            {% endif %}
           {% endfor %}
         </section>
       {% endfor %}

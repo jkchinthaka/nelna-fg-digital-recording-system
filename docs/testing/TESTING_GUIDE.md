@@ -1,8 +1,7 @@
 # Testing Guide
 
-**Document status:** Phase 03 foundation guidance
-**Branch:** `feature/accounts-rbac`
-**Last updated:** 2026-08-06
+**Document status:** Living host/Docker testing guidance
+**Last updated:** 2026-08-10
 
 ## Tooling (pinned)
 
@@ -15,6 +14,8 @@
 Settings module for tests: `config.settings.test` (`DJANGO_SETTINGS_MODULE` / `tool.pytest.ini_options`).
 
 Phase 03 adds identity, authentication, lockout, organization hierarchy, scoped RBAC, and security-audit tests. See [PHASE_03_TEST_PLAN.md](PHASE_03_TEST_PLAN.md).
+
+Phase **06H** repeating/sample foundation tests: [PHASE_06H_TEST_PLAN.md](PHASE_06H_TEST_PLAN.md) (`apps/recording/tests/test_phase06h_repeating_samples.py`). Does not invent AQL or company sample counts.
 
 ## Running tests on the host
 
