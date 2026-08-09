@@ -26,7 +26,7 @@
                       {% include "recording/_evaluation_indicator.html" %}
                     {% endwith %}
                   {% endif %}
-                  {% with control_point_class=child.item.control_point_class criticality=child.item.criticality control_point_label=child.item.control_point_class|control_point_label_for criticality_label=child.item.criticality|criticality_label_for %}
+                  {% with control_point_class=child.control_point_class criticality=child.criticality control_point_label=child.control_point_class|control_point_label_for criticality_label=child.criticality|criticality_label_for %}
                     {% include "recording/_control_point_marker.html" %}
                   {% endwith %}
                 </div>
@@ -65,7 +65,7 @@
               {% include "recording/_evaluation_indicator.html" %}
             {% endwith %}
           {% endif %}
-          {% with control_point_class=row.item.control_point_class criticality=row.item.criticality control_point_label=row.item.control_point_class|control_point_label_for criticality_label=row.item.criticality|criticality_label_for %}
+          {% with control_point_class=row.control_point_class criticality=row.criticality control_point_label=row.control_point_class|control_point_label_for criticality_label=row.criticality|criticality_label_for %}
             {% include "recording/_control_point_marker.html" %}
           {% endwith %}
           {% if not row.answered %}<p class="form-help">Not answered in this snapshot.</p>{% endif %}

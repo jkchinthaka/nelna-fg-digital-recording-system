@@ -339,3 +339,22 @@ def test_display_labels_cover_helpers() -> None:
     assert criticality_display_label(None) == "Unset"
     assert "Major" in criticality_display_label("MAJOR")
     assert criticality_display_label("WEIRD") == "WEIRD"
+
+
+def test_snapshot_prefers_frozen_control_point_context() -> None:
+    from types import SimpleNamespace
+
+    from apps.recording.snapshot_display import control_point_display_fields
+
+    item = SimpleNamespace(control_point_class="NONE", criticality="")
+    snap = SimpleNamespace(
+        control_point_context={"control_point_class": "OPRP", "criticality": "MAJOR"}
+    )
+    fields = control_point_display_fields(item, snap)
+    assert fields["control_point_class"] == "OPRP"
+    assert fields["criticality"] == "MAJOR"
+    fallback = control_point_display_fields(
+        SimpleNamespace(control_point_class="GMP", criticality="MINOR"), None
+    )
+    assert fallback["control_point_class"] == "GMP"
+    assert fallback["criticality"] == "MINOR"

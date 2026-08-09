@@ -30,8 +30,9 @@
 | Calculated fields (06I) | Closed operators SUM/AVERAGE/MIN/MAX/COUNT/RANGE; Decimal-safe; frozen `calculation_context` | Works (technical; no business formulas seeded) |
 | Conditional rules (06J) | Closed VISIBLE_IF / REQUIRED_IF / EVIDENCE_REQUIRED_IF; frozen `condition_context` | Works (technical; no seeded predicates) |
 | Item evaluation (06K) | Explicit `ChecklistItemEvaluationRule`; PASS/FAIL/WARN/NOT_EVALUATED; frozen `evaluation_*` | Works (technical; **not** QA disposition; no seeded limits) |
+| Control-point metadata (06L) | `control_point_class` NONE/CCP/OPRP/PRP/GMP/QUALITY + optional criticality; frozen `control_point_context` | Works (technical schema; **EVIDENCE REQUIRED** for production non-NONE; metadata ≠ disposition) |
 
-**Not present today:** DATE/TIME response type, equipment references, structured CCP/OPRP metadata (06L), precision/rounding modes / inclusive-exclusive bounds hardening beyond evaluation rules (06M).
+**Not present today:** DATE/TIME response type, equipment references, precision/rounding modes / inclusive-exclusive bounds hardening beyond evaluation rules (06M).
 
 ### Evidence
 

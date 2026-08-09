@@ -14,6 +14,24 @@ from apps.recording.repeating import (
 )
 
 
+def control_point_display_fields(item: Any, response: Any) -> dict[str, str]:
+    """
+    Prefer frozen submission control_point_context; fall back to definition item.
+
+    Published items are immutable, but frozen context is the historical authority.
+    """
+    ctx = getattr(response, "control_point_context", None) if response is not None else None
+    if isinstance(ctx, dict) and ctx.get("control_point_class"):
+        return {
+            "control_point_class": str(ctx.get("control_point_class") or "NONE"),
+            "criticality": str(ctx.get("criticality") or ""),
+        }
+    return {
+        "control_point_class": str(getattr(item, "control_point_class", None) or "NONE"),
+        "criticality": str(getattr(item, "criticality", None) or ""),
+    }
+
+
 def display_snapshot_value(item: Any, response: Any) -> str:
     if response is None:
         return "—"
@@ -88,6 +106,7 @@ def render_snapshot_sections(
                     child_cells = []
                     for child in children:
                         snap = keyed.get((child.id, sample_index))
+                        cp = control_point_display_fields(child, snap)
                         child_cells.append(
                             {
                                 "item": child,
@@ -100,6 +119,8 @@ def render_snapshot_sections(
                                 "evaluation_context": getattr(snap, "evaluation_context", None)
                                 if snap is not None
                                 else None,
+                                "control_point_class": cp["control_point_class"],
+                                "criticality": cp["criticality"],
                             }
                         )
                     sample_rows.append({"sample_index": sample_index, "children": child_cells})
@@ -116,6 +137,7 @@ def render_snapshot_sections(
 
             snap = keyed.get((item.id, 1))
             kind = "calculated" if item.item_kind == ChecklistItemKind.CALCULATED else "simple"
+            cp = control_point_display_fields(item, snap)
             items_out.append(
                 {
                     "kind": kind,
@@ -132,6 +154,8 @@ def render_snapshot_sections(
                     "evaluation_context": getattr(snap, "evaluation_context", None)
                     if snap is not None
                     else None,
+                    "control_point_class": cp["control_point_class"],
+                    "criticality": cp["criticality"],
                 }
             )
 
