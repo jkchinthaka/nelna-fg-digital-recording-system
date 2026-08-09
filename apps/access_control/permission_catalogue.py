@@ -133,6 +133,25 @@ PERMISSION_CATALOGUE: Final[tuple[PermissionCatalogueEntry, ...]] = (
         notes="Not implied by scheduling.record_checklisttask / operator roles.",
     ),
     PermissionCatalogueEntry(
+        key="view_trainingrecord",
+        permission="training.view_trainingrecord",
+        bucket=CapabilityBucket.VIEW,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Inspect training / competency records (Django default view).",
+        notes="Separate from operator record permissions.",
+    ),
+    PermissionCatalogueEntry(
+        key="manage_trainingrecord",
+        permission="training.manage_trainingrecord",
+        bucket=CapabilityBucket.MASTER_DATA,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Manage training and competency records / enforcement policy metadata.",
+        notes=(
+            "Not implied by scheduling.record_checklisttask / operator roles. "
+            "Gate WARN/BLOCK EVIDENCE REQUIRED."
+        ),
+    ),
+    PermissionCatalogueEntry(
         key="manage_shift",
         permission="organizations.manage_shift",
         bucket=CapabilityBucket.MASTER_DATA,

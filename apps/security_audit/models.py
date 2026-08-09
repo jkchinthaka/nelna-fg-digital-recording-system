@@ -85,6 +85,20 @@ class SecurityAuditEvent(models.Model):
             "CALIBRATION_CERTIFICATE_METADATA_UPDATED",
             "Calibration certificate metadata updated",
         )
+        TRAINING_RECORD_CREATED = "TRAINING_RECORD_CREATED", "Training record created"
+        TRAINING_RECORD_UPDATED = "TRAINING_RECORD_UPDATED", "Training record updated"
+        TRAINING_RECORD_STATUS_CHANGED = (
+            "TRAINING_RECORD_STATUS_CHANGED",
+            "Training record status changed",
+        )
+        TRAINING_ENFORCEMENT_POLICY_CREATED = (
+            "TRAINING_ENFORCEMENT_POLICY_CREATED",
+            "Training enforcement policy created",
+        )
+        TRAINING_ENFORCEMENT_POLICY_UPDATED = (
+            "TRAINING_ENFORCEMENT_POLICY_UPDATED",
+            "Training enforcement policy updated",
+        )
         CHECKLIST_TEMPLATE_CREATED = "CHECKLIST_TEMPLATE_CREATED", "Checklist template created"
         CHECKLIST_TEMPLATE_UPDATED = "CHECKLIST_TEMPLATE_UPDATED", "Checklist template updated"
         CHECKLIST_TEMPLATE_ACTIVATED = (

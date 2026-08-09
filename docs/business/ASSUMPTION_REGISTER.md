@@ -63,8 +63,10 @@ MASTER-001 remains **EVIDENCE REQUIRED** for official Product Master inventory a
 | Product UI authorization hardening (Phase 05B) | Implemented — object-aware manage affordances; site-only does not escalate |
 | FG Product master expansion + controlled import (Phase 05C) | Implemented — optional blank mapping fields; header-only CSV import; **no** official catalogue loaded |
 | Equipment / calibration foundation (Phase 05D) | Implemented — unseeded equipment + calibration records; fitness labels only; **no** invented intervals; overdue block/warn **EVIDENCE REQUIRED** |
+| Training / competency foundation (Phase 05E) | Implemented — unseeded training records + OFF/WARN/BLOCK policy metadata; **no** invented matrix; recording auto-block **not** enabled |
 | Site / Product ownership | Unresolved — provisional ownership remains organization-scoped |
-| Official category / UOM / ERP catalogues / training | Unresolved — optional blank columns only where 05C added them; equipment assets not seeded |
+| Official category / UOM / ERP catalogues | Unresolved — optional blank columns only where 05C added them; equipment/training assets not seeded |
+| Official operator training matrix / gate policy (APR-042) | Unresolved — EVIDENCE REQUIRED |
 | Calibration intervals / overdue block-or-warn policy | Unresolved — EVIDENCE REQUIRED |
 | Real Product catalogue load | Remains blocked pending MASTER-001 / APR-005 |
 | Real-data configuration / operational / production use | Remains blocked |

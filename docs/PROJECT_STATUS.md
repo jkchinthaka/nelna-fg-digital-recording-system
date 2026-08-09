@@ -53,13 +53,14 @@ This document records **repository evidence**. It does not invent Nelna operatio
 | `security_audit` | 03–10A | IMPLEMENTED |
 | `master_data` (FG Product) | 05A/05B/05C | IMPLEMENTED foundation · MASTER-001 **EVIDENCE REQUIRED** (catalogue not received) |
 | `instruments` | 05D | IMPLEMENTED foundation · unseeded equipment + calibration; intervals/overdue policy **EVIDENCE REQUIRED** |
+| `training` | 05E | IMPLEMENTED foundation · unseeded competency records; gate OFF by default; matrix/WARN-BLOCK **EVIDENCE REQUIRED** (APR-042) |
 | `checklists` | 06A–06D (+ 06E–06G docs) | IMPLEMENTED · FG-QA-001 **NOT BUSINESS APPROVED**; Engine v2 **designed** (ADR-019); real forms **NOT RECEIVED**; optional `requires_equipment_reference` (05D) |
 | `scheduling` | 07A/07B | IMPLEMENTED · real batch generation **BLOCKED** |
 | `recording` | 08A/08B + 09B | IMPLEMENTED · production recording **BLOCKED** |
 | `reviews` | 09A | IMPLEMENTED · production Supervisor review **BLOCKED** |
 | `quality` | 10A | IMPLEMENTED · production QA **BLOCKED**; no ERP/warehouse/dispatch side effects |
 
-Not started (by MODULE_MAP): `training`, `evidence`, `nonconformance`, `capa`, `loading`, `dispatch`, `notifications`, `reports`, `integrations`, `ai_assistance`.
+Not started (by MODULE_MAP): `evidence`, `nonconformance`, `capa`, `loading`, `dispatch`, `notifications`, `reports`, `integrations`, `ai_assistance`.
 
 ---
 
@@ -77,6 +78,7 @@ Not started (by MODULE_MAP): `training`, `evidence`, `nonconformance`, `capa`, `
 | 05A/05B FG Product | Complete | MASTER-001 unresolved |
 | 05C FG Product master foundation | Technical complete | Optional mapping fields + import; official catalogue **not** received |
 | 05D Equipment / calibration foundation | Technical complete | Unseeded equipment + calibration; no invented intervals; overdue block/warn **EVIDENCE REQUIRED** |
+| 05E Training / competency foundation | Technical complete | Unseeded training records; gate modes metadata only; no invented matrices |
 | 06A–06E Checklist definition | Complete (06E provisional docs) | TEMPLATE / FG-QA-001 approval unresolved |
 | 06F Real form discovery framework | Docs complete (templates + registers) | Inventory **NOT RECEIVED**; no forms APPROVED FOR DIGITALIZATION |
 | 06G Checklist Engine v2 design | ADR-019 + 06H–06M split | Design complete; evidence still required for business values |
@@ -140,7 +142,7 @@ Tracked for request/approval workflow: [governance/APPROVAL_REGISTER.md](governa
 | Phase 10A Docker re-validation | Outstanding | Claiming TECHNICALLY VALIDATED for 10A in Docker |
 | Direct-main delivery vs PR-only rule text | Process debt | Consistency of contribution docs |
 | Unseeded permissions without role assignment | By design until owners map | Operational use |
-| Instruments / training / evidence modules | Not started | Later MVP completeness |
+| Evidence module | Not started | Later MVP completeness |
 
 ---
 
@@ -227,3 +229,11 @@ Optional mapping/attribute blanks, effective dates, historical hard-delete refus
 **STATUS: PHASE 05D EQUIPMENT CALIBRATION FOUNDATION COMPLETE**
 
 Unseeded equipment master, calibration records, fitness labels (no block policy), checklist optional equipment-reference flag, RBAC separation, and audits are implemented. Calibration intervals and overdue block/warn remain **EVIDENCE REQUIRED** — no fake assets seeded.
+
+---
+
+## Phase 05E delivery status
+
+**STATUS: PHASE 05E TRAINING FOUNDATION COMPLETE**
+
+Technical training/competency foundation is implemented without seeded company matrices. Recording WARN/BLOCK gates remain OFF by default until APR evidence approves policy.

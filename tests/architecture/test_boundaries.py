@@ -12,6 +12,7 @@ ALLOWED_APPS = {
     "organizations",
     "master_data",
     "instruments",
+    "training",
     "checklists",
     "scheduling",
     "recording",

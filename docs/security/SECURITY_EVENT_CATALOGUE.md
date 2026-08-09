@@ -35,6 +35,8 @@
 | `EQUIPMENT_CREATED` / `UPDATED` / `ACTIVATED` / `DEACTIVATED` / `STATUS_CHANGED` | Equipment master lifecycle (Phase 05D) |
 | `CALIBRATION_RECORD_CREATED` | Calibration record created |
 | `CALIBRATION_CERTIFICATE_METADATA_UPDATED` | Certificate/provider metadata updated |
+| `TRAINING_RECORD_CREATED` / `UPDATED` / `STATUS_CHANGED` | Training / competency lifecycle (Phase 05E) |
+| `TRAINING_ENFORCEMENT_POLICY_CREATED` / `UPDATED` | Training gate mode metadata (OFF/WARN/BLOCK; not auto-enforced) |
 | `CHECKLIST_TEMPLATE_CREATED` | Checklist template created |
 | `CHECKLIST_TEMPLATE_UPDATED` | Checklist template updated |
 | `CHECKLIST_TEMPLATE_ACTIVATED` | Checklist template activated |

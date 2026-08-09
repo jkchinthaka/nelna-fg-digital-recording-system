@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     "apps.organizations",
     "apps.master_data",
     "apps.instruments",
+    "apps.training",
     "apps.checklists",
     "apps.scheduling",
     "apps.recording",
