@@ -476,6 +476,8 @@ def set_checklist_item_evaluation_rule(
     expected_choice: str = "",
     expected_option_id: uuid.UUID | None = None,
     treat_na_as_not_evaluated: bool = True,
+    specification_version_id: uuid.UUID | None = None,
+    specification_parameter_id: uuid.UUID | None = None,
 ) -> ChecklistItemEvaluationRule:
     """Create or replace the explicit evaluation rule for a draft item."""
     from apps.checklists.models import ChecklistEvaluationRuleKind
@@ -512,6 +514,8 @@ def set_checklist_item_evaluation_rule(
         expected_choice=(expected_choice or "").strip().upper(),
         expected_option_id=expected_option_id,
         treat_na_as_not_evaluated=bool(treat_na_as_not_evaluated),
+        specification_version_id=specification_version_id,
+        specification_parameter_id=specification_parameter_id,
     )
     rule.full_clean()
     rule.save()
@@ -525,6 +529,12 @@ def set_checklist_item_evaluation_rule(
                 "checklist_item_code": item.code,
                 "evaluation_rule_id": str(rule.id),
                 "rule_kind": rule.rule_kind,
+                "specification_version_id": (
+                    str(specification_version_id) if specification_version_id else None
+                ),
+                "specification_parameter_id": (
+                    str(specification_parameter_id) if specification_parameter_id else None
+                ),
             },
         ),
     )
@@ -1053,6 +1063,8 @@ def _clone_structure(*, source: ChecklistVersion, target: ChecklistVersion) -> N
                     expected_choice=src_eval.expected_choice,
                     expected_option_id=expected_option_id,
                     treat_na_as_not_evaluated=src_eval.treat_na_as_not_evaluated,
+                    specification_version_id=src_eval.specification_version_id,
+                    specification_parameter_id=src_eval.specification_parameter_id,
                 )
 
 

@@ -103,6 +103,10 @@ class ChecklistEvaluationRuleKind(models.TextChoices):
     EXPECTED_CHOICE = "EXPECTED_CHOICE", "Expected YES/NO choice"
     EXPECTED_OPTION = "EXPECTED_OPTION", "Expected SELECT option"
     CALCULATED_NUMERIC_BOUNDS = "CALCULATED_NUMERIC_BOUNDS", "Calculated numeric bounds"
+    SPECIFICATION_PARAMETER = (
+        "SPECIFICATION_PARAMETER",
+        "Pinned product specification parameter (Phase 06O)",
+    )
 
 
 class ChecklistControlPointClass(models.TextChoices):
@@ -855,6 +859,28 @@ class ChecklistItemEvaluationRule(models.Model):
         default=True,
         help_text="When True, YES_NO_NA answer NA yields NOT_EVALUATED (not FAIL).",
     )
+    specification_version = models.ForeignKey(
+        "master_data.SpecificationVersion",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="checklist_evaluation_rules",
+        help_text=(
+            "Optional exact SpecificationVersion pin for SPECIFICATION_PARAMETER rules. "
+            "Historical pins remain valid after version retirement."
+        ),
+    )
+    specification_parameter = models.ForeignKey(
+        "master_data.SpecificationParameter",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="checklist_evaluation_rules",
+        help_text=(
+            "Optional SpecificationParameter pin (must belong to specification_version). "
+            "Bounds empty until APR-006 evidence => NOT_EVALUATED."
+        ),
+    )
 
     class Meta:
         verbose_name = "Checklist item evaluation rule"
@@ -949,6 +975,65 @@ class ChecklistItemEvaluationRule(models.Model):
             if expected_option is None or expected_option.item_id != item.id:
                 raise ValidationError(
                     {"expected_option": "Option must belong to the same checklist item."}
+                )
+        elif kind == ChecklistEvaluationRuleKind.SPECIFICATION_PARAMETER:
+            if item.response_type != ChecklistResponseType.NUMBER:
+                raise ValidationError(
+                    {"rule_kind": "SPECIFICATION_PARAMETER requires NUMBER response type."}
+                )
+            if item.item_kind not in {
+                ChecklistItemKind.SIMPLE,
+                ChecklistItemKind.CALCULATED,
+            }:
+                raise ValidationError(
+                    {
+                        "item": (
+                            "SPECIFICATION_PARAMETER applies to SIMPLE or CALCULATED NUMBER items."
+                        )
+                    }
+                )
+            if self.specification_version_id is None:
+                raise ValidationError(
+                    {"specification_version": "specification_version is required."}
+                )
+            if self.specification_parameter_id is None:
+                raise ValidationError(
+                    {"specification_parameter": "specification_parameter is required."}
+                )
+            param = self.specification_parameter
+            if param is None or str(param.version_id) != str(self.specification_version_id):
+                raise ValidationError(
+                    {
+                        "specification_parameter": (
+                            "specification_parameter must belong to the pinned "
+                            "specification_version."
+                        )
+                    }
+                )
+            version = self.specification_version
+            if version is not None:
+                spec_org_id = version.specification.organization_id
+                checklist_org_id = item.section.version.template.organization_id
+                if spec_org_id != checklist_org_id:
+                    raise ValidationError(
+                        {
+                            "specification_version": (
+                                "Specification version organization must match the "
+                                "checklist template organization."
+                            )
+                        }
+                    )
+            if any(
+                v is not None
+                for v in (self.bound_min, self.bound_max, self.warn_min, self.warn_max)
+            ):
+                raise ValidationError(
+                    {
+                        "bound_min": (
+                            "SPECIFICATION_PARAMETER uses pinned parameter bounds only; "
+                            "do not set inline bound_* / warn_* on the rule."
+                        )
+                    }
                 )
 
 

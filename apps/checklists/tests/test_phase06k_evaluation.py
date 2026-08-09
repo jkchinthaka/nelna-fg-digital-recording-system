@@ -35,6 +35,8 @@ def _rule(**kwargs: object) -> SimpleNamespace:
         "expected_choice": "",
         "expected_option_id": None,
         "treat_na_as_not_evaluated": True,
+        "specification_version_id": None,
+        "specification_parameter_id": None,
     }
     defaults.update(kwargs)
     return SimpleNamespace(**defaults)

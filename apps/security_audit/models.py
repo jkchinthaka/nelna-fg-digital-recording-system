@@ -99,6 +99,42 @@ class SecurityAuditEvent(models.Model):
             "TRAINING_ENFORCEMENT_POLICY_UPDATED",
             "Training enforcement policy updated",
         )
+        PRODUCT_SPECIFICATION_CREATED = (
+            "PRODUCT_SPECIFICATION_CREATED",
+            "Product specification created",
+        )
+        SPECIFICATION_VERSION_CREATED = (
+            "SPECIFICATION_VERSION_CREATED",
+            "Specification version created",
+        )
+        SPECIFICATION_VERSION_UPDATED = (
+            "SPECIFICATION_VERSION_UPDATED",
+            "Specification version updated",
+        )
+        SPECIFICATION_VERSION_APPROVED = (
+            "SPECIFICATION_VERSION_APPROVED",
+            "Specification version approved",
+        )
+        SPECIFICATION_VERSION_RETIRED = (
+            "SPECIFICATION_VERSION_RETIRED",
+            "Specification version retired",
+        )
+        SPECIFICATION_VERSION_CLONED = (
+            "SPECIFICATION_VERSION_CLONED",
+            "Specification version cloned",
+        )
+        SPECIFICATION_PARAMETER_CREATED = (
+            "SPECIFICATION_PARAMETER_CREATED",
+            "Specification parameter created",
+        )
+        SPECIFICATION_PARAMETER_UPDATED = (
+            "SPECIFICATION_PARAMETER_UPDATED",
+            "Specification parameter updated",
+        )
+        SPECIFICATION_PARAMETER_REMOVED = (
+            "SPECIFICATION_PARAMETER_REMOVED",
+            "Specification parameter removed",
+        )
         CHECKLIST_TEMPLATE_CREATED = "CHECKLIST_TEMPLATE_CREATED", "Checklist template created"
         CHECKLIST_TEMPLATE_UPDATED = "CHECKLIST_TEMPLATE_UPDATED", "Checklist template updated"
         CHECKLIST_TEMPLATE_ACTIVATED = (

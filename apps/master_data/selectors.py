@@ -13,11 +13,22 @@ from apps.access_control.services import (
     user_has_permission,
 )
 from apps.accounts.models import User
-from apps.master_data.models import FGProduct
+from apps.master_data.models import (
+    FGProduct,
+    ProductSpecification,
+    SpecificationParameter,
+    SpecificationVersion,
+)
 from apps.master_data.services import (
     MANAGE_FG_PRODUCT,
     VIEW_FG_PRODUCT,
     product_authorization_scope,
+)
+from apps.master_data.specification_services import (
+    MANAGE_PRODUCT_SPECIFICATION,
+    VIEW_PRODUCT_SPECIFICATION,
+    specification_authorization_scope,
+    version_authorization_scope,
 )
 from apps.organizations.models import Organization
 
@@ -135,3 +146,81 @@ def manageable_organization_ids(actor: User | None) -> frozenset[uuid.UUID]:
     Server-side services remain authoritative for mutations.
     """
     return frozenset(organization_ids_with_permission(actor, MANAGE_FG_PRODUCT))
+
+
+def get_product_specification(
+    actor: User | None, specification_id: uuid.UUID
+) -> ProductSpecification | None:
+    spec = (
+        ProductSpecification.objects.select_related("organization", "product")
+        .filter(pk=specification_id)
+        .first()
+    )
+    if spec is None:
+        return None
+    if actor is None or not getattr(actor, "is_authenticated", False) or not actor.is_active:
+        raise PermissionDenied("Permission denied.")
+    if not user_has_permission(
+        actor, VIEW_PRODUCT_SPECIFICATION, scope=specification_authorization_scope(spec)
+    ):
+        raise PermissionDenied("Permission denied.")
+    return spec
+
+
+def list_product_specifications(
+    actor: User | None,
+    *,
+    organization: Organization | None = None,
+    product: FGProduct | None = None,
+) -> QuerySet[ProductSpecification]:
+    if actor is None or not getattr(actor, "is_authenticated", False) or not actor.is_active:
+        return ProductSpecification.objects.none()
+    allowed = organization_ids_with_permission(actor, VIEW_PRODUCT_SPECIFICATION)
+    if not allowed:
+        return ProductSpecification.objects.none()
+    qs = ProductSpecification.objects.select_related("organization", "product").filter(
+        organization_id__in=allowed
+    )
+    if organization is not None:
+        if organization.id not in allowed:
+            return ProductSpecification.objects.none()
+        qs = qs.filter(organization=organization)
+    if product is not None:
+        qs = qs.filter(product=product)
+    return qs.order_by("organization__code", "product__code", "code")
+
+
+def get_specification_version(
+    actor: User | None, version_id: uuid.UUID
+) -> SpecificationVersion | None:
+    version = (
+        SpecificationVersion.objects.select_related(
+            "specification",
+            "specification__organization",
+            "specification__product",
+        )
+        .filter(pk=version_id)
+        .first()
+    )
+    if version is None:
+        return None
+    if actor is None or not getattr(actor, "is_authenticated", False) or not actor.is_active:
+        raise PermissionDenied("Permission denied.")
+    if not user_has_permission(
+        actor, VIEW_PRODUCT_SPECIFICATION, scope=version_authorization_scope(version)
+    ):
+        raise PermissionDenied("Permission denied.")
+    return version
+
+
+def list_specification_parameters(
+    actor: User | None, version_id: uuid.UUID
+) -> QuerySet[SpecificationParameter]:
+    version = get_specification_version(actor, version_id)
+    if version is None:
+        return SpecificationParameter.objects.none()
+    return version.parameters.all().order_by("code")
+
+
+def actor_can_manage_product_specifications(actor: User | None) -> bool:
+    return bool(organization_ids_with_permission(actor, MANAGE_PRODUCT_SPECIFICATION))

@@ -98,3 +98,7 @@ TEMPLATE-001 / ASM-003 form inventory and official checklist content remain **EV
 See [PHASE_06_CHECKLIST_PROVISIONAL_CONFIGURATION.md](../decisions/PHASE_06_CHECKLIST_PROVISIONAL_CONFIGURATION.md) and [ADR-010](../architecture/ADR-010-CHECKLIST-DEFINITION-VERSIONING.md).
 
 **No row is APPROVED.** Development must not hard-code these as Nelna facts.
+
+### Phase 06O note (2026-08-10)
+
+Technical versioned product-specification storage is on main (ProductSpecification / SpecificationVersion / SpecificationParameter). **ASM-001 / APR-006 remain EVIDENCE REQUIRED** — no temperature/weight/microbiological Nelna limits were seeded.

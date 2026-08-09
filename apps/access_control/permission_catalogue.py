@@ -117,6 +117,25 @@ PERMISSION_CATALOGUE: Final[tuple[PermissionCatalogueEntry, ...]] = (
         description="Manage FG Product master-data rows.",
     ),
     PermissionCatalogueEntry(
+        key="view_productspecification",
+        permission="master_data.view_productspecification",
+        bucket=CapabilityBucket.VIEW,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Inspect product quality specifications and versions (Django default view).",
+        notes="Limits remain empty until APR-006 / ASM-001 evidence.",
+    ),
+    PermissionCatalogueEntry(
+        key="manage_productspecification",
+        permission="master_data.manage_productspecification",
+        bucket=CapabilityBucket.MASTER_DATA,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Create/edit/approve/retire versioned product quality specifications.",
+        notes=(
+            "High-privilege technical capability; publishing is audited. "
+            "Do not invent temperature/weight/microbiological limits."
+        ),
+    ),
+    PermissionCatalogueEntry(
         key="view_equipment",
         permission="instruments.view_equipment",
         bucket=CapabilityBucket.VIEW,

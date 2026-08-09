@@ -171,6 +171,16 @@ def build_evaluation_context(
         "expected_choice": rule.expected_choice or "",
         "expected_option_id": str(rule.expected_option_id) if rule.expected_option_id else None,
         "treat_na_as_not_evaluated": rule.treat_na_as_not_evaluated,
+        "specification_version_id": (
+            str(rule.specification_version_id)
+            if getattr(rule, "specification_version_id", None)
+            else None
+        ),
+        "specification_parameter_id": (
+            str(rule.specification_parameter_id)
+            if getattr(rule, "specification_parameter_id", None)
+            else None
+        ),
     }
     return ctx
 
@@ -227,25 +237,64 @@ def evaluate_item_response(
     }:
         result = evaluate_numeric_bounds(value=number_value, rule=rule)
         reason = "numeric_bounds"
-    elif kind == ChecklistEvaluationRuleKind.EXPECTED_CHOICE:
+        ctx = build_evaluation_context(
+            result=result, rule=rule, visible=True, reason=reason, **common_kwargs
+        )
+        return result, ctx
+    if kind == ChecklistEvaluationRuleKind.EXPECTED_CHOICE:
         result = evaluate_expected_choice(
             choice_value=choice_value,
             rule=rule,
             response_type=item.response_type,
         )
         reason = "expected_choice"
-    elif kind == ChecklistEvaluationRuleKind.EXPECTED_OPTION:
+        return (
+            result,
+            build_evaluation_context(
+                result=result, rule=rule, visible=True, reason=reason, **common_kwargs
+            ),
+        )
+    if kind == ChecklistEvaluationRuleKind.EXPECTED_OPTION:
         result = evaluate_expected_option(selected_option_id=selected_option_id, rule=rule)
         reason = "expected_option"
-    else:
-        raise ValidationError({"rule_kind": f"Unsupported evaluation rule kind {kind!r}."})
+        return (
+            result,
+            build_evaluation_context(
+                result=result, rule=rule, visible=True, reason=reason, **common_kwargs
+            ),
+        )
+    if kind == ChecklistEvaluationRuleKind.SPECIFICATION_PARAMETER:
+        from apps.master_data.specification_evaluation import evaluate_specification_parameter
 
-    return (
-        result,
-        build_evaluation_context(
-            result=result, rule=rule, visible=True, reason=reason, **common_kwargs
-        ),
-    )
+        parameter = rule.specification_parameter
+        if parameter is None:
+            result = ChecklistEvaluationResult.NOT_EVALUATED
+            ctx = build_evaluation_context(
+                result=result,
+                rule=rule,
+                visible=True,
+                reason="specification_parameter_missing",
+                **common_kwargs,
+            )
+            ctx["spec_result"] = "NOT_EVALUATED"
+            ctx["not_qa_disposition"] = True
+            return result, ctx
+        result, spec_label, extra = evaluate_specification_parameter(
+            value=number_value,
+            parameter=parameter,
+        )
+        ctx = build_evaluation_context(
+            result=result,
+            rule=rule,
+            visible=True,
+            reason=str(extra.get("reason") or "specification_parameter"),
+            **common_kwargs,
+        )
+        ctx["spec_result"] = spec_label
+        ctx.update({k: v for k, v in extra.items() if k != "reason"})
+        return result, ctx
+
+    raise ValidationError({"rule_kind": f"Unsupported evaluation rule kind {kind!r}."})
 
 
 def assert_known_evaluation_result(value: str) -> str:

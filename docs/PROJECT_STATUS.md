@@ -90,6 +90,7 @@ Not started (by MODULE_MAP): `evidence`, `nonconformance`, `capa`, `loading`, `d
 | 06L Control-point metadata | `control_point_class` + `criticality` + frozen `control_point_context` | Technical schema on `main`; default NONE; **no invented CCP/OPRP**; metadata ≠ disposition; **APR-027 / ASM-002 still EVIDENCE REQUIRED**; not BUSINESS APPROVED |
 | 06M Measurement semantics | `decimal_precision` + `rounding_mode` + unit catalog + inclusivity + frozen `measurement_context` | Technical schema on `main`; Decimal-safe; **no product limits seeded**; informational bounds ≠ disposition; not BUSINESS APPROVED |
 | 06N FG-QA-001 business validation | Validation matrix + evidence gap review; **no publish** | **BLOCKED — BUSINESS APPROVAL REQUIRED**; APR-001 unresolved; forms NOT RECEIVED |
+| 06O Product specifications | Versioned ProductSpecification + optional checklist pin | Technical complete; **no invented limits**; APR-006/ASM-001 still EVIDENCE REQUIRED |
 | 07A/07B Scheduling foundation | Complete | Real generation blocked (batch source, applicability, roles) |
 | 08A/08B Recording/submit | Complete | Production recording blocked |
 | 09A/09B Supervisor review + correction | Complete | Production review/correction blocked |
@@ -247,3 +248,11 @@ Technical training/competency foundation is implemented without seeded company m
 **STATUS: PHASE 06N BLOCKED — BUSINESS APPROVAL REQUIRED**
 
 FG-QA-001 Draft v0.1 was reviewed against real-evidence gates. No company forms, owner issue log entries, or APR-001 written approval were available. The proposal remains DRAFT; no PUBLISHED version was created; no numeric limits were invented. Item validation matrix: 42 × PENDING DECISION.
+
+---
+
+## Phase 06O delivery status
+
+**STATUS: PHASE 06O PRODUCT SPECIFICATIONS COMPLETE**
+
+Versioned ProductSpecification / SpecificationVersion / SpecificationParameter foundation is implemented with immutability, effectivity overlap policy, org-scoped high-privilege RBAC, audit events, and optional checklist SPECIFICATION_PARAMETER pins. No Nelna limits were seeded — APR-006 / ASM-001 remain **EVIDENCE REQUIRED**. OUT_OF_SPEC does not auto HOLD/REJECT.
