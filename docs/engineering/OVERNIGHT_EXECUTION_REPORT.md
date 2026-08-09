@@ -22,7 +22,9 @@
 | 2 / DB-01 | 8acfc68 | 8ff44e2 | COMPLETE | docs | n/a | n/a | `docs: assess MongoDB migration architecture` | Yes | POC REQUIRED; no migration |
 | 3 / DB-02 | 8ff44e2 | 953f09f | COMPLETE (cutover blocked) | 16/16 mongo_poc | n/a (isolated) | mongo RS :27027 + PG/Redis | `test: validate MongoDB architecture proof of concept` | Yes | Isolated invariants PASS; production-path NOT_TESTED/FAIL → **DO NOT MIGRATE** |
 | 4 / DB-03 | — | — | SKIPPED_DEPENDENCY | — | — | — | — | — | Requires explicit `MONGODB POC PASSED — DB-03 MAY PROCEED` |
-| 5 / 06J | 953f09f | TBC | COMPLETE (generic foundation) | 06J tests + clone regression | TBC | PG/Redis | planned `feat: add conditional checklist rules` | TBC | No seeded predicates; evidence fail-closed stub |
+| 5 / 06J | 953f09f | 0fedc90 | GENERIC_FOUNDATION_COMPLETE | 06J unit+integration pass; clone regression pass | partial host (DB contention from concurrent WIP) | PG/Redis healthy; mongo RS available | `feat: add conditional checklist rules` | Yes | No seeded predicates; evidence fail-closed stub; Category D preserved |
+| 6 / DB-03 | — | — | SKIPPED_DEPENDENCY | — | — | — | — | — | Cutover blocked by DB-02 results |
+| 7 / 06K+ | — | — | SKIPPED_DEPENDENCY / deferred | — | — | — | — | — | Stopped for handover after 06J; concurrent WIP (analytics/feature_flags) left untouched |
 
 ## Preserved uncommitted (do not stage into Mongo/06I commits)
 
