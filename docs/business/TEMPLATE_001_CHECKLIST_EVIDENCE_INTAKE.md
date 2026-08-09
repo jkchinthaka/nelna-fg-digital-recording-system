@@ -3,8 +3,8 @@
 **Document status:** Evidence collection contract — **not** approved business truth
 **Requirement:** TEMPLATE-001 (related: TEMPLATE-002, TEMPLATE-003, ASM-001, ASM-003)
 **Created:** 2026-08-07 (Phase 06B)
-**Updated:** 2026-08-09 — Phase 06F: real form discovery framework added under [form-discovery/](form-discovery/); inventory still NOT RECEIVED
-**Technical foundation:** Phase 06A/06B configurable unseeded checklist definition/versioning; Phase 06C provisional response-definition schema; Phase 06D explicit DRAFT proposal loader; Phase 06F discovery templates (no invented form rows)
+**Updated:** 2026-08-10 — Phase 06N: FG-QA-001 business validation **blocked**; proposal remains DRAFT; no publish; item matrix all PENDING DECISION  
+**Technical foundation:** Phase 06A/06B configurable unseeded checklist definition/versioning; Phase 06C provisional response-definition schema; Phase 06D explicit DRAFT proposal loader; Phase 06F discovery templates (no invented form rows); Phase 06N validation matrix without self-approval
 
 ## Purpose
 
@@ -21,6 +21,8 @@ Empty fields are **EVIDENCE REQUIRED**. Do not invent answers.
 - [proposals/FG_QA_001_DRAFT_V0_1.md](proposals/FG_QA_001_DRAFT_V0_1.md) — FG-QA-001 Draft v0.1
 - Status: **PROJECT-PROPOSED DRAFT — VALIDATION REQUIRED**
 - **Still not officially approved** for production, pilot, or operational use
+- Phase **06N** outcome: **BLOCKED — BUSINESS APPROVAL REQUIRED** — see [PHASE_06N_FG_QA_001_VALIDATION.md](PHASE_06N_FG_QA_001_VALIDATION.md)
+- Item validation matrix (all PENDING DECISION): [templates/FG_QA_001_ITEM_VALIDATION_MATRIX.csv](templates/FG_QA_001_ITEM_VALIDATION_MATRIX.csv)
 - Not auto-seeded into Organizations
 - An explicit DRAFT-only loader exists for controlled review instantiation — see [FG_QA_001_DRAFT_LOADING.md](../operations/FG_QA_001_DRAFT_LOADING.md). Loading a DRAFT is **not** approval.
 - Stakeholder validation worksheet: [FG_QA_001_INTERNAL_VALIDATION_CHECKLIST.md](FG_QA_001_INTERNAL_VALIDATION_CHECKLIST.md) (existence is not approval)
@@ -29,7 +31,7 @@ Empty fields are **EVIDENCE REQUIRED**. Do not invent answers.
 Companion per-item worksheet (headers only):
 [templates/CHECKLIST_ITEM_EVIDENCE_INVENTORY.csv](templates/CHECKLIST_ITEM_EVIDENCE_INVENTORY.csv)
 
-Validation issue log (headers only):
+Validation issue log (headers only — no owner issues filed as of 06N):
 [templates/FG_QA_001_VALIDATION_ISSUES.csv](templates/FG_QA_001_VALIDATION_ISSUES.csv)
 
 ---

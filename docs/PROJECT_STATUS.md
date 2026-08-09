@@ -54,7 +54,7 @@ This document records **repository evidence**. It does not invent Nelna operatio
 | `master_data` (FG Product) | 05A/05B/05C | IMPLEMENTED foundation · MASTER-001 **EVIDENCE REQUIRED** (catalogue not received) |
 | `instruments` | 05D | IMPLEMENTED foundation · unseeded equipment + calibration; intervals/overdue policy **EVIDENCE REQUIRED** |
 | `training` | 05E | IMPLEMENTED foundation · unseeded competency records; gate OFF by default; matrix/WARN-BLOCK **EVIDENCE REQUIRED** (APR-042) |
-| `checklists` | 06A–06D (+ 06E–06G docs) | IMPLEMENTED · FG-QA-001 **NOT BUSINESS APPROVED**; Engine v2 **designed** (ADR-019); real forms **NOT RECEIVED**; optional `requires_equipment_reference` (05D) |
+| `checklists` | 06A–06N | IMPLEMENTED · FG-QA-001 **NOT BUSINESS APPROVED**; Phase **06N BLOCKED**; Engine v2 **designed** (ADR-019); real forms **NOT RECEIVED**; optional `requires_equipment_reference` (05D) |
 | `scheduling` | 07A/07B | IMPLEMENTED · real batch generation **BLOCKED** |
 | `recording` | 08A/08B + 09B | IMPLEMENTED · production recording **BLOCKED** |
 | `reviews` | 09A | IMPLEMENTED · production Supervisor review **BLOCKED** |
@@ -80,6 +80,7 @@ Not started (by MODULE_MAP): `evidence`, `nonconformance`, `capa`, `loading`, `d
 | 05D Equipment / calibration foundation | Technical complete | Unseeded equipment + calibration; no invented intervals; overdue block/warn **EVIDENCE REQUIRED** |
 | 05E Training / competency foundation | Technical complete | Unseeded training records; gate modes metadata only; no invented matrices |
 | 06A–06E Checklist definition | Complete (06E provisional docs) | TEMPLATE / FG-QA-001 approval unresolved |
+| 06N FG-QA-001 business validation | Validation recorded; **not published** | **BLOCKED — BUSINESS APPROVAL REQUIRED**; matrix 42 × PENDING DECISION; APR-001 EVIDENCE REQUIRED |
 | 06F Real form discovery framework | Docs complete (templates + registers) | Inventory **NOT RECEIVED**; no forms APPROVED FOR DIGITALIZATION |
 | 06G Checklist Engine v2 design | ADR-019 + 06H–06M split | Design complete; evidence still required for business values |
 | 06H Repeating / sample foundation | Schema + recording/snapshot/correction/Supervisor/QA render | Technical foundation complete; **no invented sample counts**; not BUSINESS APPROVED / not UAT |
@@ -88,6 +89,7 @@ Not started (by MODULE_MAP): `evidence`, `nonconformance`, `capa`, `loading`, `d
 | 06K Item evaluation | Explicit bounds/choice/option/calculated rules → PASS/FAIL/WARN/NOT_EVALUATED | Technical foundation; **PASS≠RELEASE / FAIL≠HOLD/REJECT**; never auto-creates QAReview; **no seeded limits**; not BUSINESS APPROVED |
 | 06L Control-point metadata | `control_point_class` + `criticality` + frozen `control_point_context` | Technical schema on `main`; default NONE; **no invented CCP/OPRP**; metadata ≠ disposition; **APR-027 / ASM-002 still EVIDENCE REQUIRED**; not BUSINESS APPROVED |
 | 06M Measurement semantics | `decimal_precision` + `rounding_mode` + unit catalog + inclusivity + frozen `measurement_context` | Technical schema on `main`; Decimal-safe; **no product limits seeded**; informational bounds ≠ disposition; not BUSINESS APPROVED |
+| 06N FG-QA-001 business validation | Validation matrix + evidence gap review; **no publish** | **BLOCKED — BUSINESS APPROVAL REQUIRED**; APR-001 unresolved; forms NOT RECEIVED |
 | 07A/07B Scheduling foundation | Complete | Real generation blocked (batch source, applicability, roles) |
 | 08A/08B Recording/submit | Complete | Production recording blocked |
 | 09A/09B Supervisor review + correction | Complete | Production review/correction blocked |
@@ -237,3 +239,11 @@ Unseeded equipment master, calibration records, fitness labels (no block policy)
 **STATUS: PHASE 05E TRAINING FOUNDATION COMPLETE**
 
 Technical training/competency foundation is implemented without seeded company matrices. Recording WARN/BLOCK gates remain OFF by default until APR evidence approves policy.
+
+---
+
+## Phase 06N delivery status
+
+**STATUS: PHASE 06N BLOCKED — BUSINESS APPROVAL REQUIRED**
+
+FG-QA-001 Draft v0.1 was reviewed against real-evidence gates. No company forms, owner issue log entries, or APR-001 written approval were available. The proposal remains DRAFT; no PUBLISHED version was created; no numeric limits were invented. Item validation matrix: 42 × PENDING DECISION.
