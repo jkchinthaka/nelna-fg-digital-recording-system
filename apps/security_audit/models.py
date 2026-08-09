@@ -187,6 +187,38 @@ class SecurityAuditEvent(models.Model):
             "CHECKLIST_SCHEDULE_GENERATION_RUN",
             "Checklist schedule generation run",
         )
+        EXTERNAL_BATCH_EVENT_RECEIVED = (
+            "EXTERNAL_BATCH_EVENT_RECEIVED",
+            "External batch event received",
+        )
+        EXTERNAL_BATCH_EVENT_DUPLICATE = (
+            "EXTERNAL_BATCH_EVENT_DUPLICATE",
+            "External batch event duplicate (idempotent)",
+        )
+        EXTERNAL_BATCH_EVENT_MAPPING_FAILED = (
+            "EXTERNAL_BATCH_EVENT_MAPPING_FAILED",
+            "External batch event mapping failed",
+        )
+        EXTERNAL_BATCH_EVENT_APPLICABILITY_FAILED = (
+            "EXTERNAL_BATCH_EVENT_APPLICABILITY_FAILED",
+            "External batch event applicability failed",
+        )
+        EXTERNAL_BATCH_EVENT_VERSION_FAILED = (
+            "EXTERNAL_BATCH_EVENT_VERSION_FAILED",
+            "External batch event effective-version failed",
+        )
+        EXTERNAL_BATCH_EVENT_PROCESSED = (
+            "EXTERNAL_BATCH_EVENT_PROCESSED",
+            "External batch event processed to checklist task",
+        )
+        EXTERNAL_BATCH_EVENT_REJECTED = (
+            "EXTERNAL_BATCH_EVENT_REJECTED",
+            "External batch event rejected",
+        )
+        EXTERNAL_BATCH_MAPPING_UPSERTED = (
+            "EXTERNAL_BATCH_MAPPING_UPSERTED",
+            "External batch mapping upserted",
+        )
         CHECKLIST_APPLICABILITY_RULE_CREATED = (
             "CHECKLIST_APPLICABILITY_RULE_CREATED",
             "Checklist applicability rule created",

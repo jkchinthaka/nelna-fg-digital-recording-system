@@ -95,6 +95,7 @@ Not started (by MODULE_MAP): `evidence`, `nonconformance`, `capa`, `loading`, `d
 | 07C Checklist applicability engine | Technical complete — version-safe rules + preview | APR-013/014/015 EVIDENCE REQUIRED; no Line/Process masters; production generation still BLOCKED |
 | 07D Effective version policy | Technical complete — PUBLISHED-only selection; overlap/NO_ELIGIBLE blocked; audited effectivity | APR-015 as-of event still DECISION REQUIRED; historical pins never auto-upgrade |
 | 07E Recurring tasks | Technical complete — BATCH/SHIFT_*/SCHEDULED/MANUAL; idempotent occurrence keys; Celery Beat catch-up; OVERDUE/MISSED without auto-NCR | Frequencies EVIDENCE REQUIRED; production generation still BLOCKED |
+| 07F Batch event → task | Adapter boundary complete — mapping / applicability / effective version / idempotent task; no live connector | **APR-011 LIVE CONTRACT REQUIRED**; production generation still BLOCKED |
 | 08A/08B Recording/submit | Complete | Production recording blocked |
 | 09A/09B Supervisor review + correction | Complete | Production review/correction blocked |
 | 10A QA disposition | Complete (manual RELEASE/HOLD/REJECT only) | Production QA blocked; post-QA workflows not started |
@@ -271,3 +272,9 @@ Technical effective-version selection is implemented: optional inclusive `effect
 ## Phase 07E delivery status
 
 **STATUS: PHASE 07E RECURRING TASKS COMPLETE**
+
+## Phase 07F delivery status
+
+**STATUS: PHASE 07F LIVE BATCH CONTRACT REQUIRED**
+
+Adapter/service boundary implemented: external identity (`source_system`, `source_event_id`, `external_batch_id`), configured mappings, applicability ONE_MATCH, Phase 07D effective-version selection, idempotent `ChecklistTask` creation with safe retry and concurrency controls. No live Bileeta/ERP connector, webhooks, or credentials. APR-011 remains **EVIDENCE REQUIRED**.

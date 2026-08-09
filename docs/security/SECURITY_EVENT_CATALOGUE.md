@@ -54,6 +54,14 @@
 | `CHECKLIST_SCHEDULE_CREATED` | Checklist schedule definition created |
 | `CHECKLIST_SCHEDULE_DEACTIVATED` | Checklist schedule deactivated |
 | `CHECKLIST_SCHEDULE_GENERATION_RUN` | Replay-safe schedule generation tick completed |
+| `EXTERNAL_BATCH_EVENT_RECEIVED` | Inbound batch event accepted for processing (Phase 07F adapter) |
+| `EXTERNAL_BATCH_EVENT_DUPLICATE` | Idempotent duplicate of a completed batch event |
+| `EXTERNAL_BATCH_EVENT_MAPPING_FAILED` | External key mapping failed — no task created |
+| `EXTERNAL_BATCH_EVENT_APPLICABILITY_FAILED` | Applicability not ONE_MATCH — no task created |
+| `EXTERNAL_BATCH_EVENT_VERSION_FAILED` | Effective-version resolution failed — no task created |
+| `EXTERNAL_BATCH_EVENT_PROCESSED` | Batch event completed to ChecklistTask |
+| `EXTERNAL_BATCH_EVENT_REJECTED` | Batch event rejected at task create |
+| `EXTERNAL_BATCH_MAPPING_UPSERTED` | External batch mapping created/updated |
 | `CHECKLIST_APPLICABILITY_RULE_CREATED` / `UPDATED` / `DEACTIVATED` | Checklist applicability rule lifecycle (Phase 07C) |
 | `CHECKLIST_APPLICABILITY_PREVIEWED` | Management applicability preview (Phase 07C; no task mutation) |
 | `CHECKLIST_RECORD_STARTED` | Draft checklist record started for a PENDING task |

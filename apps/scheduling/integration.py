@@ -1,26 +1,46 @@
-"""External batch-source integration port — no ERP connector.
+"""External batch-source integration port — no live ERP/Bileeta connector.
 
-Delegates to domain task services. Does not invent ProductionBatch fields,
-source-system schemas, webhooks, or credentials.
+Phase 07B: narrow BatchChecklistTaskRequest → create_batch_checklist_task.
+Phase 07F: ExternalBatchEventInput adapter boundary → mapping → applicability →
+effective version → ChecklistTask.
+
+Does not invent ProductionBatch masters, vendor schemas-as-fact, webhooks,
+credentials, or endpoints. Live production generation remains gated on an
+approved batch contract (APR-011 / APR-012).
 """
 
 from __future__ import annotations
 
 import uuid
 from dataclasses import dataclass
+from datetime import datetime
 
 from apps.accounts.models import User
-from apps.scheduling.models import ChecklistTask
+from apps.scheduling.batch_events import (
+    ExternalBatchEventInput,
+    process_external_batch_event,
+    upsert_external_batch_mapping,
+)
+from apps.scheduling.models import ChecklistTask, ExternalBatchEvent
 from apps.scheduling.services import create_batch_checklist_task
+
+__all__ = [
+    "BatchChecklistTaskRequest",
+    "ExternalBatchEventInput",
+    "accept_batch_checklist_task_request",
+    "accept_external_batch_event",
+    "process_external_batch_event",
+    "upsert_external_batch_mapping",
+]
 
 
 @dataclass(frozen=True)
 class BatchChecklistTaskRequest:
     """
-    Narrow technical input for future external batch events.
+    Narrow technical input for pre-mapped batch checklist creation.
 
-    Only currently supported fields. Product / Shift / Site / Department /
-    ERP order / quantity are intentionally absent until evidenced.
+    Prefer accept_external_batch_event when source keys must be mapped through
+    the Phase 07F adapter boundary.
     """
 
     organization_id: uuid.UUID
@@ -46,4 +66,34 @@ def accept_batch_checklist_task_request(
         checklist_template_id=request.checklist_template_id,
         checklist_version_id=request.checklist_version_id,
         batch_reference=request.batch_reference,
+    )
+
+
+def accept_external_batch_event(
+    *,
+    actor: User | None,
+    source_system: str,
+    source_event_id: str,
+    external_batch_id: str,
+    external_organization_key: str,
+    external_product_key: str = "",
+    external_site_key: str = "",
+    external_shift_key: str = "",
+    external_line_key: str = "",
+    as_of: datetime | None = None,
+) -> ExternalBatchEvent:
+    """Integration-facing entry for Phase 07F adapter-boundary processing."""
+    return process_external_batch_event(
+        actor=actor,
+        event=ExternalBatchEventInput(
+            source_system=source_system,
+            source_event_id=source_event_id,
+            external_batch_id=external_batch_id,
+            external_organization_key=external_organization_key,
+            external_product_key=external_product_key,
+            external_site_key=external_site_key,
+            external_shift_key=external_shift_key,
+            external_line_key=external_line_key,
+            as_of=as_of,
+        ),
     )

@@ -140,6 +140,17 @@ PERMISSION_CATALOGUE: Final[tuple[PermissionCatalogueEntry, ...]] = (
         ),
     ),
     PermissionCatalogueEntry(
+        key="manage_externalbatchmapping",
+        permission="scheduling.manage_externalbatchmapping",
+        bucket=CapabilityBucket.MASTER_DATA,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Configure external batch identity mappings (org/product/site/shift).",
+        notes=(
+            "Adapter boundary only — no live Bileeta/ERP connector. "
+            "APR-011/012 remain EVIDENCE REQUIRED for production ingestion."
+        ),
+    ),
+    PermissionCatalogueEntry(
         key="manage_checklist",
         permission="checklists.manage_checklist",
         bucket=CapabilityBucket.CHECKLIST_PUBLISH,

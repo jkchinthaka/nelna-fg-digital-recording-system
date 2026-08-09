@@ -190,11 +190,11 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Objective | Schedules and task assignment |
 | Inputs | Owner-directed provisional per-batch trigger (06E); later frequency/applicability evidence for production generation |
 | Outputs | **07A:** `scheduling.ChecklistTask` foundation; **07B:** batch-source contract + integration port + `record_checklisttask` permission foundation + production/Phase 08 readiness gates; later recurrence/`schedules` as approved |
-| Approval gate | Operations review of due logic for full Phase 07; 07A–07E are technical/readiness only |
+| Approval gate | Operations review of due logic for full Phase 07; 07A–07F are technical/readiness only |
 | Branch naming | Direct-main quality-first for 07A/07B/07C/07D |
-| Exit criteria | **07A:** org-scoped create/cancel/list/detail with RBAC, audit, uniqueness, no recording/HOLD. **07B:** source contract + manage≠record permission architecture; no ERP invention. **07C:** applicability engine without silent multi-match. **07D:** deterministic PUBLISHED effective-version selection (APR-015 as-of still DECISION REQUIRED). **07E:** recurring schedule definitions + idempotent generation (frequencies still EVIDENCE REQUIRED). Full Phase 07: operators see correct due work from evidenced batch source + published approved definitions |
+| Exit criteria | **07A:** org-scoped create/cancel/list/detail with RBAC, audit, uniqueness, no recording/HOLD. **07B:** source contract + manage≠record permission architecture; no ERP invention. **07C:** applicability engine without silent multi-match. **07D:** deterministic PUBLISHED effective-version selection (APR-015 as-of still DECISION REQUIRED). **07E:** recurring schedule definitions + idempotent generation (frequencies still EVIDENCE REQUIRED). **07F:** batch-event adapter boundary (live APR-011 contract still REQUIRED). Full Phase 07: operators see correct due work from evidenced batch source + published approved definitions |
 | Dependencies | Phase 06 technical + 06E provisional workflow; FG-QA-001 publish + batch source for real generation |
-| Status | **07A–07E** — technical foundations; real production task generation still **BLOCKED** |
+| Status | **07A–07F** — technical foundations; real production task generation still **BLOCKED** (07F live contract required) |
 
 ## Phase 08 — Checklist recording and submission (draft → submit)
 

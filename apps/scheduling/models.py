@@ -622,3 +622,252 @@ class ChecklistSchedule(models.Model):
         if errors:
             raise ValidationError(errors)
 
+
+
+class ExternalBatchEventStatus(models.TextChoices):
+    """Inbound external batch-event processing states (Phase 07F).
+
+    Failed states never leave a partially configured ChecklistTask.
+    Live ERP/Bileeta connectors remain blocked until an approved contract exists.
+    """
+
+    RECEIVED = "RECEIVED", "Received"
+    MAPPING_FAILED = "MAPPING_FAILED", "Mapping failed"
+    APPLICABILITY_FAILED = "APPLICABILITY_FAILED", "Applicability failed"
+    VERSION_FAILED = "VERSION_FAILED", "Effective version failed"
+    COMPLETED = "COMPLETED", "Completed"
+    REJECTED = "REJECTED", "Rejected"
+
+
+class ExternalBatchMappingKind(models.TextChoices):
+    """Configured external-key kinds (adapter boundary — not a live sync)."""
+
+    ORGANIZATION = "ORGANIZATION", "Organization"
+    PRODUCT = "PRODUCT", "FG Product"
+    SITE = "SITE", "Site"
+    SHIFT = "SHIFT", "Shift"
+
+
+class ExternalBatchMapping(models.Model):
+    """
+    Administrator-configured external key → internal entity mapping (Phase 07F).
+
+    Not a live ERP/Bileeta sync. Unknown keys yield explicit MAPPING_FAILED.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    source_system = models.CharField(
+        max_length=64,
+        help_text="Stable source-system label (configured). Not a live connector credential.",
+    )
+    mapping_kind = models.CharField(max_length=16, choices=ExternalBatchMappingKind.choices)
+    external_key = models.CharField(max_length=128)
+    organization = models.ForeignKey(
+        Organization,
+        on_delete=models.PROTECT,
+        related_name="external_batch_mappings",
+        help_text="Target organization (ORGANIZATION kind) or scope for PRODUCT/SITE/SHIFT.",
+    )
+    product = models.ForeignKey(
+        FGProduct,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="external_batch_mappings",
+    )
+    site = models.ForeignKey(
+        Site,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="external_batch_mappings",
+    )
+    shift = models.ForeignKey(
+        Shift,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="external_batch_mappings",
+    )
+    is_active = models.BooleanField(default=True)
+    notes = models.TextField(blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ("source_system", "mapping_kind", "external_key")
+        verbose_name = "External batch mapping"
+        verbose_name_plural = "External batch mappings"
+        permissions = [
+            ("manage_externalbatchmapping", "Can manage external batch mappings"),
+        ]
+        indexes = [
+            models.Index(
+                fields=["source_system", "mapping_kind", "external_key"],
+                name="sched_extmap_src_kind_key_idx",
+            ),
+            models.Index(
+                fields=["organization", "is_active"],
+                name="sched_extmap_org_act_idx",
+            ),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["source_system", "mapping_kind", "external_key"],
+                condition=Q(mapping_kind="ORGANIZATION"),
+                name="sched_extmap_org_src_key_uniq",
+            ),
+            models.UniqueConstraint(
+                fields=["source_system", "mapping_kind", "organization", "external_key"],
+                condition=~Q(mapping_kind="ORGANIZATION"),
+                name="sched_extmap_scoped_src_key_uniq",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.source_system}/{self.mapping_kind}:{self.external_key}"
+
+    def clean(self) -> None:
+        super().clean()
+        errors: dict[str, str] = {}
+        self.source_system = (self.source_system or "").strip()
+        self.external_key = (self.external_key or "").strip()
+        if not self.source_system:
+            errors["source_system"] = "source_system cannot be blank."
+        if not self.external_key:
+            errors["external_key"] = "external_key cannot be blank."
+        if self.mapping_kind == ExternalBatchMappingKind.ORGANIZATION:
+            if self.product_id or self.site_id or self.shift_id:
+                errors["mapping_kind"] = (
+                    "ORGANIZATION mappings must not set product/site/shift targets."
+                )
+        elif self.mapping_kind == ExternalBatchMappingKind.PRODUCT:
+            if self.product_id is None:
+                errors["product"] = "PRODUCT mapping requires product."
+            elif self.product.organization_id != self.organization_id:
+                errors["product"] = "Product must belong to mapping organization."
+        elif self.mapping_kind == ExternalBatchMappingKind.SITE:
+            if self.site_id is None:
+                errors["site"] = "SITE mapping requires site."
+            elif self.site.organization_id != self.organization_id:
+                errors["site"] = "Site must belong to mapping organization."
+        elif self.mapping_kind == ExternalBatchMappingKind.SHIFT:
+            if self.shift_id is None:
+                errors["shift"] = "SHIFT mapping requires shift."
+            elif self.shift.organization_id != self.organization_id:
+                errors["shift"] = "Shift must belong to mapping organization."
+        if errors:
+            raise ValidationError(errors)
+
+
+class ExternalBatchEvent(models.Model):
+    """
+    Idempotent inbound production-batch event receipt (Phase 07F adapter boundary).
+
+    Identity: (source_system, source_event_id). Creates ChecklistTask only after
+    mapping + applicability ONE_MATCH + effective-version ONE_ELIGIBLE.
+    Does not implement live ERP/Bileeta connectors, webhooks, or credentials.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    source_system = models.CharField(max_length=64)
+    source_event_id = models.CharField(max_length=128)
+    external_batch_id = models.CharField(max_length=BATCH_REFERENCE_MAX_LENGTH)
+    external_organization_key = models.CharField(max_length=128)
+    external_product_key = models.CharField(max_length=128, blank=True, default="")
+    external_site_key = models.CharField(max_length=128, blank=True, default="")
+    external_shift_key = models.CharField(max_length=128, blank=True, default="")
+    external_line_key = models.CharField(
+        max_length=128,
+        blank=True,
+        default="",
+        help_text=(
+            "Opaque line reference only — Production Line master is EVIDENCE REQUIRED / "
+            "not modeled. Does not participate in applicability dimensions."
+        ),
+    )
+    status = models.CharField(
+        max_length=24,
+        choices=ExternalBatchEventStatus.choices,
+        default=ExternalBatchEventStatus.RECEIVED,
+    )
+    failure_code = models.CharField(max_length=64, blank=True, default="")
+    failure_message = models.CharField(max_length=512, blank=True, default="")
+    attempt_count = models.PositiveIntegerField(default=0)
+    processed_at = models.DateTimeField(null=True, blank=True)
+    organization = models.ForeignKey(
+        Organization,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="external_batch_events",
+    )
+    product = models.ForeignKey(
+        FGProduct,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="external_batch_events",
+    )
+    site = models.ForeignKey(
+        Site,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="external_batch_events",
+    )
+    shift = models.ForeignKey(
+        Shift,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="external_batch_events",
+    )
+    checklist_task = models.ForeignKey(
+        ChecklistTask,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="external_batch_events",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ("-created_at",)
+        verbose_name = "External batch event"
+        verbose_name_plural = "External batch events"
+        indexes = [
+            models.Index(fields=["status", "created_at"], name="sched_extbatchevt_status_idx"),
+            models.Index(fields=["organization", "status"], name="sched_extbatchevt_org_st_idx"),
+            models.Index(fields=["external_batch_id"], name="sched_extbatchevt_batch_idx"),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["source_system", "source_event_id"],
+                name="sched_extbatchevt_src_event_uniq",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.source_system}:{self.source_event_id} ({self.status})"
+
+    def clean(self) -> None:
+        super().clean()
+        errors: dict[str, str] = {}
+        self.source_system = (self.source_system or "").strip()
+        self.source_event_id = (self.source_event_id or "").strip()
+        self.external_batch_id = (self.external_batch_id or "").strip()
+        self.external_organization_key = (self.external_organization_key or "").strip()
+        if not self.source_system:
+            errors["source_system"] = "source_system cannot be blank."
+        if not self.source_event_id:
+            errors["source_event_id"] = "source_event_id cannot be blank."
+        if not self.external_batch_id:
+            errors["external_batch_id"] = "external_batch_id cannot be blank."
+        if not self.external_organization_key:
+            errors["external_organization_key"] = (
+                "external_organization_key cannot be blank."
+            )
+        if errors:
+            raise ValidationError(errors)

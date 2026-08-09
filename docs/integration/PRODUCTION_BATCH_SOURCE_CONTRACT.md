@@ -51,14 +51,32 @@ Domain service: `create_batch_checklist_task`
 | Audit | Accept/reject/create/idempotent outcomes | Partial (task create/cancel events exist) |
 | Failure handling | Operational owner for poison messages / mapping failures | EVIDENCE REQUIRED |
 
-## Explicit non-implementation (Phase 07B)
+## Phase 07F adapter boundary (technical — live contract still required)
+
+Internal service boundary (no live connector):
+
+| Field | Required | Notes |
+| --- | --- | --- |
+| `source_system` | Yes | Opaque configured label |
+| `source_event_id` | Yes | Idempotency with `source_system` |
+| `external_batch_id` | Yes | Becomes `batch_reference` |
+| `external_organization_key` | Yes | Mapped via `ExternalBatchMapping` |
+| `external_product_key` / `external_site_key` / `external_shift_key` | Optional | Mapped when supplied |
+| `external_line_key` | Optional | Opaque only — Line master EVIDENCE REQUIRED |
+
+Code: `apps.scheduling.batch_events` / `accept_external_batch_event`  
+See [PHASE_07F_BATCH_EVENT_TASK_GENERATION.md](../business/PHASE_07F_BATCH_EVENT_TASK_GENERATION.md).
+
+**STATUS: PHASE 07F LIVE BATCH CONTRACT REQUIRED** — APR-011 remains EVIDENCE REQUIRED. No webhook, polling, or Bileeta credentials.
+
+## Explicit non-implementation (Phase 07B/07F)
 
 - No `apps.integrations` ERP adapter
 - No webhook endpoint
 - No polling worker
-- No Celery ingestion
+- No Celery ingestion of production batch events
 - No ProductionBatch model
-- No `source_system` / `source_event_id` columns (deferred until evidenced)
+- No invented Bileeta/ERP endpoints or credentials
 
 ## Observability expectations (future)
 
