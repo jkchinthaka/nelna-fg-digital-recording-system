@@ -230,7 +230,7 @@ def test_admin_blocks_hard_delete() -> None:
     from django.contrib.admin.sites import site as admin_site
     from django.http import QueryDict
 
-    from apps.organizations.admin import OrganizationAdmin, SiteAdmin, ShiftAdmin
+    from apps.organizations.admin import OrganizationAdmin, ShiftAdmin, SiteAdmin
 
     request = type(
         "R",

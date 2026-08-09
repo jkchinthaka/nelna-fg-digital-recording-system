@@ -200,3 +200,11 @@ Tracked for request/approval workflow: [governance/APPROVAL_REGISTER.md](governa
 5. Do **not** start Phase 11+ operational features until owners prioritize and evidence gates allow.
 
 **Production readiness is not claimed by this document.**
+
+---
+
+## Phase 04C delivery status
+
+**STATUS: PHASE 04C REAL COMPANY VALUES PENDING**
+
+Technical foundation (permissions, audited lifecycle, historical hard-delete refusal, controlled CSV import, admin search/filter) is implemented. ASM-004 / ASM-005 / ASM-006 and APR-002 / APR-003 / APR-004 remain unresolved — no official Nelna Organization/Site/Department/Shift catalogue was loaded.

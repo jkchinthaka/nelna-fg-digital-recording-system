@@ -22,8 +22,8 @@ from apps.organizations.models import Department, Organization, Shift, Site
 from apps.organizations.services import (
     MANAGE_DEPARTMENT,
     MANAGE_ORGANIZATION,
-    MANAGE_SITE,
     MANAGE_SHIFT,
+    MANAGE_SITE,
     create_department,
     create_organization,
     create_shift,
@@ -531,17 +531,20 @@ def import_organization_hierarchy(
     }
     try:
         with transaction.atomic():
+            # Codes are stored uppercase; keys use normalize_code for case-safe lookup.
             org_by_code: dict[str, Organization] = {
-                o.code: o for o in Organization.objects.all()
+                normalize_code(o.code): o for o in Organization.objects.all()
             }
             site_by_key: dict[str, Site] = {
-                f"{s.organization.code}:{s.code}": s
+                f"{normalize_code(s.organization.code)}:{normalize_code(s.code)}": s
                 for s in Site.objects.select_related("organization")
             }
             dept_by_key: dict[str, Department] = {}
             for d in Department.objects.select_related("organization", "site"):
-                site_part = d.site.code if d.site_id else ""
-                dept_by_key[f"{d.organization.code}:{site_part}:{d.code}"] = d
+                site_part = normalize_code(d.site.code) if d.site_id else ""
+                dept_by_key[
+                    f"{normalize_code(d.organization.code)}:{site_part}:{normalize_code(d.code)}"
+                ] = d
 
             for row in rows:
                 if row.entity_type == ENTITY_ORGANIZATION:
@@ -552,10 +555,10 @@ def import_organization_hierarchy(
                         name=row.name,
                         is_active=row.is_active,
                     )
-                    org_by_code[org.code] = org
+                    org_by_code[normalize_code(org.code)] = org
                     created["organizations"].append(str(org.id))
                 elif row.entity_type == ENTITY_SITE:
-                    org = org_by_code[row.organization_code]
+                    org = org_by_code[normalize_code(row.organization_code)]
                     require_permission(
                         actor, MANAGE_SITE, scope=Scope(organization_id=org.id)
                     )
@@ -566,12 +569,16 @@ def import_organization_hierarchy(
                         name=row.name,
                         is_active=row.is_active,
                     )
-                    site_by_key[f"{org.code}:{site.code}"] = site
+                    site_by_key[
+                        f"{normalize_code(org.code)}:{normalize_code(site.code)}"
+                    ] = site
                     created["sites"].append(str(site.id))
                 elif row.entity_type == ENTITY_DEPARTMENT:
-                    org = org_by_code[row.organization_code]
+                    org = org_by_code[normalize_code(row.organization_code)]
                     site = (
-                        site_by_key.get(f"{org.code}:{row.site_code}")
+                        site_by_key.get(
+                            f"{normalize_code(org.code)}:{normalize_code(row.site_code)}"
+                        )
                         if row.site_code
                         else None
                     )
@@ -591,20 +598,26 @@ def import_organization_hierarchy(
                         site=site,
                         is_active=row.is_active,
                     )
-                    site_part = site.code if site is not None else ""
-                    dept_by_key[f"{org.code}:{site_part}:{dept.code}"] = dept
+                    site_part = normalize_code(site.code) if site is not None else ""
+                    dept_by_key[
+                        f"{normalize_code(org.code)}:{site_part}:{normalize_code(dept.code)}"
+                    ] = dept
                     created["departments"].append(str(dept.id))
                 else:
-                    org = org_by_code[row.organization_code]
+                    org = org_by_code[normalize_code(row.organization_code)]
                     site = (
-                        site_by_key.get(f"{org.code}:{row.site_code}")
+                        site_by_key.get(
+                            f"{normalize_code(org.code)}:{normalize_code(row.site_code)}"
+                        )
                         if row.site_code
                         else None
                     )
                     dept = None
                     if row.department_code and row.site_code:
                         dept = dept_by_key.get(
-                            f"{org.code}:{row.site_code}:{row.department_code}"
+                            f"{normalize_code(org.code)}:"
+                            f"{normalize_code(row.site_code)}:"
+                            f"{normalize_code(row.department_code)}"
                         )
                     assert row.start_time is not None and row.end_time is not None
                     assert row.effective_from is not None

@@ -1,7 +1,7 @@
 # Security Event Catalogue
 
-**Document status:** Phase 03 foundation + Phase 04A Shift + Phase 05A FG Product + Phase 06A Checklist events
-**Last updated:** 2026-08-07
+**Document status:** Phase 03 foundation + Phase 03C role governance + Phase 04A/04B/04C org/shift + Phase 05A FG Product + Phase 06 checklist events
+**Last updated:** 2026-08-10
 
 ## Event types
 
@@ -52,6 +52,8 @@
 ## Safe metadata
 
 Allowed examples: `reason` codes (`invalid_credentials`, `account_locked`, `inactive`), role/assignment UUIDs, organization/site/department UUIDs, boolean flags.
+
+Organization / Site / Department events may include: entity UUID, normalized code, organization UUID, optional site UUID, active status, changed field names. Hierarchy import events may include dry_run flag, row_count, created_counts/ids, error_count, and truncated error summaries — never invent company catalogue values in metadata.
 
 Shift events may include: Shift UUID, normalized Shift code, Organization UUID, optional Site UUID, optional Department UUID, active status, overnight derived flag, changed field names.
 
