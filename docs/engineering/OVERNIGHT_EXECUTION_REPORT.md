@@ -24,7 +24,8 @@
 | 4 / DB-03 | — | — | SKIPPED_DEPENDENCY | — | — | — | — | — | Requires explicit `MONGODB POC PASSED — DB-03 MAY PROCEED` |
 | 5 / 06J | 953f09f | 0fedc90 | GENERIC_FOUNDATION_COMPLETE | 06J unit+integration pass; clone regression pass | partial host (DB contention from concurrent WIP) | PG/Redis healthy; mongo RS available | `feat: add conditional checklist rules` | Yes | No seeded predicates; evidence fail-closed stub; Category D preserved |
 | 6 / DB-03 | — | — | SKIPPED_DEPENDENCY | — | — | — | — | — | Cutover blocked by DB-02 results |
-| 7 / 06K | 4d3f746 | bf8884e (+ follow-up captured snapshot hardening) | COMPLETE | 21/21 Phase 06K | ≥80% on clean tree (prior); concurrent 06L WIP contended host DB during re-verify | PG/Redis healthy | `feat: add deterministic checklist item evaluation` | Yes | PASS≠RELEASE / FAIL≠HOLD/REJECT; never auto QAReview; Category D preserved |
+| 7 / 06K | 4d3f746 | bf8884e (+ `9433f79`) | COMPLETE | 21/21 Phase 06K | ≥80% on clean tree (prior) | PG/Redis healthy | `feat: add deterministic checklist item evaluation` | Yes | PASS≠RELEASE / FAIL≠HOLD/REJECT; never auto QAReview |
+| 8 / 06L | 9433f79 | e30ed2c (+ `ba96f3d` docs/snapshot) | COMPLETE | 10/10 Phase 06L | Phase suite green on isolated DB | PG/Redis healthy | `feat: add checklist control point metadata` | Yes | Schema only; default NONE; APR-027/ASM-002 EVIDENCE REQUIRED; metadata ≠ disposition |
 
 ## Preserved uncommitted (do not stage into Mongo/06I commits)
 
