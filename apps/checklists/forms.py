@@ -170,12 +170,59 @@ class ChecklistItemForm(forms.Form):
             "Temperature uses NUMBER with an optional unit (for example °C)."
         ),
     )
-    unit = forms.CharField(
+    unit = forms.ChoiceField(
         required=False,
-        max_length=32,
         label="Unit (NUMBER only)",
-        widget=forms.TextInput(attrs={"class": "form-input", "autocomplete": "off"}),
-        help_text="Optional. Leave blank unless this NUMBER item records a measured unit.",
+        choices=[
+            ("", "(no unit)"),
+            ("C", "C — °C"),
+            ("F", "F — °F"),
+            ("K", "K — K"),
+            ("g", "g — g"),
+            ("kg", "kg — kg"),
+            ("mg", "mg — mg"),
+            ("L", "L — L"),
+            ("mL", "mL — mL"),
+            ("mm", "mm — mm"),
+            ("cm", "cm — cm"),
+            ("m", "m — m"),
+            ("pct", "pct — %"),
+            ("ppm", "ppm — ppm"),
+            ("count", "count — count"),
+            ("s", "s — s"),
+            ("min", "min — min"),
+            ("h", "h — h"),
+        ],
+        widget=forms.Select(attrs={"class": "form-input"}),
+        help_text=(
+            "Technical catalog only (blank allowed). Free-form units rejected. "
+            "Which units Nelna uses remains evidence-gated — do not invent mappings."
+        ),
+    )
+    decimal_precision = forms.IntegerField(
+        required=False,
+        min_value=0,
+        max_value=12,
+        label="Decimal precision (NUMBER only, optional)",
+        widget=forms.NumberInput(attrs={"class": "form-input", "min": "0", "max": "12"}),
+        help_text=(
+            "Optional scale 0–12. Blank = no precision policy. Rounding applies only when "
+            "both precision and rounding mode are set."
+        ),
+    )
+    rounding_mode = forms.ChoiceField(
+        required=False,
+        label="Rounding mode (NUMBER only, optional)",
+        choices=[
+            ("", "(none — store exact parsed Decimal)"),
+            ("HALF_UP", "HALF_UP"),
+            ("HALF_EVEN", "HALF_EVEN"),
+            ("FLOOR", "FLOOR"),
+            ("CEILING", "CEILING"),
+            ("DOWN", "DOWN"),
+        ],
+        widget=forms.Select(attrs={"class": "form-input"}),
+        help_text="Optional closed enum. Empty = no rounding applied.",
     )
     minimum_value = forms.DecimalField(
         required=False,
@@ -183,7 +230,7 @@ class ChecklistItemForm(forms.Form):
         decimal_places=4,
         label="Minimum (NUMBER only, optional)",
         widget=forms.NumberInput(attrs={"class": "form-input", "step": "any"}),
-        help_text="Optional. Do not invent Product limits.",
+        help_text="Optional informational bound. Do not invent Product limits.",
     )
     maximum_value = forms.DecimalField(
         required=False,
@@ -191,7 +238,19 @@ class ChecklistItemForm(forms.Form):
         decimal_places=4,
         label="Maximum (NUMBER only, optional)",
         widget=forms.NumberInput(attrs={"class": "form-input", "step": "any"}),
-        help_text="Optional. Do not invent Product limits.",
+        help_text="Optional informational bound. Do not invent Product limits.",
+    )
+    min_inclusive = forms.BooleanField(
+        required=False,
+        initial=True,
+        label="Minimum inclusive",
+        help_text="When minimum is set: inclusive (checked) or exclusive (unchecked).",
+    )
+    max_inclusive = forms.BooleanField(
+        required=False,
+        initial=True,
+        label="Maximum inclusive",
+        help_text="When maximum is set: inclusive (checked) or exclusive (unchecked).",
     )
     control_point_class = forms.ChoiceField(
         label="Control-point class",
@@ -222,8 +281,12 @@ class ChecklistItemForm(forms.Form):
             self.fields["is_required"].initial = instance.is_required
             self.fields["response_type"].initial = instance.response_type
             self.fields["unit"].initial = instance.unit
+            self.fields["decimal_precision"].initial = instance.decimal_precision
+            self.fields["rounding_mode"].initial = instance.rounding_mode
             self.fields["minimum_value"].initial = instance.minimum_value
             self.fields["maximum_value"].initial = instance.maximum_value
+            self.fields["min_inclusive"].initial = instance.min_inclusive
+            self.fields["max_inclusive"].initial = instance.max_inclusive
             self.fields["control_point_class"].initial = instance.control_point_class
             self.fields["criticality"].initial = instance.criticality
 

@@ -148,8 +148,27 @@ def apply_calculations_to_draft(
             existing.choice_value = ""
             existing.text_value = ""
             existing.selected_option = None
-            existing.number_value = result
+            from apps.checklists.measurement import (
+                apply_configured_rounding,
+                build_measurement_context,
+            )
+
+            precision = getattr(item, "decimal_precision", None)
+            mode = getattr(item, "rounding_mode", "") or ""
+            quantized, rounded = apply_configured_rounding(result, precision, mode)
+            existing.number_value = quantized
             existing.calculation_context = context
+            existing.measurement_context = build_measurement_context(
+                value=quantized,
+                unit=getattr(item, "unit", "") or "",
+                decimal_precision=precision,
+                rounding_mode=mode,
+                rounding_applied=rounded,
+                minimum_value=None,
+                maximum_value=None,
+                min_inclusive=True,
+                max_inclusive=True,
+            )
             existing.full_clean()
             existing.save()
             working[key] = existing

@@ -135,6 +135,22 @@ class ChecklistItemCriticality(models.TextChoices):
     CRITICAL = "CRITICAL", "Critical"
 
 
+class ChecklistRoundingMode(models.TextChoices):
+    """
+    Explicit rounding modes for measurement semantics (Phase 06M / ADR-019 §4).
+
+    Blank on ChecklistItem means no rounding is applied at capture time.
+    Rounding applies only when BOTH decimal_precision and rounding_mode are set.
+    Not a business policy default — owners must configure when needed.
+    """
+
+    HALF_UP = "HALF_UP", "Half up"
+    HALF_EVEN = "HALF_EVEN", "Half even (banker's)"
+    FLOOR = "FLOOR", "Floor"
+    CEILING = "CEILING", "Ceiling"
+    DOWN = "DOWN", "Toward zero"
+
+
 class ChecklistTemplate(models.Model):
     """
     Stable logical identity of a checklist across versions.
@@ -337,7 +353,7 @@ class ChecklistItem(models.Model):
         max_length=32,
         blank=True,
         default="",
-        help_text="Optional unit for NUMBER items (e.g. °C). Not a limit.",
+        help_text="Optional technical unit catalog code for NUMBER items. Not a limit.",
     )
     minimum_value = models.DecimalField(
         max_digits=14,
@@ -352,6 +368,32 @@ class ChecklistItem(models.Model):
         null=True,
         blank=True,
         help_text="Optional NUMBER upper bound. Unset is allowed.",
+    )
+    decimal_precision = models.PositiveSmallIntegerField(
+        null=True,
+        blank=True,
+        help_text=(
+            "Optional Decimal scale for NUMBER items. Null = no forced quantize "
+            "(do not invent a business default)."
+        ),
+    )
+    rounding_mode = models.CharField(
+        max_length=16,
+        choices=ChecklistRoundingMode.choices,
+        blank=True,
+        default="",
+        help_text=(
+            "Optional closed rounding mode (HALF_UP/HALF_EVEN/FLOOR/CEILING/DOWN). "
+            "Empty = no rounding. Applied only together with decimal_precision."
+        ),
+    )
+    min_inclusive = models.BooleanField(
+        default=True,
+        help_text="Whether minimum_value is inclusive (informational bounds).",
+    )
+    max_inclusive = models.BooleanField(
+        default=True,
+        help_text="Whether maximum_value is inclusive (informational bounds).",
     )
     repeat_min = models.PositiveIntegerField(
         null=True,
@@ -488,7 +530,13 @@ class ChecklistItem(models.Model):
                 raise ValidationError(
                     {"response_type": "REPEATING_GROUP items do not take a response type."}
                 )
-            if self.unit or self.minimum_value is not None or self.maximum_value is not None:
+            if (
+                self.unit
+                or self.minimum_value is not None
+                or self.maximum_value is not None
+                or self.decimal_precision is not None
+                or (self.rounding_mode or "").strip()
+            ):
                 raise ValidationError(
                     {"response_type": "REPEATING_GROUP items cannot have numeric limits or unit."}
                 )
@@ -554,6 +602,17 @@ class ChecklistItem(models.Model):
                         )
                     }
                 )
+            from apps.checklists.measurement import (
+                assert_known_unit,
+                assert_precision_rounding_pair,
+            )
+
+            if self.unit:
+                self.unit = assert_known_unit(self.unit)
+            self.decimal_precision, self.rounding_mode = assert_precision_rounding_pair(
+                decimal_precision=self.decimal_precision,
+                rounding_mode=self.rounding_mode,
+            )
             return
 
         # SIMPLE leaf
@@ -565,11 +624,29 @@ class ChecklistItem(models.Model):
                     )
                 }
             )
+        from apps.checklists.measurement import (
+            assert_known_unit,
+            assert_precision_rounding_pair,
+        )
+
+        if (self.response_type or "").strip() == ChecklistResponseType.NUMBER:
+            if self.unit:
+                self.unit = assert_known_unit(self.unit)
+            self.decimal_precision, self.rounding_mode = assert_precision_rounding_pair(
+                decimal_precision=self.decimal_precision,
+                rounding_mode=self.rounding_mode,
+            )
+        else:
+            self.decimal_precision = None
+            self.rounding_mode = ""
+
         errors = validate_item_response_definition(
             response_type=self.response_type,
             unit=self.unit,
             minimum_value=self.minimum_value,
             maximum_value=self.maximum_value,
+            decimal_precision=self.decimal_precision,
+            rounding_mode=self.rounding_mode,
             require_response_type=False,
         )
         if errors:
@@ -913,6 +990,8 @@ def validate_item_response_definition(
     unit: str = "",
     minimum_value: Decimal | None = None,
     maximum_value: Decimal | None = None,
+    decimal_precision: int | None = None,
+    rounding_mode: str = "",
     require_response_type: bool = False,
 ) -> dict[str, str]:
     """
@@ -921,14 +1000,24 @@ def validate_item_response_definition(
     Returns a field→message error map (empty when valid).
     Does not invent Product limits or release rules.
     """
+    from apps.checklists.measurement import assert_known_rounding_mode, assert_known_unit
+
     errors: dict[str, str] = {}
     normalized_type = (response_type or "").strip()
     unit_text = (unit or "").strip()
+    mode_text = (rounding_mode or "").strip()
+    measurement_set = (
+        minimum_value is not None
+        or maximum_value is not None
+        or unit_text
+        or decimal_precision is not None
+        or mode_text
+    )
 
     if not normalized_type:
         if require_response_type:
             errors["response_type"] = "Response type is required."
-        elif minimum_value is not None or maximum_value is not None or unit_text:
+        elif measurement_set:
             errors["response_type"] = (
                 "Response type is required when unit or numeric limits are set."
             )
@@ -943,6 +1032,12 @@ def validate_item_response_definition(
             errors["minimum_value"] = "Numeric limits are only allowed for NUMBER responses."
         if unit_text:
             errors["unit"] = "Unit is only applicable for NUMBER responses."
+        if decimal_precision is not None:
+            errors["decimal_precision"] = (
+                "decimal_precision is only applicable for NUMBER responses."
+            )
+        if mode_text:
+            errors["rounding_mode"] = "rounding_mode is only applicable for NUMBER responses."
     else:
         if (
             minimum_value is not None
@@ -950,5 +1045,25 @@ def validate_item_response_definition(
             and minimum_value > maximum_value
         ):
             errors["minimum_value"] = "Minimum value cannot be greater than maximum value."
+        if unit_text:
+            try:
+                assert_known_unit(unit_text)
+            except ValidationError as exc:
+                msg = getattr(exc, "message_dict", None) or {}
+                errors["unit"] = msg.get("unit", str(exc))
+        if mode_text:
+            try:
+                assert_known_rounding_mode(mode_text)
+            except ValidationError as exc:
+                msg = getattr(exc, "message_dict", None) or {}
+                errors["rounding_mode"] = msg.get("rounding_mode", str(exc))
+        if decimal_precision is not None:
+            from apps.checklists.measurement import normalize_decimal_precision
+
+            try:
+                normalize_decimal_precision(decimal_precision)
+            except ValidationError as exc:
+                msg = getattr(exc, "message_dict", None) or {}
+                errors["decimal_precision"] = msg.get("decimal_precision", str(exc))
 
     return errors

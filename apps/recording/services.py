@@ -231,6 +231,7 @@ def _clear_value_fields(response: ChecklistResponse) -> None:
     response.number_value = None
     response.text_value = ""
     response.selected_option = None
+    response.measurement_context = None
 
 
 def _apply_typed_value(
@@ -257,12 +258,38 @@ def _apply_typed_value(
         return
 
     if response_type == ChecklistResponseType.NUMBER:
+        from apps.checklists.measurement import (
+            apply_configured_rounding,
+            build_measurement_context,
+            parse_decimal_strict,
+        )
+
         try:
-            number = Decimal(str(raw).strip())
+            # Always via str/Decimal path — never float authority.
+            if isinstance(raw, float):
+                number = parse_decimal_strict(str(raw))
+            else:
+                number = parse_decimal_strict(raw if isinstance(raw, Decimal) else str(raw).strip())
+        except ValidationError as exc:
+            raise ValidationError({str(item.id): "Enter a valid number."}) from exc
         except (InvalidOperation, AttributeError, TypeError) as exc:
             raise ValidationError({str(item.id): "Enter a valid number."}) from exc
-        # Out-of-range values are intentionally accepted.
+        precision = getattr(item, "decimal_precision", None)
+        mode = getattr(item, "rounding_mode", "") or ""
+        number, rounded = apply_configured_rounding(number, precision, mode)
+        # Informational min/max intentionally do NOT block save/submit.
         response.number_value = number
+        response.measurement_context = build_measurement_context(
+            value=number,
+            unit=getattr(item, "unit", "") or "",
+            decimal_precision=precision,
+            rounding_mode=mode,
+            rounding_applied=rounded,
+            minimum_value=getattr(item, "minimum_value", None),
+            maximum_value=getattr(item, "maximum_value", None),
+            min_inclusive=bool(getattr(item, "min_inclusive", True)),
+            max_inclusive=bool(getattr(item, "max_inclusive", True)),
+        )
         return
 
     if response_type == ChecklistResponseType.TEXT:
@@ -654,9 +681,7 @@ def save_checklist_draft_responses(
         assert_no_answers_for_hidden_items(flags=flags, pending_keys=non_blank_pending)
         existing = clear_hidden_draft_responses(flags=flags, existing=existing)
         apply_condition_context_to_drafts(flags=flags, existing=existing)
-        apply_evaluations_to_drafts(
-            items=item_rows, responses=existing, condition_flags=flags
-        )
+        apply_evaluations_to_drafts(items=item_rows, responses=existing, condition_flags=flags)
         changed += sum(1 for item in item_rows if item.item_kind == ChecklistItemKind.CALCULATED)
 
         record.save(update_fields=["updated_at"])
@@ -673,6 +698,35 @@ def save_checklist_draft_responses(
         "checklist_task__checklist_version",
         "started_by",
     ).get(pk=record.id)
+
+
+def _measurement_context_for_response(
+    response: ChecklistResponse, item: ChecklistItem
+) -> dict | None:
+    """Prefer draft measurement_context; rebuild from value+definition if needed."""
+    ctx = getattr(response, "measurement_context", None)
+    if isinstance(ctx, dict) and ctx.get("captured_value") is not None:
+        return ctx
+    if response.number_value is None:
+        return None
+    if (
+        item.response_type != ChecklistResponseType.NUMBER
+        and item.item_kind != ChecklistItemKind.CALCULATED
+    ):
+        return None
+    from apps.checklists.measurement import build_measurement_context
+
+    return build_measurement_context(
+        value=response.number_value,
+        unit=getattr(item, "unit", "") or "",
+        decimal_precision=getattr(item, "decimal_precision", None),
+        rounding_mode=getattr(item, "rounding_mode", "") or "",
+        rounding_applied=False,
+        minimum_value=getattr(item, "minimum_value", None),
+        maximum_value=getattr(item, "maximum_value", None),
+        min_inclusive=bool(getattr(item, "min_inclusive", True)),
+        max_inclusive=bool(getattr(item, "max_inclusive", True)),
+    )
 
 
 def _control_point_context_for_item(item: ChecklistItem) -> dict:
@@ -811,6 +865,7 @@ def submit_checklist_record(
                         evaluation_result=response.evaluation_result,
                         evaluation_context=response.evaluation_context,
                         control_point_context=_control_point_context_for_item(item),
+                        measurement_context=_measurement_context_for_response(response, item),
                     )
                 elif item.item_kind == ChecklistItemKind.CALCULATED:
                     if response.number_value is None:
@@ -828,6 +883,7 @@ def submit_checklist_record(
                         evaluation_result=response.evaluation_result,
                         evaluation_context=response.evaluation_context,
                         control_point_context=_control_point_context_for_item(item),
+                        measurement_context=_measurement_context_for_response(response, item),
                     )
                 else:
                     continue

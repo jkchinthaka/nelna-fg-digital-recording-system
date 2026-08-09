@@ -50,6 +50,10 @@ class ChecklistItemInline(admin.TabularInline):  # type: ignore[type-arg]
         "unit",
         "minimum_value",
         "maximum_value",
+        "decimal_precision",
+        "rounding_mode",
+        "min_inclusive",
+        "max_inclusive",
         "control_point_class",
         "criticality",
     )

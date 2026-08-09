@@ -365,6 +365,27 @@ def assert_record_editable_for_actor(record: ChecklistRecord) -> ChecklistCorrec
     return correction
 
 
+def _measurement_context_for_response(response, item: ChecklistItem):
+    ctx = getattr(response, "measurement_context", None)
+    if isinstance(ctx, dict):
+        return ctx
+    if getattr(response, "number_value", None) is None:
+        return None
+    from apps.checklists.measurement import build_measurement_context
+
+    return build_measurement_context(
+        value=response.number_value,
+        unit=getattr(item, "unit", "") or "",
+        decimal_precision=getattr(item, "decimal_precision", None),
+        rounding_mode=getattr(item, "rounding_mode", "") or "",
+        rounding_applied=False,
+        minimum_value=getattr(item, "minimum_value", None),
+        maximum_value=getattr(item, "maximum_value", None),
+        min_inclusive=bool(getattr(item, "min_inclusive", True)),
+        max_inclusive=bool(getattr(item, "max_inclusive", True)),
+    )
+
+
 def _control_point_context_for_item(item: ChecklistItem) -> dict:
     """Frozen definition metadata snapshot (Phase 06L). Not a disposition."""
     from apps.checklists.control_point import build_control_point_snapshot
@@ -481,9 +502,7 @@ def resubmit_checklist_correction(
                 responses=existing,
             )
             flags = resolve_condition_flags(items=item_rows, responses=existing)
-            apply_evaluations_to_drafts(
-                items=item_rows, responses=existing, condition_flags=flags
-            )
+            apply_evaluations_to_drafts(items=item_rows, responses=existing, condition_flags=flags)
             stats = validate_record_ready_for_submission(
                 record=record, items=item_rows, responses=existing
             )
@@ -529,6 +548,7 @@ def resubmit_checklist_correction(
                         evaluation_result=response.evaluation_result,
                         evaluation_context=response.evaluation_context,
                         control_point_context=_control_point_context_for_item(item),
+                        measurement_context=_measurement_context_for_response(response, item),
                     )
                 elif item.item_kind == ChecklistItemKind.CALCULATED:
                     if response.number_value is None:
@@ -546,6 +566,7 @@ def resubmit_checklist_correction(
                         evaluation_result=response.evaluation_result,
                         evaluation_context=response.evaluation_context,
                         control_point_context=_control_point_context_for_item(item),
+                        measurement_context=_measurement_context_for_response(response, item),
                     )
                 else:
                     continue

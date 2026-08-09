@@ -57,8 +57,22 @@ def calculated_preview(responses: Any, item: Any, sample_index: int = 1) -> str:
         return "—"
     if row is None or getattr(row, "number_value", None) is None:
         return "—"
-    unit = f" {item.unit}" if getattr(item, "unit", "") else ""
-    return f"{row.number_value}{unit}"
+    from apps.checklists.measurement import format_decimal_for_display
+
+    ctx = getattr(row, "measurement_context", None) or {}
+    precision = None
+    if isinstance(ctx, dict) and ctx.get("decimal_precision") is not None:
+        precision = ctx.get("decimal_precision")
+    else:
+        precision = getattr(item, "decimal_precision", None)
+    formatted = format_decimal_for_display(row.number_value, precision)
+    unit_code = ""
+    if isinstance(ctx, dict) and ctx.get("unit"):
+        unit_code = str(ctx.get("unit") or "")
+    else:
+        unit_code = getattr(item, "unit", "") or ""
+    unit = f" {unit_code}" if unit_code else ""
+    return f"{formatted}{unit}"
 
 
 @register.simple_tag
@@ -130,6 +144,7 @@ def evaluation_slot(responses: Any, item: Any, sample_index: int = 1) -> dict[st
         "label": evaluation_label(result),
     }
 
+
 @register.filter
 def control_point_label_for(control_point_class: str | None) -> str:
     """Human label for frozen or live control-point class."""
@@ -144,4 +159,3 @@ def criticality_label_for(criticality: str | None) -> str:
     from apps.checklists.control_point import criticality_display_label
 
     return criticality_display_label(criticality)
-

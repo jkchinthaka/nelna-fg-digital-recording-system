@@ -80,6 +80,7 @@ Not started (by MODULE_MAP): `instruments`, `training`, `evidence`, `nonconforma
 | 06J Conditional rules | VISIBLE_IF / REQUIRED_IF / EVIDENCE_REQUIRED_IF (fail-closed evidence stub) | Technical foundation; **no seeded predicates**; not BUSINESS APPROVED |
 | 06K Item evaluation | Explicit bounds/choice/option/calculated rules → PASS/FAIL/WARN/NOT_EVALUATED | Technical foundation; **PASS≠RELEASE / FAIL≠HOLD/REJECT**; never auto-creates QAReview; **no seeded limits**; not BUSINESS APPROVED |
 | 06L Control-point metadata | `control_point_class` + `criticality` + frozen `control_point_context` | Technical schema on `main`; default NONE; **no invented CCP/OPRP**; metadata ≠ disposition; **APR-027 / ASM-002 still EVIDENCE REQUIRED**; not BUSINESS APPROVED |
+| 06M Measurement semantics | `decimal_precision` + `rounding_mode` + unit catalog + inclusivity + frozen `measurement_context` | Technical schema on `main`; Decimal-safe; **no product limits seeded**; informational bounds ≠ disposition; not BUSINESS APPROVED |
 | 07A/07B Scheduling foundation | Complete | Real generation blocked (batch source, applicability, roles) |
 | 08A/08B Recording/submit | Complete | Production recording blocked |
 | 09A/09B Supervisor review + correction | Complete | Production review/correction blocked |
@@ -191,7 +192,7 @@ Tracked for request/approval workflow: [governance/APPROVAL_REGISTER.md](governa
 ## Recommended next engineering focus (not authorization)
 
 1. Drive owners to return paper-form inventory via [form-discovery/](business/form-discovery/) (APR-028 / APR-036) — do **not** invent forms for Checklist Engine v2.
-2. Implement Engine v2 unit **06M** when prioritized; keep business values evidence-gated (ADR-019). **06H/06I/06J/06K/06L** technical foundations are on main (06L schema only — HACCP classifications still EVIDENCE REQUIRED).
+2. Keep Engine v2 business values evidence-gated (ADR-019). **06H–06M** technical foundations are on main (06M measurement semantics technical only — no seeded product limits; 06L HACCP classifications still EVIDENCE REQUIRED).
 3. Complete Phase 10A Docker/host validation when Docker engine is healthy (**no new business features** required for that gate).
 4. Drive APPROVAL_REGISTER items with named owners (especially FG-QA-001, mappings, batch source).
 5. Do **not** start Phase 11+ operational features until owners prioritize and evidence gates allow.

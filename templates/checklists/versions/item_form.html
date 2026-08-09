@@ -16,15 +16,20 @@
       {% include "components/form_field.html" with field=form.is_required %}
       {% include "components/form_field.html" with field=form.response_type %}
       {% include "components/form_field.html" with field=form.unit %}
+      {% include "components/form_field.html" with field=form.decimal_precision %}
+      {% include "components/form_field.html" with field=form.rounding_mode %}
       {% include "components/form_field.html" with field=form.minimum_value %}
       {% include "components/form_field.html" with field=form.maximum_value %}
+      {% include "components/form_field.html" with field=form.min_inclusive %}
+      {% include "components/form_field.html" with field=form.max_inclusive %}
       {% include "components/form_field.html" with field=form.control_point_class %}
       {% include "components/form_field.html" with field=form.criticality %}
       <p class="mgmt-page__lead">
-        Unit and min/max apply only to NUMBER responses. Leave limits blank when Product
-        specifications are not yet approved. Control-point / criticality metadata is
-        display/reporting only until ASM-002 / APR-027 evidence exists — it does not
-        HOLD, REJECT, RELEASE, or create NCR.
+        Unit must be a technical catalog code or blank (free-form rejected). Precision and
+        rounding are optional — rounding applies only when both are set; otherwise the
+        exact parsed Decimal is stored. Min/max inclusivity is explicit; leave limits blank
+        when Product specifications are not yet approved. Measurement semantics and
+        control-point metadata are not QA HOLD/REJECT/RELEASE.
       </p>
       <button type="submit" class="btn btn--primary btn--inline">Save item</button>
     </form>

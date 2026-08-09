@@ -23,6 +23,10 @@ from apps.checklists.control_point import (
     assert_known_control_point_class,
     assert_known_criticality,
 )
+from apps.checklists.measurement import (
+    assert_known_unit,
+    assert_precision_rounding_pair,
+)
 from apps.checklists.models import (
     ChecklistCalculationOperand,
     ChecklistControlPointClass,
@@ -237,6 +241,10 @@ def _normalize_item_kind_fields(
     repeat_max: Any,
     repeat_default: Any,
     calculation_operator: str = "",
+    decimal_precision: Any = None,
+    rounding_mode: str = "",
+    min_inclusive: Any = True,
+    max_inclusive: Any = True,
 ) -> tuple[
     str,
     ChecklistItem | None,
@@ -248,6 +256,10 @@ def _normalize_item_kind_fields(
     int | None,
     int | None,
     str,
+    int | None,
+    str,
+    bool,
+    bool,
 ]:
     kind = (item_kind or ChecklistItemKind.SIMPLE).strip()
     if kind not in ChecklistItemKind.values:
@@ -285,7 +297,7 @@ def _normalize_item_kind_fields(
                         )
                     }
                 )
-        return kind, None, "", "", None, None, r_min, r_max, r_default, ""
+        return kind, None, "", "", None, None, r_min, r_max, r_default, "", None, "", True, True
 
     if any(value is not None for value in (r_min, r_max, r_default)):
         raise ValidationError(
@@ -300,7 +312,11 @@ def _normalize_item_kind_fields(
         # Reject formula-like payloads early (security).
         if any(token in operator for token in ("(", ")", ";", "=", "import", "eval")):
             raise ValidationError({"calculation_operator": "Malformed calculation operator."})
-        unit_text = (unit or "").strip()
+        unit_text = assert_known_unit(unit) if (unit or "").strip() else ""
+        precision, mode = assert_precision_rounding_pair(
+            decimal_precision=decimal_precision,
+            rounding_mode=rounding_mode,
+        )
         return (
             kind,
             parent_item,
@@ -312,19 +328,51 @@ def _normalize_item_kind_fields(
             None,
             None,
             operator,
+            precision,
+            mode,
+            True,
+            True,
         )
 
     if operator:
         raise ValidationError(
             {"calculation_operator": "calculation_operator is only allowed on CALCULATED items."}
         )
-    resp_type, unit_text, min_value, max_value = _normalize_response_fields(
+    (
+        resp_type,
+        unit_text,
+        min_value,
+        max_value,
+        precision,
+        mode,
+        min_inc,
+        max_inc,
+    ) = _normalize_response_fields(
         response_type=response_type,
         unit=unit,
         minimum_value=minimum_value,
         maximum_value=maximum_value,
+        decimal_precision=decimal_precision,
+        rounding_mode=rounding_mode,
+        min_inclusive=min_inclusive,
+        max_inclusive=max_inclusive,
     )
-    return kind, parent_item, resp_type, unit_text, min_value, max_value, None, None, None, ""
+    return (
+        kind,
+        parent_item,
+        resp_type,
+        unit_text,
+        min_value,
+        max_value,
+        None,
+        None,
+        None,
+        "",
+        precision,
+        mode,
+        min_inc,
+        max_inc,
+    )
 
 
 @transaction.atomic
@@ -779,16 +827,28 @@ def _normalize_response_fields(
     unit: str = "",
     minimum_value: Any = None,
     maximum_value: Any = None,
-) -> tuple[str, str, Decimal | None, Decimal | None]:
+    decimal_precision: Any = None,
+    rounding_mode: str = "",
+    min_inclusive: Any = True,
+    max_inclusive: Any = True,
+) -> tuple[str, str, Decimal | None, Decimal | None, int | None, str, bool, bool]:
     normalized_type = (response_type or "").strip()
     unit_text = (unit or "").strip()
     min_value = _parse_optional_decimal(minimum_value, field="minimum_value")
     max_value = _parse_optional_decimal(maximum_value, field="maximum_value")
+    precision, mode = assert_precision_rounding_pair(
+        decimal_precision=decimal_precision,
+        rounding_mode=rounding_mode,
+    )
+    min_inc = True if min_inclusive is None else bool(min_inclusive)
+    max_inc = True if max_inclusive is None else bool(max_inclusive)
     errors = validate_item_response_definition(
         response_type=normalized_type,
         unit=unit_text,
         minimum_value=min_value,
         maximum_value=max_value,
+        decimal_precision=precision,
+        rounding_mode=mode,
         require_response_type=False,
     )
     if errors:
@@ -797,7 +857,23 @@ def _normalize_response_fields(
         unit_text = ""
         min_value = None
         max_value = None
-    return normalized_type, unit_text, min_value, max_value
+        precision = None
+        mode = ""
+        min_inc = True
+        max_inc = True
+    else:
+        if unit_text:
+            unit_text = assert_known_unit(unit_text)
+    return (
+        normalized_type,
+        unit_text,
+        min_value,
+        max_value,
+        precision,
+        mode,
+        min_inc,
+        max_inc,
+    )
 
 
 def _next_option_position(item: ChecklistItem) -> int:
@@ -851,6 +927,10 @@ def _clone_structure(*, source: ChecklistVersion, target: ChecklistVersion) -> N
                 unit=item.unit,
                 minimum_value=item.minimum_value,
                 maximum_value=item.maximum_value,
+                decimal_precision=item.decimal_precision,
+                rounding_mode=item.rounding_mode,
+                min_inclusive=item.min_inclusive,
+                max_inclusive=item.max_inclusive,
                 repeat_min=item.repeat_min,
                 repeat_max=item.repeat_max,
                 repeat_default=item.repeat_default,
@@ -1199,6 +1279,10 @@ def add_checklist_item(
     calculation_operand_ids: list[uuid.UUID] | None = None,
     control_point_class: str = ChecklistControlPointClass.NONE,
     criticality: str = "",
+    decimal_precision: Any = None,
+    rounding_mode: str = "",
+    min_inclusive: bool = True,
+    max_inclusive: bool = True,
 ) -> ChecklistItem:
     user = _require_authenticated_actor(actor)
     section = (
@@ -1239,6 +1323,10 @@ def add_checklist_item(
         r_max,
         r_default,
         operator,
+        precision,
+        mode,
+        min_inc,
+        max_inc,
     ) = _normalize_item_kind_fields(
         item_kind=item_kind,
         parent_item=parent_item,
@@ -1250,6 +1338,10 @@ def add_checklist_item(
         repeat_max=repeat_max,
         repeat_default=repeat_default,
         calculation_operator=calculation_operator,
+        decimal_precision=decimal_precision,
+        rounding_mode=rounding_mode,
+        min_inclusive=min_inclusive,
+        max_inclusive=max_inclusive,
     )
     required_flag = bool(is_required)
     if kind == ChecklistItemKind.REPEATING_GROUP:
@@ -1267,6 +1359,10 @@ def add_checklist_item(
         unit=unit_text,
         minimum_value=min_value,
         maximum_value=max_value,
+        decimal_precision=precision,
+        rounding_mode=mode,
+        min_inclusive=min_inc,
+        max_inclusive=max_inc,
         repeat_min=r_min,
         repeat_max=r_max,
         repeat_default=r_default,
@@ -1318,6 +1414,10 @@ def update_checklist_item(
     calculation_operand_ids: Any = _UNSET,
     control_point_class: Any = _UNSET,
     criticality: Any = _UNSET,
+    decimal_precision: Any = _UNSET,
+    rounding_mode: Any = _UNSET,
+    min_inclusive: Any = _UNSET,
+    max_inclusive: Any = _UNSET,
 ) -> ChecklistItem:
     user = _require_authenticated_actor(actor)
     item = _lock_item(item_id)
@@ -1366,6 +1466,24 @@ def update_checklist_item(
         if calculation_operator is _UNSET
         else str(calculation_operator or "")
     )
+    next_precision = item.decimal_precision if decimal_precision is _UNSET else decimal_precision
+    next_mode = item.rounding_mode if rounding_mode is _UNSET else rounding_mode
+    next_min_inc = item.min_inclusive if min_inclusive is _UNSET else min_inclusive
+    next_max_inc = item.max_inclusive if max_inclusive is _UNSET else max_inclusive
+
+    before_meas = {
+        "unit": item.unit,
+        "decimal_precision": item.decimal_precision,
+        "rounding_mode": item.rounding_mode,
+        "min_inclusive": item.min_inclusive,
+        "max_inclusive": item.max_inclusive,
+        "minimum_value": (
+            format(item.minimum_value, "f") if item.minimum_value is not None else None
+        ),
+        "maximum_value": (
+            format(item.maximum_value, "f") if item.maximum_value is not None else None
+        ),
+    }
 
     (
         kind,
@@ -1378,6 +1496,10 @@ def update_checklist_item(
         r_max,
         r_default,
         operator,
+        precision,
+        mode,
+        min_inc,
+        max_inc,
     ) = _normalize_item_kind_fields(
         item_kind=next_kind,
         parent_item=next_parent,
@@ -1389,6 +1511,10 @@ def update_checklist_item(
         repeat_max=next_r_max,
         repeat_default=next_r_default,
         calculation_operator=next_operator,
+        decimal_precision=next_precision,
+        rounding_mode=str(next_mode or ""),
+        min_inclusive=next_min_inc,
+        max_inclusive=next_max_inc,
     )
     item.item_kind = kind
     item.parent_item = parent_item
@@ -1396,6 +1522,10 @@ def update_checklist_item(
     item.unit = unit_text
     item.minimum_value = min_value
     item.maximum_value = max_value
+    item.decimal_precision = precision
+    item.rounding_mode = mode
+    item.min_inclusive = min_inc
+    item.max_inclusive = max_inc
     item.repeat_min = r_min
     item.repeat_max = r_max
     item.repeat_default = r_default
@@ -1411,9 +1541,7 @@ def update_checklist_item(
     before_cp = item.control_point_class
     before_crit = item.criticality
     if control_point_class is not _UNSET:
-        item.control_point_class = assert_known_control_point_class(
-            str(control_point_class or "")
-        )
+        item.control_point_class = assert_known_control_point_class(str(control_point_class or ""))
     if criticality is not _UNSET:
         item.criticality = assert_known_criticality(str(criticality or ""))
 
@@ -1430,10 +1558,7 @@ def update_checklist_item(
             ) from exc
         raise ValidationError({"item": "Unable to update checklist item."}) from exc
 
-    if (
-        item.control_point_class != before_cp
-        or item.criticality != before_crit
-    ):
+    if item.control_point_class != before_cp or item.criticality != before_crit:
         record_event(
             event_type="CHECKLIST_ITEM_CONTROL_POINT_METADATA_UPDATED",
             actor=user,
@@ -1450,6 +1575,34 @@ def update_checklist_item(
                         "control_point_class": item.control_point_class,
                         "criticality": item.criticality,
                     },
+                },
+            ),
+        )
+
+    after_meas = {
+        "unit": item.unit,
+        "decimal_precision": item.decimal_precision,
+        "rounding_mode": item.rounding_mode,
+        "min_inclusive": item.min_inclusive,
+        "max_inclusive": item.max_inclusive,
+        "minimum_value": (
+            format(item.minimum_value, "f") if item.minimum_value is not None else None
+        ),
+        "maximum_value": (
+            format(item.maximum_value, "f") if item.maximum_value is not None else None
+        ),
+    }
+    if before_meas != after_meas:
+        record_event(
+            event_type="CHECKLIST_ITEM_MEASUREMENT_SEMANTICS_UPDATED",
+            actor=user,
+            metadata=_version_metadata(
+                item.section.version,
+                extra={
+                    "checklist_item_id": str(item.id),
+                    "checklist_item_code": item.code,
+                    "before": before_meas,
+                    "after": after_meas,
                 },
             ),
         )
@@ -1815,6 +1968,8 @@ def _validate_publish_structure(version: ChecklistVersion) -> None:
                 unit=item.unit,
                 minimum_value=item.minimum_value,
                 maximum_value=item.maximum_value,
+                decimal_precision=item.decimal_precision,
+                rounding_mode=item.rounding_mode,
                 require_response_type=True,
             )
             if errors:

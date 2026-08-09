@@ -31,8 +31,9 @@
 | Conditional rules (06J) | Closed VISIBLE_IF / REQUIRED_IF / EVIDENCE_REQUIRED_IF; frozen `condition_context` | Works (technical; no seeded predicates) |
 | Item evaluation (06K) | Explicit `ChecklistItemEvaluationRule`; PASS/FAIL/WARN/NOT_EVALUATED; frozen `evaluation_*` | Works (technical; **not** QA disposition; no seeded limits) |
 | Control-point metadata (06L) | `control_point_class` NONE/CCP/OPRP/PRP/GMP/QUALITY + optional criticality; frozen `control_point_context` | Works (technical schema; **EVIDENCE REQUIRED** for production non-NONE; metadata ≠ disposition) |
+| Measurement semantics (06M) | `decimal_precision` / `rounding_mode` / unit catalog / inclusivity; frozen `measurement_context` | Works (technical; **no seeded product limits**; bounds ≠ disposition) |
 
-**Not present today:** DATE/TIME response type, equipment references, precision/rounding modes / inclusive-exclusive bounds hardening beyond evaluation rules (06M).
+**Not present today:** DATE/TIME response type, equipment references.
 
 ### Evidence
 
@@ -93,6 +94,8 @@ Do **not** add PHOTO/SIGNATURE as silent defaults in 06G.
 
 ### 4. Numeric design (Decimal-safe)
 
+**Status:** Phase **06M implemented** (technical schema + Decimal-safe recording; no Nelna product limits seeded).
+
 Storage remains `Decimal` (never binary float for measurements).
 
 **Additive definition fields (values empty/pending evidence):**
@@ -100,8 +103,8 @@ Storage remains `Decimal` (never binary float for measurements).
 | Field | Purpose |
 | --- | --- |
 | `unit` | Already exists |
-| `decimal_precision` | Display/storage scale (nullable → inherit technical default) |
-| `rounding_mode` | Enum: e.g. `HALF_UP`, `HALF_EVEN`, `FLOOR`, `CEILING` (default TBD technical; not business policy) |
+| `decimal_precision` | Display/storage scale (nullable → **no forced quantize**; do not invent business default) |
+| `rounding_mode` | Enum: `HALF_UP`, `HALF_EVEN`, `FLOOR`, `CEILING`, `DOWN` (blank = no rounding; applied only with precision) |
 | `minimum_value` / `maximum_value` | Already exist |
 | `min_inclusive` / `max_inclusive` | Boolean defaults `true` (inclusive bounds) |
 
@@ -258,7 +261,7 @@ See [PHASE_06G_ENGINE_V2_IMPLEMENTATION_SPLIT.md](../business/PHASE_06G_ENGINE_V
 | **06J** | Conditional logic (visible/required/evidence-required-if) |
 | **06K** | Deterministic item evaluation (PASS/FAIL/WARN ≠ QA disposition) |
 | **06L** | Control-point metadata (NONE/CCP/OPRP/PRP/GMP/QUALITY) |
-| **06M** | Precision / units / inclusive bounds hardening |
+| **06M** | Precision / units / inclusive bounds hardening — **IMPLEMENTED** |
 
 ## References
 

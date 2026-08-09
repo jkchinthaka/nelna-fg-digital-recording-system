@@ -132,10 +132,11 @@ class ChecklistResponse(models.Model):
         default="",
     )
     number_value = models.DecimalField(
-        max_digits=14,
-        decimal_places=4,
+        max_digits=26,
+        decimal_places=12,
         null=True,
         blank=True,
+        help_text="Decimal-safe NUMBER storage (up to 12 fractional places for Phase 06M).",
     )
     text_value = models.TextField(blank=True, default="")
     selected_option = models.ForeignKey(
@@ -171,6 +172,12 @@ class ChecklistResponse(models.Model):
         blank=True,
         default=None,
         help_text="Server-authored evaluation rule snapshot (Phase 06K).",
+    )
+    measurement_context = models.JSONField(
+        null=True,
+        blank=True,
+        default=None,
+        help_text="Server-authored NUMBER measurement semantics snapshot (Phase 06M).",
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -319,10 +326,11 @@ class ChecklistSubmissionResponse(models.Model):
         default="",
     )
     number_value = models.DecimalField(
-        max_digits=14,
-        decimal_places=4,
+        max_digits=26,
+        decimal_places=12,
         null=True,
         blank=True,
+        help_text="Frozen Decimal-safe NUMBER storage (up to 12 fractional places for Phase 06M).",
     )
     text_value = models.TextField(blank=True, default="")
     selected_option = models.ForeignKey(
@@ -375,6 +383,15 @@ class ChecklistSubmissionResponse(models.Model):
         help_text=(
             "Frozen control-point / criticality metadata at submit time. "
             "Not a QA disposition — does not HOLD/REJECT/RELEASE."
+        ),
+    )
+    measurement_context = models.JSONField(
+        null=True,
+        blank=True,
+        default=None,
+        help_text=(
+            "Frozen NUMBER measurement semantics at submit time. Historical truth — "
+            "do not recompute with future definition rules."
         ),
     )
     created_at = models.DateTimeField(auto_now_add=True)

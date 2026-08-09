@@ -33,17 +33,35 @@ def control_point_display_fields(item: Any, response: Any) -> dict[str, str]:
 
 
 def display_snapshot_value(item: Any, response: Any) -> str:
+    from apps.checklists.measurement import format_decimal_for_display, unit_display_label
+
     if response is None:
         return "—"
     if item.item_kind == ChecklistItemKind.CALCULATED:
         if response.number_value is None:
             return "—"
-        unit = f" {item.unit}" if item.unit else ""
+        precision = None
+        ctx = getattr(response, "measurement_context", None) or {}
+        if isinstance(ctx, dict) and ctx.get("decimal_precision") is not None:
+            precision = ctx.get("decimal_precision")
+        else:
+            precision = getattr(item, "decimal_precision", None)
+        formatted = format_decimal_for_display(response.number_value, precision)
+        unit_code = ""
+        if isinstance(ctx, dict) and ctx.get("unit"):
+            unit_code = str(ctx.get("unit") or "")
+        else:
+            unit_code = item.unit or ""
+        unit = f" {unit_display_label(unit_code)}" if unit_code else ""
+        if unit == " (no unit)":
+            unit = ""
+        elif unit_code:
+            unit = f" {unit_code}"
         operator = ""
         context = getattr(response, "calculation_context", None) or {}
         if isinstance(context, dict) and context.get("operator"):
             operator = f" [{context['operator']}]"
-        return f"{response.number_value}{unit}{operator}"
+        return f"{formatted}{unit}{operator}"
     if item.response_type in {
         ChecklistResponseType.YES_NO,
         ChecklistResponseType.YES_NO_NA,
@@ -52,8 +70,20 @@ def display_snapshot_value(item: Any, response: Any) -> str:
     if item.response_type == ChecklistResponseType.NUMBER:
         if response.number_value is None:
             return "—"
-        unit = f" {item.unit}" if item.unit else ""
-        return f"{response.number_value}{unit}"
+        precision = None
+        ctx = getattr(response, "measurement_context", None) or {}
+        if isinstance(ctx, dict) and ctx.get("decimal_precision") is not None:
+            precision = ctx.get("decimal_precision")
+        else:
+            precision = getattr(item, "decimal_precision", None)
+        formatted = format_decimal_for_display(response.number_value, precision)
+        unit_code = ""
+        if isinstance(ctx, dict) and ctx.get("unit") is not None:
+            unit_code = str(ctx.get("unit") or "")
+        else:
+            unit_code = item.unit or ""
+        unit = f" {unit_code}" if unit_code else ""
+        return f"{formatted}{unit}"
     if item.response_type == ChecklistResponseType.TEXT:
         return response.text_value or "—"
     if item.response_type == ChecklistResponseType.SELECT:

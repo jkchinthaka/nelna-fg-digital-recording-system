@@ -87,17 +87,21 @@ Architecture + ADR only. No separate engine.
 
 ## 06M — Precision / units / boundaries
 
+**Status:** **IMPLEMENTED** (technical foundation on `main`).
+
 **Objective:** Harden numeric definition: precision, rounding mode, inclusive/exclusive bounds.
 
 | Deliverable | Notes |
 | --- | --- |
-| `decimal_precision`, `rounding_mode` | Decimal-safe apply on input |
-| `min_inclusive` / `max_inclusive` | Defaults inclusive |
-| Recording | Consistent round-trip in draft + snapshot |
+| `decimal_precision`, `rounding_mode` | Decimal-safe apply on input — only when **both** configured |
+| Closed technical unit catalog | Blank + catalog codes; free-form rejected; not Nelna mappings |
+| `min_inclusive` / `max_inclusive` | Defaults inclusive (informational item bounds) |
+| `measurement_context` | Frozen on draft NUMBER save + submission/correction snapshots |
+| Recording | Consistent Decimal round-trip; display via `format_decimal_for_display` |
 
 **Out of scope:** Inventing product limits; dual-unit conversion engines unless evidenced.
 
-**Exit:** Property tests for rounding/boundary edge cases.
+**Exit:** Property tests for rounding/boundary edge cases — covered by `test_phase06m_measurement_semantics.py`.
 
 ## Suggested dependency order
 
