@@ -18,8 +18,11 @@ Server-authoritative `VISIBLE_IF` / `REQUIRED_IF` / `EVIDENCE_REQUIRED_IF` with 
 | 06J-T04 | Hidden bypass (answer while not visible) | ValidationError; no persisted answer |
 | 06J-T05 | REQUIRED_IF when gate YES | Completeness requires detail; submit blocked until answered |
 | 06J-T06 | Snapshot `condition_context` | Frozen at submit; not recomputed historically |
-| 06J-T07 | EVIDENCE_REQUIRED_IF true | Fail-closed: submit blocked until Phase 11 evidence module |
-
+| 06J-T08 | SELECT / YES_NO_NA / IS_EMPTY | Deterministic predicates |
+| 06J-T09 | Malformed / XSS-like operators | Rejected (no eval) |
+| 06J-T10 | Cross-org rule manage | PermissionDenied |
+| 06J-T11 | Correction + historical condition_context | Source frozen; resubmit new context |
+| 06J-T12 | Hidden item not in required completeness | Submit allowed when gate NO |
 ## Non-goals
 
 - Invented Nelna predicates / form content

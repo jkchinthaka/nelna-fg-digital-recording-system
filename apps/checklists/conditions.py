@@ -193,13 +193,13 @@ def evaluate_predicate(
     if op == ChecklistConditionComparator.IN:
         as_text = {str(v).strip().casefold() for v in expected_values}
         return actual_text.casefold() in as_text
-    expected = (expected_text or "").strip()
-    if expected_boolean is not None and not expected:
-        expected = "YES" if expected_boolean else "NO"
+    str_expected: str = (expected_text or "").strip()
+    if expected_boolean is not None and not str_expected:
+        str_expected = "YES" if expected_boolean else "NO"
     if op == ChecklistConditionComparator.EQ:
-        return bool(expected) and actual_text.casefold() == expected.casefold()
+        return bool(str_expected) and actual_text.casefold() == str_expected.casefold()
     if op == ChecklistConditionComparator.NE:
-        return bool(expected) and actual_text.casefold() != expected.casefold()
+        return bool(str_expected) and actual_text.casefold() != str_expected.casefold()
     raise ValidationError({"comparator": f"{op} is not supported for non-numeric operands."})
 
 
@@ -253,11 +253,9 @@ def detect_visibility_cycles(
     *,
     rules: list[ChecklistItemRule],
 ) -> None:
-    """Detect cycles among VISIBLE_IF dependencies (target → operand)."""
+    """Detect cycles in condition dependencies (target → operand) across all rule kinds."""
     graph: dict[uuid.UUID, list[uuid.UUID]] = {}
     for rule in rules:
-        if rule.rule_kind != ChecklistConditionRuleKind.VISIBLE_IF:
-            continue
         graph.setdefault(rule.target_item_id, []).append(rule.operand_item_id)
 
     visiting: set[uuid.UUID] = set()
@@ -265,7 +263,9 @@ def detect_visibility_cycles(
 
     def dfs(node: uuid.UUID) -> None:
         if node in visiting:
-            raise ValidationError({"condition_rules": "Circular VISIBLE_IF dependency detected."})
+            raise ValidationError(
+                {"condition_rules": "Circular condition-rule dependency detected."}
+            )
         if node in visited:
             return
         visiting.add(node)
@@ -276,6 +276,10 @@ def detect_visibility_cycles(
 
     for start in list(graph):
         dfs(start)
+
+
+# Backward-compatible alias used by services/tests.
+detect_condition_cycles = detect_visibility_cycles
 
 
 def build_condition_context(

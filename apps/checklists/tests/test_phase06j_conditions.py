@@ -95,9 +95,69 @@ def test_visibility_cycle_detection() -> None:
         ChecklistItemRule(
             target_item_id=b,
             operand_item_id=a,
-            rule_kind=ChecklistConditionRuleKind.VISIBLE_IF,
+            rule_kind=ChecklistConditionRuleKind.REQUIRED_IF,
             comparator=ChecklistConditionComparator.IS_ANSWERED,
         ),
     ]
     with pytest.raises(ValidationError, match="Circular"):
         detect_visibility_cycles(rules=rules)
+
+
+def test_select_and_na_and_empty_predicates() -> None:
+    select = {
+        "answered": True,
+        "response_type": "SELECT",
+        "choice_value": "",
+        "number_value": None,
+        "text_value": "",
+        "selected_option_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+        "selected_option_value": "RED",
+    }
+    assert evaluate_predicate(
+        comparator="EQ",
+        operand_snapshot=select,
+        expected_text="RED",
+    )
+    assert evaluate_predicate(
+        comparator="IN",
+        operand_snapshot=select,
+        expected_list=["BLUE", "RED"],
+    )
+    na = {
+        "answered": True,
+        "response_type": "YES_NO_NA",
+        "choice_value": "NA",
+        "number_value": None,
+        "text_value": "",
+        "selected_option_id": None,
+        "selected_option_value": "",
+    }
+    assert evaluate_predicate(comparator="EQUALS", operand_snapshot=na, expected_text="NA")
+    missing = {
+        "answered": False,
+        "response_type": "TEXT",
+        "choice_value": "",
+        "number_value": None,
+        "text_value": "",
+        "selected_option_id": None,
+        "selected_option_value": "",
+    }
+    assert evaluate_predicate(comparator="IS_EMPTY", operand_snapshot=missing)
+    assert not evaluate_predicate(comparator="IS_NOT_EMPTY", operand_snapshot=missing)
+    assert not evaluate_predicate(
+        comparator="GREATER_THAN",
+        operand_snapshot=missing,
+        expected_number=Decimal("1"),
+    )
+
+
+def test_malformed_operator_injection_rejected() -> None:
+    for bad in (
+        "eval(1)",
+        "__import__('os')",
+        "EQUALS; DROP TABLE",
+        "<script>alert(1)</script>",
+        "a == b",
+    ):
+        with pytest.raises(ValidationError):
+            assert_known_comparator(bad)

@@ -575,9 +575,7 @@ class ChecklistItemRule(models.Model):
         choices=ChecklistConditionComparator.choices,
     )
     expected_text = models.CharField(max_length=255, blank=True, default="")
-    expected_number = models.DecimalField(
-        max_digits=14, decimal_places=4, null=True, blank=True
-    )
+    expected_number = models.DecimalField(max_digits=14, decimal_places=4, null=True, blank=True)
     expected_boolean = models.BooleanField(null=True, blank=True)
     expected_option = models.ForeignKey(
         "ChecklistItemOption",
