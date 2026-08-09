@@ -679,6 +679,16 @@
     color: #424242;
   }
 
+  .status-pill--warning {
+    background: #fff4e5;
+    color: #9a5b00;
+  }
+
+  .status-pill--danger {
+    background: #fdecea;
+    color: #b42318;
+  }
+
   .shift-table-wrap {
     overflow-x: auto;
     border: 1px solid var(--color-border-default, #dde4df);

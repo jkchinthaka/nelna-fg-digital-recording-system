@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import uuid
+from datetime import datetime
 from typing import Literal
 
 from django.core.exceptions import PermissionDenied
 from django.db.models import QuerySet
+from django.utils import timezone
 
 from apps.access_control.services import (
     organization_ids_with_permission,
@@ -19,6 +21,12 @@ from apps.scheduling.applicability import (
     MANAGE_APPLICABILITY,
     VIEW_APPLICABILITY,
     applicability_authorization_scope,
+)
+from apps.scheduling.due import (
+    ChecklistDueDisplayState,
+    ChecklistTaskDueDisplayState,
+    derive_due_display_state,
+    normalize_as_of,
 )
 from apps.scheduling.models import (
     ChecklistApplicabilityRule,
@@ -35,6 +43,7 @@ from apps.scheduling.services import (
 
 StatusFilter = Literal["all", "PENDING", "CANCELLED"]
 AssignmentQueue = Literal["my", "unassigned", "assigned", "all"]
+DueStateFilter = Literal["all", "NOT_DUE", "DUE", "DUE_SOON", "OVERDUE"]
 
 
 def actor_can_view_checklist_tasks(actor: User | None) -> bool:
@@ -148,6 +157,8 @@ def list_checklist_tasks(
     status: StatusFilter = "all",
     batch_reference: str | None = None,
     assignment_queue: AssignmentQueue = "all",
+    due_state: DueStateFilter = "all",
+    as_of: datetime | None = None,
 ) -> QuerySet[ChecklistTask]:
     if actor is None or not getattr(actor, "is_authenticated", False) or not actor.is_active:
         return ChecklistTask.objects.none()
@@ -159,6 +170,7 @@ def list_checklist_tasks(
         "organization",
         "checklist_template",
         "checklist_version",
+        "schedule",
         "assigned_user",
         "assigned_role",
         "assigned_department",
@@ -192,7 +204,57 @@ def list_checklist_tasks(
     elif assignment_queue == "assigned":
         qs = qs.exclude(assignee_kind="")
 
+    qs = _apply_due_state_filter(qs, due_state=due_state, as_of=as_of)
     return qs.order_by("-created_at")
+
+
+def _apply_due_state_filter(
+    qs: QuerySet[ChecklistTask],
+    *,
+    due_state: DueStateFilter,
+    as_of: datetime | None,
+) -> QuerySet[ChecklistTask]:
+    """Filter by derived due display state (exact derivation; no invented SLAs)."""
+    if due_state == "all":
+        return qs
+    from django.db.models import Q
+
+    instant = normalize_as_of(as_of)
+    base = qs.exclude(
+        status__in=[ChecklistTaskStatus.CANCELLED, ChecklistTaskStatus.MISSED]
+    ).select_related("schedule")
+    # due_at or window_end_at can resolve a deadline — never invent one.
+    base = base.filter(Q(due_at__isnull=False) | Q(window_end_at__isnull=False))
+    if due_state == ChecklistDueDisplayState.OVERDUE:
+        # Broad candidate prefilter; exact OVERDUE uses derive (exclusive overdue_at).
+        base = base.filter(Q(due_at__lte=instant) | Q(window_end_at__lte=instant))
+    candidates = list(base)
+    ids = [
+        task.id
+        for task in candidates
+        if derive_due_display_state(task, as_of=instant) == due_state
+    ]
+    return qs.filter(pk__in=ids)
+
+
+def list_overdue_checklist_tasks(
+    actor: User | None,
+    *,
+    organization: Organization | None = None,
+    as_of: datetime | None = None,
+) -> QuerySet[ChecklistTask]:
+    """
+    Overdue Tasks queue — derived from due_at < as_of.
+
+    Excludes cancelled tasks and tasks without a due deadline.
+    Overdue is not Non-Conformance.
+    """
+    return list_checklist_tasks(
+        actor,
+        organization=organization,
+        due_state="OVERDUE",
+        as_of=as_of or timezone.now(),
+    )
 
 
 def list_my_checklist_tasks(
@@ -252,6 +314,7 @@ def get_checklist_task(actor: User | None, task_id: uuid.UUID) -> ChecklistTask 
             "organization",
             "checklist_template",
             "checklist_version",
+            "schedule",
         )
         .filter(pk=task_id)
         .first()

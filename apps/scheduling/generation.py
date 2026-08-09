@@ -392,6 +392,7 @@ def upsert_occurrence_task(
         shift=plan.shift,
         window_start_at=plan.window_start_at,
         window_end_at=plan.window_end_at,
+        due_from=plan.window_start_at,
         due_at=plan.due_at,
         status=plan.status,
     )

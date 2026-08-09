@@ -26,7 +26,9 @@ class ChecklistTaskAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
         "assignee_kind",
         "assigned_user",
         "status",
+        "due_from",
         "due_at",
+        "due_soon_minutes",
         "created_at",
     )
     list_filter = ("status", "trigger_type", "organization", "checklist_template")
@@ -56,7 +58,9 @@ class ChecklistTaskAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
         "shift",
         "window_start_at",
         "window_end_at",
+        "due_from",
         "due_at",
+        "due_soon_minutes",
         "assignee_kind",
         "assigned_user",
         "assigned_role",

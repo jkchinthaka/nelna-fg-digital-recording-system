@@ -17,15 +17,22 @@ from apps.accounts.models import User
 from apps.checklists.models import ChecklistTemplate, ChecklistVersion
 from apps.scheduling.applicability import preview_checklist_applicability
 from apps.scheduling.applicability_forms import ApplicabilityPreviewForm
+from apps.scheduling.due import (
+    ChecklistDueDisplayState,
+    annotate_due_display,
+    derive_due_display_state,
+)
 from apps.scheduling.forms import ChecklistTaskCreateForm
 from apps.scheduling.models import ChecklistTask, ChecklistTaskStatus
 from apps.scheduling.selectors import (
+    DueStateFilter,
     StatusFilter,
     actor_can_manage_task,
     actor_can_view_applicability,
     actor_can_view_checklist_tasks,
     get_checklist_task,
     list_checklist_tasks,
+    list_overdue_checklist_tasks,
     manageable_organization_ids,
     organizations_for_task_manage,
     organizations_for_task_view,
@@ -130,6 +137,19 @@ def task_list(request: HttpRequest) -> HttpResponse:
         if status_raw in {"all", ChecklistTaskStatus.PENDING, ChecklistTaskStatus.CANCELLED}
         else "all"  # type: ignore[assignment]
     )
+    due_raw = (request.GET.get("due") or "all").strip()
+    due_state: DueStateFilter = (
+        due_raw
+        if due_raw
+        in {
+            "all",
+            ChecklistDueDisplayState.NOT_DUE,
+            ChecklistDueDisplayState.DUE,
+            ChecklistDueDisplayState.DUE_SOON,
+            ChecklistDueDisplayState.OVERDUE,
+        }
+        else "all"
+    )
     org_id = _parse_uuid(request.GET.get("organization"))
     template_id = _parse_uuid(request.GET.get("template"))
     organizations = organizations_for_task_view(_actor(request))
@@ -148,23 +168,38 @@ def task_list(request: HttpRequest) -> HttpResponse:
         template=template,
         status=status,
         batch_reference=batch_q or None,
+        due_state=due_state,
     )
     paginator = Paginator(tasks, PAGE_SIZE)
     page_obj = paginator.get_page(request.GET.get("page"))
     manage_org_ids = manageable_organization_ids(_actor(request))
+    annotated = annotate_due_display(list(page_obj.object_list))
+    overdue_count = list_overdue_checklist_tasks(
+        _actor(request), organization=organization
+    ).count()
     context = {
         "page_obj": page_obj,
-        "tasks": page_obj.object_list,
+        "tasks": annotated,
         "search": batch_q,
         "status": status,
+        "due_state": due_state,
         "organizations": organizations,
         "selected_organization": organization,
         "templates": filter_templates,
         "selected_template": template,
-        "filters_active": bool(batch_q or org_id or template_id or status != "all"),
+        "filters_active": bool(
+            batch_q or org_id or template_id or status != "all" or due_state != "all"
+        ),
         "manageable_organization_ids": manage_org_ids,
         "can_create": bool(manage_org_ids),
         "total_count": paginator.count,
+        "overdue_count": overdue_count,
+        "due_states": [
+            ChecklistDueDisplayState.NOT_DUE,
+            ChecklistDueDisplayState.DUE,
+            ChecklistDueDisplayState.DUE_SOON,
+            ChecklistDueDisplayState.OVERDUE,
+        ],
     }
     if request.headers.get("HX-Request") == "true":
         return render(request, "scheduling/tasks/_list_results.html", context)
@@ -297,12 +332,20 @@ def task_version_options(request: HttpRequest) -> HttpResponse:
 @require_GET
 def task_detail(request: HttpRequest, task_id: uuid.UUID) -> HttpResponse:
     task = _get_task_or_404(request, task_id)
+    from apps.scheduling.due import due_badge_css_class, due_display_label
+
+    due_state = derive_due_display_state(task)
     return render(
         request,
         "scheduling/tasks/detail.html",
         {
             "task": task,
-            "can_cancel": actor_can_manage_task(_actor(request), task) and task.is_pending,
+            "due_display_state": due_state,
+            "due_display_label": due_display_label(due_state),
+            "due_badge_class": due_badge_css_class(due_state),
+            "can_cancel": actor_can_manage_task(_actor(request), task)
+            and task.status
+            in {ChecklistTaskStatus.PENDING, ChecklistTaskStatus.OVERDUE},
         },
     )
 

@@ -51,6 +51,7 @@
 | `CHECKLIST_TASK_CREATED` | Batch checklist task created (or idempotent return of existing) |
 | `CHECKLIST_TASK_CANCELLED` | Batch checklist task cancelled (soft cancel) |
 | `CHECKLIST_TASK_ASSIGNED` / `REASSIGNED` / `UNASSIGNED` | Task ownership changes (Phase 07G; never grants RBAC) |
+| `CHECKLIST_TASK_DUE_WINDOW_UPDATED` | Configured due_from/due_at/due_soon change (Phase 07H; overdue ≠ NCR) |
 | `CHECKLIST_TASK_GENERATED` | Schedule engine created a task occurrence (system) |
 | `CHECKLIST_SCHEDULE_CREATED` | Checklist schedule definition created |
 | `CHECKLIST_SCHEDULE_DEACTIVATED` | Checklist schedule deactivated |

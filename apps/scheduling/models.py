@@ -155,7 +155,30 @@ class ChecklistTask(models.Model):
     )
     window_start_at = models.DateTimeField(null=True, blank=True)
     window_end_at = models.DateTimeField(null=True, blank=True)
-    due_at = models.DateTimeField(null=True, blank=True)
+    due_from = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text=(
+            "Optional start of the due window. Before this instant the derived "
+            "display state is NOT_DUE. No default SLA — leave blank if unused."
+        ),
+    )
+    due_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text=(
+            "Due deadline (due_to). After this instant the derived display state "
+            "is OVERDUE. Overdue is not an NCR. No invented SLA durations."
+        ),
+    )
+    due_soon_minutes = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text=(
+            "Optional configured minutes before due_at for DUE_SOON display. "
+            "Null = DUE_SOON is not used. Never seed production SLA values."
+        ),
+    )
     status = models.CharField(
         max_length=16,
         choices=ChecklistTaskStatus.choices,
@@ -270,6 +293,10 @@ class ChecklistTask(models.Model):
                 name="sched_task_due_status_idx",
             ),
             models.Index(
+                fields=["organization", "due_from", "due_at"],
+                name="sched_task_org_due_win_idx",
+            ),
+            models.Index(
                 fields=["organization", "assignee_kind"],
                 name="sched_task_org_assignee_idx",
             ),
@@ -331,6 +358,13 @@ class ChecklistTask(models.Model):
                     }
                 )
 
+        if self.due_from is not None and self.due_at is not None and self.due_from > self.due_at:
+            raise ValidationError({"due_from": "due_from cannot be later than due_at (due_to)."})
+        if self.due_soon_minutes is not None and int(self.due_soon_minutes) < 1:
+            raise ValidationError(
+                {"due_soon_minutes": "due_soon_minutes must be >= 1 when configured."}
+            )
+
     @property
     def is_pending(self) -> bool:
         return self.status == ChecklistTaskStatus.PENDING
@@ -338,6 +372,11 @@ class ChecklistTask(models.Model):
     @property
     def is_cancelled(self) -> bool:
         return self.status == ChecklistTaskStatus.CANCELLED
+
+    @property
+    def due_to(self):
+        """Alias for due_at — due window end / deadline."""
+        return self.due_at
 
 
 class ChecklistApplicabilityRule(models.Model):
