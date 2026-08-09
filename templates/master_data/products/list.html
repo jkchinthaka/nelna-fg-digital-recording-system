@@ -31,7 +31,7 @@
                  name="q"
                  id="id_q"
                  value="{{ search }}"
-                 placeholder="Code or name"
+                 placeholder="Code, name, ERP, barcode, category, brand"
                  autocomplete="off">
         </div>
         <div class="form-field">
@@ -53,6 +53,16 @@
               </option>
             {% endfor %}
           </select>
+        </div>
+        <div class="form-field">
+          <label for="id_category">Category</label>
+          <input class="form-input"
+                 type="text"
+                 name="category"
+                 id="id_category"
+                 value="{{ category }}"
+                 placeholder="Exact category (optional)"
+                 autocomplete="off">
         </div>
       </div>
       <div class="mgmt-filters__actions">

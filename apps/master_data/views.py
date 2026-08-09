@@ -116,6 +116,7 @@ def product_list(request: HttpRequest) -> HttpResponse:
         status_raw if status_raw in {"all", "active", "inactive"} else "all"  # type: ignore[assignment]
     )
     org_id = _parse_uuid(request.GET.get("organization"))
+    category = (request.GET.get("category") or "").strip()
     organizations = organizations_for_fg_product_actor(_actor(request))
     organization = organizations.filter(pk=org_id).first() if org_id else None
 
@@ -124,16 +125,18 @@ def product_list(request: HttpRequest) -> HttpResponse:
         organization=organization,
         status=status,
         search=search or None,
+        category=category or None,
     )
     paginator = Paginator(products, PAGE_SIZE)
     page_obj = paginator.get_page(request.GET.get("page"))
-    filters_active = bool(search or org_id or status != "all")
+    filters_active = bool(search or org_id or status != "all" or category)
     manage_org_ids = manageable_organization_ids(_actor(request))
     context = {
         "page_obj": page_obj,
         "products": page_obj.object_list,
         "search": search,
         "status": status,
+        "category": category,
         "organizations": organizations,
         "selected_organization": organization,
         "filters_active": filters_active,
@@ -160,6 +163,18 @@ def product_create(request: HttpRequest) -> HttpResponse:
                 code=form.cleaned_data["code"],
                 name=form.cleaned_data["name"],
                 description=form.cleaned_data.get("description") or "",
+                erp_item_code=form.cleaned_data.get("erp_item_code") or "",
+                category=form.cleaned_data.get("category") or "",
+                brand=form.cleaned_data.get("brand") or "",
+                pack_size=form.cleaned_data.get("pack_size") or "",
+                uom=form.cleaned_data.get("uom") or "",
+                barcode=form.cleaned_data.get("barcode") or "",
+                storage_category=form.cleaned_data.get("storage_category") or "",
+                shelf_life_reference=form.cleaned_data.get("shelf_life_reference") or "",
+                label_artwork_reference=form.cleaned_data.get("label_artwork_reference")
+                or "",
+                effective_from=form.cleaned_data.get("effective_from"),
+                effective_to=form.cleaned_data.get("effective_to"),
                 is_active=bool(form.cleaned_data.get("is_active")),
             )
         except ValidationError as exc:
@@ -214,6 +229,18 @@ def product_edit(request: HttpRequest, product_id: uuid.UUID) -> HttpResponse:
                 code=form.cleaned_data["code"],
                 name=form.cleaned_data["name"],
                 description=form.cleaned_data.get("description") or "",
+                erp_item_code=form.cleaned_data.get("erp_item_code") or "",
+                category=form.cleaned_data.get("category") or "",
+                brand=form.cleaned_data.get("brand") or "",
+                pack_size=form.cleaned_data.get("pack_size") or "",
+                uom=form.cleaned_data.get("uom") or "",
+                barcode=form.cleaned_data.get("barcode") or "",
+                storage_category=form.cleaned_data.get("storage_category") or "",
+                shelf_life_reference=form.cleaned_data.get("shelf_life_reference") or "",
+                label_artwork_reference=form.cleaned_data.get("label_artwork_reference")
+                or "",
+                effective_from=form.cleaned_data.get("effective_from"),
+                effective_to=form.cleaned_data.get("effective_to"),
             )
             if form.cleaned_data.get("is_active") and not updated.is_active:
                 updated = activate_fg_product(actor=_actor(request), product_id=updated.id)

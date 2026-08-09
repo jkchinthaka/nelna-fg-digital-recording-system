@@ -26,6 +26,17 @@
       {% include "components/form_field.html" with field=form.code %}
       {% include "components/form_field.html" with field=form.name %}
       {% include "components/form_field.html" with field=form.description %}
+      {% include "components/form_field.html" with field=form.erp_item_code %}
+      {% include "components/form_field.html" with field=form.category %}
+      {% include "components/form_field.html" with field=form.brand %}
+      {% include "components/form_field.html" with field=form.pack_size %}
+      {% include "components/form_field.html" with field=form.uom %}
+      {% include "components/form_field.html" with field=form.barcode %}
+      {% include "components/form_field.html" with field=form.storage_category %}
+      {% include "components/form_field.html" with field=form.shelf_life_reference %}
+      {% include "components/form_field.html" with field=form.label_artwork_reference %}
+      {% include "components/form_field.html" with field=form.effective_from %}
+      {% include "components/form_field.html" with field=form.effective_to %}
       <div class="form-field form-field--checkbox">
         <label for="{{ form.is_active.id_for_label }}">
           {{ form.is_active }}

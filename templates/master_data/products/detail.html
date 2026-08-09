@@ -26,43 +26,71 @@
     <dl class="detail-list">
       <div>
         <dt>Organization</dt>
-        <dd>
-          {{ product.organization.code }} — {{ product.organization.name }}
-        </dd>
+        <dd>{{ product.organization.code }} — {{ product.organization.name }}</dd>
       </div>
       <div>
         <dt>Code</dt>
-        <dd>
-          {{ product.code }}
-        </dd>
+        <dd>{{ product.code }}</dd>
       </div>
       <div>
         <dt>Name</dt>
-        <dd>
-          {{ product.name }}
-        </dd>
+        <dd>{{ product.name }}</dd>
       </div>
       <div>
         <dt>Description</dt>
-        <dd>
-          {% if product.description %}
-            {{ product.description }}
-          {% else %}
-            —
-          {% endif %}
-        </dd>
+        <dd>{% if product.description %}{{ product.description }}{% else %}—{% endif %}</dd>
+      </div>
+      <div>
+        <dt>ERP item code</dt>
+        <dd>{% if product.erp_item_code %}{{ product.erp_item_code }}{% else %}—{% endif %}</dd>
+      </div>
+      <div>
+        <dt>Category</dt>
+        <dd>{% if product.category %}{{ product.category }}{% else %}—{% endif %}</dd>
+      </div>
+      <div>
+        <dt>Brand</dt>
+        <dd>{% if product.brand %}{{ product.brand }}{% else %}—{% endif %}</dd>
+      </div>
+      <div>
+        <dt>Pack size</dt>
+        <dd>{% if product.pack_size %}{{ product.pack_size }}{% else %}—{% endif %}</dd>
+      </div>
+      <div>
+        <dt>UOM</dt>
+        <dd>{% if product.uom %}{{ product.uom }}{% else %}—{% endif %}</dd>
+      </div>
+      <div>
+        <dt>Barcode / SKU</dt>
+        <dd>{% if product.barcode %}{{ product.barcode }}{% else %}—{% endif %}</dd>
+      </div>
+      <div>
+        <dt>Storage category</dt>
+        <dd>{% if product.storage_category %}{{ product.storage_category }}{% else %}—{% endif %}</dd>
+      </div>
+      <div>
+        <dt>Shelf-life reference</dt>
+        <dd>{% if product.shelf_life_reference %}{{ product.shelf_life_reference }}{% else %}—{% endif %}</dd>
+      </div>
+      <div>
+        <dt>Label / artwork reference</dt>
+        <dd>{% if product.label_artwork_reference %}{{ product.label_artwork_reference }}{% else %}—{% endif %}</dd>
+      </div>
+      <div>
+        <dt>Effective from</dt>
+        <dd>{% if product.effective_from %}{{ product.effective_from }}{% else %}—{% endif %}</dd>
+      </div>
+      <div>
+        <dt>Effective to</dt>
+        <dd>{% if product.effective_to %}{{ product.effective_to }}{% else %}—{% endif %}</dd>
       </div>
       <div>
         <dt>Created</dt>
-        <dd>
-          {{ product.created_at }}
-        </dd>
+        <dd>{{ product.created_at }}</dd>
       </div>
       <div>
         <dt>Updated</dt>
-        <dd>
-          {{ product.updated_at }}
-        </dd>
+        <dd>{{ product.updated_at }}</dd>
       </div>
     </dl>
     {% if can_manage %}

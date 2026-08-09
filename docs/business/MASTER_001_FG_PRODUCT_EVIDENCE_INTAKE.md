@@ -3,7 +3,7 @@
 **Document status:** Evidence collection contract — **not** approved business truth
 **Requirement:** MASTER-001
 **Created:** 2026-08-07 (Phase 05B)
-**Technical foundation:** Phase 05A configurable unseeded `FGProduct` (organization, code, name, description, active, timestamps only)
+**Technical foundation:** Phase 05A identity + Phase 05C optional mapping/attribute blanks (still unseeded). Official catalogue **not** received.
 
 ## Purpose
 
@@ -13,17 +13,20 @@ Empty fields are marked **EVIDENCE REQUIRED**. Do not invent answers.
 
 Companion template: [templates/MASTER_001_PRODUCT_FIELD_INVENTORY.csv](templates/MASTER_001_PRODUCT_FIELD_INVENTORY.csv) (column definitions only; no sample Product rows).
 
+Controlled import template (header-only): [templates/FG_PRODUCT_IMPORT_TEMPLATE.csv](templates/FG_PRODUCT_IMPORT_TEMPLATE.csv). No live Bileeta calls.
+
 ## Current technical baseline (do not treat as business approval)
 
 | Aspect | Provisional technical state |
 | --- | --- |
 | Entity | `FGProduct` in `master_data` |
 | Scope | Organization-owned |
-| Fields | organization, code, name, optional description, is_active, timestamps |
+| Fields | organization, code, name, description, optional ERP/category/brand/pack/UOM/barcode/storage/shelf-life/artwork refs, effective_from/to, is_active, timestamps |
 | Site / Department ownership | Not modeled — site-only RBAC does **not** imply Product management |
-| Category / UOM / ERP IDs / etc. | Not implemented |
+| Category / UOM / ERP IDs / etc. | Optional blank fields TECHNICALLY SUPPORTED in 05C — values **EVIDENCE REQUIRED** |
 | Seeded catalogue | None |
-| MASTER-001 | **EVIDENCE REQUIRED** |
+| Controlled import | Header-only template + dry-run importer — **no** official catalogue loaded |
+| MASTER-001 | **EVIDENCE REQUIRED** (not marked received) |
 
 ---
 
@@ -74,6 +77,8 @@ For each candidate complete: required? / source / data type / allowed values / v
 | work center | EVIDENCE REQUIRED | EVIDENCE REQUIRED | EVIDENCE REQUIRED | EVIDENCE REQUIRED | EVIDENCE REQUIRED | EVIDENCE REQUIRED | EVIDENCE REQUIRED |
 | temperature classification | EVIDENCE REQUIRED | EVIDENCE REQUIRED | EVIDENCE REQUIRED | EVIDENCE REQUIRED | EVIDENCE REQUIRED | EVIDENCE REQUIRED | EVIDENCE REQUIRED |
 | other business fields | EVIDENCE REQUIRED | EVIDENCE REQUIRED | EVIDENCE REQUIRED | EVIDENCE REQUIRED | EVIDENCE REQUIRED | EVIDENCE REQUIRED | EVIDENCE REQUIRED |
+
+> Phase 05C added **optional blank columns** for several candidates above so evidence can be loaded later. That does **not** mean official values, allowed lists, or business approval exist.
 
 ## E. Lifecycle
 

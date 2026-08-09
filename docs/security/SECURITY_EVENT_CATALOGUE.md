@@ -31,6 +31,7 @@
 | `FG_PRODUCT_UPDATED` | Configurable FG Product fields updated via domain service |
 | `FG_PRODUCT_ACTIVATED` | FG Product reactivated (`is_active=True`) |
 | `FG_PRODUCT_DEACTIVATED` | FG Product deactivated (`is_active=False`) |
+| `FG_PRODUCT_IMPORT_PREVIEWED` / `COMPLETED` / `FAILED` | Controlled FG Product CSV import (Phase 05C) |
 | `CHECKLIST_TEMPLATE_CREATED` | Checklist template created |
 | `CHECKLIST_TEMPLATE_UPDATED` | Checklist template updated |
 | `CHECKLIST_TEMPLATE_ACTIVATED` | Checklist template activated |

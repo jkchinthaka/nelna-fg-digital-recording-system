@@ -61,6 +61,7 @@ def list_fg_products(
     organization: Organization | None = None,
     status: StatusFilter = "all",
     search: str | None = None,
+    category: str | None = None,
 ) -> QuerySet[FGProduct]:
     if actor is None or not getattr(actor, "is_authenticated", False) or not actor.is_active:
         return FGProduct.objects.none()
@@ -82,10 +83,22 @@ def list_fg_products(
     elif status == "inactive":
         qs = qs.filter(is_active=False)
 
+    if category:
+        cat = category.strip()
+        if cat:
+            qs = qs.filter(category__iexact=cat)
+
     if search:
         term = search.strip()
         if term:
-            qs = qs.filter(Q(code__icontains=term) | Q(name__icontains=term))
+            qs = qs.filter(
+                Q(code__icontains=term)
+                | Q(name__icontains=term)
+                | Q(erp_item_code__icontains=term)
+                | Q(barcode__icontains=term)
+                | Q(category__icontains=term)
+                | Q(brand__icontains=term)
+            )
 
     return qs.order_by("organization__code", "code")
 

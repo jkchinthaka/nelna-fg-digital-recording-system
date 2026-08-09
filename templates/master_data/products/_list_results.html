@@ -16,8 +16,9 @@
         <tr>
           <th scope="col">Code</th>
           <th scope="col">Name</th>
+          <th scope="col">ERP item</th>
+          <th scope="col">Category</th>
           <th scope="col">Organization</th>
-          <th scope="col">Description</th>
           <th scope="col">Status</th>
           <th scope="col">Actions</th>
         </tr>
@@ -29,14 +30,9 @@
               <a href="{% url 'master_data:product_detail' product.id %}">{{ product.code }}</a>
             </td>
             <td>{{ product.name }}</td>
+            <td>{% if product.erp_item_code %}{{ product.erp_item_code }}{% else %}—{% endif %}</td>
+            <td>{% if product.category %}{{ product.category }}{% else %}—{% endif %}</td>
             <td>{{ product.organization.code }} — {{ product.organization.name }}</td>
-            <td>
-              {% if product.description %}
-                {{ product.description|truncatechars:80 }}
-              {% else %}
-                —
-              {% endif %}
-            </td>
             <td>
               {% if product.is_active %}
                 <span class="status-pill status-pill--success">Active</span>
@@ -69,7 +65,8 @@
           {% endif %}
         </div>
         <p class="shift-card__meta">{{ product.organization.code }} — {{ product.organization.name }}</p>
-        {% if product.description %}<p class="shift-card__meta">{{ product.description|truncatechars:100 }}</p>{% endif %}
+        {% if product.erp_item_code %}<p class="shift-card__meta">ERP: {{ product.erp_item_code }}</p>{% endif %}
+        {% if product.category %}<p class="shift-card__meta">Category: {{ product.category }}</p>{% endif %}
         <p class="shift-card__meta data-table__actions">
           <a href="{% url 'master_data:product_detail' product.id %}">View</a>
           {% if product.organization_id in manageable_organization_ids %}
@@ -82,11 +79,11 @@
   {% if page_obj.paginator.num_pages > 1 %}
     <nav class="pagination" aria-label="FG Product list pages">
       {% if page_obj.has_previous %}
-        <a href="?page={{ page_obj.previous_page_number }}&amp;q={{ search|urlencode }}&amp;status={{ status }}&amp;organization={% if selected_organization %}{{ selected_organization.id }}{% endif %}">Previous</a>
+        <a href="?page={{ page_obj.previous_page_number }}&amp;q={{ search|urlencode }}&amp;status={{ status }}&amp;category={{ category|urlencode }}&amp;organization={% if selected_organization %}{{ selected_organization.id }}{% endif %}">Previous</a>
       {% endif %}
       <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
       {% if page_obj.has_next %}
-        <a href="?page={{ page_obj.next_page_number }}&amp;q={{ search|urlencode }}&amp;status={{ status }}&amp;organization={% if selected_organization %}{{ selected_organization.id }}{% endif %}">Next</a>
+        <a href="?page={{ page_obj.next_page_number }}&amp;q={{ search|urlencode }}&amp;status={{ status }}&amp;category={{ category|urlencode }}&amp;organization={% if selected_organization %}{{ selected_organization.id }}{% endif %}">Next</a>
       {% endif %}
     </nav>
   {% endif %}

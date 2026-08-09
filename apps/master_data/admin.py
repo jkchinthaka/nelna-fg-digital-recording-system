@@ -10,9 +10,27 @@ from apps.master_data.models import FGProduct
 
 @admin.register(FGProduct)
 class FGProductAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
-    list_display = ("code", "name", "organization", "is_active", "updated_at")
-    list_filter = ("is_active", "organization")
-    search_fields = ("code", "name", "organization__code")
+    list_display = (
+        "code",
+        "name",
+        "organization",
+        "erp_item_code",
+        "category",
+        "is_active",
+        "effective_from",
+        "effective_to",
+        "updated_at",
+    )
+    list_filter = ("is_active", "organization", "category")
+    search_fields = (
+        "code",
+        "name",
+        "erp_item_code",
+        "barcode",
+        "category",
+        "brand",
+        "organization__code",
+    )
     readonly_fields = ("id", "created_at", "updated_at")
     autocomplete_fields = ("organization",)
     ordering = ("organization__code", "code")

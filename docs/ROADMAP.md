@@ -161,13 +161,13 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | --- | --- |
 | Objective | Minimal FG / operational master data for MVP templates; instruments/training as approved |
 | Inputs | Owner provisional Product foundation decision (2026-08-07); later MASTER-001 evidence for real catalogues |
-| Outputs | `master_data` FG Product foundation (05A); authz hardening + MASTER-001 intake (05B); instruments/training later as approved |
-| Approval gate | Data owner review for real data; technical review of 05A/05B |
-| Branch naming | Direct-main quality-first for 05A/05B |
-| Exit criteria | 05A: configurable unseeded FG Product model/services/selectors/UI/audit without seeded business rows. 05B: object-aware Product UI affordances + MASTER-001 evidence intake readiness. Full Phase 05: evidenced entities only after MASTER-001 |
-| Dependencies | Phase 04 (04A/04B complete) |
-| Status | **05A + 05B implemented** — MASTER-001 unresolved; instruments/training not started; Product schema expansion blocked; Phase 05 **not** fully complete |
-| Notes | **Not** Phase 04. Do not combine with checklist templates or recording. Site-only RBAC does not imply organization Product management under provisional ownership. |
+| Outputs | `master_data` FG Product foundation (05A); authz hardening + MASTER-001 intake (05B); expandable optional mapping fields + controlled CSV import (05C); instruments/training later as approved |
+| Approval gate | Data owner review for real data; technical review of 05A/05B/05C |
+| Branch naming | Direct-main quality-first for 05A/05B/05C |
+| Exit criteria | 05A: configurable unseeded FG Product model/services/selectors/UI/audit without seeded business rows. 05B: object-aware Product UI affordances + MASTER-001 evidence intake readiness. 05C: optional mapping/attribute blanks + controlled import (no official catalogue). Full Phase 05: evidenced entities only after MASTER-001 |
+| Dependencies | Phase 04 (04A/04B/04C technical complete; official org/shift values still pending) |
+| Status | **05A + 05B + 05C technical foundation implemented** — MASTER-001 unresolved; instruments/training not started; official catalogue **not** received; Phase 05 **not** fully complete |
+| Notes | **Not** Phase 04. Do not combine with checklist templates or recording. Site-only RBAC does not imply organization Product management under provisional ownership. No live Bileeta calls in 05C. |
 
 ## Phase 06 — Checklist definition and versioning
 

@@ -57,6 +57,18 @@ class SecurityAuditEvent(models.Model):
         FG_PRODUCT_UPDATED = "FG_PRODUCT_UPDATED", "FG Product updated"
         FG_PRODUCT_ACTIVATED = "FG_PRODUCT_ACTIVATED", "FG Product activated"
         FG_PRODUCT_DEACTIVATED = "FG_PRODUCT_DEACTIVATED", "FG Product deactivated"
+        FG_PRODUCT_IMPORT_PREVIEWED = (
+            "FG_PRODUCT_IMPORT_PREVIEWED",
+            "FG Product import previewed",
+        )
+        FG_PRODUCT_IMPORT_COMPLETED = (
+            "FG_PRODUCT_IMPORT_COMPLETED",
+            "FG Product import completed",
+        )
+        FG_PRODUCT_IMPORT_FAILED = (
+            "FG_PRODUCT_IMPORT_FAILED",
+            "FG Product import failed",
+        )
         CHECKLIST_TEMPLATE_CREATED = "CHECKLIST_TEMPLATE_CREATED", "Checklist template created"
         CHECKLIST_TEMPLATE_UPDATED = "CHECKLIST_TEMPLATE_UPDATED", "Checklist template updated"
         CHECKLIST_TEMPLATE_ACTIVATED = (

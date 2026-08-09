@@ -61,9 +61,10 @@ MASTER-001 remains **EVIDENCE REQUIRED** for official Product Master inventory a
 | Official Product Master field inventory / pilot data (MASTER-001) | Unresolved — EVIDENCE REQUIRED — use [MASTER_001_FG_PRODUCT_EVIDENCE_INTAKE.md](MASTER_001_FG_PRODUCT_EVIDENCE_INTAKE.md) |
 | Configurable unseeded FG Product technical foundation (Phase 05A) | Implemented (provisional technical only) |
 | Product UI authorization hardening (Phase 05B) | Implemented — object-aware manage affordances; site-only does not escalate |
+| FG Product master expansion + controlled import (Phase 05C) | Implemented — optional blank mapping fields; header-only CSV import; **no** official catalogue loaded |
 | Site / Product ownership | Unresolved — provisional ownership remains organization-scoped |
-| Category / UOM / line / ERP IDs / instruments / training | Excluded from 05A/05B; unresolved |
-| Real Product loading / schema expansion | Remains blocked pending MASTER-001 |
+| Official category / UOM / ERP catalogues / instruments / training | Unresolved — optional blank columns only where 05C added them |
+| Real Product catalogue load | Remains blocked pending MASTER-001 / APR-005 |
 | Real-data configuration / operational / production use | Remains blocked |
 
 Do **not** invent product catalogues, ERP mappings, or claim MASTER-001 resolved.
