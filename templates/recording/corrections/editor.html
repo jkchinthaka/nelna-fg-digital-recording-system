@@ -112,12 +112,13 @@
                             <p>Preview: {{ preview }}</p>
                           </div>
                         {% else %}
+                          {% condition_slot condition_flags child sample_index as cmeta %}
                           {% response_bound_field_at form child sample_index as field %}
                           {% if field %}
-                            <div class="form-field">
+                            <div class="form-field"{% if not cmeta.visible %} hidden{% endif %}>
                               <label for="{{ field.id_for_label }}">
                                 {{ child.code }} — {{ child.label }}
-                                {% if child.is_required %}(required){% endif %}
+                                {% if cmeta.required %}(required){% endif %}
                               </label>
                               {{ field }}
                               {% if field.errors %}
@@ -148,10 +149,11 @@
                 </fieldset>
               {% endwith %}
             {% elif item.item_kind == "CALCULATED" %}
-              <article class="recording-item recording-item--calculated">
+              {% condition_slot condition_flags item 1 as cmeta %}
+              <article class="recording-item recording-item--calculated"{% if not cmeta.visible %} hidden{% endif %}>
                 <h3>
                   {{ item.code }} — {{ item.label }}
-                  {% if item.is_required %}<span class="recording-item__required">Required</span>{% endif %}
+                  {% if cmeta.required %}<span class="recording-item__required">Required</span>{% endif %}
                 </h3>
                 <p class="form-help">Calculated ({{ item.calculation_operator }}) — server-authoritative.</p>
                 {% calculated_preview responses item 1 as preview %}
@@ -160,11 +162,12 @@
                 </p>
               </article>
             {% else %}
+              {% condition_slot condition_flags item 1 as cmeta %}
               {% with bound=form|response_bound_field:item %}
-                <article class="recording-item">
+                <article class="recording-item"{% if not cmeta.visible %} hidden{% endif %}>
                   <label for="{% if bound %}{{ bound.id_for_label }}{% endif %}">
                     {{ item.code }} — {{ item.label }}
-                    {% if item.is_required %}<span class="recording-item__required">Required</span>{% endif %}
+                    {% if cmeta.required %}<span class="recording-item__required">Required</span>{% endif %}
                   </label>
                   {% if item.help_text %}<p class="form-help">{{ item.help_text }}</p>{% endif %}
                   {% if item.response_type == "NUMBER" %}

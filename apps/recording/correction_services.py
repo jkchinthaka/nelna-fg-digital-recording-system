@@ -210,6 +210,7 @@ def _clone_working_responses_from_snapshot(
                 text_value=snap.text_value,
                 selected_option_id=snap.selected_option_id,
                 calculation_context=snap.calculation_context,
+                condition_context=snap.condition_context,
             )
         )
     if working_rows:
@@ -506,6 +507,7 @@ def resubmit_checklist_correction(
                         text_value=response.text_value,
                         selected_option_id=response.selected_option_id,
                         calculation_context=None,
+                        condition_context=response.condition_context,
                     )
                 elif item.item_kind == ChecklistItemKind.CALCULATED:
                     if response.number_value is None:
@@ -519,6 +521,7 @@ def resubmit_checklist_correction(
                         text_value="",
                         selected_option_id=None,
                         calculation_context=response.calculation_context,
+                        condition_context=response.condition_context,
                     )
                 else:
                     continue

@@ -151,6 +151,12 @@ class ChecklistResponse(models.Model):
         default=None,
         help_text="Server-authored explanation for CALCULATED drafts (operator + inputs).",
     )
+    condition_context = models.JSONField(
+        null=True,
+        blank=True,
+        default=None,
+        help_text="Server-authored conditional applicability snapshot (Phase 06J).",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -318,6 +324,15 @@ class ChecklistSubmissionResponse(models.Model):
         help_text=(
             "Frozen CALCULATED explanation at submit time. Historical truth — "
             "do not recompute with future definition rules."
+        ),
+    )
+    condition_context = models.JSONField(
+        null=True,
+        blank=True,
+        default=None,
+        help_text=(
+            "Frozen conditional applicability at submit time. Historical truth — "
+            "do not re-evaluate with future definition rules."
         ),
     )
     created_at = models.DateTimeField(auto_now_add=True)

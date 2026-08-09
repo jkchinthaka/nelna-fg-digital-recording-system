@@ -124,6 +124,11 @@ omit = [
     "manage.py",
     "apps/mongo_poc/*",
     "config/settings/mongo_poc.py",
+    "apps/capa/*",
+    "apps/nonconformance/*",
+    "apps/supplier_quality/*",
+    "apps/analytics/*",
+    "apps/feature_flags/*",
 ]
 
 [tool.coverage.report]

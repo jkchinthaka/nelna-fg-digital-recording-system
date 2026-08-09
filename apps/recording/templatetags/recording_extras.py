@@ -59,3 +59,26 @@ def calculated_preview(responses: Any, item: Any, sample_index: int = 1) -> str:
         return "—"
     unit = f" {item.unit}" if getattr(item, "unit", "") else ""
     return f"{row.number_value}{unit}"
+
+
+@register.simple_tag
+def condition_slot(flags: Any, item: Any, sample_index: int = 1) -> dict[str, Any]:
+    """Server-evaluated visibility/requiredness for UX mirroring (not authoritative)."""
+    default = {
+        "visible": True,
+        "required": bool(getattr(item, "is_required", False)),
+        "evidence_required": False,
+    }
+    if flags is None or item is None:
+        return default
+    try:
+        meta = flags.get((item.id, int(sample_index)))
+    except AttributeError:
+        return default
+    if not isinstance(meta, dict):
+        return default
+    return {
+        "visible": bool(meta.get("visible", True)),
+        "required": bool(meta.get("required", default["required"])),
+        "evidence_required": bool(meta.get("evidence_required", False)),
+    }

@@ -37,19 +37,20 @@ Architecture + ADR only. No separate engine.
 
 **Exit:** Deterministic tests for each operator; injection attempts denied.
 
-## 06J — Conditional logic
+## 06J — Conditional logic — IMPLEMENTED (technical)
 
-**Objective:** Server-authoritative `VISIBLE_IF` / `REQUIRED_IF` / `EVIDENCE_REQUIRED_IF` (evidence kind may stub until `evidence` module).
+**Objective:** Server-authoritative `VISIBLE_IF` / `REQUIRED_IF` / `EVIDENCE_REQUIRED_IF` (evidence kind fail-closed stub until `evidence` module).
 
 | Deliverable | Notes |
 | --- | --- |
-| Structured predicates | Closed comparators; typed expected values |
-| Save/submit re-eval | Hidden bypass fails |
-| UI mirror | Non-authoritative progressive display |
+| Structured predicates | Closed comparators; typed expected values; no expression language |
+| Save/submit re-eval | Hidden bypass fails; dynamic requiredness |
+| Snapshot | `condition_context` frozen at submit |
+| UI mirror | Non-authoritative progressive display hooks (optional) |
 
-**Out of scope:** expression language, cross-template predicates.
+**Out of scope:** expression language, cross-template predicates, invented form predicates.
 
-**Exit:** Authorization + bypass + org-isolation tests.
+**Exit:** Authorization + bypass + org-isolation / snapshot tests.
 
 ## 06K — Deterministic evaluation
 

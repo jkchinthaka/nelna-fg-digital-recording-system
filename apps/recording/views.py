@@ -287,6 +287,7 @@ def record_detail(request: HttpRequest, record_id: uuid.UUID) -> HttpResponse:
             "sections": sections,
             "form": form,
             "completeness": completeness,
+            "condition_flags": completeness.get("condition_flags") or {},
             "sample_indexes_by_group": sample_indexes_by_group,
             "children_by_parent": children_by_parent,
             "responses": responses,
@@ -494,6 +495,7 @@ def correction_detail(request: HttpRequest, correction_id: uuid.UUID) -> HttpRes
     record = context["record"]
     sections = context["sections"]
     responses = context["responses"]
+    completeness = context["completeness"]
     sample_indexes_by_group = context["sample_indexes_by_group"]
     items = [item for section in sections for item in section.items.all()]
     initial = _initial_from_responses(responses, items)
@@ -542,6 +544,7 @@ def correction_detail(request: HttpRequest, correction_id: uuid.UUID) -> HttpRes
         {
             **context,
             "form": form,
+            "condition_flags": completeness.get("condition_flags") or {},
             "response_field_name": response_field_name,
             "ChecklistResponseType": ChecklistResponseType,
         },

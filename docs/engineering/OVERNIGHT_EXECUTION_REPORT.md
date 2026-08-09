@@ -20,8 +20,9 @@
 | 0 Classify | 9effb11 | 9effb11 | COMPLETE | n/a | n/a | healthy PG/Redis | — | — | No unclassifiable D at start; D appeared mid-session |
 | 1 / 06I | 9effb11 | 8acfc68 | COMPLETE | 330 passed (host) | 80.14% | PG/Redis healthy | `feat: add safe checklist calculated fields` | Yes | No eval; Decimal; snapshot context |
 | 2 / DB-01 | 8acfc68 | 8ff44e2 | COMPLETE | docs | n/a | n/a | `docs: assess MongoDB migration architecture` | Yes | POC REQUIRED; no migration |
-| 3 / DB-02 | 8ff44e2 | TBC | COMPLETE (cutover blocked) | 16/16 mongo_poc | n/a (isolated) | mongo RS :27027 + PG/Redis | `test: validate MongoDB architecture proof of concept` | TBC | Isolated invariants PASS; production-path NOT_TESTED/FAIL → **DO NOT MIGRATE** |
+| 3 / DB-02 | 8ff44e2 | 953f09f | COMPLETE (cutover blocked) | 16/16 mongo_poc | n/a (isolated) | mongo RS :27027 + PG/Redis | `test: validate MongoDB architecture proof of concept` | Yes | Isolated invariants PASS; production-path NOT_TESTED/FAIL → **DO NOT MIGRATE** |
 | 4 / DB-03 | — | — | SKIPPED_DEPENDENCY | — | — | — | — | — | Requires explicit `MONGODB POC PASSED — DB-03 MAY PROCEED` |
+| 5 / 06J | 953f09f | TBC | COMPLETE (generic foundation) | 06J tests + clone regression | TBC | PG/Redis | planned `feat: add conditional checklist rules` | TBC | No seeded predicates; evidence fail-closed stub |
 
 ## Preserved uncommitted (do not stage into Mongo/06I commits)
 

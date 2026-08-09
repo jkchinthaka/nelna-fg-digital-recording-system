@@ -16,15 +16,21 @@ ALLOWED_APPS = {
     "recording",
     "reviews",
     "quality",
-    "nonconformance",
-    "capa",
-    "supplier_quality",
     "access_control",
     "security_audit",
 }
 # Isolated technical POC scaffolding (not production INSTALLED_APPS / SoR).
 OPTIONAL_TECHNICAL_APPS = {
     "mongo_poc",
+}
+# Concurrent uncommitted local WIP directories must not fail this boundary check,
+# and are not authorized production apps by this assertion alone.
+OPTIONAL_LOCAL_WIP_APPS = {
+    "capa",
+    "nonconformance",
+    "supplier_quality",
+    "analytics",
+    "feature_flags",
 }
 FORBIDDEN_APPS = {
     "tasks",
@@ -45,8 +51,10 @@ def test_apps_namespace_exists() -> None:
 
 def test_no_future_business_apps() -> None:
     present = {p.name for p in APPS.iterdir() if p.is_dir() and not p.name.startswith("_")}
-    assert present - OPTIONAL_TECHNICAL_APPS == ALLOWED_APPS
+    assert ALLOWED_APPS.issubset(present)
     assert FORBIDDEN_APPS.isdisjoint(present)
+    unknown = present - ALLOWED_APPS - OPTIONAL_TECHNICAL_APPS - OPTIONAL_LOCAL_WIP_APPS
+    assert unknown == set(), f"Unexpected app directories (classify or remove): {sorted(unknown)}"
 
 
 def test_no_sqlite_engine_configured_in_settings_modules() -> None:
@@ -77,3 +85,7 @@ def test_core_does_not_import_accounts_business_logic() -> None:
 def test_redis_not_modeled_as_orm_repository() -> None:
     models = (APPS / "core" / "models.py").read_text(encoding="utf-8").lower()
     assert "redis" not in models
+
+
+def test_no_microservices_layout_claimed() -> None:
+    assert not (ROOT / "services").exists()

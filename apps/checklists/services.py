@@ -14,12 +14,17 @@ from django.utils import timezone
 from apps.access_control.services import Scope, require_permission
 from apps.accounts.models import User
 from apps.checklists.calculation import assert_known_operator, validate_calculation_definition
+from apps.checklists.conditions import (
+    detect_visibility_cycles,
+    validate_rule_definition,
+)
 from apps.checklists.constants import REPEAT_SAMPLE_TECHNICAL_CEILING
 from apps.checklists.models import (
     ChecklistCalculationOperand,
     ChecklistItem,
     ChecklistItemKind,
     ChecklistItemOption,
+    ChecklistItemRule,
     ChecklistResponseType,
     ChecklistSection,
     ChecklistTemplate,
@@ -314,6 +319,90 @@ def _normalize_item_kind_fields(
         maximum_value=maximum_value,
     )
     return kind, parent_item, resp_type, unit_text, min_value, max_value, None, None, None, ""
+
+
+@transaction.atomic
+def set_checklist_item_rule(
+    *,
+    actor: User | None,
+    target_item_id: uuid.UUID,
+    rule_kind: str,
+    operand_item_id: uuid.UUID,
+    comparator: str,
+    expected_text: str = "",
+    expected_number: Decimal | None = None,
+    expected_boolean: bool | None = None,
+    expected_option_id: uuid.UUID | None = None,
+    expected_list: list[Any] | None = None,
+) -> ChecklistItemRule:
+    """Create or replace one conditional rule (kind) on a draft item."""
+    from apps.checklists.conditions import (
+        assert_known_comparator,
+        assert_known_rule_kind,
+        detect_visibility_cycles,
+        validate_rule_definition,
+    )
+
+    user = _require_authenticated_actor(actor)
+    item = _lock_item(target_item_id)
+    require_permission(
+        user, MANAGE_CHECKLIST, scope=version_authorization_scope(item.section.version)
+    )
+    _require_draft(item.section.version)
+    kind = assert_known_rule_kind(rule_kind)
+    comp = assert_known_comparator(comparator)
+
+    version_id = item.section.version_id
+    version_items = {
+        row.id: row
+        for row in ChecklistItem.objects.select_related("section", "parent_item").filter(
+            section__version_id=version_id
+        )
+    }
+    operand = version_items.get(operand_item_id)
+    if operand is None:
+        raise ValidationError(
+            {"operand_item": f"Operand {operand_item_id} is not in this checklist version."}
+        )
+
+    ChecklistItemRule.objects.filter(target_item_id=item.id, rule_kind=kind).delete()
+    rule = ChecklistItemRule(
+        target_item=item,
+        rule_kind=kind,
+        operand_item=operand,
+        comparator=comp,
+        expected_text=(expected_text or "").strip(),
+        expected_number=expected_number,
+        expected_boolean=expected_boolean,
+        expected_option_id=expected_option_id,
+        expected_list=list(expected_list or []),
+    )
+    validate_rule_definition(rule=rule, items_by_id=version_items)
+    rule.full_clean()
+    rule.save()
+
+    all_rules = list(ChecklistItemRule.objects.filter(target_item__section__version_id=version_id))
+    detect_visibility_cycles(rules=all_rules)
+    return rule
+
+
+@transaction.atomic
+def clear_checklist_item_rule(
+    *,
+    actor: User | None,
+    target_item_id: uuid.UUID,
+    rule_kind: str,
+) -> None:
+    from apps.checklists.conditions import assert_known_rule_kind
+
+    user = _require_authenticated_actor(actor)
+    item = _lock_item(target_item_id)
+    require_permission(
+        user, MANAGE_CHECKLIST, scope=version_authorization_scope(item.section.version)
+    )
+    _require_draft(item.section.version)
+    kind = assert_known_rule_kind(rule_kind)
+    ChecklistItemRule.objects.filter(target_item_id=item.id, rule_kind=kind).delete()
 
 
 @transaction.atomic
@@ -630,7 +719,9 @@ def _lock_item(item_id: uuid.UUID) -> ChecklistItem:
 
 def _clone_structure(*, source: ChecklistVersion, target: ChecklistVersion) -> None:
     for section in source.sections.prefetch_related(
-        "items__options", "items__calculation_operand_links"
+        "items__options",
+        "items__calculation_operand_links",
+        "items__condition_rules",
     ).order_by("position", "pk"):
         new_section = ChecklistSection.objects.create(
             version=target,
@@ -696,6 +787,61 @@ def _clone_structure(*, source: ChecklistVersion, target: ChecklistVersion) -> N
                     source_item=source_mapped,
                     position=link.position,
                 )
+
+    # Remap conditional rules across the full cloned version (codes + section position).
+    full_source_items = list(
+        ChecklistItem.objects.filter(section__version=source)
+        .prefetch_related(
+            "condition_rules__expected_option",
+            "condition_rules__operand_item__section",
+            "options",
+        )
+        .select_related("section")
+    )
+    full_target_by_code_section: dict[tuple[str, int], ChecklistItem] = {}
+    for item in ChecklistItem.objects.filter(section__version=target).select_related("section"):
+        full_target_by_code_section[(item.code, item.section.position)] = item
+    option_map: dict[uuid.UUID, uuid.UUID] = {}
+    for source_item in full_source_items:
+        target_item = full_target_by_code_section.get(
+            (source_item.code, source_item.section.position)
+        )
+        if target_item is None:
+            continue
+        source_opts = list(source_item.options.order_by("position", "pk"))
+        target_opts = list(target_item.options.order_by("position", "pk"))
+        for src_opt, tgt_opt in zip(source_opts, target_opts, strict=False):
+            option_map[src_opt.id] = tgt_opt.id
+
+    for source_item in full_source_items:
+        target_item = full_target_by_code_section.get(
+            (source_item.code, source_item.section.position)
+        )
+        if target_item is None:
+            continue
+        for rule in source_item.condition_rules.all():
+            operand_source = rule.operand_item
+            operand_target = full_target_by_code_section.get(
+                (operand_source.code, operand_source.section.position)
+            )
+            if operand_target is None:
+                raise ValidationError(
+                    {"version": f"Unable to clone condition rule for item {source_item.code}."}
+                )
+            expected_option_id = None
+            if rule.expected_option_id:
+                expected_option_id = option_map.get(rule.expected_option_id)
+            ChecklistItemRule.objects.create(
+                target_item=target_item,
+                rule_kind=rule.rule_kind,
+                operand_item=operand_target,
+                comparator=rule.comparator,
+                expected_text=rule.expected_text,
+                expected_number=rule.expected_number,
+                expected_boolean=rule.expected_boolean,
+                expected_option_id=expected_option_id,
+                expected_list=list(rule.expected_list or []),
+            )
 
 
 @transaction.atomic
@@ -1364,6 +1510,9 @@ def _validate_publish_structure(version: ChecklistVersion) -> None:
             "items__child_items",
             "items__calculation_operand_links__source_item__section",
             "items__calculation_operand_links__source_item__parent_item",
+            "items__condition_rules__operand_item__section",
+            "items__condition_rules__operand_item__parent_item",
+            "items__condition_rules__expected_option",
         ).order_by("position")
     )
     if not sections:
@@ -1517,6 +1666,27 @@ def _validate_publish_structure(version: ChecklistVersion) -> None:
                 raise ValidationError(
                     {"version": (f"Item {item.code} is not SELECT and must not have options.")}
                 )
+
+    # Conditional rules (Phase 06J) — validate after items_by_id is complete.
+    all_rules: list[ChecklistItemRule] = []
+    for item in items_by_id.values():
+        for rule in item.condition_rules.all():
+            all_rules.append(rule)
+            try:
+                validate_rule_definition(rule=rule, items_by_id=items_by_id)
+            except ValidationError as exc:
+                detail = "; ".join(
+                    str(m)
+                    for msgs in getattr(exc, "message_dict", {"error": exc.messages}).values()
+                    for m in (msgs if isinstance(msgs, list) else [msgs])
+                )
+                raise ValidationError(
+                    {"version": f"Item {item.code} has invalid condition rule: {detail}"}
+                ) from exc
+    try:
+        detect_visibility_cycles(rules=all_rules)
+    except ValidationError as exc:
+        raise ValidationError({"version": f"Conditional rules invalid: {exc.messages[0]}"}) from exc
 
 
 @transaction.atomic

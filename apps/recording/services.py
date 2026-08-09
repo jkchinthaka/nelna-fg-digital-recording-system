@@ -343,34 +343,58 @@ def collect_submission_completeness(
         )
 
     top_simple, groups, children_by_parent, top_calculated = partition_definition_items(items)
+    from apps.recording.condition_runtime import resolve_condition_flags
+
+    flags = resolve_condition_flags(items=items, responses=responses)
     missing_required: list[ChecklistItem] = []
     answered_count = 0
     required_slots = 0
     answered_required_slots = 0
+    evidence_required_items: list[ChecklistItem] = []
+
+    def _slot_meta(item: ChecklistItem, sample_index: int) -> dict[str, Any]:
+        return flags.get(
+            (item.id, sample_index),
+            {
+                "visible": True,
+                "required": bool(item.is_required),
+                "evidence_required": False,
+            },
+        )
 
     for item in top_simple:
+        meta = _slot_meta(item, 1)
+        if not meta["visible"]:
+            continue
         response = responses.get((item.id, 1))
         valid = response is not None and _response_is_structurally_valid(item, response)
         if valid:
             answered_count += 1
-        if item.is_required:
+        if meta["required"]:
             required_slots += 1
             if valid:
                 answered_required_slots += 1
             else:
                 missing_required.append(item)
+        if meta["evidence_required"] and item not in evidence_required_items:
+            evidence_required_items.append(item)
 
     for item in top_calculated:
+        meta = _slot_meta(item, 1)
+        if not meta["visible"]:
+            continue
         response = responses.get((item.id, 1))
         valid = response is not None and response.number_value is not None
         if valid:
             answered_count += 1
-        if item.is_required:
+        if meta["required"]:
             required_slots += 1
             if valid:
                 answered_required_slots += 1
             else:
                 missing_required.append(item)
+        if meta["evidence_required"] and item not in evidence_required_items:
+            evidence_required_items.append(item)
 
     for group in groups:
         children = children_by_parent.get(group.id, [])
@@ -381,33 +405,44 @@ def collect_submission_completeness(
         target_n = max(n, min_required)
         if n < min_required:
             for child in simple_children:
-                if child.is_required and child not in missing_required:
+                meta = _slot_meta(child, 1)
+                if meta["visible"] and meta["required"] and child not in missing_required:
                     missing_required.append(child)
         for sample_index in range(1, target_n + 1):
             for child in simple_children:
+                meta = _slot_meta(child, sample_index)
+                if not meta["visible"]:
+                    continue
                 response = responses.get((child.id, sample_index))
                 valid = response is not None and _response_is_structurally_valid(child, response)
                 if valid and sample_index <= n:
                     answered_count += 1
-                if child.is_required and sample_index <= target_n:
+                if meta["required"] and sample_index <= target_n:
                     required_slots += 1
                     if valid and sample_index <= n:
                         answered_required_slots += 1
                     elif sample_index <= max(n, min_required):
                         if child not in missing_required:
                             missing_required.append(child)
+                if meta["evidence_required"] and child not in evidence_required_items:
+                    evidence_required_items.append(child)
             for child in calculated_children:
+                meta = _slot_meta(child, sample_index)
+                if not meta["visible"]:
+                    continue
                 response = responses.get((child.id, sample_index))
                 valid = response is not None and response.number_value is not None
                 if valid and sample_index <= n:
                     answered_count += 1
-                if child.is_required and sample_index <= target_n:
+                if meta["required"] and sample_index <= target_n:
                     required_slots += 1
                     if valid and sample_index <= n:
                         answered_required_slots += 1
                     elif sample_index <= max(n, min_required):
                         if child not in missing_required:
                             missing_required.append(child)
+                if meta["evidence_required"] and child not in evidence_required_items:
+                    evidence_required_items.append(child)
 
     answerable = [
         item
@@ -419,9 +454,11 @@ def collect_submission_completeness(
         "required_items": required_slots,
         "answered_required_items": answered_required_slots,
         "missing_required_items": missing_required,
+        "evidence_required_items": evidence_required_items,
         "answered_items": answered_count,
         "items": items,
         "responses": responses,
+        "condition_flags": flags,
     }
 
 
@@ -447,6 +484,24 @@ def validate_record_ready_for_submission(
         }
         errors["completeness"] = [f"{len(missing)} required item(s) remain unanswered."]
         raise ValidationError(errors)
+    evidence_needed = stats.get("evidence_required_items") or []
+    if evidence_needed:
+        raise ValidationError(
+            {
+                "evidence": [
+                    "EVIDENCE_REQUIRED_IF is true for one or more items, but the evidence "
+                    "attachment module is not yet available (Phase 11). Submission blocked "
+                    "(fail-closed stub)."
+                ],
+                **{
+                    str(item.id): [
+                        f"Evidence required for {item.code} (EVIDENCE_REQUIRED_IF); "
+                        "evidence module not available."
+                    ]
+                    for item in evidence_needed
+                },
+            }
+        )
     return stats
 
 
@@ -560,6 +615,7 @@ def save_checklist_draft_responses(
             )
             response.sample_index = sample_index
             response.calculation_context = None
+            response.condition_context = None
             try:
                 _apply_typed_value(response=response, item=item, raw=raw)
                 response.full_clean()
@@ -578,12 +634,23 @@ def save_checklist_draft_responses(
             raise ValidationError(errors)
 
         from apps.recording.calculation_runtime import apply_calculations_to_draft
+        from apps.recording.condition_runtime import (
+            apply_condition_context_to_drafts,
+            assert_no_answers_for_hidden_items,
+            clear_hidden_draft_responses,
+            resolve_condition_flags,
+        )
 
         existing = apply_calculations_to_draft(
             record_id=record.id,
             items=item_rows,
             responses=existing,
         )
+        flags = resolve_condition_flags(items=item_rows, responses=existing)
+        non_blank_pending = [key for key, raw in normalized.items() if not _is_blank_answer(raw)]
+        assert_no_answers_for_hidden_items(flags=flags, pending_keys=non_blank_pending)
+        existing = clear_hidden_draft_responses(flags=flags, existing=existing)
+        apply_condition_context_to_drafts(flags=flags, existing=existing)
         changed += sum(1 for item in item_rows if item.item_kind == ChecklistItemKind.CALCULATED)
 
         record.save(update_fields=["updated_at"])
@@ -718,6 +785,7 @@ def submit_checklist_record(
                         text_value=response.text_value,
                         selected_option_id=response.selected_option_id,
                         calculation_context=None,
+                        condition_context=response.condition_context,
                     )
                 elif item.item_kind == ChecklistItemKind.CALCULATED:
                     if response.number_value is None:
@@ -731,6 +799,7 @@ def submit_checklist_record(
                         text_value="",
                         selected_option_id=None,
                         calculation_context=response.calculation_context,
+                        condition_context=response.condition_context,
                     )
                 else:
                     continue

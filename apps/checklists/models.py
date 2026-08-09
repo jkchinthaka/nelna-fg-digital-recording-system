@@ -53,6 +53,34 @@ class ChecklistCalculationOperator(models.TextChoices):
     RANGE = "RANGE", "Range (max − min)"
 
 
+class ChecklistConditionRuleKind(models.TextChoices):
+    """Closed conditional rule kinds — ADR-019 Phase 06J."""
+
+    VISIBLE_IF = "VISIBLE_IF", "Visible if"
+    REQUIRED_IF = "REQUIRED_IF", "Required if"
+    EVIDENCE_REQUIRED_IF = "EVIDENCE_REQUIRED_IF", "Evidence required if"
+
+
+class ChecklistConditionComparator(models.TextChoices):
+    """Closed predicate comparators — ADR-019 Phase 06J. No expression language.
+
+    Canonical tokens: EQ/NE/IN/GT/GTE/LT/LTE/IS_ANSWERED plus IS_EMPTY/IS_NOT_EMPTY
+    (empty-check aliases requested for 06J UX clarity). Long-form aliases such as
+    EQUALS normalize to these tokens in services — never executed as expressions.
+    """
+
+    EQ = "EQ", "Equals"
+    NE = "NE", "Not equals"
+    IN = "IN", "In list"
+    GT = "GT", "Greater than"
+    GTE = "GTE", "Greater than or equal"
+    LT = "LT", "Less than"
+    LTE = "LTE", "Less than or equal"
+    IS_ANSWERED = "IS_ANSWERED", "Is answered"
+    IS_EMPTY = "IS_EMPTY", "Is empty"
+    IS_NOT_EMPTY = "IS_NOT_EMPTY", "Is not empty"
+
+
 class ChecklistTemplate(models.Model):
     """
     Stable logical identity of a checklist across versions.
@@ -516,6 +544,94 @@ class ChecklistCalculationOperand(models.Model):
             if self.calculated_item.section.version_id != self.source_item.section.version_id:
                 raise ValidationError(
                     {"source_item": "Operand must be in the same checklist version."}
+                )
+
+
+class ChecklistItemRule(models.Model):
+    """
+    Structured conditional rule for one checklist item (Phase 06J / ADR-019).
+
+    Closed rule kinds + comparators only. No free-form expressions.
+    Empty by default — no Nelna business predicates are seeded.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    target_item = models.ForeignKey(
+        ChecklistItem,
+        on_delete=models.CASCADE,
+        related_name="condition_rules",
+    )
+    rule_kind = models.CharField(
+        max_length=32,
+        choices=ChecklistConditionRuleKind.choices,
+    )
+    operand_item = models.ForeignKey(
+        ChecklistItem,
+        on_delete=models.CASCADE,
+        related_name="referenced_by_condition_rules",
+    )
+    comparator = models.CharField(
+        max_length=16,
+        choices=ChecklistConditionComparator.choices,
+    )
+    expected_text = models.CharField(max_length=255, blank=True, default="")
+    expected_number = models.DecimalField(
+        max_digits=14, decimal_places=4, null=True, blank=True
+    )
+    expected_boolean = models.BooleanField(null=True, blank=True)
+    expected_option = models.ForeignKey(
+        "ChecklistItemOption",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="condition_rule_expectations",
+    )
+    expected_list = models.JSONField(default=list, blank=True)
+
+    class Meta:
+        ordering = ("rule_kind", "pk")
+        verbose_name = "Checklist item rule"
+        verbose_name_plural = "Checklist item rules"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["target_item", "rule_kind"],
+                name="chk_item_rule_kind_uniq",
+            ),
+        ]
+        indexes = [
+            models.Index(
+                fields=["target_item", "rule_kind"],
+                name="chk_item_rule_kind_idx",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.rule_kind} on {self.target_item_id}"
+
+    def clean(self) -> None:
+        super().clean()
+        kind = (self.rule_kind or "").strip().upper()
+        if kind and kind not in ChecklistConditionRuleKind.values:
+            raise ValidationError({"rule_kind": "Unknown or disallowed rule kind."})
+        comparator = (self.comparator or "").strip().upper()
+        if comparator and comparator not in ChecklistConditionComparator.values:
+            raise ValidationError({"comparator": "Unknown or disallowed comparator."})
+        if self.target_item_id and self.operand_item_id:
+            if self.target_item_id == self.operand_item_id:
+                raise ValidationError(
+                    {"operand_item": "A rule cannot reference its own target as operand."}
+                )
+            if self.target_item.section.version_id != self.operand_item.section.version_id:
+                raise ValidationError(
+                    {"operand_item": "Operand must be in the same checklist version."}
+                )
+            if self.operand_item.item_kind == ChecklistItemKind.REPEATING_GROUP:
+                raise ValidationError(
+                    {"operand_item": "REPEATING_GROUP containers cannot be condition operands."}
+                )
+            if self.target_item.item_kind == ChecklistItemKind.REPEATING_GROUP:
+                raise ValidationError(
+                    {"target_item": "REPEATING_GROUP containers cannot be rule targets."}
                 )
 
 
