@@ -168,6 +168,16 @@ CELERY_TASK_ALWAYS_EAGER = False
 CELERY_TASK_EAGER_PROPAGATES = True
 CELERY_TASK_ACKS_LATE = True
 CELERY_TASK_REJECT_ON_WORKER_LOST = True
+# Infrastructure poll only — not a Nelna checklist frequency (Phase 07E).
+from celery.schedules import crontab  # noqa: E402
+
+CELERY_BEAT_SCHEDULE = {
+    "generate-due-checklist-tasks": {
+        "task": "apps.scheduling.tasks.generate_due_checklist_tasks",
+        "schedule": crontab(minute="*/5"),
+        "options": {"expires": 240},
+    },
+}
 
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = "Lax"

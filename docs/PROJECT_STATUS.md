@@ -94,6 +94,7 @@ Not started (by MODULE_MAP): `evidence`, `nonconformance`, `capa`, `loading`, `d
 | 07A/07B Scheduling foundation | Complete | Real generation blocked (batch source, applicability, roles) |
 | 07C Checklist applicability engine | Technical complete — version-safe rules + preview | APR-013/014/015 EVIDENCE REQUIRED; no Line/Process masters; production generation still BLOCKED |
 | 07D Effective version policy | Technical complete — PUBLISHED-only selection; overlap/NO_ELIGIBLE blocked; audited effectivity | APR-015 as-of event still DECISION REQUIRED; historical pins never auto-upgrade |
+| 07E Recurring tasks | Technical complete — BATCH/SHIFT_*/SCHEDULED/MANUAL; idempotent occurrence keys; Celery Beat catch-up; OVERDUE/MISSED without auto-NCR | Frequencies EVIDENCE REQUIRED; production generation still BLOCKED |
 | 08A/08B Recording/submit | Complete | Production recording blocked |
 | 09A/09B Supervisor review + correction | Complete | Production review/correction blocked |
 | 10A QA disposition | Complete (manual RELEASE/HOLD/REJECT only) | Production QA blocked; post-QA workflows not started |
@@ -267,3 +268,6 @@ Versioned ProductSpecification / SpecificationVersion / SpecificationParameter f
 
 Technical effective-version selection is implemented: optional inclusive `effective_from` / `effective_to` on `ChecklistVersion`, deterministic `ONE_ELIGIBLE_VERSION` resolution, explicit `NO_ELIGIBLE_VERSION` / `OVERLAPPING_ELIGIBLE_VERSIONS` blocks (never silent fallback or arbitrary pick), audited effectivity updates, and optional task helper that pins the resolved PUBLISHED version. APR-015 (which business event supplies `as_of`) remains **DECISION REQUIRED** — not invented. Existing `ChecklistTask` pins never auto-upgrade.
 
+## Phase 07E delivery status
+
+**STATUS: PHASE 07E RECURRING TASKS COMPLETE**

@@ -50,6 +50,10 @@
 | `CHECKLIST_VERSION_EFFECTIVITY_UPDATED` | Checklist version `effective_from` / `effective_to` changed (Phase 07D) |
 | `CHECKLIST_TASK_CREATED` | Batch checklist task created (or idempotent return of existing) |
 | `CHECKLIST_TASK_CANCELLED` | Batch checklist task cancelled (soft cancel) |
+| `CHECKLIST_TASK_GENERATED` | Schedule engine created a task occurrence (system) |
+| `CHECKLIST_SCHEDULE_CREATED` | Checklist schedule definition created |
+| `CHECKLIST_SCHEDULE_DEACTIVATED` | Checklist schedule deactivated |
+| `CHECKLIST_SCHEDULE_GENERATION_RUN` | Replay-safe schedule generation tick completed |
 | `CHECKLIST_APPLICABILITY_RULE_CREATED` / `UPDATED` / `DEACTIVATED` | Checklist applicability rule lifecycle (Phase 07C) |
 | `CHECKLIST_APPLICABILITY_PREVIEWED` | Management applicability preview (Phase 07C; no task mutation) |
 | `CHECKLIST_RECORD_STARTED` | Draft checklist record started for a PENDING task |

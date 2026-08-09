@@ -20,6 +20,9 @@ CSRF_TRUSTED_ORIGINS = ["http://testserver"]
 ENVIRONMENT_LABEL = "test"
 
 DATABASES = build_databases(env)
+DATABASES["default"]["TEST"] = {
+    "NAME": env("POSTGRES_TEST_DB", default="test_nelna_fg"),
+}
 REDIS_URL = env("REDIS_URL", default="redis://127.0.0.1:6380/0")
 REDIS_CACHE_TIMEOUT = env.int("REDIS_CACHE_TIMEOUT", default=300)
 CACHES = build_caches(env, REDIS_URL, CACHE_KEY_PREFIX, REDIS_CACHE_TIMEOUT)

@@ -84,6 +84,34 @@ services:
         condition: service_started
     command: ["celery", "-A", "config", "worker", "--loglevel=INFO"]
 
+  celery-beat:
+    image: nelna-fg-foundation:local
+    build:
+      context: .
+      target: runtime
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.local
+      DJANGO_SECRET_KEY: 
+      DJANGO_DEBUG: "True"
+      DJANGO_ALLOWED_HOSTS: 
+      ENVIRONMENT_LABEL: local
+      POSTGRES_DB: 
+      POSTGRES_USER: 
+      POSTGRES_PASSWORD: 
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      REDIS_URL: redis://redis:6379/0
+      WAIT_FOR_POSTGRES: "1"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      web:
+        condition: service_started
+    # Infrastructure poll for Phase 07E — not a Nelna checklist frequency.
+    command: ["celery", "-A", "config", "beat", "--loglevel=INFO"]
+
   # Dedicated validation service — enable with: docker compose --profile test ...
   # Do not use `web` for pytest. Testing tools are intentionally absent from runtime.
   test:

@@ -110,6 +110,25 @@ PERMISSION_CATALOGUE: Final[tuple[PermissionCatalogueEntry, ...]] = (
         notes="Does not auto-create tasks; APR-013/014/015 remain evidence-gated.",
     ),
     PermissionCatalogueEntry(
+        key="view_checklistschedule",
+        permission="scheduling.view_checklistschedule",
+        bucket=CapabilityBucket.VIEW,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="View checklist schedule definitions.",
+        notes="Frequencies remain EVIDENCE REQUIRED; no seeded Nelna cadences.",
+    ),
+    PermissionCatalogueEntry(
+        key="manage_checklistschedule",
+        permission="scheduling.manage_checklistschedule",
+        bucket=CapabilityBucket.MASTER_DATA,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Configure checklist schedules (shift/window/interval).",
+        notes=(
+            "Never invent frequencies. Missed windows never auto-create NCR. "
+            "Celery Beat poll is infrastructure only."
+        ),
+    ),
+    PermissionCatalogueEntry(
         key="manage_checklistapplicability",
         permission="scheduling.manage_checklistapplicability",
         bucket=CapabilityBucket.MASTER_DATA,

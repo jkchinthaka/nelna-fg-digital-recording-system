@@ -16,10 +16,12 @@ from apps.checklists.models import (
     ChecklistVersionStatus,
 )
 from apps.organizations.models import Organization
+from apps.scheduling.generation import batch_occurrence_key
 from apps.scheduling.models import (
     BATCH_REFERENCE_MAX_LENGTH,
     ChecklistTask,
     ChecklistTaskStatus,
+    ChecklistTriggerType,
 )
 from apps.security_audit.services import record_event
 
@@ -65,6 +67,8 @@ def _task_metadata(task: ChecklistTask) -> dict[str, Any]:
         "checklist_version_id": str(task.checklist_version_id),
         "checklist_version_number": task.checklist_version.version_number,
         "batch_reference": task.batch_reference,
+        "occurrence_key": getattr(task, "occurrence_key", ""),
+        "trigger_type": getattr(task, "trigger_type", "BATCH"),
         "status": task.status,
     }
 
@@ -128,6 +132,7 @@ def create_batch_checklist_task(
             }
         )
 
+    occ_key = batch_occurrence_key(batch_ref)
     existing = (
         ChecklistTask.objects.select_related(
             "organization", "checklist_template", "checklist_version"
@@ -135,10 +140,22 @@ def create_batch_checklist_task(
         .filter(
             organization_id=organization.id,
             checklist_template_id=template.id,
-            batch_reference=batch_ref,
+            occurrence_key=occ_key,
         )
         .first()
     )
+    if existing is None:
+        existing = (
+            ChecklistTask.objects.select_related(
+                "organization", "checklist_template", "checklist_version"
+            )
+            .filter(
+                organization_id=organization.id,
+                checklist_template_id=template.id,
+                batch_reference=batch_ref,
+            )
+            .first()
+        )
     if existing is not None:
         if existing.checklist_version_id != version.id:
             raise ValidationError(
@@ -159,6 +176,8 @@ def create_batch_checklist_task(
                 checklist_template=template,
                 checklist_version=version,
                 batch_reference=batch_ref,
+                trigger_type=ChecklistTriggerType.BATCH,
+                occurrence_key=occ_key,
                 status=ChecklistTaskStatus.PENDING,
             )
             task.full_clean()
@@ -176,10 +195,22 @@ def create_batch_checklist_task(
             .filter(
                 organization_id=organization.id,
                 checklist_template_id=template.id,
-                batch_reference=batch_ref,
+                occurrence_key=occ_key,
             )
             .first()
         )
+        if raced is None:
+            raced = (
+                ChecklistTask.objects.select_related(
+                    "organization", "checklist_template", "checklist_version"
+                )
+                .filter(
+                    organization_id=organization.id,
+                    checklist_template_id=template.id,
+                    batch_reference=batch_ref,
+                )
+                .first()
+            )
         if raced is None:
             raise
         if raced.checklist_version_id != version.id:
@@ -256,7 +287,12 @@ def cancel_checklist_task(*, actor: User | None, task_id: uuid.UUID) -> Checklis
 
         if task.status == ChecklistTaskStatus.CANCELLED:
             return task
-        if task.status != ChecklistTaskStatus.PENDING:
+        # OVERDUE/MISSED remain cancellable orchestration states (no NCR implied).
+        if task.status not in {
+            ChecklistTaskStatus.PENDING,
+            ChecklistTaskStatus.OVERDUE,
+            ChecklistTaskStatus.MISSED,
+        }:
             raise ValidationError(
                 {"status": f"Cannot cancel checklist task in status {task.status}."}
             )
