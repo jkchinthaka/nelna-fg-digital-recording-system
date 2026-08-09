@@ -51,10 +51,10 @@ This document records **repository evidence**. It does not invent Nelna operatio
 | `organizations` (incl. Shift) | 03 + 04A/04B | IMPLEMENTED · official org/site/dept/shift values **EVIDENCE REQUIRED** |
 | `access_control` | 03 + **03C** | IMPLEMENTED · RoleTemplate + permission catalogue + governance services; **no** seeded business roles; **PHASE 03C BUSINESS ROLE APPROVAL PENDING** |
 | `security_audit` | 03–10A | IMPLEMENTED |
-| `master_data` (FG Product) | 05A/05B/05C | IMPLEMENTED foundation · MASTER-001 **EVIDENCE REQUIRED** (catalogue not received) |
+| `master_data` (FG Product + specs) | 05A/05B/05C + **06O** | IMPLEMENTED foundation · MASTER-001 **EVIDENCE REQUIRED**; versioned ProductSpecification (06O) unseeded — APR-006 **EVIDENCE REQUIRED** |
 | `instruments` | 05D | IMPLEMENTED foundation · unseeded equipment + calibration; intervals/overdue policy **EVIDENCE REQUIRED** |
 | `training` | 05E | IMPLEMENTED foundation · unseeded competency records; gate OFF by default; matrix/WARN-BLOCK **EVIDENCE REQUIRED** (APR-042) |
-| `checklists` | 06A–06N | IMPLEMENTED · FG-QA-001 **NOT BUSINESS APPROVED**; Phase **06N BLOCKED**; Engine v2 **designed** (ADR-019); real forms **NOT RECEIVED**; optional `requires_equipment_reference` (05D) |
+| `checklists` | 06A–06O | IMPLEMENTED · FG-QA-001 **NOT BUSINESS APPROVED**; Phase **06N BLOCKED**; optional `SPECIFICATION_PARAMETER` evaluation pin (06O); Engine v2 **designed** (ADR-019); real forms **NOT RECEIVED**; optional `requires_equipment_reference` (05D) |
 | `scheduling` | 07A/07B | IMPLEMENTED · real batch generation **BLOCKED** |
 | `recording` | 08A/08B + 09B | IMPLEMENTED · production recording **BLOCKED** |
 | `reviews` | 09A | IMPLEMENTED · production Supervisor review **BLOCKED** |
@@ -248,6 +248,14 @@ Technical training/competency foundation is implemented without seeded company m
 **STATUS: PHASE 06N BLOCKED — BUSINESS APPROVAL REQUIRED**
 
 FG-QA-001 Draft v0.1 was reviewed against real-evidence gates. No company forms, owner issue log entries, or APR-001 written approval were available. The proposal remains DRAFT; no PUBLISHED version was created; no numeric limits were invented. Item validation matrix: 42 × PENDING DECISION.
+
+---
+
+## Phase 06O delivery status
+
+**STATUS: PHASE 06O PRODUCT SPECIFICATIONS COMPLETE**
+
+Versioned ProductSpecification / SpecificationVersion / SpecificationParameter foundation is implemented with audited approve/retire/clone, optional checklist `SPECIFICATION_PARAMETER` pins, and OUT_OF_SPEC ≠ QA disposition. No Nelna limits were seeded — APR-006 / ASM-001 remain **EVIDENCE REQUIRED**.
 
 ---
 

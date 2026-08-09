@@ -439,3 +439,33 @@ def test_remove_draft_parameter_and_missing_value_eval() -> None:
 
     with pytest.raises(ValidationError):
         assert_parameter_belongs_to_version(parameter=param2, version_id=uuid.uuid4())
+
+
+@pytest.mark.django_db
+def test_clone_approved_version_creates_independent_draft() -> None:
+    org = make_org(code="ORG06O7")
+    actor = _spec_manager(org=org)
+    product = _product(actor, org, "SYN-P06O7")
+    spec = create_product_specification(
+        actor=actor, organization=org, product=product, code="SPEC-CL", name="Clone"
+    )
+    version = SpecificationVersion.objects.get(specification=spec)
+    upsert_specification_parameter(
+        actor=actor,
+        version_id=version.id,
+        code="P1",
+        name="Param",
+        bound_min=Decimal("0"),
+        bound_max=Decimal("1"),
+        min_inclusive=True,
+        max_inclusive=True,
+    )
+    approve_specification_version(actor=actor, version_id=version.id)
+    cloned = clone_specification_version_as_draft(actor=actor, source_version_id=version.id)
+    assert cloned.status == SpecificationVersionStatus.DRAFT
+    assert cloned.version_number == 2
+    assert SpecificationParameter.objects.filter(version=cloned, code="P1").exists()
+    source_param = SpecificationParameter.objects.get(version=version, code="P1")
+    cloned_param = SpecificationParameter.objects.get(version=cloned, code="P1")
+    assert cloned_param.id != source_param.id
+    assert SecurityAuditEvent.objects.filter(event_type="SPECIFICATION_VERSION_CLONED").exists()
