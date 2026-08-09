@@ -70,6 +70,30 @@ class SecurityAuditEvent(models.Model):
             "QA_REVIEW_COMPLETED",
             "QA review disposition completed",
         )
+        NONCONFORMANCE_CREATED = "NONCONFORMANCE_CREATED", "Nonconformance created"
+        NONCONFORMANCE_CLOSED = "NONCONFORMANCE_CLOSED", "Nonconformance closed"
+        CAPA_CREATED = "CAPA_CREATED", "CAPA created"
+        CAPA_CLOSED = "CAPA_CLOSED", "CAPA closed"
+        SUPPLIER_QUALITY_PROFILE_CREATED = (
+            "SUPPLIER_QUALITY_PROFILE_CREATED",
+            "Supplier quality profile created",
+        )
+        SUPPLIER_QUALITY_PROFILE_UPDATED = (
+            "SUPPLIER_QUALITY_PROFILE_UPDATED",
+            "Supplier quality profile updated",
+        )
+        SUPPLIER_CERTIFICATE_RECORDED = (
+            "SUPPLIER_CERTIFICATE_RECORDED",
+            "Supplier certificate recorded",
+        )
+        SUPPLIER_CERTIFICATE_VERIFIED = (
+            "SUPPLIER_CERTIFICATE_VERIFIED",
+            "Supplier certificate verified",
+        )
+        SUPPLIER_QUALITY_EVENT_RECORDED = (
+            "SUPPLIER_QUALITY_EVENT_RECORDED",
+            "Supplier quality event recorded",
+        )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     event_type = models.CharField(max_length=64, choices=EventType.choices)

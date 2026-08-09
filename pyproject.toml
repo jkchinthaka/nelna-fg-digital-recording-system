@@ -123,6 +123,7 @@ omit = [
     "*/apps.py",
     "manage.py",
     "apps/mongo_poc/*",
+    "config/settings/mongo_poc.py",
 ]
 
 [tool.coverage.report]
