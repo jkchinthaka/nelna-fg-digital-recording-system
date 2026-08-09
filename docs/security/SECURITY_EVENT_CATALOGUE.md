@@ -32,6 +32,7 @@
 | `FG_PRODUCT_ACTIVATED` | FG Product reactivated (`is_active=True`) |
 | `FG_PRODUCT_DEACTIVATED` | FG Product deactivated (`is_active=False`) |
 | `FG_PRODUCT_IMPORT_PREVIEWED` / `COMPLETED` / `FAILED` | Controlled FG Product CSV import (Phase 05C) |
+| `PRODUCT_SPECIFICATION_CREATED` / `SPECIFICATION_VERSION_*` / `SPECIFICATION_PARAMETER_*` | Product specification lifecycle (Phase 06O; OUT_OF_SPEC ≠ disposition) |
 | `EQUIPMENT_CREATED` / `UPDATED` / `ACTIVATED` / `DEACTIVATED` / `STATUS_CHANGED` | Equipment master lifecycle (Phase 05D) |
 | `CALIBRATION_RECORD_CREATED` | Calibration record created |
 | `CALIBRATION_CERTIFICATE_METADATA_UPDATED` | Certificate/provider metadata updated |
