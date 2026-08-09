@@ -232,3 +232,19 @@ def cancel_checklist_task(*, actor: User | None, task_id: uuid.UUID) -> Checklis
             metadata=_task_metadata(task),
         )
         return task
+
+
+# --- Phase 07C checklist applicability (re-export engine API) ---
+
+from apps.scheduling.applicability import (  # noqa: E402
+    MANAGE_APPLICABILITY as MANAGE_CHECKLIST_APPLICABILITY,
+    VIEW_APPLICABILITY as VIEW_CHECKLIST_APPLICABILITY,
+    applicability_authorization_scope,
+    create_checklist_applicability_rule,
+    deactivate_checklist_applicability_rule,
+    delete_checklist_applicability_rule,
+    preview_checklist_applicability,
+    resolve_checklist_applicability,
+    update_checklist_applicability_rule,
+)
+

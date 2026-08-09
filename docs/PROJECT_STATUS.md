@@ -92,6 +92,7 @@ Not started (by MODULE_MAP): `evidence`, `nonconformance`, `capa`, `loading`, `d
 | 06N FG-QA-001 business validation | Validation matrix + evidence gap review; **no publish** | **BLOCKED — BUSINESS APPROVAL REQUIRED**; APR-001 unresolved; forms NOT RECEIVED |
 | 06O Product specifications | Versioned ProductSpecification + optional checklist pin | Technical complete; **no invented limits**; APR-006/ASM-001 still EVIDENCE REQUIRED |
 | 07A/07B Scheduling foundation | Complete | Real generation blocked (batch source, applicability, roles) |
+| 07C Checklist applicability engine | Technical complete — version-safe rules + preview | APR-013/014/015 EVIDENCE REQUIRED; no Line/Process masters; production generation still BLOCKED |
 | 08A/08B Recording/submit | Complete | Production recording blocked |
 | 09A/09B Supervisor review + correction | Complete | Production review/correction blocked |
 | 10A QA disposition | Complete (manual RELEASE/HOLD/REJECT only) | Production QA blocked; post-QA workflows not started |

@@ -15,7 +15,16 @@ from apps.access_control.services import (
 from apps.accounts.models import User
 from apps.checklists.models import ChecklistTemplate, ChecklistVersion, ChecklistVersionStatus
 from apps.organizations.models import Organization
-from apps.scheduling.models import ChecklistTask, ChecklistTaskStatus
+from apps.scheduling.applicability import (
+    MANAGE_APPLICABILITY,
+    VIEW_APPLICABILITY,
+    applicability_authorization_scope,
+)
+from apps.scheduling.models import (
+    ChecklistApplicabilityRule,
+    ChecklistTask,
+    ChecklistTaskStatus,
+)
 from apps.scheduling.services import (
     MANAGE_CHECKLIST_TASK,
     RECORD_CHECKLIST_TASK,
@@ -189,3 +198,66 @@ def get_checklist_task(actor: User | None, task_id: uuid.UUID) -> ChecklistTask 
     if not user_has_permission(actor, VIEW_CHECKLIST_TASK, scope=task_authorization_scope(task)):
         raise PermissionDenied("Permission denied.")
     return task
+
+
+def actor_can_view_applicability(actor: User | None) -> bool:
+    return bool(organization_ids_with_permission(actor, VIEW_APPLICABILITY))
+
+
+def actor_can_manage_applicability(actor: User | None) -> bool:
+    return bool(organization_ids_with_permission(actor, MANAGE_APPLICABILITY))
+
+
+def get_checklist_applicability_rule(
+    actor: User | None, rule_id: uuid.UUID
+) -> ChecklistApplicabilityRule | None:
+    rule = (
+        ChecklistApplicabilityRule.objects.select_related(
+            "organization",
+            "checklist_template",
+            "checklist_version",
+            "product",
+            "site",
+            "department",
+            "shift",
+        )
+        .filter(pk=rule_id)
+        .first()
+    )
+    if rule is None:
+        return None
+    if not user_has_permission(
+        actor, VIEW_APPLICABILITY, scope=applicability_authorization_scope(rule)
+    ):
+        raise PermissionDenied("Permission denied.")
+    return rule
+
+
+def list_checklist_applicability_rules(
+    actor: User | None,
+    *,
+    organization: Organization | None = None,
+    active_only: bool = False,
+) -> QuerySet[ChecklistApplicabilityRule]:
+    if actor is None or not getattr(actor, "is_authenticated", False) or not actor.is_active:
+        return ChecklistApplicabilityRule.objects.none()
+    allowed = organization_ids_with_permission(actor, VIEW_APPLICABILITY)
+    if not allowed:
+        return ChecklistApplicabilityRule.objects.none()
+    qs = ChecklistApplicabilityRule.objects.select_related(
+        "organization",
+        "checklist_template",
+        "checklist_version",
+        "product",
+        "site",
+        "department",
+        "shift",
+    ).filter(organization_id__in=allowed)
+    if organization is not None:
+        if organization.id not in allowed:
+            return ChecklistApplicabilityRule.objects.none()
+        qs = qs.filter(organization=organization)
+    if active_only:
+        qs = qs.filter(is_active=True)
+    return qs.order_by("organization__code", "code")
+

@@ -15,11 +15,14 @@ from django.views.decorators.http import require_GET, require_http_methods, requ
 
 from apps.accounts.models import User
 from apps.checklists.models import ChecklistTemplate, ChecklistVersion
+from apps.scheduling.applicability import preview_checklist_applicability
+from apps.scheduling.applicability_forms import ApplicabilityPreviewForm
 from apps.scheduling.forms import ChecklistTaskCreateForm
 from apps.scheduling.models import ChecklistTask, ChecklistTaskStatus
 from apps.scheduling.selectors import (
     StatusFilter,
     actor_can_manage_task,
+    actor_can_view_applicability,
     actor_can_view_checklist_tasks,
     get_checklist_task,
     list_checklist_tasks,
@@ -317,3 +320,39 @@ def task_cancel(request: HttpRequest, task_id: uuid.UUID) -> HttpResponse:
     else:
         messages.success(request, f"Checklist task for batch {task.batch_reference} cancelled.")
     return redirect("scheduling:task_detail", task_id=task.id)
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def applicability_preview(request: HttpRequest) -> HttpResponse:
+    """Management preview: which checklist would apply for a context."""
+    if not actor_can_view_applicability(_actor(request)):
+        raise PermissionDenied("Permission denied.")
+    resolution = None
+    form = ApplicabilityPreviewForm(actor=_actor(request))
+    if request.method == "POST":
+        form = ApplicabilityPreviewForm(request.POST, actor=_actor(request))
+        if form.is_valid():
+            org = form.cleaned_data["organization"]
+            try:
+                resolution = preview_checklist_applicability(
+                    actor=_actor(request),
+                    organization_id=org.id,
+                    product_id=getattr(form.cleaned_data.get("product"), "id", None),
+                    site_id=getattr(form.cleaned_data.get("site"), "id", None),
+                    department_id=getattr(form.cleaned_data.get("department"), "id", None),
+                    shift_id=getattr(form.cleaned_data.get("shift"), "id", None),
+                    process_reference=form.cleaned_data.get("process_reference") or "",
+                    as_of=form.cleaned_data.get("as_of"),
+                )
+            except (PermissionDenied, ValidationError) as exc:
+                if isinstance(exc, ValidationError):
+                    _apply_validation_error(form, exc)
+                else:
+                    raise
+    return render(
+        request,
+        "scheduling/applicability/preview.html",
+        {"form": form, "resolution": resolution},
+    )
+

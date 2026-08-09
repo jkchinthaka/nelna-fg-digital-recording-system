@@ -48,6 +48,8 @@
 | `CHECKLIST_VERSION_RETIRED` | Published checklist version retired |
 | `CHECKLIST_TASK_CREATED` | Batch checklist task created (or idempotent return of existing) |
 | `CHECKLIST_TASK_CANCELLED` | Batch checklist task cancelled (soft cancel) |
+| `CHECKLIST_APPLICABILITY_RULE_CREATED` / `UPDATED` / `DEACTIVATED` | Checklist applicability rule lifecycle (Phase 07C) |
+| `CHECKLIST_APPLICABILITY_PREVIEWED` | Management applicability preview (Phase 07C; no task mutation) |
 | `CHECKLIST_RECORD_STARTED` | Draft checklist record started for a PENDING task |
 | `CHECKLIST_RECORD_DRAFT_SAVED` | Draft checklist responses saved (aggregate) |
 | `CHECKLIST_RECORD_SUBMITTED` | Checklist record submitted with immutable Submission #1 snapshot |

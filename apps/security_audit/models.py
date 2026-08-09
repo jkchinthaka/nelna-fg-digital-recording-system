@@ -167,6 +167,22 @@ class SecurityAuditEvent(models.Model):
         )
         CHECKLIST_TASK_CREATED = "CHECKLIST_TASK_CREATED", "Checklist task created"
         CHECKLIST_TASK_CANCELLED = "CHECKLIST_TASK_CANCELLED", "Checklist task cancelled"
+        CHECKLIST_APPLICABILITY_RULE_CREATED = (
+            "CHECKLIST_APPLICABILITY_RULE_CREATED",
+            "Checklist applicability rule created",
+        )
+        CHECKLIST_APPLICABILITY_RULE_UPDATED = (
+            "CHECKLIST_APPLICABILITY_RULE_UPDATED",
+            "Checklist applicability rule updated",
+        )
+        CHECKLIST_APPLICABILITY_RULE_DEACTIVATED = (
+            "CHECKLIST_APPLICABILITY_RULE_DEACTIVATED",
+            "Checklist applicability rule deactivated",
+        )
+        CHECKLIST_APPLICABILITY_PREVIEWED = (
+            "CHECKLIST_APPLICABILITY_PREVIEWED",
+            "Checklist applicability previewed",
+        )
         CHECKLIST_RECORD_STARTED = "CHECKLIST_RECORD_STARTED", "Checklist record started"
         CHECKLIST_RECORD_DRAFT_SAVED = (
             "CHECKLIST_RECORD_DRAFT_SAVED",

@@ -6,8 +6,12 @@ from apps.access_control.models import Role
 from apps.access_control.services import assign_role, create_role
 from apps.accounts.models import User
 from apps.accounts.validators import normalize_employee_code
-from apps.organizations.models import Department, Organization, Site
-from apps.organizations.services import create_department, create_organization, create_site
+from apps.organizations.models import Department, Organization, Site, Shift
+from apps.organizations.services import (
+    create_department,
+    create_organization,
+    create_site,
+)
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 
@@ -68,6 +72,32 @@ def make_department(
         code=code,
         name=name,
         site=site,
+    )
+
+
+def make_shift(
+    organization: Organization,
+    *,
+    code: str = "SHIFTEST1",
+    name: str = "Test Shift 1",
+    site: Site | None = None,
+    department: Department | None = None,
+) -> Shift:
+    """Synthetic Shift for tests — not Nelna operational values."""
+    import datetime
+
+    from apps.organizations.models import Shift as ShiftModel
+
+    return ShiftModel.objects.create(
+        organization=organization,
+        site=site,
+        department=department,
+        code=code.strip().upper(),
+        name=name.strip(),
+        start_time=datetime.time(6, 0),
+        end_time=datetime.time(14, 0),
+        effective_from=datetime.date(2026, 1, 1),
+        is_active=True,
     )
 
 

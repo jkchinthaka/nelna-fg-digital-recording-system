@@ -23,4 +23,9 @@ urlpatterns = [
         views.task_cancel,
         name="task_cancel",
     ),
+    path(
+        "scheduling/applicability/preview/",
+        views.applicability_preview,
+        name="applicability_preview",
+    ),
 ]

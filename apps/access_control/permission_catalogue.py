@@ -102,6 +102,25 @@ PERMISSION_CATALOGUE: Final[tuple[PermissionCatalogueEntry, ...]] = (
         notes="Does not imply record_checklisttask.",
     ),
     PermissionCatalogueEntry(
+        key="view_checklistapplicability",
+        permission="scheduling.view_checklistapplicability",
+        bucket=CapabilityBucket.VIEW,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Preview / inspect checklist applicability rules.",
+        notes="Does not auto-create tasks; APR-013/014/015 remain evidence-gated.",
+    ),
+    PermissionCatalogueEntry(
+        key="manage_checklistapplicability",
+        permission="scheduling.manage_checklistapplicability",
+        bucket=CapabilityBucket.MASTER_DATA,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Configure checklist applicability rules (org-scoped).",
+        notes=(
+            "Never silently picks among conflicts. Production Line dimension not modeled. "
+            "APR-013/014/015 EVIDENCE REQUIRED for production policy."
+        ),
+    ),
+    PermissionCatalogueEntry(
         key="manage_checklist",
         permission="checklists.manage_checklist",
         bucket=CapabilityBucket.CHECKLIST_PUBLISH,
