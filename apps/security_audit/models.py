@@ -261,6 +261,18 @@ class SecurityAuditEvent(models.Model):
             "SUPERVISOR_REVIEW_COMPLETED",
             "Supervisor review completed",
         )
+        SUPERVISOR_REVIEW_GOVERNANCE_POLICY_SET = (
+            "SUPERVISOR_REVIEW_GOVERNANCE_POLICY_SET",
+            "Supervisor review governance policy set",
+        )
+        SUPERVISOR_REVIEW_DELEGATION_GRANTED = (
+            "SUPERVISOR_REVIEW_DELEGATION_GRANTED",
+            "Supervisor review temporary delegation granted",
+        )
+        SUPERVISOR_REVIEW_DELEGATION_REVOKED = (
+            "SUPERVISOR_REVIEW_DELEGATION_REVOKED",
+            "Supervisor review temporary delegation revoked",
+        )
         CHECKLIST_CORRECTION_STARTED = (
             "CHECKLIST_CORRECTION_STARTED",
             "Checklist correction started",

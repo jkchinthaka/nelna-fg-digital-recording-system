@@ -1,4 +1,4 @@
-"""Supervisor review views — queue, detail, confirm, immutable result."""
+"""Supervisor review views — queue, detail, confirm, immutable result (09A/09C)."""
 
 from __future__ import annotations
 
@@ -15,10 +15,16 @@ from django.views.decorators.http import require_GET, require_http_methods
 from apps.accounts.models import User
 from apps.recording.snapshot_display import render_snapshot_sections
 from apps.reviews.forms import SupervisorReviewConfirmForm
+from apps.reviews.governance import (
+    QUEUE_OVERDUE,
+    QUEUE_PENDING,
+    QUEUE_RESUBMISSION,
+)
 from apps.reviews.models import SupervisorReviewDecision
 from apps.reviews.selectors import (
     actor_can_access_review_module,
     get_supervisor_review,
+    list_supervisor_review_queue,
     list_supervisor_reviewable_submissions,
     load_submission_review_context,
 )
@@ -49,14 +55,38 @@ def _validation_message(exc: ValidationError) -> str:
 @require_GET
 def review_queue(request: HttpRequest) -> HttpResponse:
     _require_review_module(request)
-    submissions = list_supervisor_reviewable_submissions(_actor(request))
-    page = Paginator(submissions, PAGE_SIZE).get_page(request.GET.get("page") or 1)
+    raw = (request.GET.get("queue") or QUEUE_PENDING).strip().lower()
+    queue = raw if raw in {QUEUE_PENDING, QUEUE_OVERDUE, QUEUE_RESUBMISSION} else QUEUE_PENDING
+    if queue == QUEUE_PENDING:
+        submissions_qs = list_supervisor_reviewable_submissions(_actor(request))
+        page = Paginator(submissions_qs, PAGE_SIZE).get_page(request.GET.get("page") or 1)
+        submissions = list(page.object_list)
+        paginator_page = page
+    else:
+        rows = list_supervisor_review_queue(_actor(request), queue=queue)  # type: ignore[arg-type]
+        page = Paginator(rows, PAGE_SIZE).get_page(request.GET.get("page") or 1)
+        submissions = list(page.object_list)
+        paginator_page = page
+
+    pending_count = list_supervisor_reviewable_submissions(_actor(request)).count()
+    overdue_count = len(list_supervisor_review_queue(_actor(request), queue=QUEUE_OVERDUE))
+    resubmission_count = len(
+        list_supervisor_review_queue(_actor(request), queue=QUEUE_RESUBMISSION)
+    )
+
     return render(
         request,
         "reviews/queue/list.html",
         {
-            "page": page,
-            "submissions": page.object_list,
+            "page": paginator_page,
+            "submissions": submissions,
+            "queue": queue,
+            "pending_count": pending_count,
+            "overdue_count": overdue_count,
+            "resubmission_count": resubmission_count,
+            "QUEUE_PENDING": QUEUE_PENDING,
+            "QUEUE_OVERDUE": QUEUE_OVERDUE,
+            "QUEUE_RESUBMISSION": QUEUE_RESUBMISSION,
         },
     )
 
@@ -85,6 +115,8 @@ def submission_detail(request: HttpRequest, submission_id: uuid.UUID) -> HttpRes
             "rendered_sections": context.get("rendered_sections")
             or render_snapshot_sections(context["sections"], context["snapshot_responses"]),
             "SupervisorReviewDecision": SupervisorReviewDecision,
+            "governance": context.get("governance"),
+            "is_latest_submission": context.get("is_latest_submission", True),
         },
     )
 
@@ -109,6 +141,15 @@ def confirm_decision(request: HttpRequest, submission_id: uuid.UUID, decision: s
     if context["review"] is not None:
         messages.info(request, "This submission already has a Supervisor review.")
         return redirect("reviews:review_result", review_id=context["review"].id)
+
+    governance = context.get("governance") or {}
+    self_review = governance.get("self_review")
+    if self_review is not None and getattr(self_review, "blocked", False):
+        messages.error(
+            request,
+            "Self-review is prohibited by owner-approved governance policy.",
+        )
+        return redirect("reviews:submission_detail", submission_id=submission_id)
 
     if request.method == "POST":
         form = SupervisorReviewConfirmForm(request.POST)
@@ -144,6 +185,8 @@ def confirm_decision(request: HttpRequest, submission_id: uuid.UUID, decision: s
             "decision": decision,
             "decision_label": decision_label,
             "SupervisorReviewDecision": SupervisorReviewDecision,
+            "governance": governance,
+            "is_latest_submission": context.get("is_latest_submission", True),
         },
     )
 

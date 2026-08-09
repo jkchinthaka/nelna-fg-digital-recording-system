@@ -5,7 +5,7 @@ from __future__ import annotations
 from django.contrib import admin
 from django.http import HttpRequest
 
-from apps.reviews.models import SupervisorReview
+from apps.reviews.models import SupervisorReview, SupervisorReviewGovernancePolicy
 
 
 @admin.register(SupervisorReview)
@@ -53,3 +53,17 @@ class SupervisorReviewAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
         actions = super().get_actions(request)
         actions.pop("delete_selected", None)
         return actions
+
+
+@admin.register(SupervisorReviewGovernancePolicy)
+class SupervisorReviewGovernancePolicyAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
+    list_display = (
+        "organization",
+        "self_review_mode",
+        "review_sla_minutes",
+        "evidence_reference",
+        "updated_at",
+    )
+    list_filter = ("self_review_mode",)
+    search_fields = ("organization__code", "evidence_reference")
+    readonly_fields = ("id", "created_at", "updated_at")

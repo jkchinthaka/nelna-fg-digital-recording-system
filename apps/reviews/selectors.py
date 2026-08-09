@@ -1,12 +1,14 @@
-"""Permission-aware Supervisor review selectors."""
+"""Permission-aware Supervisor review selectors (Phase 09A + 09C queues)."""
 
 from __future__ import annotations
 
+import datetime as dt
 import uuid
-from typing import Any
+from typing import Any, Literal
 
 from django.core.exceptions import PermissionDenied
-from django.db.models import Prefetch, QuerySet
+from django.db.models import F, OuterRef, Prefetch, QuerySet, Subquery
+from django.utils import timezone
 
 from apps.access_control.services import (
     organization_ids_with_permission,
@@ -21,32 +23,36 @@ from apps.recording.models import (
 )
 from apps.recording.repeating import responses_by_key
 from apps.recording.snapshot_display import render_snapshot_sections
-from apps.reviews.models import SupervisorReview
+from apps.reviews.governance import (
+    QUEUE_OVERDUE,
+    QUEUE_PENDING,
+    QUEUE_RESUBMISSION,
+    get_governance_policy,
+    governance_context_for_submission,
+    resolve_review_due,
+)
+from apps.reviews.models import SupervisorReview, SupervisorReviewGovernancePolicy
 from apps.reviews.services import (
     REVIEW_CHECKLIST_SUBMISSION,
     submission_authorization_scope,
 )
+
+QueueKind = Literal["pending", "overdue", "resubmission"]
 
 
 def actor_can_access_review_module(actor: User | None) -> bool:
     return bool(organization_ids_with_permission(actor, REVIEW_CHECKLIST_SUBMISSION))
 
 
-def list_supervisor_reviewable_submissions(
-    actor: User | None,
-) -> QuerySet[ChecklistSubmission]:
-    """
-    SUBMITTED submissions without a SupervisorReview, Organization-scoped once.
-
-    No per-row permission queries.
-    """
-    if actor is None or not getattr(actor, "is_authenticated", False) or not actor.is_active:
-        return ChecklistSubmission.objects.none()
-
-    org_ids = organization_ids_with_permission(actor, REVIEW_CHECKLIST_SUBMISSION)
-    if not org_ids:
-        return ChecklistSubmission.objects.none()
-
+def _base_pending_queryset(org_ids: set[uuid.UUID]) -> QuerySet[ChecklistSubmission]:
+    """Unreviewed SUBMITTED submissions; prefer latest-per-record via annotation filter."""
+    latest_number = (
+        ChecklistSubmission.objects.filter(
+            checklist_record_id=OuterRef("checklist_record_id")
+        )
+        .order_by("-submission_number", "-submitted_at")
+        .values("submission_number")[:1]
+    )
     return (
         ChecklistSubmission.objects.select_related(
             "submitted_by",
@@ -56,13 +62,107 @@ def list_supervisor_reviewable_submissions(
             "checklist_record__checklist_task__checklist_template",
             "checklist_record__checklist_task__checklist_version",
         )
+        .annotate(_latest_number=Subquery(latest_number))
         .filter(
             checklist_record__organization_id__in=org_ids,
             checklist_record__status=ChecklistRecordStatus.SUBMITTED,
             supervisor_review__isnull=True,
+            submission_number=F("_latest_number"),
         )
         .order_by("-submitted_at")
     )
+
+
+def list_supervisor_reviewable_submissions(
+    actor: User | None,
+) -> QuerySet[ChecklistSubmission]:
+    """
+    SUBMITTED submissions without a SupervisorReview, Organization-scoped once.
+
+    Phase 09C: only the latest submission per record is reviewable in queues.
+    """
+    if actor is None or not getattr(actor, "is_authenticated", False) or not actor.is_active:
+        return ChecklistSubmission.objects.none()
+
+    org_ids = organization_ids_with_permission(actor, REVIEW_CHECKLIST_SUBMISSION)
+    if not org_ids:
+        return ChecklistSubmission.objects.none()
+
+    return _base_pending_queryset(set(org_ids))
+
+
+def list_supervisor_review_queue(
+    actor: User | None,
+    *,
+    queue: QueueKind | str = QUEUE_PENDING,
+    as_of: dt.datetime | None = None,
+) -> list[ChecklistSubmission]:
+    """
+    Pending / overdue / resubmission queues.
+
+    Overdue requires configured review_sla_minutes (never invented).
+    Resubmission = pending latest submissions with submission_number > 1.
+    """
+    pending = list(list_supervisor_reviewable_submissions(actor))
+    kind = (queue or QUEUE_PENDING).strip().lower()
+    if kind == QUEUE_PENDING:
+        return pending
+    if kind == QUEUE_RESUBMISSION:
+        return [row for row in pending if int(row.submission_number) > 1]
+
+    instant = as_of or timezone.now()
+    overdue_rows: list[ChecklistSubmission] = []
+    policy_cache: dict[uuid.UUID, SupervisorReviewGovernancePolicy | None] = {}
+    for row in pending:
+        org_id = row.checklist_record.organization_id
+        if org_id not in policy_cache:
+            policy_cache[org_id] = get_governance_policy(org_id)
+        due = resolve_review_due(submission=row, as_of=instant, policy=policy_cache[org_id])
+        if due.is_overdue and due.due_at is not None:
+            row.review_due_at = due.due_at  # type: ignore[attr-defined]
+            row.review_sla_minutes = due.sla_minutes  # type: ignore[attr-defined]
+            overdue_rows.append(row)
+    return overdue_rows
+
+
+def submission_is_latest_for_record(submission: ChecklistSubmission) -> bool:
+    latest = (
+        ChecklistSubmission.objects.filter(checklist_record_id=submission.checklist_record_id)
+        .order_by("-submission_number", "-submitted_at")
+        .values_list("id", flat=True)
+        .first()
+    )
+    return latest == submission.id
+
+
+def annotate_queue_row_due(
+    submissions: list[ChecklistSubmission],
+    *,
+    as_of: dt.datetime | None = None,
+) -> list[dict[str, Any]]:
+    """Attach due evaluation for queue display without inventing SLA."""
+    instant = as_of or timezone.now()
+    policy_cache: dict[uuid.UUID, SupervisorReviewGovernancePolicy | None] = {}
+    rows: list[dict[str, Any]] = []
+    for submission in submissions:
+        org_id = submission.checklist_record.organization_id
+        if org_id not in policy_cache:
+            policy_cache[org_id] = get_governance_policy(org_id)
+        due = resolve_review_due(
+            submission=submission,
+            as_of=instant,
+            policy=policy_cache[org_id],
+        )
+        rows.append(
+            {
+                "submission": submission,
+                "review_due_at": due.due_at,
+                "review_sla_minutes": due.sla_minutes,
+                "is_overdue": due.is_overdue if due.due_at is not None else False,
+                "is_resubmission": int(submission.submission_number) > 1,
+            }
+        )
+    return rows
 
 
 def get_checklist_submission_for_review(
@@ -167,6 +267,10 @@ def load_submission_review_context(
         .first()
     )
 
+    governance = None
+    if actor is not None and getattr(actor, "is_authenticated", False):
+        governance = governance_context_for_submission(actor=actor, submission=submission)
+
     return {
         "submission": submission,
         "record": record,
@@ -175,4 +279,6 @@ def load_submission_review_context(
         "snapshot_responses": snapshot_responses,
         "rendered_sections": render_snapshot_sections(sections, snapshot_responses),
         "review": existing_review,
+        "governance": governance,
+        "is_latest_submission": submission_is_latest_for_record(submission),
     }

@@ -69,7 +69,10 @@
 | `CHECKLIST_RECORD_STARTED` | Draft checklist record started for a PENDING task |
 | `CHECKLIST_RECORD_DRAFT_SAVED` | Draft checklist responses saved (aggregate; may include `draft_version`, `save_mode`, `autosave`) |
 | `CHECKLIST_RECORD_SUBMITTED` | Checklist record submitted with immutable Submission #1 snapshot |
-| `SUPERVISOR_REVIEW_COMPLETED` | Immutable Supervisor review recorded for a ChecklistSubmission |
+| `SUPERVISOR_REVIEW_COMPLETED` | Immutable Supervisor review recorded for a ChecklistSubmission (09C adds self-review governance metadata) |
+| `SUPERVISOR_REVIEW_GOVERNANCE_POLICY_SET` | Org Supervisor review governance policy created/updated (Phase 09C) |
+| `SUPERVISOR_REVIEW_DELEGATION_GRANTED` | Temporary review delegation via time-bounded ScopedRoleAssignment (Phase 09C) |
+| `SUPERVISOR_REVIEW_DELEGATION_REVOKED` | Temporary review delegation revoked (Phase 09C) |
 | `CHECKLIST_CORRECTION_STARTED` | Controlled correction cycle started for a RETURNED submission |
 | `CHECKLIST_CORRECTION_RESUBMITTED` | Correction resubmitted as next immutable ChecklistSubmission |
 | `QA_REVIEW_COMPLETED` | Immutable QA disposition recorded for a ChecklistSubmission |

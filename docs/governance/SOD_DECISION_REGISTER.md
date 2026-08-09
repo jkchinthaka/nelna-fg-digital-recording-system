@@ -10,7 +10,7 @@ Related: [APPROVAL_REGISTER.md](APPROVAL_REGISTER.md) APR-010; [PHASE_03C_OPERAT
 
 | ID | Question | Owner | Response | Status | Enforcement in app |
 | --- | --- | --- | --- | --- | --- |
-| SOD-01 | Can a recorder Supervisor-review their own submission? | QA Manager / Management Sponsor | — | **PENDING** | Not enforced (09A) |
+| SOD-01 | Can a recorder Supervisor-review their own submission? | QA Manager / Management Sponsor | — | **PENDING** | Phase 09C surfaces PENDING explicitly; PROHIBIT/ALLOW only when org governance has owner `evidence_reference` |
 | SOD-02 | Can a Supervisor act as QA for the same submission? | QA Manager / Management Sponsor | — | **PENDING** | Not enforced (10A) |
 | SOD-03 | Can QA record production checks? | QA Manager / Production Manager | — | **PENDING** | Permissions are separable; mapping unapproved |
 | SOD-04 | Can System Admin / Django superuser make QA disposition? | QA Manager / IT Manager | — | **PENDING** | Superuser bypasses RBAC technically; **not** business QA authority |

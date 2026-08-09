@@ -36,6 +36,20 @@ Separate **Phase 09 technical foundations (09A/09B)** from **production Supervis
 
 **PHASE 09B TECHNICAL CORRECTION/RESUBMISSION FOUNDATION:** complete.
 
+## Technical foundation (09C)
+
+| Item | Status |
+| --- | --- |
+| Governance policy (self-review PENDING/PROHIBIT/ALLOW) | Complete |
+| Self-review ban only when owner-approved | Complete |
+| Temporary RBAC delegation (`valid_until`) | Complete |
+| Configured review SLA / overdue queue | Complete (null = no SLA) |
+| Pending / overdue / resubmission queues | Complete |
+| Audit metadata for governance | Complete |
+
+**PHASE 09C TECHNICAL SUPERVISOR GOVERNANCE:** complete.
+
+
 **PHASE 10 (QA):** not started — see [PHASE_10_QA_REVIEW_READINESS_GATE.md](PHASE_10_QA_REVIEW_READINESS_GATE.md).
 
 ## Production Supervisor review / correction readiness
@@ -48,7 +62,7 @@ Separate **Phase 09 technical foundations (09A/09B)** from **production Supervis
 | FG-QA-001 approved and published | **NOT YET** (DRAFT) |
 | Production batch integration | Not available |
 | Product / Shift / Site applicability | Open |
-| Segregation-of-duties rule | **EVIDENCE REQUIRED** (not enforced in 09A) |
+| Segregation-of-duties rule | **EVIDENCE REQUIRED** — PENDING default; PROHIBIT/ALLOW only with evidence (09C) |
 | ASM-001 temperature limits | Open |
 
 Production Supervisor review and correction remain **BLOCKED**.

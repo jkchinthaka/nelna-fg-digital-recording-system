@@ -11,6 +11,7 @@ from django.db import IntegrityError, transaction
 from apps.access_control.services import Scope, require_permission
 from apps.accounts.models import User
 from apps.recording.models import ChecklistRecordStatus, ChecklistSubmission
+from apps.reviews.governance import assert_self_review_allowed
 from apps.reviews.models import SupervisorReview, SupervisorReviewDecision
 from apps.security_audit.services import record_event
 
@@ -72,8 +73,8 @@ def create_supervisor_review(
     Idempotent when the same decision already exists.
     Conflict when an existing review has a different decision.
     Does not reopen records, mutate snapshots, create Submission #2, or start QA.
-    Segregation-of-duties (submitted_by != reviewed_by) is EVIDENCE REQUIRED —
-    not enforced in Phase 09A.
+    Self-review prohibition is enforced only when org governance policy is
+    PROHIBIT with owner evidence (Phase 09C). PENDING policy does not block.
     """
     user = _require_authenticated_actor(actor)
 
@@ -107,11 +108,31 @@ def create_supervisor_review(
                 scope=submission_authorization_scope(submission),
             )
 
+
+            self_review_eval = assert_self_review_allowed(actor=user, submission=submission)
+
             if record.status != ChecklistRecordStatus.SUBMITTED:
                 raise ValidationError(
                     {
                         "submission": (
                             "Only SUBMITTED checklist records may receive Supervisor review."
+                        )
+                    }
+                )
+
+            # Only the latest submission on the record may receive a new review.
+            latest = (
+                ChecklistSubmission.objects.filter(checklist_record_id=record.id)
+                .order_by("-submission_number", "-submitted_at")
+                .values_list("id", flat=True)
+                .first()
+            )
+            if latest is not None and latest != submission.id:
+                raise ValidationError(
+                    {
+                        "submission": (
+                            "Only the latest checklist submission for this record may be "
+                            "reviewed. Earlier submissions keep immutable review history."
                         )
                     }
                 )
@@ -143,10 +164,15 @@ def create_supervisor_review(
             review.full_clean()
             review.save()
 
+            meta = _review_metadata(review)
+            meta["self_review_mode"] = self_review_eval.mode
+            meta["self_review_is_self"] = self_review_eval.is_self_review
+            meta["self_review_enforcement"] = self_review_eval.enforcement
+            meta["governance_phase"] = "09C"
             record_event(
                 event_type="SUPERVISOR_REVIEW_COMPLETED",
                 actor=user,
-                metadata=_review_metadata(review),
+                metadata=meta,
             )
     except IntegrityError:
         raced = (

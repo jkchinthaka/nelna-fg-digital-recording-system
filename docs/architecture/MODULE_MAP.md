@@ -23,7 +23,7 @@ Do **not** rename FG master data, checklist, recording, review, or evidence work
 | tasks | Assignment of work to users/roles (deferred — avoid Celery name clash; 07A in `scheduling`) | Future task assignment states | Assign/claim/complete coordination | Must not store full answer payloads | **07** (beyond 07A) |
 | records | Reserved legacy MODULE_MAP label — **do not scaffold**; use `recording` | — | — | Duplicate of `recording` forbidden | superseded by **recording** |
 | recording | Draft recording + 06K evaluation apply (see primary recording row) | ChecklistRecord / responses / submissions | Completeness + evaluation display | Must not perform Supervisor/QA decisions; evaluation ≠ disposition | **08A–09B** + **06K** |
-| reviews | Supervisor review foundation (09A); no mutable correction/QA disposition state | SupervisorReview | create immutable review; eligible-submission selectors; review UI | Must not perform QA disposition; manage/record ≠ review; must not own ChecklistCorrection or QAReview | **09A** |
+| reviews | Immutable Supervisor review (09A); governance hardening (09C); queues pending/overdue/resubmission | SupervisorReview; SupervisorReviewGovernancePolicy | create_supervisor_review; governance evaluate/due/queues; temporary ScopedRoleAssignment delegation | Must not invent Supervisor titles/SLAs; PENDING self-review not enforced; no QA/HOLD/RELEASE; immutable reviews | **09A–09C** |
 | quality | QA final review disposition foundation (10A) | QAReview | create immutable QA disposition; eligible selectors; QA UI | No AI final verification; no auto PASS/FAIL; no ERP/warehouse/dispatch side effects; manage/record/supervisor ≠ QA | **10A** |
 | nonconformance | Holds and NC records | NC/hold entities | Open/update NC services | Post-MVP unless approved | **12** |
 | capa | Corrective and preventive actions | CAPA entities | CAPA lifecycle services | No AI final CAPA closure | **12** |
@@ -43,7 +43,7 @@ Do **not** rename FG master data, checklist, recording, review, or evidence work
 | 06 | **06A–06D** checklist definition/response/proposal loader; **06E** provisional workflow formalization |
 | 07 | **07A** ChecklistTask foundation; **07B** batch-source contract; **07C** applicability; **07D** effective-version; **07E** recurring schedules; **07F** batch-event adapter (live contract required); **07G** task assignment (ownership ≠ authorization); **07H** due/overdue foundation |
 | 08 | **08A** draft recording; **08B** immutable submission snapshots; **08C** shop-floor recording hardening |
-| 09 | **09A** `reviews` Supervisor review; **09B** `recording` ChecklistCorrection / resubmission |
+| 09 | **09A** `reviews` Supervisor review; **09B** `recording` ChecklistCorrection / resubmission; **09C** Supervisor governance hardening |
 | 10 | **10A** `quality` QAReview manual disposition; later post-QA operational workflows |
 
 ## References

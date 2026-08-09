@@ -14,6 +14,31 @@
       <a class="btn btn--ghost btn--inline"
          href="{% url 'reviews:submission_detail' submission_id=submission.id %}">Back to submission</a>
     </header>
+
+    <aside class="alert alert-info" role="status" aria-label="Supervisor governance">
+      <p>
+        <strong>Self-review policy:</strong>
+        {{ governance.self_review.status_label }}
+        (enforcement: {{ governance.self_review.enforcement }}).
+      </p>
+      <p class="form-help">
+        SoD question remains explicit: {{ governance.sod_question }}.
+        Technical permission: {{ governance.uses_phase_03c_permission }}.
+        {% if governance.review_due.due_at %}
+          Configured review due: {{ governance.review_due.due_at }}
+          {% if governance.review_due.is_overdue %}(OVERDUE){% endif %}.
+        {% else %}
+          Review SLA: not configured (no invented timing).
+        {% endif %}
+      </p>
+      {% if not is_latest_submission %}
+        <p class="alert alert-error" role="alert">
+          This is not the latest submission for the record. Prefer reviewing the latest
+          open submission.
+        </p>
+      {% endif %}
+    </aside>
+
     <dl class="mgmt-meta" aria-label="Decision context">
       <div>
         <dt>Decision</dt>

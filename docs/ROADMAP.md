@@ -216,13 +216,13 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | --- | --- |
 | Objective | Supervisor check workflow (approve / return for correction / related amendments) and amendment history |
 | Inputs | SoD rules (EVIDENCE REQUIRED) |
-| Outputs | **09A:** `reviews.SupervisorReview` immutable decisions on `ChecklistSubmission` + review UI; **09B:** `ChecklistCorrection` + resubmission as Submission #N+1 |
+| Outputs | **09A:** `reviews.SupervisorReview` immutable decisions on `ChecklistSubmission` + review UI; **09B:** `ChecklistCorrection` + resubmission as Submission #N+1; **09C:** governance policy (self-review PENDING/PROHIBIT/ALLOW), configured review SLA queues, temporary RBAC delegation |
 | Approval gate | QA/operations workflow review |
-| Branch naming | Direct-main quality-first for 09A/09B |
-| Exit criteria | **09A:** separate review permission; one review per submission; APPROVED/RETURNED without mutating snapshots. **09B:** controlled correction without mutating source submission/review; next submission number race-safe. Full Phase 09 production: SoD evidence + role mapping + published definitions |
+| Branch naming | Direct-main quality-first for 09A/09B/09C |
+| Exit criteria | **09A:** separate review permission; one review per submission; APPROVED/RETURNED without mutating snapshots. **09B:** controlled correction without mutating source submission/review; next submission number race-safe. **09C:** explicit SoD posture (no invented prohibition while PENDING); overdue only from configured SLA; temporary delegation time-bounded; pending/overdue/resubmission queues. Full Phase 09 production: SoD evidence + role mapping + published definitions |
 | Dependencies | Phase 08 |
-| Notes | **Not** Phase 04. **09A+09B technical foundations complete**; production Supervisor review/correction **BLOCKED**. SoD self-review rule not invented. No QA/HOLD/RELEASE in Phase 09. Ownership locking for correction remains EVIDENCE REQUIRED. |
-| Status | **09A + 09B implemented** — production use blocked |
+| Notes | **Not** Phase 04. **09A+09B+09C technical foundations complete**; production Supervisor review/correction **BLOCKED**. SoD self-review rule not invented. No QA/HOLD/RELEASE in Phase 09. Ownership locking for correction remains EVIDENCE REQUIRED. |
+| Status | **09A + 09B + 09C implemented** — governance hardening; production use blocked |
 
 ## Phase 10 — QA verification
 

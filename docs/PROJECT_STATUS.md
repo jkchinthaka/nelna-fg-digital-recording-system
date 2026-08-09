@@ -57,7 +57,7 @@ This document records **repository evidence**. It does not invent Nelna operatio
 | `checklists` | 06A–06O + **07D** | IMPLEMENTED · FG-QA-001 **NOT BUSINESS APPROVED**; Phase **06N BLOCKED**; optional `SPECIFICATION_PARAMETER` evaluation pin (06O); Engine v2 **designed** (ADR-019); real forms **NOT RECEIVED**; optional `requires_equipment_reference` (05D); **07D** effective-version selection |
 | scheduling | 07A–07H | IMPLEMENTED · due/overdue foundation + assignment + schedules + batch-event adapter; live generation **BLOCKED** (APR-011/012) |
 | `recording` | 08A–08C + 09B | IMPLEMENTED · shop-floor hardening + draft/submit; production recording **BLOCKED** |
-| `reviews` | 09A | IMPLEMENTED · production Supervisor review **BLOCKED** |
+| `reviews` | 09A–09C | IMPLEMENTED · governance hardening + immutable review; production Supervisor review **BLOCKED** |
 | `quality` | 10A | IMPLEMENTED · production QA **BLOCKED**; no ERP/warehouse/dispatch side effects |
 
 Not started (by MODULE_MAP): `evidence`, `nonconformance`, `capa`, `loading`, `dispatch`, `notifications`, `reports`, `integrations`, `ai_assistance`.
@@ -101,6 +101,7 @@ Not started (by MODULE_MAP): `evidence`, `nonconformance`, `capa`, `loading`, `d
 | 08A/08B Recording/submit | Complete | Production recording blocked |
 | 08C Recording hardening | Technical complete — autosave, optimistic concurrency, session recovery (online), UX | Production recording still BLOCKED; offline IndexedDB is Phase 14 |
 | 09A/09B Supervisor review + correction | Complete | Production review/correction blocked |
+| 09C Supervisor governance | Technical complete — PENDING/PROHIBIT/ALLOW self-review; configured review_sla_minutes; temporary delegation; queues | APR-010 / SOD-01 EVIDENCE REQUIRED |
 | 10A QA disposition | Complete (manual RELEASE/HOLD/REJECT only) | Production QA blocked; post-QA workflows not started |
 | 10B+ Post-QA operational | Not started | EVIDENCE REQUIRED |
 | 11–21 Later roadmap | Not started | N/A |
@@ -299,4 +300,10 @@ Due/overdue foundation: configured `due_from` / `due_at` (`due_to`) / optional `
 **STATUS: PHASE 08C RECORDING HARDENING COMPLETE**
 
 Shop-floor recording hardening: preserved start → Save Draft → submit → immutable snapshot; safe autosave; optimistic `draft_version` (no silent last-write-wins); online session recovery (not IndexedDB); sticky save / section progress / validation summary / touch targets; optional equipment + Phase 11 evidence hooks. Production recording remains BLOCKED.
+
+## Phase 09C delivery status
+
+**STATUS: PHASE 09C SUPERVISOR GOVERNANCE COMPLETE**
+
+Supervisor review governance hardening: Phase 03C permission mappings (no invented Supervisor titles); self-review PENDING by default (PROHIBIT/ALLOW only with evidence_reference); optional configured `review_sla_minutes` for overdue; temporary time-bounded review delegation via ScopedRoleAssignment; pending / overdue / resubmission queues; immutable audited decisions. Production Supervisor review remains BLOCKED.
 
