@@ -422,6 +422,30 @@ class SecurityAuditEvent(models.Model):
             "REPORT_EXPORT_DOWNLOADED",
             "Governed report CSV downloaded",
         )
+        INTEGRATION_INBOUND_SUCCEEDED = (
+            "INTEGRATION_INBOUND_SUCCEEDED",
+            "Integration inbound attempt succeeded",
+        )
+        INTEGRATION_INBOUND_FAILED = (
+            "INTEGRATION_INBOUND_FAILED",
+            "Integration inbound attempt failed",
+        )
+        INTEGRATION_INBOUND_DUPLICATE = (
+            "INTEGRATION_INBOUND_DUPLICATE",
+            "Integration inbound duplicate (idempotent)",
+        )
+        INTEGRATION_LIVE_BLOCKED = (
+            "INTEGRATION_LIVE_BLOCKED",
+            "Live Bileeta pull blocked by evidence gate",
+        )
+        INTEGRATION_DEAD_LETTER = (
+            "INTEGRATION_DEAD_LETTER",
+            "Integration attempt marked dead letter",
+        )
+        INTEGRATION_OUTBOUND_BLOCKED = (
+            "INTEGRATION_OUTBOUND_BLOCKED",
+            "Outbound ERP disposition blocked pending approval",
+        )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 

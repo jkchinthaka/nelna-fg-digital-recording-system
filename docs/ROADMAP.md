@@ -320,13 +320,14 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 
 | Field | Content |
 | --- | --- |
-| Objective | Approved API integration only |
-| Inputs | ERP vendor contract/API |
-| Outputs | `integrations` adapters |
+| Objective | Approved API integration only — never invent endpoints |
+| Inputs | Vendor API docs / sandbox / auth (APR-011/012) — **MISSING** |
+| Outputs | `apps.integrations` contracts, mocks, evidence gate (ADR-029) |
 | Approval gate | IT + ERP vendor |
-| Branch naming | `feature/phase-17-erp-integration` |
-| Exit criteria | No direct ERP DB writes; recording works if ERP down |
+| Branch naming | Direct-main quality-first for Phase 17 boundary |
+| Exit criteria | No direct ERP DB writes; recording works if ERP down; live calls only with evidence |
 | Dependencies | ASM-014 |
+| Status | **PHASE 17 BLOCKED — VENDOR API EVIDENCE REQUIRED** (boundary/mocks delivered) |
 
 ## Phase 18 — Local AI and anomaly detection
 

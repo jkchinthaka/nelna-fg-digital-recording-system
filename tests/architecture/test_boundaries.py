@@ -24,6 +24,7 @@ ALLOWED_APPS = {
     "dispatch",
     "notifications",
     "reports",
+    "integrations",
     "supplier_quality",
     "access_control",
     "security_audit",
@@ -41,7 +42,6 @@ OPTIONAL_LOCAL_WIP_APPS = {
 FORBIDDEN_APPS = {
     "tasks",
     "records",
-    "integrations",
     "reporting",
     "schedules",
 }

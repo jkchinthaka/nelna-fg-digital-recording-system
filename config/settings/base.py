@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     "apps.dispatch",
     "apps.notifications",
     "apps.reports",
+    "apps.integrations",
     "apps.supplier_quality",
     "apps.access_control",
     "apps.security_audit",
@@ -173,6 +174,16 @@ EVIDENCE_STORAGE_ROOT = Path(
 EVIDENCE_MAX_UPLOAD_BYTES = env.int("EVIDENCE_MAX_UPLOAD_BYTES", default=10 * 1024 * 1024)
 EVIDENCE_MALWARE_SCANNER = env("EVIDENCE_MALWARE_SCANNER", default="")
 # Empty scanner path => NullMalwareScanner (NOT_CONFIGURED). Do not claim scanning active.
+
+# Phase 17 — Bileeta / ERP adapter boundary (live HTTP OFF by default).
+# Do not invent base URLs or enable live calls without APR-011/APR-012 evidence.
+BILEETA_LIVE_ENABLED = env.bool("BILEETA_LIVE_ENABLED", default=False)
+BILEETA_BASE_URL = env("BILEETA_BASE_URL", default="")
+BILEETA_HTTP_TIMEOUT_SECONDS = env.float("BILEETA_HTTP_TIMEOUT_SECONDS", default=10.0)
+BILEETA_VERIFY_TLS = env.bool("BILEETA_VERIFY_TLS", default=True)
+# Auth material must come from env/vault only — never commit real secrets.
+BILEETA_CLIENT_ID = env("BILEETA_CLIENT_ID", default="")
+BILEETA_CLIENT_SECRET = env("BILEETA_CLIENT_SECRET", default="")
 
 REDIS_URL = env("REDIS_URL", default="redis://127.0.0.1:6379/0")
 REDIS_CACHE_TIMEOUT = env.int("REDIS_CACHE_TIMEOUT", default=300)

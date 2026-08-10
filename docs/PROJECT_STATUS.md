@@ -38,7 +38,7 @@ This document records **repository evidence**. It does not invent Nelna operatio
 | Business role mappings (recorder / Supervisor / QA) | **NOT BUSINESS APPROVED** — Phase 03C technical governance exists; permissions unassigned; mapping tables empty |
 | Segregation of duties | **EVIDENCE REQUIRED** — not invented in code as Nelna policy |
 | Offline / PWA | **Offline NOT IMPLEMENTED** — Phase 14 gate retained online-only MVP (ADR-026); installable PWA still longer-term (ADR-003) |
-| ERP / Bileeta connector | **NOT IMPLEMENTED** — contract docs only |
+| ERP / Bileeta connector | **BLOCKED** — `apps.integrations` contracts/mocks only; live HTTP gated (ADR-029); APR-011/012 EVIDENCE REQUIRED |
 
 ---
 
@@ -67,8 +67,9 @@ This document records **repository evidence**. It does not invent Nelna operatio
 | `dispatch` | **13** | IMPLEMENTED foundation · loading/dispatch quality + cold-chain temps + qty reconciliation; QA RELEASE gate **disabled by default**; no ERP writes; SOPs/limits **EVIDENCE REQUIRED** |
 | `notifications` | **15** | IMPLEMENTED foundation · in-app + optional SMTP; events default OFF; no SMS; privacy-safe payloads only |
 | `reports` | **16** | IMPLEMENTED foundation · catalogue + org-scoped CSV runs; immutable submission sources; Excel/PDF not implemented |
+| `integrations` | **17** | BOUNDARY ONLY · contracts/mocks/dead-letter/reconciliation; **live Bileeta blocked** (APR-011/012) |
 
-Not started (by MODULE_MAP): `integrations`, `ai_assistance`. (`loading` controls are delivered inside `dispatch` for Phase 13 — see ADR-025.)
+Not started (by MODULE_MAP): `ai_assistance`. (`loading` controls are delivered inside `dispatch` for Phase 13 — see ADR-025.)
 
 ---
 
@@ -119,7 +120,8 @@ Not started (by MODULE_MAP): `integrations`, `ai_assistance`. (`loading` control
 | 14 Offline PWA | **Decision gate complete** — offline **not** implemented (ADR-026); online-only MVP retained + paper fallback | APR-022 / Wi-Fi / device / logout-wipe evidence still required to reopen |
 | 15 Notifications | Technical complete — in-app notifications + optional SMTP; events default OFF; SMS not integrated (ADR-027) | Event matrix / SMTP / SMS provider EVIDENCE REQUIRED |
 | 16 Reporting | Technical complete — catalogue, org RBAC, immutable submission sources, CSV + formula injection guard, async ReportRun (ADR-028) | Official report packs / Excel-PDF need EVIDENCE REQUIRED |
-| 17–21 Later roadmap | Not started | N/A |
+| 17 ERP / Bileeta | Adapter boundary complete — contracts/mocks, evidence gate, dead-letter, reconciliation, outbound prepare-only (ADR-029) | **BLOCKED — VENDOR API EVIDENCE REQUIRED** (APR-011/012/016/017) |
+| 18–21 Later roadmap | Not started | N/A |
 
 ---
 
@@ -363,4 +365,10 @@ Workflow notifications foundation (ADR-027): in-app notifications with privacy-s
 **STATUS: PHASE 16 REPORTING COMPLETE**
 
 Governed quality reporting foundation (ADR-028): org-scoped catalogue and `ReportRun` CSV generation; historical submission/review/QA/correction paths use immutable snapshots (never draft responses); formula-injection protection; background generation for large runs; export/download audited. Official Nelna report packs and Excel/PDF remain EVIDENCE REQUIRED / not implemented.
+
+## Phase 17 delivery status
+
+**STATUS: PHASE 17 BLOCKED — VENDOR API EVIDENCE REQUIRED**
+
+Bileeta/ERP adapter boundary (ADR-029): `apps.integrations` with inbound contracts mapped only to the Phase 07F consumer, mock sandbox behaviours, live HTTP hard-gated, idempotent attempts + dead-letter, reconciliation, outbound disposition interface prepare-only (APR-017). No invented endpoints, no live connector, no ERP DB writes. Re-open live calls only after APR-011/012 artefacts land in the vendor evidence register.
 

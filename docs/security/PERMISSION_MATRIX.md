@@ -104,3 +104,12 @@ Business event matrix, SMTP production use, and SMS provider remain APPROVAL REQ
 | export_qualityreport | `reports.export_qualityreport` | Export/download report CSV (audited) |
 
 Official report packs, Excel/PDF, and production distribution remain APPROVAL REQUIRED / EVIDENCE REQUIRED.
+
+## Phase 17 Bileeta / ERP boundary permissions (technical)
+
+| key | permission | notes |
+| --- | --- | --- |
+| view_integrationboundary | `integrations.view_integrationboundary` | View vendor evidence status / boundary metadata |
+| manage_integrationboundary | `integrations.manage_integrationboundary` | Ingest mock/contract events, dead-letter, reconciliation ops |
+
+Live Bileeta HTTP remains blocked until APR-011/012 evidence is PRESENT. Outbound disposition send remains blocked until APR-017.

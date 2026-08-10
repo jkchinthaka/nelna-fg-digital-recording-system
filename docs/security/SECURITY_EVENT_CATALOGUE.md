@@ -112,6 +112,12 @@
 | `REPORT_RUN_COMPLETED` | Governed report run completed |
 | `REPORT_EXPORTED` | Governed report exported (CSV generated for export) |
 | `REPORT_EXPORT_DOWNLOADED` | Governed report CSV downloaded |
+| `INTEGRATION_INBOUND_SUCCEEDED` | Integration inbound attempt succeeded (Phase 17) |
+| `INTEGRATION_INBOUND_FAILED` | Integration inbound attempt failed |
+| `INTEGRATION_INBOUND_DUPLICATE` | Integration inbound duplicate (idempotent) |
+| `INTEGRATION_LIVE_BLOCKED` | Live Bileeta pull blocked by evidence gate |
+| `INTEGRATION_DEAD_LETTER` | Integration attempt marked dead letter |
+| `INTEGRATION_OUTBOUND_BLOCKED` | Outbound ERP disposition blocked pending APR-017 |
 
 ## Safe metadata
 

@@ -71,12 +71,16 @@ See [PHASE_07F_BATCH_EVENT_TASK_GENERATION.md](../business/PHASE_07F_BATCH_EVENT
 
 ## Explicit non-implementation (Phase 07B/07F)
 
-- No `apps.integrations` ERP adapter
-- No webhook endpoint
-- No polling worker
-- No Celery ingestion of production batch events
+- Live Bileeta/ERP HTTP client (Phase 17 still blocked — see ADR-029)
+- No webhook endpoint inventing vendor paths
+- No polling worker against invented URLs
+- No Celery ingestion of production batch events from live vendor
 - No ProductionBatch model
 - No invented Bileeta/ERP endpoints or credentials
+
+Phase 17 adds `apps.integrations` **contracts/mocks only**. See [BILEETA_VENDOR_EVIDENCE_REGISTER.md](BILEETA_VENDOR_EVIDENCE_REGISTER.md).
+
+**STATUS: PHASE 17 BLOCKED — VENDOR API EVIDENCE REQUIRED**
 
 ## Observability expectations (future)
 
