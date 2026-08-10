@@ -305,3 +305,90 @@ def test_update_profile_and_selectors() -> None:
     assert list_supplier_certificates(actor=qa, profile_id=profile.id).count() == 1
     with pytest.raises(ValidationError):
         get_supplier_quality_profile(actor=qa, profile_id=uuid.uuid4())
+
+
+@pytest.mark.django_db
+def test_audit_events_audit_complaint_and_capa_cross_org() -> None:
+    from apps.capa.services import create_corrective_action
+    from apps.security_audit.models import SecurityAuditEvent
+
+    org_a = make_org(code=f"SQZ{uuid.uuid4().hex[:5].upper()}")
+    org_b = make_org(code=f"SQW{uuid.uuid4().hex[:5].upper()}")
+    qa_a = _qa_user(org=org_a)
+    qa_b = _qa_user(org=org_b)
+    profile = create_supplier_quality_profile(
+        actor=qa_a, organization=org_a, erp_supplier_reference="ERP-AUD"
+    )
+    assert SecurityAuditEvent.objects.filter(
+        event_type="SUPPLIER_QUALITY_PROFILE_CREATED"
+    ).exists()
+
+    with pytest.raises(ValidationError):
+        create_supplier_quality_profile(
+            actor=qa_a, organization=org_a, erp_supplier_reference="  "
+        )
+    with pytest.raises(ValidationError):
+        record_supplier_quality_event(
+            actor=qa_a,
+            profile_id=profile.id,
+            event_kind="NOT_A_KIND",
+            occurred_at=timezone.now(),
+            summary="bad kind",
+        )
+    with pytest.raises(ValidationError):
+        record_supplier_quality_event(
+            actor=qa_a,
+            profile_id=profile.id,
+            event_kind=SupplierQualityEventKind.AUDIT,
+            occurred_at=timezone.now(),
+            summary="   ",
+        )
+
+    record_supplier_quality_event(
+        actor=qa_a,
+        profile_id=profile.id,
+        event_kind=SupplierQualityEventKind.AUDIT,
+        occurred_at=timezone.now(),
+        summary="Supplier audit shell",
+    )
+    record_supplier_quality_event(
+        actor=qa_a,
+        profile_id=profile.id,
+        event_kind=SupplierQualityEventKind.COMPLAINT,
+        occurred_at=timezone.now(),
+        summary="Complaint shell",
+    )
+    assert SecurityAuditEvent.objects.filter(
+        event_type="SUPPLIER_QUALITY_EVENT_RECORDED"
+    ).count() >= 2
+
+    capa_b = create_corrective_action(
+        actor=qa_b,
+        organization=org_b,
+        code="CAPA-B",
+        title="Foreign CAPA",
+    )
+    with pytest.raises(ValidationError):
+        record_supplier_quality_event(
+            actor=qa_a,
+            profile_id=profile.id,
+            event_kind=SupplierQualityEventKind.OTHER,
+            occurred_at=timezone.now(),
+            summary="cross-org capa",
+            corrective_action_id=capa_b.id,
+        )
+
+    cert = add_supplier_certificate(
+        actor=qa_a,
+        profile_id=profile.id,
+        certificate_type="TYPE-AUD",
+    )
+    assert SecurityAuditEvent.objects.filter(
+        event_type="SUPPLIER_CERTIFICATE_RECORDED"
+    ).exists()
+    verify_supplier_certificate(actor=qa_a, certificate_id=cert.id)
+    assert SecurityAuditEvent.objects.filter(
+        event_type="SUPPLIER_CERTIFICATE_VERIFIED"
+    ).exists()
+    assert certificate_is_expired(cert) is False
+    assert str(profile)

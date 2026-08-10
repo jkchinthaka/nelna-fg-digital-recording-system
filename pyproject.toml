@@ -125,7 +125,6 @@ omit = [
     "manage.py",
     "apps/mongo_poc/*",
     "config/settings/mongo_poc.py",
-    "apps/supplier_quality/*",
     "apps/analytics/*",
     "apps/feature_flags/*",
     "config/asgi.py",
