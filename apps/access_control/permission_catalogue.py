@@ -39,6 +39,7 @@ class CapabilityBucket(StrEnum):
     IPQC = "ipqc"
     BATCH_DOSSIER = "batch_dossier"
     BATCH_GENEALOGY = "batch_genealogy"
+    RECALL = "recall"
     EVIDENCE = "evidence"
     MASTER_DATA = "master_data"
     CHECKLIST_PUBLISH = "checklist_publish"
@@ -836,6 +837,50 @@ PERMISSION_CATALOGUE: Final[tuple[PermissionCatalogueEntry, ...]] = (
         scopes=(ObjectScope.ORGANIZATION,),
         description="Update genealogy Mongo projection / depth policy stubs.",
         notes="Dual-gated with BATCH_GENEALOGY_MONGO_PROJECTION_APPROVED (default OFF).",
+    ),
+    PermissionCatalogueEntry(
+        key="view_recall",
+        permission="recall.view_recall",
+        bucket=CapabilityBucket.RECALL,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="View recall/withdrawal cases and timelines.",
+    ),
+    PermissionCatalogueEntry(
+        key="initiate_recall",
+        permission="recall.initiate_recall",
+        bucket=CapabilityBucket.RECALL,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Initiate recall/withdrawal cases (high-risk).",
+        notes=(
+            "Explicit scoped grant required — not implied by System Admin / is_staff / "
+            "is_superuser (APR-062)."
+        ),
+    ),
+    PermissionCatalogueEntry(
+        key="manage_recallcase",
+        permission="recall.manage_recallcase",
+        bucket=CapabilityBucket.RECALL,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Update recall scope, quantities, and communication references.",
+    ),
+    PermissionCatalogueEntry(
+        key="close_recall",
+        permission="recall.close_recall",
+        bucket=CapabilityBucket.RECALL,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Close recall/withdrawal cases.",
+        notes="Not implied by manage_recallcase.",
+    ),
+    PermissionCatalogueEntry(
+        key="manage_recallpolicy",
+        permission="recall.manage_recallpolicy",
+        bucket=CapabilityBucket.RECALL,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Update recall external-notification / ERP-pull policy stubs.",
+        notes=(
+            "Dual-gated with RECALL_EXTERNAL_NOTIFICATION_APPROVED and "
+            "RECALL_ERP_DISTRIBUTION_PULL_APPROVED (default OFF)."
+        ),
     ),
     PermissionCatalogueEntry(
         key="manage_supplierquality_qa",

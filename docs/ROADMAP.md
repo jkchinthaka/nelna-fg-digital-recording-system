@@ -510,3 +510,11 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Objective | Backward/forward product genealogy from authoritative ERP/production data |
 | Outputs | `apps.batch_genealogy`; ADR-047; opaque nodes/edges; rework; cycle prevention; flat Mongo projection dual-gate OFF |
 | Status | **Technical foundation delivered** on `main` |
+
+## Phase 37 — Product Recall / Withdrawal Management
+
+| Field | Content |
+| --- | --- |
+| Objective | Controlled recall/withdrawal case management with genealogy-backed scope |
+| Outputs | `apps.recall`; ADR-048; quantity reconciliation; communication refs; initiate SoD; dual-gates OFF |
+| Status | **Technical foundation delivered** on `main` |

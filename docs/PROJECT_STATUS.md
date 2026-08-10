@@ -83,8 +83,9 @@ This document records **repository evidence**. It does not invent Nelna operatio
 | `ipqc` | **34** | IMPLEMENTED foundation · process-check defs; triggers; measurement/equipment/sampling; fail dual-gate OFF; NCR/HOLD escalate; dashboard (APR-059) |
 | `batch_dossier` | **35** | IMPLEMENTED foundation · read-only batch dossier; timeline; section authz; paginated evidence/audit; PDF export hook dual-gate OFF (APR-060) |
 | `batch_genealogy` | **36** | IMPLEMENTED foundation · ERP-sourced nodes/edges; backward/forward; rework; cycle prevention; flat Mongo projection dual-gate OFF; partner redaction (APR-061) |
+| `recall` | **37** | IMPLEMENTED foundation · recall/withdrawal cases; genealogy expansion; qty reconciliation; communication refs; initiate high-risk; dual-gates OFF (APR-062) |
 
-Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 36 except gaps noted elsewhere)._ (`loading` controls are delivered inside `dispatch` for Phase 13 — see ADR-025.)
+Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 37 except gaps noted elsewhere)._ (`loading` controls are delivered inside `dispatch` for Phase 13 — see ADR-025.)
 
 ---
 
@@ -153,6 +154,7 @@ Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 36 except gaps n
 | 34 In-Process Quality Control (IPQC) | Technical complete — process-check definitions, trigger shells, measurement/equipment/sampling/HACCP metadata, fail dual-gate OFF, controlled NCR/HOLD, dashboard (ADR-045) | Company IPQC frequencies / stop-line / SoD EVIDENCE REQUIRED (APR-059) |
 | 35 Electronic Batch Quality Dossier (EBR) | Technical complete — read-only aggregation by batch_reference, timeline, section authz, paginated evidence/audit, PDF export hook dual-gate OFF (ADR-046) | Company batch identity / retention / export SoD EVIDENCE REQUIRED (APR-060) |
 | 36 Batch Genealogy Traceability | Technical complete — ERP adjacency nodes/edges, forward/backward trace, rework, cycle prevention, capped Mongo projection, party dual-gate OFF (ADR-047) | Company ERP genealogy mapping / party SoD EVIDENCE REQUIRED (APR-061) |
+| 37 Product Recall / Withdrawal | Technical complete — recall cases, genealogy expansion, qty reconciliation, communication refs, high-risk initiate, dual-gate notify/ERP OFF (ADR-048) | Company recall procedure / notify SOP / ERP distribution EVIDENCE REQUIRED (APR-062) |
 | 20–21 Pilot / production release | Not started | Depends on business gates + Phase 19 ops evidence |
 | 20 UAT / Pilot | Package opened — **BLOCKED** pending business evidence ([uat/README.md](uat/README.md)) | Pilot scope APR-034, FG-QA-001, roles/SoD, hosted env EVIDENCE REQUIRED |
 | 21 Production release | Package opened — **GO-LIVE BLOCKED** ([release/README.md](release/README.md)) | Phase 20 FAIL + hosting/config/support gates |
@@ -520,4 +522,10 @@ Electronic batch quality dossier (ADR-046): read-only aggregation of authorized 
 **STATUS: PHASE 36 BATCH GENEALOGY COMPLETE**
 
 Batch / product genealogy (ADR-047): opaque ERP-sourced genealogy nodes and directed edges (raw/supplier/production/rework/FG/sub-lot/shipment), backward and forward BFS traces with depth caps, rework parent→child preservation, cycle prevention on ingest, supplier/customer field restriction (`view_genealogy_partner`), and flat Mongo edge-list projection dual-gated OFF — no invented genealogy and no unbounded embedded graphs (APR-061).
+
+## Phase 37 delivery status
+
+**STATUS: PHASE 37 RECALL MANAGEMENT COMPLETE**
+
+Product recall / withdrawal case management (ADR-048): organization-scoped cases (ID, type/ref, reason, initiator, status, scope, owner, closure), affected products/batches, Phase 36 genealogy expansion, opaque quantity reconciliation (no invented variance), communication reference shells without auto-send, explicit scoped `initiate_recall` (not System Admin / staff / superuser by default), immutable timeline + audit events, and dual-gated OFF external notification / ERP distribution pull (APR-062).
 

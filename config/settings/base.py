@@ -80,6 +80,7 @@ INSTALLED_APPS = [
     "apps.ipqc",
     "apps.batch_dossier",
     "apps.batch_genealogy",
+    "apps.recall",
     "apps.nonconformance",
     "apps.capa",
     "apps.dispatch",
@@ -328,6 +329,15 @@ BATCH_DOSSIER_PDF_EXPORT_APPROVED = env.bool(
 # Phase 36 — genealogy Mongo projection remains OFF until company / ERP evidence approval.
 BATCH_GENEALOGY_MONGO_PROJECTION_APPROVED = env.bool(
     "BATCH_GENEALOGY_MONGO_PROJECTION_APPROVED",
+    default=False,
+)
+# Phase 37 — recall external notification / ERP distribution pull remain OFF.
+RECALL_EXTERNAL_NOTIFICATION_APPROVED = env.bool(
+    "RECALL_EXTERNAL_NOTIFICATION_APPROVED",
+    default=False,
+)
+RECALL_ERP_DISTRIBUTION_PULL_APPROVED = env.bool(
+    "RECALL_ERP_DISTRIBUTION_PULL_APPROVED",
     default=False,
 )
 

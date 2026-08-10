@@ -241,3 +241,23 @@ AI default OFF. AI must not execute RELEASE/HOLD/REJECT, publish, spec/role chan
 | ingest_batchgenealogy | `batch_genealogy.ingest_batchgenealogy` | ERP edge/node ingest |
 | view_genealogy_partner | `batch_genealogy.view_genealogy_partner` | Supplier/customer refs (restricted) |
 | manage_batchgenealogypolicy | `batch_genealogy.manage_batchgenealogypolicy` | Mongo projection policy stubs (dual-gate OFF) |
+
+### Product Recall / Withdrawal (Phase 37)
+
+| Key | Permission | Notes |
+| --- | --- | --- |
+| view_recall | `recall.view_recall` | View cases and timelines |
+| initiate_recall | `recall.initiate_recall` | High-risk; explicit scoped grant — not System Admin / staff / superuser by default |
+| manage_recallcase | `recall.manage_recallcase` | Scope, quantities, communication refs |
+| close_recall | `recall.close_recall` | Close cases (not implied by manage) |
+| manage_recallpolicy | `recall.manage_recallpolicy` | External-notify / ERP-pull stubs (dual-gates OFF) |
+
+### Product Recall / Withdrawal (Phase 37)
+
+| Key | Permission | Notes |
+| --- | --- | --- |
+| view_recall | `recall.view_recall` | View cases and timelines |
+| initiate_recall | `recall.initiate_recall` | High-risk — explicit scoped grant; not System Admin by default |
+| manage_recallcase | `recall.manage_recallcase` | Scope, quantities, communication refs |
+| close_recall | `recall.close_recall` | Close cases (not implied by manage) |
+| manage_recallpolicy | `recall.manage_recallpolicy` | Dual-gate notify/ERP policy stubs |

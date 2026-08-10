@@ -29,6 +29,7 @@ from apps.changeover.models import ChangeoverRecord, LineClearanceRecord
 from apps.receiving.models import ReceiptQualityRecord
 from apps.iqc.models import IqcInspectionCase
 from apps.ipqc.models import IpqcInspectionCase
+from apps.recall.models import RecallCase
 from apps.scheduling.services import RECORD_CHECKLIST_TASK
 
 UPLOAD_EVIDENCE = "evidence.upload_evidenceattachment"
@@ -67,6 +68,10 @@ VIEW_IPQC = "ipqc.view_ipqc"
 MANAGE_IPQC = "ipqc.manage_ipqc"
 RECORD_IPQC = "ipqc.record_ipqc"
 ESCALATE_IPQC = "ipqc.escalate_ipqc"
+VIEW_RECALL = "recall.view_recall"
+MANAGE_RECALL = "recall.manage_recallcase"
+INITIATE_RECALL = "recall.initiate_recall"
+CLOSE_RECALL = "recall.close_recall"
 
 
 @dataclass(frozen=True, slots=True)
@@ -350,6 +355,19 @@ def resolve_linked_target(*, kind: str, object_id: uuid.UUID) -> LinkedTarget:
             obj=ipqc_case,
         )
 
+    if kind == EvidenceLinkedKind.RECALL_CASE:
+        recall_case = RecallCase.objects.filter(pk=object_id).first()
+        if recall_case is None:
+            raise ValidationError({"linked_object_id": "Recall case not found."})
+        return LinkedTarget(
+            kind=kind,
+            object_id=recall_case.id,
+            organization_id=recall_case.organization_id,
+            linkage_immutable=recall_case.status
+            in {"CLOSED", "CANCELLED"},
+            obj=recall_case,
+        )
+
     raise ValidationError({"linked_kind": "Unsupported linked kind."})
 
 
@@ -547,6 +565,17 @@ def _assert_parent_access(*, actor: User, target: LinkedTarget, for_mutate: bool
             or user_has_permission(actor, MANAGE_IPQC, scope=org_scope)
             or user_has_permission(actor, RECORD_IPQC, scope=org_scope)
             or user_has_permission(actor, ESCALATE_IPQC, scope=org_scope)
+        )
+        if not allowed:
+            raise PermissionDenied("Permission denied.")
+        return
+
+    if kind == EvidenceLinkedKind.RECALL_CASE:
+        allowed = (
+            user_has_permission(actor, VIEW_RECALL, scope=org_scope)
+            or user_has_permission(actor, MANAGE_RECALL, scope=org_scope)
+            or user_has_permission(actor, INITIATE_RECALL, scope=org_scope)
+            or user_has_permission(actor, CLOSE_RECALL, scope=org_scope)
         )
         if not allowed:
             raise PermissionDenied("Permission denied.")

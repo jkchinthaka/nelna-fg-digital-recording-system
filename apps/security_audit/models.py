@@ -835,6 +835,59 @@ class SecurityAuditEvent(models.Model):
             "Genealogy policy stub updated",
         )
 
+        RECALL_CASE_CREATED = (
+            "RECALL_CASE_CREATED",
+            "Recall/withdrawal case created",
+        )
+        RECALL_CASE_INITIATED = (
+            "RECALL_CASE_INITIATED",
+            "Recall/withdrawal case initiated (high-risk)",
+        )
+        RECALL_AFFECTED_PRODUCT_ADDED = (
+            "RECALL_AFFECTED_PRODUCT_ADDED",
+            "Affected product added to recall case",
+        )
+        RECALL_AFFECTED_BATCH_ADDED = (
+            "RECALL_AFFECTED_BATCH_ADDED",
+            "Affected batch added to recall case",
+        )
+        RECALL_GENEALOGY_EXPANDED = (
+            "RECALL_GENEALOGY_EXPANDED",
+            "Genealogy expansion applied to recall case",
+        )
+        RECALL_QUANTITY_RECONCILED = (
+            "RECALL_QUANTITY_RECONCILED",
+            "Recall quantity reconciliation updated",
+        )
+        RECALL_COMMUNICATION_RECORDED = (
+            "RECALL_COMMUNICATION_RECORDED",
+            "Recall communication reference recorded (no auto-send)",
+        )
+        RECALL_EXTERNAL_NOTIFICATION_BLOCKED = (
+            "RECALL_EXTERNAL_NOTIFICATION_BLOCKED",
+            "Recall external notification blocked by dual-gate",
+        )
+        RECALL_EXTERNAL_NOTIFICATION_PREPARED = (
+            "RECALL_EXTERNAL_NOTIFICATION_PREPARED",
+            "Recall external notification prepared (message not sent)",
+        )
+        RECALL_ERP_DISTRIBUTION_BLOCKED = (
+            "RECALL_ERP_DISTRIBUTION_BLOCKED",
+            "Recall ERP distribution pull blocked by dual-gate",
+        )
+        RECALL_ERP_DISTRIBUTION_PREPARED = (
+            "RECALL_ERP_DISTRIBUTION_PREPARED",
+            "Recall ERP distribution pull prepared (not executed live)",
+        )
+        RECALL_CASE_CLOSED = (
+            "RECALL_CASE_CLOSED",
+            "Recall/withdrawal case closed",
+        )
+        RECALL_POLICY_UPDATED = (
+            "RECALL_POLICY_UPDATED",
+            "Recall policy stub updated",
+        )
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     event_type = models.CharField(max_length=64, choices=EventType.choices)

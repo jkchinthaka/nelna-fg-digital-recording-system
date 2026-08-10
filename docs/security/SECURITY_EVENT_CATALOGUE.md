@@ -332,6 +332,24 @@ Retention period is **deferred** â€” not decided in Phase 03. Events are ap
 | BATCH_GENEALOGY_FORWARD_TRACE | Forward genealogy trace executed |
 | BATCH_GENEALOGY_POLICY_UPDATED | Genealogy policy stub updated |
 
+### Product Recall / Withdrawal (Phase 37)
+
+| Event type | Meaning |
+| --- | --- |
+| RECALL_CASE_CREATED | Recall case created |
+| RECALL_CASE_INITIATED | Recall case initiated (high-risk) |
+| RECALL_AFFECTED_PRODUCT_ADDED | Affected product added |
+| RECALL_AFFECTED_BATCH_ADDED | Affected batch added |
+| RECALL_GENEALOGY_EXPANDED | Genealogy expansion applied |
+| RECALL_QUANTITY_RECONCILED | Quantity reconciliation updated |
+| RECALL_COMMUNICATION_RECORDED | Communication reference recorded (no auto-send) |
+| RECALL_EXTERNAL_NOTIFICATION_BLOCKED | External notification blocked |
+| RECALL_EXTERNAL_NOTIFICATION_PREPARED | External notification prepared (not sent) |
+| RECALL_ERP_DISTRIBUTION_BLOCKED | ERP distribution pull blocked |
+| RECALL_ERP_DISTRIBUTION_PREPARED | ERP distribution pull prepared (not live) |
+| RECALL_CASE_CLOSED | Recall case closed |
+| RECALL_POLICY_UPDATED | Recall policy stub updated |
+
 ### Phase 36 — Batch genealogy
 
 | Event | Meaning |
@@ -342,3 +360,21 @@ Retention period is **deferred** â€” not decided in Phase 03. Events are ap
 | GENEALOGY_CYCLE_PREVENTED | Cycle-creating edge blocked |
 | GENEALOGY_TRACE_EXECUTED | Forward/backward trace run |
 | GENEALOGY_POLICY_UPDATED | Party-detail policy stub updated |
+
+### Product Recall / Withdrawal (Phase 37)
+
+| Event type | Meaning |
+| --- | --- |
+| RECALL_CASE_CREATED | Recall/withdrawal case created |
+| RECALL_CASE_INITIATED | Case initiated (high-risk) |
+| RECALL_AFFECTED_PRODUCT_ADDED | Affected product added |
+| RECALL_AFFECTED_BATCH_ADDED | Affected batch added |
+| RECALL_GENEALOGY_EXPANDED | Genealogy expansion applied |
+| RECALL_QUANTITY_RECONCILED | Quantity reconciliation updated |
+| RECALL_COMMUNICATION_RECORDED | Communication reference recorded (no auto-send) |
+| RECALL_EXTERNAL_NOTIFICATION_BLOCKED | External notification blocked by dual-gate |
+| RECALL_EXTERNAL_NOTIFICATION_PREPARED | External notification prepared (message not sent) |
+| RECALL_ERP_DISTRIBUTION_BLOCKED | ERP distribution pull blocked by dual-gate |
+| RECALL_ERP_DISTRIBUTION_PREPARED | ERP distribution pull prepared (not executed live) |
+| RECALL_CASE_CLOSED | Case closed |
+| RECALL_POLICY_UPDATED | Recall policy stub updated |
