@@ -392,11 +392,20 @@ def test_spec_parameters_selectors_and_rejected_state() -> None:
         create_receipt_quality_record(
             actor=qa,
             organization=org,
+            erp_receipt_reference=f"GRN-{uuid.uuid4().hex[:5].upper()}",
+            supplier_profile=supplier,
+            supplier_lot="LOT-BADQTY",
+            material=material,
+            quantity="not-a-number",
+        )
+    with pytest.raises(ValidationError):
+        create_receipt_quality_record(
+            actor=qa,
+            organization=org,
             erp_receipt_reference=receipt.erp_receipt_reference,
             supplier_profile=supplier,
             supplier_lot="LOT-REJ",
             material=material,
-            quantity="not-a-number",
         )
 
     set_receipt_quality_disposition(
