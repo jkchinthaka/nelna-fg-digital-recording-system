@@ -378,3 +378,19 @@ Retention period is **deferred** â€” not decided in Phase 03. Events are ap
 | RECALL_ERP_DISTRIBUTION_PREPARED | ERP distribution pull prepared (not executed live) |
 | RECALL_CASE_CLOSED | Case closed |
 | RECALL_POLICY_UPDATED | Recall policy stub updated |
+
+### Mock Recall Exercises (Phase 38)
+
+| Event type | Meaning |
+| --- | --- |
+| MOCK_RECALL_EXERCISE_CREATED | Mock recall exercise created |
+| MOCK_RECALL_EXERCISE_STARTED | Mock recall exercise started |
+| MOCK_RECALL_METRICS_UPDATED | Mock exercise metrics updated |
+| MOCK_RECALL_EXERCISE_COMPLETED | Mock recall exercise completed |
+| MOCK_RECALL_GENEALOGY_EXERCISED | Mock genealogy exercise run |
+| MOCK_RECALL_SIDE_EFFECT_BLOCKED | Mock real side effect blocked |
+| MOCK_RECALL_FINDING_RECORDED | Mock finding recorded |
+| MOCK_RECALL_FINDING_LINKED_NCR | Mock finding linked to NCR (explicit) |
+| MOCK_RECALL_FINDING_LINKED_CAPA | Mock finding linked to CAPA (explicit) |
+| MOCK_RECALL_IMPROVEMENT_CREATED | Mock improvement action created (explicit) |
+

@@ -25,9 +25,12 @@ from apps.batch_genealogy.services import trace_backward, trace_forward
 from apps.organizations.models import Organization
 from apps.recall.models import (
     RECALL_STATUS_TRANSITIONS,
+    MOCK_RECALL_BANNER,
+    MOCK_RECALL_CODE_PREFIX,
     RecallAffectedBatch,
     RecallAffectedProduct,
     RecallCase,
+    RecallCaseMode,
     RecallCaseStatus,
     RecallCommunicationRecord,
     RecallPolicy,
@@ -201,9 +204,22 @@ def create_recall_case(
     if initiate:
         require_explicit_initiate_recall(user, organization_id=organization.id)
 
+    normalized_code = (code or "").strip()
+    if normalized_code.upper().startswith(MOCK_RECALL_CODE_PREFIX):
+        raise ValidationError(
+            {
+                "code": (
+                    f"Use create_mock_recall_exercise for {MOCK_RECALL_CODE_PREFIX} "
+                    "mock exercises — real recall create cannot use the mock prefix."
+                )
+            }
+        )
+
     case = RecallCase(
         organization=organization,
-        code=(code or "").strip(),
+        code=normalized_code,
+        mode=RecallCaseMode.REAL,
+        is_mock=False,
         case_type_reference=(case_type_reference or "").strip()[:128],
         reason=(reason or "").strip(),
         scope_notes=(scope_notes or "").strip(),
@@ -260,6 +276,15 @@ def initiate_recall_case(
     case = get_recall_case(organization_id=organization.id, case_id=case_id)
     if case is None:
         raise ValidationError({"case_id": "Recall case not found."})
+    if case.is_mock:
+        raise ValidationError(
+            {
+                "case_id": (
+                    "Mock exercises cannot be initiated via real recall initiate — "
+                    "use start_mock_exercise."
+                )
+            }
+        )
     _transition(case, RecallCaseStatus.OPEN)
     case.initiated_by = user
     case.initiated_at = timezone.now()
@@ -403,13 +428,22 @@ def expand_genealogy_for_recall(
     Does not invent links — uses ERP-sourced genealogy only.
     """
     user = _require_actor(actor)
-    require_permission(user, MANAGE, scope=_org_scope(organization.id))
-    require_permission(
-        user, "batch_genealogy.view_batchgenealogy", scope=_org_scope(organization.id)
-    )
     case = get_recall_case(organization_id=organization.id, case_id=case_id)
     if case is None:
         raise ValidationError({"case_id": "Recall case not found."})
+    if case.is_mock:
+        if not (
+            user_has_permission(user, MANAGE, scope=_org_scope(organization.id))
+            or user_has_permission(
+                user, "recall.run_mock_recall", scope=_org_scope(organization.id)
+            )
+        ):
+            raise PermissionDenied("Permission denied.")
+    else:
+        require_permission(user, MANAGE, scope=_org_scope(organization.id))
+    require_permission(
+        user, "batch_genealogy.view_batchgenealogy", scope=_org_scope(organization.id)
+    )
     if case.status in {RecallCaseStatus.CLOSED, RecallCaseStatus.CANCELLED}:
         raise ValidationError({"status": "Cannot modify a closed/cancelled case."})
 
@@ -652,6 +686,36 @@ def attempt_external_notification(
     case = get_recall_case(organization_id=organization.id, case_id=case_id)
     if case is None:
         raise ValidationError({"case_id": "Recall case not found."})
+    if case.is_mock:
+        result = {
+            "allowed": False,
+            "reason_code": "MOCK_SIDE_EFFECT_FORBIDDEN",
+            "message_not_sent": True,
+            "real_customer_notification_sent": False,
+            "regulatory_notification_created": False,
+            "is_mock": True,
+            "visual_banner": MOCK_RECALL_BANNER,
+            "recall_case_id": str(case.id),
+            "evidence_gate": "APR-063 / mock recall preparedness policy",
+        }
+        record_event(
+            event_type="MOCK_RECALL_SIDE_EFFECT_BLOCKED",
+            actor=user,
+            metadata={
+                "organization_id": str(organization.id),
+                "recall_case_id": str(case.id),
+                "gate": "EXTERNAL_NOTIFICATION",
+                **result,
+            },
+        )
+        _append_timeline(
+            case=case,
+            actor=user,
+            event_type="MOCK_SIDE_EFFECT_BLOCKED",
+            summary="Mock external notification forbidden",
+            payload=result,
+        )
+        return result
     decision = evaluate_recall_external_notification(organization_id=organization.id)
     record_event(
         event_type=(
@@ -702,6 +766,37 @@ def attempt_erp_distribution_pull(
     case = get_recall_case(organization_id=organization.id, case_id=case_id)
     if case is None:
         raise ValidationError({"case_id": "Recall case not found."})
+    if case.is_mock:
+        result = {
+            "allowed": False,
+            "reason_code": "MOCK_SIDE_EFFECT_FORBIDDEN",
+            "missing_erp_links": ["MOCK_SIDE_EFFECT_FORBIDDEN"],
+            "shipment_refs": [],
+            "live_pull_not_executed": True,
+            "erp_stock_changed": False,
+            "is_mock": True,
+            "visual_banner": MOCK_RECALL_BANNER,
+            "recall_case_id": str(case.id),
+            "evidence_gate": "APR-063 / mock recall preparedness policy",
+        }
+        record_event(
+            event_type="MOCK_RECALL_SIDE_EFFECT_BLOCKED",
+            actor=user,
+            metadata={
+                "organization_id": str(organization.id),
+                "recall_case_id": str(case.id),
+                "gate": "ERP_DISTRIBUTION_PULL",
+                **result,
+            },
+        )
+        _append_timeline(
+            case=case,
+            actor=user,
+            event_type="MOCK_SIDE_EFFECT_BLOCKED",
+            summary="Mock ERP distribution/stock change forbidden",
+            payload=result,
+        )
+        return result
     decision = evaluate_recall_erp_distribution_pull(organization_id=organization.id)
     missing: list[str] = []
     shipment_refs: list[str] = []
@@ -836,9 +931,13 @@ def get_recall_timeline(
 
 
 def serialize_recall_case(case: RecallCase) -> dict[str, Any]:
-    return {
+    payload: dict[str, Any] = {
         "id": str(case.id),
         "code": case.code,
+        "mode": case.mode,
+        "is_mock": case.is_mock,
+        "visual_banner": case.visual_banner,
+        "cannot_confuse_with_real_recall": bool(case.is_mock),
         "case_type_reference": case.case_type_reference,
         "reason": case.reason,
         "status": case.status,
@@ -881,5 +980,19 @@ def serialize_recall_case(case: RecallCase) -> dict[str, Any]:
             for q in case.quantity_lines.select_related("affected_batch").all()
         ],
         "no_invented_regulatory_class": True,
-        "evidence_gate": "APR-062 / company recall / withdrawal policy",
+        "evidence_gate": (
+            "APR-063 / mock recall preparedness policy"
+            if case.is_mock
+            else "APR-062 / company recall / withdrawal policy"
+        ),
     }
+    if case.is_mock:
+        payload.update(
+            {
+                "erp_stock_changed": False,
+                "real_customer_notification_sent": False,
+                "regulatory_notification_created": False,
+                "blocks_dispatch": False,
+            }
+        )
+    return payload

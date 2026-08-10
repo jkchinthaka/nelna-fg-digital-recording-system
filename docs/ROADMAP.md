@@ -518,3 +518,11 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Objective | Controlled recall/withdrawal case management with genealogy-backed scope |
 | Outputs | `apps.recall`; ADR-048; quantity reconciliation; communication refs; initiate SoD; dual-gates OFF |
 | Status | **Technical foundation delivered** on `main` |
+
+## Phase 38 — Mock Recall Exercises
+
+| Field | Content |
+| --- | --- |
+| Objective | Mock recall exercises without affecting real product/inventory status |
+| Outputs | `apps.recall` MOCK mode; ADR-049; metrics; isolation guards; findings→NCR/CAPA/improvement |
+| Status | **Technical foundation delivered** on `main` |

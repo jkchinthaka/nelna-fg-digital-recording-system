@@ -50,7 +50,7 @@ Do **not** rename FG master data, checklist, recording, review, or evidence work
 | ipqc | In-process quality control workflows (34) | IpqcProcessCheckDefinition; IpqcInspectionCase; IpqcWorkflowPolicy | generate process checks; measure; equipment; sampling; failure dual-gate; NCR/HOLD escalate; dashboard | No hardcoded questions; FAIL≠line stop; not FG release | **34** |
 | batch_dossier | Electronic batch quality dossier / EBR (35) | BatchDossierPolicy; BatchDossierExportRequest | assemble read-only dossier by batch_reference; timeline; paginated evidence/audit; PDF export hook | No mutable copies; no ProductionBatch master; PDF dual-gate OFF | **35** |
 | batch_genealogy | Batch genealogy traceability (36) | GenealogyNode; GenealogyEdge; GenealogyPolicy | ERP-sourced ingest; backward/forward trace; rework; cycle prevention; flat Mongo projection | No invented genealogy; no unbounded embeds; partner fields restricted; Mongo dual-gate OFF | **36** |
-| recall | Product recall / withdrawal (37) | RecallCase; affected products/batches; quantity lines; communications; timeline; RecallPolicy | initiate/manage/close; genealogy expansion; qty reconciliation; communication refs | No invented regulatory classes; no auto-notify; initiate not System Admin by default; dual-gates OFF | **37** |
+| recall | Product recall / withdrawal (37) + mock exercises (38) | RecallCase (+ MOCK mode); MockExerciseMetrics; MockRecallFinding; MockImprovementAction; quantity lines; communications; timeline; RecallPolicy | initiate/manage/close; genealogy expansion; qty reconciliation; mock metrics/findings | No invented regulatory classes; no auto-notify; mock never affects ERP/notify/dispatch; findings need explicit user action | **37–38** |
 
 ## Phase mapping reminder
 

@@ -883,6 +883,22 @@ PERMISSION_CATALOGUE: Final[tuple[PermissionCatalogueEntry, ...]] = (
         ),
     ),
     PermissionCatalogueEntry(
+        key="run_mock_recall",
+        permission="recall.run_mock_recall",
+        bucket=CapabilityBucket.RECALL,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Run MOCK recall exercises (never a real recall initiation).",
+        notes="Technically and visually isolated from real recalls (ADR-049 / APR-063).",
+    ),
+    PermissionCatalogueEntry(
+        key="manage_mock_recall_findings",
+        permission="recall.manage_mock_recall_findings",
+        bucket=CapabilityBucket.RECALL,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Record mock findings and explicitly link NCR/CAPA/improvement.",
+        notes="Findings never auto-open NCR/CAPA — explicit user action required.",
+    ),
+    PermissionCatalogueEntry(
         key="manage_supplierquality_qa",
         permission="supplier_quality.manage_supplierquality_qa",
         bucket=CapabilityBucket.MANAGE,

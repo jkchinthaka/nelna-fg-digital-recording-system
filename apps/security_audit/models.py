@@ -887,6 +887,46 @@ class SecurityAuditEvent(models.Model):
             "RECALL_POLICY_UPDATED",
             "Recall policy stub updated",
         )
+        MOCK_RECALL_EXERCISE_CREATED = (
+            "MOCK_RECALL_EXERCISE_CREATED",
+            "MOCK recall exercise created",
+        )
+        MOCK_RECALL_EXERCISE_STARTED = (
+            "MOCK_RECALL_EXERCISE_STARTED",
+            "MOCK recall exercise started",
+        )
+        MOCK_RECALL_METRICS_UPDATED = (
+            "MOCK_RECALL_METRICS_UPDATED",
+            "MOCK recall exercise metrics updated",
+        )
+        MOCK_RECALL_EXERCISE_COMPLETED = (
+            "MOCK_RECALL_EXERCISE_COMPLETED",
+            "MOCK recall exercise completed",
+        )
+        MOCK_RECALL_GENEALOGY_EXERCISED = (
+            "MOCK_RECALL_GENEALOGY_EXERCISED",
+            "MOCK recall genealogy exercise executed",
+        )
+        MOCK_RECALL_SIDE_EFFECT_BLOCKED = (
+            "MOCK_RECALL_SIDE_EFFECT_BLOCKED",
+            "MOCK recall side effect blocked (no ERP/notify/dispatch)",
+        )
+        MOCK_RECALL_FINDING_RECORDED = (
+            "MOCK_RECALL_FINDING_RECORDED",
+            "MOCK recall finding recorded",
+        )
+        MOCK_RECALL_FINDING_LINKED_NCR = (
+            "MOCK_RECALL_FINDING_LINKED_NCR",
+            "MOCK recall finding linked to NCR (explicit)",
+        )
+        MOCK_RECALL_FINDING_LINKED_CAPA = (
+            "MOCK_RECALL_FINDING_LINKED_CAPA",
+            "MOCK recall finding linked to CAPA (explicit)",
+        )
+        MOCK_RECALL_IMPROVEMENT_CREATED = (
+            "MOCK_RECALL_IMPROVEMENT_CREATED",
+            "MOCK recall improvement action created (explicit)",
+        )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 

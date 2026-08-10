@@ -252,12 +252,10 @@ AI default OFF. AI must not execute RELEASE/HOLD/REJECT, publish, spec/role chan
 | close_recall | `recall.close_recall` | Close cases (not implied by manage) |
 | manage_recallpolicy | `recall.manage_recallpolicy` | External-notify / ERP-pull stubs (dual-gates OFF) |
 
-### Product Recall / Withdrawal (Phase 37)
+### Mock Recall Exercises (Phase 38)
 
 | Key | Permission | Notes |
 | --- | --- | --- |
-| view_recall | `recall.view_recall` | View cases and timelines |
-| initiate_recall | `recall.initiate_recall` | High-risk — explicit scoped grant; not System Admin by default |
-| manage_recallcase | `recall.manage_recallcase` | Scope, quantities, communication refs |
-| close_recall | `recall.close_recall` | Close cases (not implied by manage) |
-| manage_recallpolicy | `recall.manage_recallpolicy` | Dual-gate notify/ERP policy stubs |
+| run_mock_recall | `recall.run_mock_recall` | Mock exercises only — not `initiate_recall` |
+| manage_mock_recall_findings | `recall.manage_mock_recall_findings` | Explicit NCR/CAPA/improvement links from mock findings |
+
