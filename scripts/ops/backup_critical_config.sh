@@ -1,38 +1,25 @@
 #!/usr/bin/env bash
-# Phase 19 — critical config inventory export (no secrets).
-# Captures approved non-secret settings keys for ops custody. Secrets stay in vault.
+# Phase 19 — critical config inventory backup (non-secret templates only).
+# Secrets must remain in the company vault; never copy .env with secrets into BACKUP_DIR.
 set -euo pipefail
 : "${BACKUP_DIR:?}"
+: "${REPO_ROOT:=$(cd "$(dirname "$0")/../.." && pwd)}"
 STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
-OUT="${BACKUP_DIR}/nelna_fg_critical_config_${STAMP}.txt"
-mkdir -p "${BACKUP_DIR}"
-{
-  echo "# Nelna FG critical config inventory (no secret values)"
-  echo "# Generated (UTC): ${STAMP}"
-  echo "# Operator must pair this with vault-held secrets under company custody."
-  echo
-  echo "Required production env keys (values omitted):"
-  cat <<'KEYS'
-DJANGO_SECRET_KEY
-DJANGO_ALLOWED_HOSTS
-DJANGO_CSRF_TRUSTED_ORIGINS
-POSTGRES_DB
-POSTGRES_USER
-POSTGRES_PASSWORD
-POSTGRES_HOST
-POSTGRES_PORT
-REDIS_URL
-SECURE_SSL_REDIRECT
-SECURE_HSTS_SECONDS
-SESSION_COOKIE_AGE
-EVIDENCE_STORAGE_ROOT
-KEYS
-  if [[ -f ".env.example" ]]; then
-    echo
-    echo "--- .env.example snapshot (placeholders only) ---"
-    # Strip obvious secret-bearing assignment lines by redacting values after '='.
-    sed -E 's/^(DJANGO_SECRET_KEY|POSTGRES_PASSWORD|REDIS_URL|MONGODB_URI)=.*/\1=[REDACTED]/' .env.example
-  fi
-} > "${OUT}"
-sha256sum "${OUT}" > "${OUT}.sha256"
-echo "Wrote ${OUT}"
+OUT_DIR="${BACKUP_DIR}/critical_config_${STAMP}"
+mkdir -p "${OUT_DIR}"
+
+# Inventory of non-secret operational templates / compose / CI / settings skeletons.
+cp -a "${REPO_ROOT}/.env.example" "${OUT_DIR}/" 2>/dev/null || true
+cp -a "${REPO_ROOT}/docker-compose.yml" "${OUT_DIR}/" 2>/dev/null || true
+cp -a "${REPO_ROOT}/docker-compose.override.yml" "${OUT_DIR}/" 2>/dev/null || true
+mkdir -p "${OUT_DIR}/config/settings"
+cp -a "${REPO_ROOT}/config/settings/"*.py "${OUT_DIR}/config/settings/" 2>/dev/null || true
+mkdir -p "${OUT_DIR}/docs/operations"
+cp -a "${REPO_ROOT}/docs/operations/"*.md "${OUT_DIR}/docs/operations/" 2>/dev/null || true
+
+ARCHIVE="${BACKUP_DIR}/critical_config_${STAMP}.tar.gz"
+tar -czf "${ARCHIVE}" -C "${BACKUP_DIR}" "critical_config_${STAMP}"
+rm -rf "${OUT_DIR}"
+sha256sum "${ARCHIVE}" > "${ARCHIVE}.sha256"
+echo "Wrote ${ARCHIVE}"
+echo "NOTE: vault-held secrets are NOT included — operator must back those up separately."
