@@ -81,8 +81,9 @@ This document records **repository evidence**. It does not invent Nelna operatio
 | `supplier_quality` | **32** | IMPLEMENTED foundation · ERP supplier refs; certificates/events; NCR/CAPA links; count-only metrics (APR-039) |
 | `iqc` | **33** | IMPLEMENTED foundation · GRN ingest; ChecklistTask IQC; sampling/lab/review; local disposition; ERP dual-gate OFF (APR-058) |
 | `ipqc` | **34** | IMPLEMENTED foundation · process-check defs; triggers; measurement/equipment/sampling; fail dual-gate OFF; NCR/HOLD escalate; dashboard (APR-059) |
+| `batch_dossier` | **35** | IMPLEMENTED foundation · read-only batch dossier; timeline; section authz; paginated evidence/audit; PDF export hook dual-gate OFF (APR-060) |
 
-Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 34 except gaps noted elsewhere)._ (`loading` controls are delivered inside `dispatch` for Phase 13 — see ADR-025.)
+Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 35 except gaps noted elsewhere)._ (`loading` controls are delivered inside `dispatch` for Phase 13 — see ADR-025.)
 
 ---
 
@@ -149,6 +150,7 @@ Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 34 except gaps n
 | 32 Supplier quality management | Technical complete — ERP supplier refs, certificates/events, NCR/CAPA links, count-only metrics, QA≠Procurement (ADR-020) | Official certificate types / status labels / scorecards EVIDENCE REQUIRED (APR-039) |
 | 33 Incoming Quality Control (IQC) | Technical complete — idempotent GRN ingest, ChecklistTask generation, sampling/lab/review gate, local disposition, ERP dual-gate OFF (ADR-044) | Company IQC checklists / sampling / ERP contract EVIDENCE REQUIRED (APR-058) |
 | 34 In-Process Quality Control (IPQC) | Technical complete — process-check definitions, trigger shells, measurement/equipment/sampling/HACCP metadata, fail dual-gate OFF, controlled NCR/HOLD, dashboard (ADR-045) | Company IPQC frequencies / stop-line / SoD EVIDENCE REQUIRED (APR-059) |
+| 35 Electronic Batch Quality Dossier (EBR) | Technical complete — read-only aggregation by batch_reference, timeline, section authz, paginated evidence/audit, PDF export hook dual-gate OFF (ADR-046) | Company batch identity / retention / export SoD EVIDENCE REQUIRED (APR-060) |
 | 20–21 Pilot / production release | Not started | Depends on business gates + Phase 19 ops evidence |
 | 20 UAT / Pilot | Package opened — **BLOCKED** pending business evidence ([uat/README.md](uat/README.md)) | Pilot scope APR-034, FG-QA-001, roles/SoD, hosted env EVIDENCE REQUIRED |
 | 21 Production release | Package opened — **GO-LIVE BLOCKED** ([release/README.md](release/README.md)) | Phase 20 FAIL + hosting/config/support gates |
@@ -504,3 +506,9 @@ Incoming Quality Control workflow (ADR-044): idempotent ERP receipt/GRN event in
 **STATUS: PHASE 34 IPQC COMPLETE**
 
 In-Process Quality Control workflows (ADR-045): configurable process-check definitions over PUBLISHED checklist templates (no hardcoded questions), trigger shells (time interval / shift / production order / batch / manual), process context (product / line / step / shift / batch/order), ProductSpecification measurement + equipment device trace + sampling (`IN_PROCESS`) + HACCP metadata snapshots, failure without automatic line stop (dual-gate OFF), controlled NCR/HOLD escalation, and due/overdue/failure dashboard visibility — completing IPQC is not Finished Goods RELEASE (APR-059).
+
+## Phase 35 delivery status
+
+**STATUS: PHASE 35 ELECTRONIC BATCH RECORD COMPLETE**
+
+Electronic batch quality dossier (ADR-046): read-only aggregation of authorized references for one opaque `batch_reference` spanning FG checklist tasks, immutable submissions/corrections, Supervisor/QA reviews, IPQC, lab results, equipment/calibration snapshots, NCR/HOLD/CAPA, loading/dispatch, evidence, integration shells, and audit references — chronological timeline, object-level section gates, paginated evidence/audit, and PDF evidence-pack export hook dual-gated OFF (APR-060). Mutable draft responses are not duplicated; viewing a dossier is not FG RELEASE.

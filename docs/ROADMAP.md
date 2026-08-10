@@ -494,3 +494,11 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Objective | Process checks during production, separate from FG release |
 | Outputs | `apps.ipqc`; ADR-045; triggers; measurement/equipment/sampling; fail dual-gate OFF; NCR/HOLD escalate; dashboard |
 | Status | **Technical foundation delivered** on `main` |
+
+## Phase 35 — Electronic Batch Quality Dossier (EBR)
+
+| Field | Content |
+| --- | --- |
+| Objective | Read-only aggregated batch quality dossier without duplicating source data |
+| Outputs | `apps.batch_dossier`; ADR-046; timeline; section authz; paginated evidence/audit; PDF export hook dual-gate OFF |
+| Status | **Technical foundation delivered** on `main` |

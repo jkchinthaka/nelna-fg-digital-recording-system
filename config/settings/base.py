@@ -78,6 +78,7 @@ INSTALLED_APPS = [
     "apps.receiving",
     "apps.iqc",
     "apps.ipqc",
+    "apps.batch_dossier",
     "apps.nonconformance",
     "apps.capa",
     "apps.dispatch",
@@ -316,6 +317,11 @@ IQC_ERP_OUTBOUND_APPROVED = env.bool(
 # Phase 34 — IPQC fail → production stop remains OFF until company policy approval.
 IPQC_STOP_PRODUCTION_ON_FAIL_APPROVED = env.bool(
     "IPQC_STOP_PRODUCTION_ON_FAIL_APPROVED",
+    default=False,
+)
+# Phase 35 — batch dossier PDF evidence-pack export remains OFF until company approval.
+BATCH_DOSSIER_PDF_EXPORT_APPROVED = env.bool(
+    "BATCH_DOSSIER_PDF_EXPORT_APPROVED",
     default=False,
 )
 

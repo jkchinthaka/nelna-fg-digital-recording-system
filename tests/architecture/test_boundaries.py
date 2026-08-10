@@ -37,6 +37,7 @@ ALLOWED_APPS = {
     "receiving",
     "iqc",
     "ipqc",
+    "batch_dossier",
     "supplier_quality",
     "access_control",
     "security_audit",

@@ -794,6 +794,23 @@ class SecurityAuditEvent(models.Model):
             "IPQC workflow policy stub updated",
         )
 
+        BATCH_DOSSIER_VIEWED = (
+            "BATCH_DOSSIER_VIEWED",
+            "Electronic batch quality dossier assembled/viewed",
+        )
+        BATCH_DOSSIER_EXPORT_PREPARED = (
+            "BATCH_DOSSIER_EXPORT_PREPARED",
+            "Batch dossier PDF export hook prepared (no PDF rendered)",
+        )
+        BATCH_DOSSIER_EXPORT_BLOCKED = (
+            "BATCH_DOSSIER_EXPORT_BLOCKED",
+            "Batch dossier PDF export hook blocked",
+        )
+        BATCH_DOSSIER_POLICY_UPDATED = (
+            "BATCH_DOSSIER_POLICY_UPDATED",
+            "Batch dossier policy stub updated",
+        )
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     event_type = models.CharField(max_length=64, choices=EventType.choices)

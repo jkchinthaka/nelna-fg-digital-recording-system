@@ -224,3 +224,11 @@ AI default OFF. AI must not execute RELEASE/HOLD/REJECT, publish, spec/role chan
 | escalate_ipqc | `ipqc.escalate_ipqc` | Controlled NCR/HOLD escalation (not implied by manage/record) |
 | view_ipqc | `ipqc.view_ipqc` | Read-only cases and due/overdue/failure dashboard |
 | manage_ipqcpolicy | `ipqc.manage_ipqcpolicy` | Stop-production policy stubs (default OFF) |
+
+### Electronic Batch Quality Dossier (Phase 35)
+
+| Key | Permission | Notes |
+| --- | --- | --- |
+| view_batchdossier | `batch_dossier.view_batchdossier` | Assemble/view read-only dossier |
+| export_batchdossier | `batch_dossier.export_batchdossier` | PDF export hook (dual-gate OFF) |
+| manage_batchdossierpolicy | `batch_dossier.manage_batchdossierpolicy` | Export policy stubs |

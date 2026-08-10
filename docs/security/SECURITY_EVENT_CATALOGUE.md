@@ -312,4 +312,13 @@ Retention period is **deferred** â€” not decided in Phase 03. Events are ap
 | IPQC_CASE_COMPLETED | Case completed (not FG release) |
 | IPQC_POLICY_UPDATED | IPQC policy stub updated |
 
+### Electronic Batch Quality Dossier (Phase 35)
+
+| Event type | Meaning |
+| --- | --- |
+| BATCH_DOSSIER_VIEWED | Dossier assembled/viewed |
+| BATCH_DOSSIER_EXPORT_PREPARED | PDF export hook prepared (no PDF rendered) |
+| BATCH_DOSSIER_EXPORT_BLOCKED | PDF export hook blocked |
+| BATCH_DOSSIER_POLICY_UPDATED | Dossier policy stub updated |
+
 

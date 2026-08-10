@@ -37,6 +37,7 @@ class CapabilityBucket(StrEnum):
     RECEIVING = "receiving"
     IQC = "iqc"
     IPQC = "ipqc"
+    BATCH_DOSSIER = "batch_dossier"
     EVIDENCE = "evidence"
     MASTER_DATA = "master_data"
     CHECKLIST_PUBLISH = "checklist_publish"
@@ -781,6 +782,29 @@ PERMISSION_CATALOGUE: Final[tuple[PermissionCatalogueEntry, ...]] = (
         scopes=(ObjectScope.ORGANIZATION,),
         description="Update IPQC stop-production policy stubs.",
         notes="Dual-gated with IPQC_STOP_PRODUCTION_ON_FAIL_APPROVED (default OFF).",
+    ),
+    PermissionCatalogueEntry(
+        key="view_batchdossier",
+        permission="batch_dossier.view_batchdossier",
+        bucket=CapabilityBucket.BATCH_DOSSIER,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="View electronic batch quality dossier (read-only aggregation).",
+        notes="Section contents still require domain view permissions (object-level).",
+    ),
+    PermissionCatalogueEntry(
+        key="export_batchdossier",
+        permission="batch_dossier.export_batchdossier",
+        bucket=CapabilityBucket.BATCH_DOSSIER,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Prepare batch dossier PDF export hook (no live PDF in Phase 35).",
+        notes="Dual-gated with BATCH_DOSSIER_PDF_EXPORT_APPROVED (default OFF).",
+    ),
+    PermissionCatalogueEntry(
+        key="manage_batchdossierpolicy",
+        permission="batch_dossier.manage_batchdossierpolicy",
+        bucket=CapabilityBucket.BATCH_DOSSIER,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Update batch dossier PDF export policy stubs.",
     ),
     PermissionCatalogueEntry(
         key="manage_supplierquality_qa",
