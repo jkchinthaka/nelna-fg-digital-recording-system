@@ -1,27 +1,29 @@
-# Phase 15 — Quality workflow notifications
+# Phase 15 - Quality Workflow Notifications
 
-**Status:** Technical foundation complete (not production-approved routing)  
-**Date:** 2026-08-10  
+**Document status:** Technical foundation  
+**Phase:** 15  
 **ADR:** [ADR-027-QUALITY-WORKFLOW-NOTIFICATIONS.md](../architecture/ADR-027-QUALITY-WORKFLOW-NOTIFICATIONS.md)
+
+## Goal
+
+Reliable workflow notifications without leaking quality-sensitive information.
 
 ## Delivered
 
-- In-app notifications (recipient, event/type, title, safe message, created_at, read_at, delivery status)
-- Org policy: event types configurable, **all default OFF**
-- Optional email via existing SMTP env settings when policy enables it
-- SMS explicitly **not** integrated (provider/budget EVIDENCE REQUIRED)
-- Idempotent create (`dedupe_key`) + Celery email delivery retries
-- Privacy validation + template escaping; no checklist answers/sensitive notes by default
-- Inbox UI at `/notifications/`; soft-retention admin
+- In-app notifications (list + mark read)
+- Optional email via configured SMTP only (env credentials; none in repo)
+- SMS explicitly blocked pending provider/budget approval
+- Org policy: events and email **disabled by default**
+- Candidate event catalogue (assignment, due/overdue, submission, supervisor/QA pending, correction, HOLD/REJECT, CAPA due, integration failure)
+- Privacy-safe title/message validation + template escaping for HTML email
+- Idempotent create (`dedupe_key`) and email delivery (`idempotency_key` + retries)
+- Audit events for policy update, create, read, email delivered/failed
+- Tests: recipient auth, duplicates, retry/idempotent email, escaping, sensitive exclusion, SMS blocked
 
-## Candidate events (not enabled by default)
+## Explicit non-claims
 
-task assignment, due/overdue, submission, Supervisor pending, returned correction, QA pending, QA HOLD/REJECT, CAPA due, integration failure
-
-## Non-claims
-
-- Not a company-approved notification routing matrix
-- Not SMS capability
-- Not automatic wiring of every workflow event until owners enable types
+- No SMS integration
+- Not all events are sent by default
+- Email bodies never include full checklist answers or sensitive notes by default
 
 ## STATUS: PHASE 15 NOTIFICATIONS COMPLETE

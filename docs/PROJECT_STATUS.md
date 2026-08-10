@@ -59,6 +59,7 @@ This document records **repository evidence**. It does not invent Nelna operatio
 | `recording` | 08A–08C + 09B | IMPLEMENTED · shop-floor hardening + draft/submit; production recording **BLOCKED** |
 | `reviews` | 09A–09C | IMPLEMENTED · governance hardening + immutable review; production Supervisor review **BLOCKED** |
 | `quality` | 10A | IMPLEMENTED · production QA **BLOCKED**; no ERP/warehouse/dispatch side effects |
+| `notifications` | **15** | IMPLEMENTED foundation · in-app + optional SMTP email; events/email default OFF; no SMS |
 | `dispatch` | **13** | IMPLEMENTED foundation · loading/dispatch quality + cold-chain temps + quantity lines; QA RELEASE gate default OFF; no ERP writes |
 | `evidence` | **11** | IMPLEMENTED · private attachments + SHA-256 + soft-retire; malware scanner NOT_CONFIGURED; object-store IAM **EVIDENCE REQUIRED** |
 | `nonconformance` | **12** | IMPLEMENTED foundation · NCR + HoldCase + history; no FAIL/CCP auto-raise; policies **EVIDENCE REQUIRED** |

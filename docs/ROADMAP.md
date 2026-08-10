@@ -295,14 +295,13 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 
 | Field | Content |
 | --- | --- |
-| Objective | Email/SMS/in-app notifications |
-| Inputs | Provider decision |
-| Outputs | `notifications` |
-| Approval gate | IT |
-| Branch naming | `feature/phase-15-notifications` |
-| Exit criteria | Failure-safe sending; no secret leak |
-| Dependencies | Provider decision |
-| Status | **15 foundation implemented** — in-app + optional SMTP; events default OFF; SMS not integrated (EVIDENCE REQUIRED) |
+| Objective | In-app (+ optional email) workflow notifications without sensitive payload leaks |
+| Inputs | SMTP env (optional); org policy |
+| Outputs | `apps.notifications`; ADR-027 |
+| Approval gate | IT + Operations (which events to enable in production) |
+| Branch naming | Direct-main quality-first for Phase 15 foundation |
+| Exit criteria | In-app inbox; policy default OFF; idempotent email; no SMS; privacy tests |
+| Status | **Technical foundation IMPLEMENTED** — production event enablement EVIDENCE REQUIRED |
 
 ## Phase 16 — Reports and audit export
 
