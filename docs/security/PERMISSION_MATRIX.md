@@ -94,3 +94,13 @@ Business role mapping and gate enablement remain APPROVAL REQUIRED / EVIDENCE RE
 
 Business event matrix, SMTP production use, and SMS provider remain APPROVAL REQUIRED / EVIDENCE REQUIRED.
 
+
+## Phase 16 governed reporting permissions (technical)
+
+| key | permission | notes |
+| --- | --- | --- |
+| view_reportcatalogue | `reports.view_reportcatalogue` | View report catalogue for an organization |
+| run_qualityreport | `reports.run_qualityreport` | Run governed quality reports |
+| export_qualityreport | `reports.export_qualityreport` | Export/download report CSV (audited) |
+
+Official report packs, Excel/PDF, and production distribution remain APPROVAL REQUIRED / EVIDENCE REQUIRED.
