@@ -387,7 +387,7 @@ def _measurement_context_for_response(response, item: ChecklistItem):
 
 
 def _control_point_context_for_item(item: ChecklistItem) -> dict:
-    """Frozen definition metadata snapshot (Phase 06L + optional Phase 23 HACCP)."""
+    """Frozen definition metadata (06L + optional HACCP/sampling contexts)."""
     from apps.checklists.control_point import build_control_point_snapshot
 
     snap = build_control_point_snapshot(
@@ -399,6 +399,11 @@ def _control_point_context_for_item(item: ChecklistItem) -> dict:
     haccp = snapshot_for_checklist_item(item.id)
     if haccp:
         snap["haccp_context"] = haccp
+    from apps.sampling.snapshots import snapshot_for_item_or_parent
+
+    sampling = snapshot_for_item_or_parent(item)
+    if sampling:
+        snap["sampling_context"] = sampling
     return snap
 
 
