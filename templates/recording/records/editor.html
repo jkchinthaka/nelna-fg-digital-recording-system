@@ -182,7 +182,6 @@
                                     <label for="{{ eq_field.id_for_label }}">{{ eq_field.label }}</label>
                                     {{ eq_field }}
                                     <p class="form-help">{{ eq_field.help_text }}</p>
-                                    <p class="form-help">Evidence attachments: Phase 11 hook only (not uploaded here).</p>
                                   </div>
                                 {% endif %}
                                 {% evaluation_slot responses child sample_index as eval_meta %}
@@ -272,14 +271,13 @@
                     </div>
                   {% endif %}
                   {% equipment_bound_field_at form item 1 as eq_field %}
-                  {% if eq_field %}
-                    <div class="recording-equipment-hook">
-                      <label for="{{ eq_field.id_for_label }}">{{ eq_field.label }}</label>
-                      {{ eq_field }}
-                      <p class="form-help">{{ eq_field.help_text }}</p>
-                      <p class="form-help">Evidence attachments: Phase 11 hook only (not uploaded here).</p>
-                    </div>
-                  {% endif %}
+                                {% if eq_field %}
+                                  <div class="recording-equipment-hook">
+                                    <label for="{{ eq_field.id_for_label }}">{{ eq_field.label }}</label>
+                                    {{ eq_field }}
+                                    <p class="form-help">{{ eq_field.help_text }}</p>
+                                  </div>
+                                {% endif %}
                   {% evaluation_slot responses item 1 as eval_meta %}
                   {% with evaluation_result=eval_meta.result evaluation_icon=eval_meta.icon evaluation_label=eval_meta.label %}
                     {% include "recording/_evaluation_indicator.html" %}

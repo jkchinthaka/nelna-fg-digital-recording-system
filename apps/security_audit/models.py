@@ -520,6 +520,15 @@ class SecurityAuditEvent(models.Model):
             "Sampling checklist item binding set",
         )
 
+        DEVICE_CALIBRATION_OVERRIDE = (
+            "DEVICE_CALIBRATION_OVERRIDE",
+            "Calibration enforcement override for measuring device",
+        )
+        DEVICE_TRACE_ATTACHED = (
+            "DEVICE_TRACE_ATTACHED",
+            "Measuring device attached to checklist response",
+        )
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     event_type = models.CharField(max_length=64, choices=EventType.choices)

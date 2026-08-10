@@ -538,11 +538,22 @@ def _apply_equipment_refs(
     items: dict,
     existing: dict,
     equipment_refs: dict,
+    actor: User | None = None,
+    calibration_overrides: dict | None = None,
 ) -> None:
-    """Attach optional equipment references; never invent calibration policy."""
+    """Attach measuring device + frozen calibration snapshot; respect policy settings."""
     if not equipment_refs:
         return
+    from django.utils import timezone
+
+    from apps.instruments.device_traceability import (
+        apply_calibration_policy,
+        assess_device_eligibility,
+        build_device_trace_snapshot,
+    )
     from apps.instruments.models import Equipment
+
+    overrides = calibration_overrides or {}
 
     def _key(raw_key: Any) -> tuple[Any, int]:
         if isinstance(raw_key, tuple) and len(raw_key) == 2:
@@ -565,29 +576,86 @@ def _apply_equipment_refs(
             continue
         if equipment_id in (None, ""):
             response.equipment = None
+            response.calibration_record = None
+            response.measurement_recorded_at = None
+            response.device_trace_context = None
             response.evidence_hook = {
                 "status": "EQUIPMENT_REFERENCE_CLEARED",
                 "attachment_module": "Phase 11 - apps.evidence available",
             }
-            response.save(update_fields=["equipment", "evidence_hook", "updated_at"])
+            response.save(
+                update_fields=[
+                    "equipment",
+                    "calibration_record",
+                    "measurement_recorded_at",
+                    "device_trace_context",
+                    "evidence_hook",
+                    "updated_at",
+                ]
+            )
             continue
         equipment = Equipment.objects.filter(pk=equipment_id).first()
         if equipment is None:
             raise ValidationError({str(key[0]): ["Equipment not found."]})
-        if equipment.organization_id != record.organization_id:
+        eligibility = assess_device_eligibility(
+            equipment=equipment,
+            organization_id=record.organization_id,
+            site_id=getattr(record, "site_id", None),
+            required_equipment_type=getattr(item, "required_equipment_type", "") or "",
+        )
+        override_payload = overrides.get(key) or overrides.get(raw_key) or {}
+        policy = apply_calibration_policy(
+            eligibility=eligibility,
+            actor=actor,
+            organization_id=record.organization_id,
+            override=bool(override_payload.get("override")),
+            override_reason=str(override_payload.get("reason") or ""),
+        )
+        if not policy.allowed:
             raise ValidationError(
-                {str(key[0]): ["Equipment must belong to the record organization."]}
+                {
+                    str(key[0]): [
+                        f"Device not permitted ({policy.reason_code} / {policy.fitness})."
+                    ]
+                }
             )
-        response.equipment = equipment
+        assert eligibility.equipment is not None
+        measured_at = timezone.now()
+        snap = build_device_trace_snapshot(
+            equipment=eligibility.equipment,
+            calibration_record=eligibility.calibration_record,
+            fitness=eligibility.fitness,
+            policy=policy,
+            measurement_at=measured_at,
+        )
+        response.equipment = eligibility.equipment
+        response.calibration_record = eligibility.calibration_record
+        response.measurement_recorded_at = measured_at
+        response.device_trace_context = snap
         response.evidence_hook = {
             "status": "EQUIPMENT_REFERENCE_SET",
-            "equipment_id": str(equipment.id),
-            "equipment_code": equipment.code,
+            "equipment_id": str(eligibility.equipment.id),
+            "equipment_code": eligibility.equipment.code,
+            "calibration_record_id": (
+                str(eligibility.calibration_record.id)
+                if eligibility.calibration_record
+                else None
+            ),
+            "fitness": eligibility.fitness,
+            "policy_outcome": policy.outcome,
             "attachment_module": "Phase 11 - apps.evidence available",
-            "calibration_policy": "EVIDENCE REQUIRED - not enforced on draft save",
+            "not_qa_disposition": True,
         }
-        response.save(update_fields=["equipment", "evidence_hook", "updated_at"])
-
+        response.save(
+            update_fields=[
+                "equipment",
+                "calibration_record",
+                "measurement_recorded_at",
+                "device_trace_context",
+                "evidence_hook",
+                "updated_at",
+            ]
+        )
 
 def save_checklist_draft_responses(
     *,
@@ -597,6 +665,7 @@ def save_checklist_draft_responses(
     expected_draft_version: int | None = None,
     save_mode: str = "manual",
     equipment_refs: dict[Any, Any] | None = None,
+    calibration_overrides: dict[Any, Any] | None = None,
 ) -> ChecklistRecord:
     """
     Save/update/clear typed draft responses.
@@ -609,7 +678,8 @@ def save_checklist_draft_responses(
     (no silent last-write-wins). Server remains authoritative.
 
     ``equipment_refs`` optional map of answer key -> equipment UUID for items
-    with ``requires_equipment_reference`` (calibration policy EVIDENCE REQUIRED).
+    with ``requires_equipment_reference``. Calibration WARN/BLOCK follows
+    INSTRUMENTS_CALIBRATION_ENFORCEMENT (default OFF).
 
     Allowed when:
     - ChecklistRecord is DRAFT (initial recording), or
@@ -765,6 +835,8 @@ def save_checklist_draft_responses(
             items=items,
             existing=existing,
             equipment_refs=equipment_refs or {},
+            actor=user,
+            calibration_overrides=calibration_overrides or {},
         )
         record.draft_version = next_draft_version(record.draft_version)
         record.save(update_fields=["updated_at", "draft_version"])
@@ -965,6 +1037,9 @@ def submit_checklist_record(
                         control_point_context=_control_point_context_for_item(item),
                         measurement_context=_measurement_context_for_response(response, item),
                         equipment_id=response.equipment_id,
+                        calibration_record_id=response.calibration_record_id,
+                        measurement_recorded_at=response.measurement_recorded_at,
+                        device_trace_context=response.device_trace_context,
                         evidence_hook=response.evidence_hook,
                     )
                 elif item.item_kind == ChecklistItemKind.CALCULATED:
@@ -985,6 +1060,9 @@ def submit_checklist_record(
                         control_point_context=_control_point_context_for_item(item),
                         measurement_context=_measurement_context_for_response(response, item),
                         equipment_id=response.equipment_id,
+                        calibration_record_id=response.calibration_record_id,
+                        measurement_recorded_at=response.measurement_recorded_at,
+                        device_trace_context=response.device_trace_context,
                         evidence_hook=response.evidence_hook,
                     )
                 else:

@@ -117,6 +117,10 @@ class Equipment(models.Model):
         verbose_name_plural = "Equipment"
         permissions = [
             ("manage_equipment", "Can manage equipment and calibration records"),
+            (
+                "override_calibration_gate",
+                "Can override calibration WARN/BLOCK when company policy approves",
+            ),
         ]
         constraints = [
             models.UniqueConstraint(

@@ -222,6 +222,17 @@ PERMISSION_CATALOGUE: Final[tuple[PermissionCatalogueEntry, ...]] = (
         notes="Not implied by scheduling.record_checklisttask / operator roles.",
     ),
     PermissionCatalogueEntry(
+        key="override_calibration_gate",
+        permission="instruments.override_calibration_gate",
+        bucket=CapabilityBucket.MASTER_DATA,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Override calibration BLOCK when company policy explicitly approves.",
+        notes=(
+            "Requires INSTRUMENTS_CALIBRATION_OVERRIDE_APPROVED=true. "
+            "Audited as DEVICE_CALIBRATION_OVERRIDE. Not implied by manage_equipment."
+        ),
+    ),
+    PermissionCatalogueEntry(
         key="view_trainingrecord",
         permission="training.view_trainingrecord",
         bucket=CapabilityBucket.VIEW,

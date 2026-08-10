@@ -145,3 +145,9 @@ AI default OFF. AI must not execute RELEASE/HOLD/REJECT, publish, spec/role chan
 | manage_samplingplan | `sampling.manage_samplingplan` | Draft/edit |
 | publish_samplingplan | `sampling.publish_samplingplan` | Approve/retire |
 | view_sampling | `sampling.view_sampling` | Read-only |
+
+### Instruments / device traceability (Phase 25)
+
+| Key | Permission | Notes |
+| --- | --- | --- |
+| override_calibration_gate | `instruments.override_calibration_gate` | Override BLOCK when company flag approved; audited |

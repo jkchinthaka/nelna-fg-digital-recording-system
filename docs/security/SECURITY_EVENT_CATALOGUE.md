@@ -187,3 +187,9 @@ Retention period is **deferred** â€” not decided in Phase 03. Events are ap
 | SAMPLING_PLAN_VERSION_APPROVED | Version approved (immutable) |
 | SAMPLING_PLAN_VERSION_RETIRED | Approved version retired |
 | SAMPLING_CHECKLIST_BINDING_SET | REPEATING_GROUP bound to plan version |
+
+### Device traceability (Phase 25)
+
+| Event | Meaning |
+| --- | --- |
+| DEVICE_CALIBRATION_OVERRIDE | Manual override of calibration BLOCK gate (reason required) |

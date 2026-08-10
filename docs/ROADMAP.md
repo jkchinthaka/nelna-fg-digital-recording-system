@@ -414,3 +414,11 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Objective | Versioned sampling plans without inventing AQL/ISO tables |
 | Outputs | `apps.sampling`; ADR-036 |
 | Status | **Technical foundation delivered** on `main` |
+
+## Phase 25 — Measurement device traceability
+
+| Field | Content |
+| --- | --- |
+| Objective | Link measurements to exact device + calibration state |
+| Outputs | device_traceability; ADR-037; frozen response snapshots |
+| Status | **Technical foundation delivered** on `main` |

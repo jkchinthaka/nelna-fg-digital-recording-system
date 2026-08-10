@@ -492,9 +492,18 @@ class ChecklistItem(models.Model):
     requires_equipment_reference = models.BooleanField(
         default=False,
         help_text=(
-            "When True, future recording may require an equipment reference for this item. "
+            "When True, recording may require an equipment / device reference for this item. "
             "Default False — does not force existing checklist items. "
-            "Overdue block/warn policy remains EVIDENCE REQUIRED."
+            "Overdue block/warn policy remains company-configured (Phase 25)."
+        ),
+    )
+    required_equipment_type = models.CharField(
+        max_length=32,
+        blank=True,
+        default="",
+        help_text=(
+            "Optional equipment-type filter (SCALE/THERMOMETER/…). Blank = any type. "
+            "Does not invent a company type catalogue beyond the technical taxonomy."
         ),
     )
 

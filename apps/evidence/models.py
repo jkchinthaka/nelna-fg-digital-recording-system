@@ -22,6 +22,10 @@ class EvidenceLinkedKind(models.TextChoices):
     CAPA = "CAPA", "CAPA (future)"
     LAB_SAMPLE = "LAB_SAMPLE", "Laboratory sample"
     LAB_EXTERNAL_CERTIFICATE = "LAB_EXTERNAL_CERTIFICATE", "Laboratory external certificate"
+    CALIBRATION_CERTIFICATE = (
+        "CALIBRATION_CERTIFICATE",
+        "Calibration certificate (equipment record)",
+    )
 
 
 class EvidenceLifecycleStatus(models.TextChoices):

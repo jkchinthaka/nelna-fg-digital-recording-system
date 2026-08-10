@@ -52,7 +52,7 @@ This document records **repository evidence**. It does not invent Nelna operatio
 | `access_control` | 03 + **03C** | IMPLEMENTED · RoleTemplate + permission catalogue + governance services; **no** seeded business roles; **PHASE 03C BUSINESS ROLE APPROVAL PENDING** |
 | `security_audit` | 03–10A | IMPLEMENTED |
 | `master_data` (FG Product + specs) | 05A/05B/05C + **06O** | IMPLEMENTED foundation · MASTER-001 **EVIDENCE REQUIRED**; versioned ProductSpecification (06O) unseeded — APR-006 **EVIDENCE REQUIRED** |
-| `instruments` | 05D | IMPLEMENTED foundation · unseeded equipment + calibration; intervals/overdue policy **EVIDENCE REQUIRED** |
+| `instruments` | 05D + **25** | IMPLEMENTED foundation · unseeded equipment + calibration; device traceability + OFF/WARN/BLOCK (default OFF); intervals/enforcement **EVIDENCE REQUIRED** (APR-041/051) |
 | `training` | 05E | IMPLEMENTED foundation · unseeded competency records; gate OFF by default; matrix/WARN-BLOCK **EVIDENCE REQUIRED** (APR-042) |
 | `checklists` | 06A–06O + **07D** | IMPLEMENTED · FG-QA-001 **NOT BUSINESS APPROVED**; Phase **06N BLOCKED**; optional `SPECIFICATION_PARAMETER` evaluation pin (06O); Engine v2 **designed** (ADR-019); real forms **NOT RECEIVED**; optional `requires_equipment_reference` (05D); **07D** effective-version selection |
 | scheduling | 07A–07H | IMPLEMENTED · due/overdue foundation + assignment + schedules + batch-event adapter; live generation **BLOCKED** (APR-011/012) |
@@ -73,7 +73,7 @@ This document records **repository evidence**. It does not invent Nelna operatio
 | `haccp` | **23** | IMPLEMENTED foundation · versioned plan shells; no Nelna CCPs/limits; auto HOLD/NCR default OFF; company plan EVIDENCE REQUIRED |
 | `sampling` | **24** | IMPLEMENTED foundation · versioned sampling plans; no ISO/AQL tables; sampling REJECT ≠ QA REJECT; company tables EVIDENCE REQUIRED |
 
-Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 24)._ (`loading` controls are delivered inside `dispatch` for Phase 13 — see ADR-025.)
+Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 25)._ (`loading` controls are delivered inside `dispatch` for Phase 13 — see ADR-025.)
 
 ---
 
@@ -130,6 +130,7 @@ Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 24)._ (`loading`
 | 22 Laboratory / LIMS | Technical complete — sample/test/result foundation, immutability, external cert hook, positive-release policy stub default OFF (ADR-032) | Lab catalogue / role mapping / positive-release policy EVIDENCE REQUIRED |
 | 23 HACCP / control-point | Technical complete — versioned plan shells, CCP/OPRP/PRP metadata, limit/monitoring/CA references, checklist binding (ADR-035) | Company HACCP plan / CCP identification / limits EVIDENCE REQUIRED |
 | 24 Sampling engine | Technical complete — versioned plans/rules/requirements, lot resolution, checklist binding, advisory accept/reject (ADR-036) | Company sampling tables / external-standard adoption EVIDENCE REQUIRED |
+| 25 Device traceability | Technical complete — device eligibility, OFF/WARN/BLOCK settings (default OFF), frozen calibration snapshot (ADR-037) | Company calibration enforcement / override policy EVIDENCE REQUIRED |
 | 20–21 Pilot / production release | Not started | Depends on business gates + Phase 19 ops evidence |
 | 20 UAT / Pilot | Package opened — **BLOCKED** pending business evidence ([uat/README.md](uat/README.md)) | Pilot scope APR-034, FG-QA-001, roles/SoD, hosted env EVIDENCE REQUIRED |
 | 21 Production release | Package opened — **GO-LIVE BLOCKED** ([release/README.md](release/README.md)) | Phase 20 FAIL + hosting/config/support gates |
@@ -425,3 +426,9 @@ Versioned HACCP/control-point technical foundation (ADR-035): `apps.haccp` with 
 **STATUS: PHASE 24 SAMPLING ENGINE COMPLETE**
 
 Configurable sampling engine (ADR-036): `apps.sampling` with versioned plans, optional match dimensions, sample-requirement shells (no invented AQL/ISO tables), deterministic resolution, REPEATING_GROUP bindings with frozen context, and sampling ACCEPT/REJECT that never auto QA disposition. Company sampling configuration remains EVIDENCE REQUIRED.
+
+## Phase 25 delivery status
+
+**STATUS: PHASE 25 DEVICE TRACEABILITY COMPLETE**
+
+Measurement device traceability (ADR-037): eligibility (org/site/active/type), calibration fitness mapped through OFF/WARN/BLOCK settings (default OFF), frozen `device_trace_context` on draft and submission responses, calibration-certificate evidence kind, and audited override path gated by company approval flag. Device fitness never implies QA disposition.

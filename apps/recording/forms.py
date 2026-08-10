@@ -192,19 +192,21 @@ class ChecklistDraftForm(forms.Form):
         name = equipment_field_name(item.id, sample_index)
         initial = initial_equipment.get((item.id, sample_index))
         self.fields[name] = forms.ChoiceField(
-            label=f"Equipment reference — {item.code}",
+            label=f"Measuring device — {item.code}",
             required=False,
             choices=self.equipment_choices,
             widget=forms.Select(
                 attrs={
                     "class": "form-input recording-equipment-select",
                     "data-equipment-hook": "1",
+                    "data-device-trace": "1",
+                    "aria-label": f"Measuring device for {item.code}",
                 }
             ),
             initial=str(initial) if initial else "",
             help_text=(
-                "Optional equipment reference. Attachment upload is Phase 11. "
-                "Calibration overdue block/warn remains EVIDENCE REQUIRED."
+                "Select/scan measuring device. Status and calibration due appear in the label. "
+                "Company WARN/BLOCK policy is settings-driven (default OFF)."
             ),
         )
 

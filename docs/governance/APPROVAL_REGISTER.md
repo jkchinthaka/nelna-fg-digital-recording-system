@@ -77,6 +77,7 @@ ID · Decision / Evidence Needed · Business Owner · Requested Date · Needed B
 | APR-048 | Company HACCP plan content (process steps, hazards, CCP/OPRP/PRP identification, critical limits, monitoring, corrective procedures) | QA Manager / Food Safety | 2026-08-10 | Before production HACCP-linked recording | EVIDENCE REQUIRED | Yes | [ADR-035](../architecture/ADR-035-HACCP-CONTROL-POINT-FOUNDATION.md); APR-027; ASM-002 | — | — | Phase 23 stores empty shells only; AI HACCP examples are not evidence |
 | APR-049 | HACCP plan approve authority mapping (`approve_haccpplan` holders) | QA Manager / Food Safety / Management Sponsor | 2026-08-10 | Before production HACCP approval workflow | EVIDENCE REQUIRED | Yes | Phase 23 permission catalogue | — | — | System Admin ≠ food-safety approver by default |
 | APR-050 | Company sampling plans / tables (sample sizes, accept/reject, inspection levels; external-standard source+verified data if used) | QA Manager | 2026-08-10 | Before production sampling-driven counts | EVIDENCE REQUIRED | Yes | [ADR-036](../architecture/ADR-036-QUALITY-SAMPLING-ENGINE.md) | — | — | Phase 24 stores empty shells only; do not copy ISO/AQL from memory |
+| APR-051 | Calibration enforcement policy (OFF/WARN/BLOCK) and override authority for measurement devices | QA Manager / Metrology | 2026-08-10 | Before enabling BLOCK or overrides | EVIDENCE REQUIRED | Yes | [ADR-037](../architecture/ADR-037-MEASUREMENT-DEVICE-TRACEABILITY.md); `INSTRUMENTS_CALIBRATION_*` | — | — | Runtime default OFF; override flag default False |
 
 ---
 

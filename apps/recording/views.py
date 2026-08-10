@@ -17,14 +17,19 @@ from django.views.decorators.http import require_GET, require_http_methods, requ
 from apps.accounts.models import User
 from apps.checklists.constants import REPEAT_SAMPLE_TECHNICAL_CEILING
 from apps.checklists.models import ChecklistResponseType
+from apps.core.checklist_workflow import (
+    ChecklistOperationalWorkflowState,
+    attach_workflow_snapshots,
+    filter_tasks_by_workflow_state,
+)
+from apps.recording.concurrency import (
+    SAVE_MODE_AUTOSAVE,
+    SAVE_MODE_MANUAL,
+    DraftConcurrencyConflict,
+)
 from apps.recording.correction_services import (
     resubmit_checklist_correction,
     start_checklist_correction,
-)
-from apps.recording.concurrency import (
-    DraftConcurrencyConflict,
-    SAVE_MODE_AUTOSAVE,
-    SAVE_MODE_MANUAL,
 )
 from apps.recording.forms import (
     ChecklistDraftForm,
@@ -57,11 +62,6 @@ from apps.recording.services import (
 )
 from apps.recording.snapshot_display import render_snapshot_sections
 from apps.reviews.models import SupervisorReviewDecision
-from apps.core.checklist_workflow import (
-    ChecklistOperationalWorkflowState,
-    attach_workflow_snapshots,
-    filter_tasks_by_workflow_state,
-)
 from apps.scheduling.models import ChecklistTask
 
 PAGE_SIZE = 25
@@ -223,15 +223,15 @@ def start_recording(request: HttpRequest, task_id: uuid.UUID) -> HttpResponse:
 
 
 def _equipment_choices_for_org(organization_id: uuid.UUID) -> list[tuple[str, str]]:
+    from apps.instruments.device_traceability import equipment_choice_label
     from apps.instruments.models import Equipment
 
-    rows = (
+    rows = list(
         Equipment.objects.filter(organization_id=organization_id, is_active=True)
-        .order_by("code")
-        .values_list("id", "code", "name")[:500]
+        .order_by("code")[:500]
     )
-    return [("", "— No equipment —")] + [
-        (str(pk), f"{code} — {name}") for pk, code, name in rows
+    return [("", "— Select device —")] + [
+        (str(row.id), equipment_choice_label(row)) for row in rows
     ]
 
 

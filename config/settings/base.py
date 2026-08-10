@@ -269,6 +269,17 @@ LAB_POSITIVE_RELEASE_BLOCKING_APPROVED = env.bool(
     "LAB_POSITIVE_RELEASE_BLOCKING_APPROVED",
     default=False,
 )
+# Phase 25 — calibration enforcement for measurement devices.
+# OFF (default) | WARN | BLOCK. Do not invent company blocking policy.
+INSTRUMENTS_CALIBRATION_ENFORCEMENT = env(
+    "INSTRUMENTS_CALIBRATION_ENFORCEMENT",
+    default="OFF",
+)
+# Manual override of BLOCK only when company policy explicitly approves.
+INSTRUMENTS_CALIBRATION_OVERRIDE_APPROVED = env.bool(
+    "INSTRUMENTS_CALIBRATION_OVERRIDE_APPROVED",
+    default=False,
+)
 
 
 CORRELATION_ID_HEADER = "HTTP_X_REQUEST_ID"

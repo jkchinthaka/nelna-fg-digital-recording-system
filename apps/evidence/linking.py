@@ -12,6 +12,7 @@ from apps.access_control.services import Scope, user_has_permission
 from apps.accounts.models import User
 from apps.capa.models import CorrectiveAction
 from apps.evidence.models import EvidenceLinkedKind
+from apps.instruments.models import CalibrationRecord
 from apps.laboratory.models import LabExternalCertificate, LabSample
 from apps.nonconformance.models import NonConformanceRecord
 from apps.quality.models import QAReview
@@ -36,6 +37,8 @@ VIEW_LAB = "laboratory.view_laboratory"
 REGISTER_SAMPLE = "laboratory.register_labsample"
 ENTER_RESULT = "laboratory.enter_labresult"
 MANAGE_LAB = "laboratory.manage_laboratory"
+MANAGE_EQUIPMENT = "instruments.manage_equipment"
+VIEW_EQUIPMENT = "instruments.view_equipment"
 
 
 @dataclass(frozen=True, slots=True)
@@ -185,6 +188,24 @@ def resolve_linked_target(*, kind: str, object_id: uuid.UUID) -> LinkedTarget:
             obj=cert,
         )
 
+    if kind == EvidenceLinkedKind.CALIBRATION_CERTIFICATE:
+        calib = (
+            CalibrationRecord.objects.select_related("equipment")
+            .filter(pk=object_id)
+            .first()
+        )
+        if calib is None:
+            raise ValidationError(
+                {"linked_object_id": "Calibration record not found."}
+            )
+        return LinkedTarget(
+            kind=kind,
+            object_id=calib.id,
+            organization_id=calib.equipment.organization_id,
+            linkage_immutable=True,
+            obj=calib,
+        )
+
     raise ValidationError({"linked_kind": "Unsupported linked kind."})
 
 
@@ -291,6 +312,15 @@ def _assert_parent_access(*, actor: User, target: LinkedTarget, for_mutate: bool
             or user_has_permission(actor, ENTER_RESULT, scope=org_scope)
             or user_has_permission(actor, MANAGE_LAB, scope=org_scope)
             or user_has_permission(actor, REGISTER_SAMPLE, scope=org_scope)
+        )
+        if not allowed:
+            raise PermissionDenied("Permission denied.")
+        return
+
+    if kind == EvidenceLinkedKind.CALIBRATION_CERTIFICATE:
+        allowed = (
+            user_has_permission(actor, VIEW_EQUIPMENT, scope=org_scope)
+            or user_has_permission(actor, MANAGE_EQUIPMENT, scope=org_scope)
         )
         if not allowed:
             raise PermissionDenied("Permission denied.")

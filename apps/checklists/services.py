@@ -1305,6 +1305,7 @@ def add_checklist_item(
     min_inclusive: bool = True,
     max_inclusive: bool = True,
     requires_equipment_reference: bool = False,
+    required_equipment_type: str = "",
 ) -> ChecklistItem:
     user = _require_authenticated_actor(actor)
     section = (
@@ -1386,6 +1387,7 @@ def add_checklist_item(
         min_inclusive=min_inc,
         max_inclusive=max_inc,
         requires_equipment_reference=bool(requires_equipment_reference),
+        required_equipment_type=(required_equipment_type or "").strip().upper(),
         repeat_min=r_min,
         repeat_max=r_max,
         repeat_default=r_default,

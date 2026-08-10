@@ -193,8 +193,30 @@ class ChecklistResponse(models.Model):
         blank=True,
         related_name="checklist_draft_responses",
         help_text=(
-            "Optional equipment reference when the item requires it. "
-            "Calibration overdue block/warn remains EVIDENCE REQUIRED — not enforced here."
+            "Optional measuring device when the item requires equipment reference. "
+            "Calibration enforcement follows INSTRUMENTS_CALIBRATION_ENFORCEMENT."
+        ),
+    )
+    calibration_record = models.ForeignKey(
+        "instruments.CalibrationRecord",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="checklist_draft_responses",
+        help_text="Latest RECORDED calibration linked at measurement time (nullable).",
+    )
+    measurement_recorded_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Server timestamp when the device reference was last applied.",
+    )
+    device_trace_context = models.JSONField(
+        null=True,
+        blank=True,
+        default=None,
+        help_text=(
+            "Frozen device identity + calibration fitness at measurement time. "
+            "Later equipment edits must not rewrite this snapshot."
         ),
     )
     evidence_hook = models.JSONField(
@@ -427,7 +449,29 @@ class ChecklistSubmissionResponse(models.Model):
         null=True,
         blank=True,
         related_name="checklist_submission_responses",
-        help_text="Frozen optional equipment reference at submit time.",
+        help_text="Frozen measuring device reference at submit time.",
+    )
+    calibration_record = models.ForeignKey(
+        "instruments.CalibrationRecord",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="checklist_submission_responses",
+        help_text="Frozen calibration record reference at submit time.",
+    )
+    measurement_recorded_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Frozen measurement timestamp copied from draft response.",
+    )
+    device_trace_context = models.JSONField(
+        null=True,
+        blank=True,
+        default=None,
+        help_text=(
+            "Frozen device + calibration snapshot at submit. Historical truth — "
+            "do not recompute from later equipment master changes."
+        ),
     )
     evidence_hook = models.JSONField(
         null=True,

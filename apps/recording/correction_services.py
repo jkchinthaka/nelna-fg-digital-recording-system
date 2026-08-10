@@ -560,6 +560,11 @@ def resubmit_checklist_correction(
                         evaluation_context=response.evaluation_context,
                         control_point_context=_control_point_context_for_item(item),
                         measurement_context=_measurement_context_for_response(response, item),
+                        equipment_id=response.equipment_id,
+                        calibration_record_id=response.calibration_record_id,
+                        measurement_recorded_at=response.measurement_recorded_at,
+                        device_trace_context=response.device_trace_context,
+                        evidence_hook=response.evidence_hook,
                     )
                 elif item.item_kind == ChecklistItemKind.CALCULATED:
                     if response.number_value is None:
@@ -578,6 +583,11 @@ def resubmit_checklist_correction(
                         evaluation_context=response.evaluation_context,
                         control_point_context=_control_point_context_for_item(item),
                         measurement_context=_measurement_context_for_response(response, item),
+                        equipment_id=response.equipment_id,
+                        calibration_record_id=response.calibration_record_id,
+                        measurement_recorded_at=response.measurement_recorded_at,
+                        device_trace_context=response.device_trace_context,
+                        evidence_hook=response.evidence_hook,
                     )
                 else:
                     continue
