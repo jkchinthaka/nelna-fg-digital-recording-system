@@ -79,3 +79,20 @@ Notes:
 - [CHECKLIST_RECORDER_ROLE_MAPPING.md](../business/CHECKLIST_RECORDER_ROLE_MAPPING.md)
 - [ADR-007-SCOPED-RBAC.md](../architecture/ADR-007-SCOPED-RBAC.md)
 - APR-007..010, APR-040 (role templates) in [APPROVAL_REGISTER.md](../governance/APPROVAL_REGISTER.md)
+
+## Phase 12 quality-case permissions (technical)
+
+| key | permission | notes |
+| --- | --- | --- |
+| create_nonconformance | `nonconformance.create_nonconformance` | Formal NCR create; not ChecklistCorrection |
+| manage_nonconformance | `nonconformance.manage_nonconformance` | Lifecycle / field updates; does not imply close |
+| close_nonconformance | `nonconformance.close_nonconformance` | Close NCR (manage also accepted as legacy close) |
+| create_holdcase | `nonconformance.create_holdcase` | Open HoldCase; free-text reason only |
+| manage_holdcase | `nonconformance.manage_holdcase` | Manage open holds |
+| close_holdcase | `nonconformance.close_holdcase` | Close with free-text resolution (no company enum) |
+| create_capa | `capa.create_capa` | Create CAPA |
+| manage_capa | `capa.manage_capa` | Actions / verification / effectiveness |
+| close_capa | `capa.close_capa` | Human-only CAPA closure |
+
+Business role mapping for the above remains APPROVAL REQUIRED.
+
