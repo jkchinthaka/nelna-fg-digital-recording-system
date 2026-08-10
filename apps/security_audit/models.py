@@ -999,6 +999,24 @@ class SecurityAuditEvent(models.Model):
             "RETURN_ERP_STOCK_MOVEMENT_BLOCKED",
             "Return ERP stock movement blocked by dual-gate",
         )
+        QUARANTINE_OPENED = ("QUARANTINE_OPENED", "Quality quarantine opened")
+        QUARANTINE_QUANTITY_UPDATED = (
+            "QUARANTINE_QUANTITY_UPDATED",
+            "Quality quarantine quantity reference updated",
+        )
+        QUARANTINE_RELEASED = ("QUARANTINE_RELEASED", "Quality quarantine released")
+        QUARANTINE_ERP_SYNC_STATUS_UPDATED = (
+            "QUARANTINE_ERP_SYNC_STATUS_UPDATED",
+            "Quality quarantine ERP sync status tracked",
+        )
+        QUARANTINE_ERP_SYNC_BLOCKED = (
+            "QUARANTINE_ERP_SYNC_BLOCKED",
+            "Quality quarantine ERP outbound blocked",
+        )
+        QUARANTINE_POLICY_UPSERTED = (
+            "QUARANTINE_POLICY_UPSERTED",
+            "Quality quarantine policy stub upserted",
+        )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 

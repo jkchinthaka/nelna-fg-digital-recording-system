@@ -3,7 +3,7 @@
 **Document status:** Governing roadmap for greenfield delivery
 **Canonical status:** [PROJECT_STATUS.md](PROJECT_STATUS.md) (prefer when summaries conflict)
 **Phase:** Through Phase **10A** technical foundations on `main`; MASTER-001 / TEMPLATE / role mappings / post-QA workflows still evidence-required
-**Last updated:** 2026-08-10 (Phase 40 returned product quality)
+**Last updated:** 2026-08-10 (Phase 41 quality quarantine management)
 
 Branch naming pattern: `foundation/...`, `design/...`, `feature/phase-NN-short-name`, or `hardening/...` as appropriate. Prefer PR review; some authorized units have used direct-`main` quality-first delivery — see [governance/CHANGE_CONTROL.md](governance/CHANGE_CONTROL.md).
 
@@ -546,3 +546,13 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Exit criteria | Return quality records are org-scoped and quarantine-on-create; checklist inspection uses the existing checklist engine; evidence linking is allowlisted; ERP stock movement remains blocked unless both runtime and organization gates are approved; no invented return catalogues, owners, or ERP endpoints |
 | Status | **Technical foundation delivered** on `main` — business SOP, disposition catalogue, and ERP stock movement enablement remain **EVIDENCE REQUIRED** |
 
+## Phase 41 ? Quality Quarantine Management
+
+| Field | Content |
+| --- | --- |
+| Objective | Auditable application-side quarantine state while ERP remains the authoritative inventory ledger |
+| Outputs | `apps.quality_quarantine`; ADR-052; source-linked cases; append-only events; policy-gated quantity refs; release and ERP outbound dual-gates; APR-066 |
+| Approval gate | Quarantine/release procedure, role mapping, quantity semantics, and ERP adapter evidence |
+| Branch naming | `feature/phase-41-quality-quarantine` |
+| Exit criteria | Cases are organization-scoped; multiple cases per batch are allowed; history is append-only; release requires scoped permission plus runtime approval; ERP outbound remains fail-closed; no invented operational values |
+| Status | **Technical foundation delivered** ? business procedure, role mapping, and ERP contract remain **EVIDENCE REQUIRED** |

@@ -422,3 +422,14 @@ Retention period is **deferred** â€” not decided in Phase 03. Events are ap
 | RETURN_QUALITY_POLICY_UPSERTED | Return quality policy stub upserted |
 | RETURN_ERP_STOCK_MOVEMENT_BLOCKED | ERP stock movement blocked / refused |
 
+### Quality Quarantine (Phase 41)
+
+| Event | Meaning |
+| --- | --- |
+| QUARANTINE_OPENED | Quality quarantine opened |
+| QUARANTINE_QUANTITY_UPDATED | Quantity reference updated (not inventory ledger) |
+| QUARANTINE_RELEASED | Quarantine released (permission + dual-gate) |
+| QUARANTINE_ERP_SYNC_STATUS_UPDATED | Local ERP sync status tracked |
+| QUARANTINE_ERP_SYNC_BLOCKED | ERP outbound blocked / refused |
+| QUARANTINE_POLICY_UPSERTED | Quarantine policy stub upserted |
+

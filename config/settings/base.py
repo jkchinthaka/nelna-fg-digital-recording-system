@@ -1,4 +1,4 @@
-"""Shared Django settings for all environments."""
+﻿"""Shared Django settings for all environments."""
 
 from __future__ import annotations
 
@@ -83,6 +83,7 @@ INSTALLED_APPS = [
     "apps.recall",
     "apps.customer_complaints",
     "apps.product_returns",
+    "apps.quality_quarantine",
     "apps.nonconformance",
     "apps.capa",
     "apps.dispatch",
@@ -351,6 +352,15 @@ COMPLAINT_CUSTOMER_RESPONSE_AUTO_SEND_APPROVED = env.bool(
 # Phase 40 -- return ERP stock movement remains OFF until company approval.
 PRODUCT_RETURNS_ERP_STOCK_MOVEMENT_APPROVED = env.bool(
     "PRODUCT_RETURNS_ERP_STOCK_MOVEMENT_APPROVED",
+    default=False,
+)
+# Phase 41 — quality quarantine release / ERP sync remain OFF until company approval.
+QUALITY_QUARANTINE_RELEASE_APPROVED = env.bool(
+    "QUALITY_QUARANTINE_RELEASE_APPROVED",
+    default=False,
+)
+QUALITY_QUARANTINE_ERP_SYNC_APPROVED = env.bool(
+    "QUALITY_QUARANTINE_ERP_SYNC_APPROVED",
     default=False,
 )
 

@@ -86,6 +86,7 @@ This document records **repository evidence**. It does not invent Nelna operatio
 | `recall` | **37–38** | IMPLEMENTED foundation · recall/withdrawal + MOCK exercises (APR-062/063) |
 | `customer_complaints` | **39** | IMPLEMENTED foundation · complaint cases; batch-trace; evidence; RCA/NCR/CAPA links; privacy redaction; auto-send dual-gate OFF (APR-064) |
 | `product_returns` | **40** | IMPLEMENTED foundation · returned-product quality records; quarantine; checklist inspection; disposition architecture; ERP stock dual-gate OFF (APR-065) |
+| `quality_quarantine` | **41** | IMPLEMENTED foundation ? application quality state; source-linked cases; append-only history; quantity/release/ERP gates OFF by default (APR-066) |
 
 Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 38 except gaps noted elsewhere)._ (`loading` controls are delivered inside `dispatch` for Phase 13 — see ADR-025.)
 
@@ -160,6 +161,7 @@ Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 38 except gaps n
 | 38 Mock Recall Exercises | Technical complete — MOCK_EXERCISE mode, metrics, isolation (no ERP/notify/dispatch), findings→NCR/CAPA/improvement explicit (ADR-049) | Company mock-drill SOP / finding SoD EVIDENCE REQUIRED (APR-063) |
 | 39 Customer Quality Complaints | Technical complete — complaint cases, batch-trace, evidence, RCA/NCR/CAPA links, privacy redaction, dual-gate auto-send OFF (ADR-050) | Complaint SOP / taxonomy / response EVIDENCE REQUIRED (APR-064) |
 | 40 Returned Product Quality | Technical complete — ERP/SFA return mapping, quarantine, checklist inspection, disposition architecture, ERP stock movement dual-gate OFF (ADR-051) | Return disposition / quarantine / ERP stock movement EVIDENCE REQUIRED (APR-065) |
+| 41 Quality Quarantine Management | Technical complete ? source-linked local cases, append-only events, policy-gated quantity refs, release/ERP dual-gates, fail-closed outbound (ADR-052) | Quarantine/release SOP, role mapping, quantity semantics, and ERP adapter EVIDENCE REQUIRED (APR-066) |
 
 | 20–21 Pilot / production release | Not started | Depends on business gates + Phase 19 ops evidence |
 | 20 UAT / Pilot | Package opened — **BLOCKED** pending business evidence ([uat/README.md](uat/README.md)) | Pilot scope APR-034, FG-QA-001, roles/SoD, hosted env EVIDENCE REQUIRED |
@@ -553,3 +555,9 @@ Customer quality complaint management (ADR-050): organization-scoped cases with 
 
 Returned product quality workflow (ADR-051): organization-scoped return quality records keyed to opaque ERP/SFA return references, default quarantine with `not_saleable_via_app=True`, checklist-engine inspection task hooks, configurable local disposition architecture (RELEASE/HOLD/REWORK/REJECT), allowlisted evidence links, and ERP stock movement blocked behind dual-gate approval by default. Company return disposition catalogue, quarantine procedure, and ERP movement enablement remain **EVIDENCE REQUIRED** (APR-065); local RELEASE does not make stock saleable in ERP.
 
+
+## Phase 41 delivery status
+
+**STATUS: PHASE 41 QUARANTINE MANAGEMENT COMPLETE**
+
+Quality quarantine management (ADR-052): organization-scoped local quality state linked through opaque batch and source references, multiple open cases per batch, append-only history, policy-gated quantity references, release permission plus runtime approval, local ERP sync status tracking, and a fail-closed ERP boundary. ERP remains the authoritative inventory ledger. Company procedure, owners, role mapping, quantity semantics, and ERP adapter evidence remain **EVIDENCE REQUIRED** (APR-066).

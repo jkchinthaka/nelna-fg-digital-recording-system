@@ -42,6 +42,7 @@ class CapabilityBucket(StrEnum):
     RECALL = "recall"
     CUSTOMER_COMPLAINTS = "customer_complaints"
     PRODUCT_RETURNS = "product_returns"
+    QUALITY_QUARANTINE = "quality_quarantine"
     EVIDENCE = "evidence"
     MASTER_DATA = "master_data"
     CHECKLIST_PUBLISH = "checklist_publish"
@@ -986,6 +987,37 @@ PERMISSION_CATALOGUE: Final[tuple[PermissionCatalogueEntry, ...]] = (
         scopes=(ObjectScope.ORGANIZATION,),
         description="Manage return quality policy stubs (ERP stock gate / disposition allow-list).",
         notes="Dual-gated with PRODUCT_RETURNS_ERP_STOCK_MOVEMENT_APPROVED (default OFF).",
+    ),
+    PermissionCatalogueEntry(
+        key="view_qualityquarantine",
+        permission="quality_quarantine.view_qualityquarantine",
+        bucket=CapabilityBucket.QUALITY_QUARANTINE,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="View quality quarantine records and append-only history.",
+    ),
+    PermissionCatalogueEntry(
+        key="manage_qualityquarantine",
+        permission="quality_quarantine.manage_qualityquarantine",
+        bucket=CapabilityBucket.QUALITY_QUARANTINE,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Open quarantine cases and manage local quality-state references.",
+        notes="ERP remains authoritative inventory ledger; APR-066 EVIDENCE REQUIRED.",
+    ),
+    PermissionCatalogueEntry(
+        key="release_qualityquarantine",
+        permission="quality_quarantine.release_qualityquarantine",
+        bucket=CapabilityBucket.QUALITY_QUARANTINE,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Release an open local quality quarantine when the settings gate is approved.",
+        notes="Dual-gated with QUALITY_QUARANTINE_RELEASE_APPROVED (default OFF).",
+    ),
+    PermissionCatalogueEntry(
+        key="manage_quarantinepolicystub",
+        permission="quality_quarantine.manage_quarantinepolicystub",
+        bucket=CapabilityBucket.QUALITY_QUARANTINE,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Manage quantity-recording and ERP-sync policy stubs.",
+        notes="ERP sync also requires QUALITY_QUARANTINE_ERP_SYNC_APPROVED; APR-066 EVIDENCE REQUIRED.",
     ),
     PermissionCatalogueEntry(
         key="manage_supplierquality_qa",

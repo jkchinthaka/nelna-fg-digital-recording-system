@@ -42,6 +42,7 @@ ALLOWED_APPS = {
     "recall",
     "customer_complaints",
     "product_returns",
+    "quality_quarantine",
     "supplier_quality",
     "access_control",
     "security_audit",

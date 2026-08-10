@@ -281,3 +281,14 @@ AI default OFF. AI must not execute RELEASE/HOLD/REJECT, publish, spec/role chan
 | disposition_returnquality | `product_returns.disposition_returnquality` | RELEASE/HOLD/REWORK/REJECT (policy may restrict) |
 | manage_returnpolicystub | `product_returns.manage_returnpolicystub` | ERP stock gate / disposition allow-list stubs |
 
+
+### Quality Quarantine (Phase 41)
+
+| Key | Permission | Notes |
+| --- | --- | --- |
+| view_qualityquarantine | `quality_quarantine.view_qualityquarantine` | View organization-scoped cases and immutable history |
+| manage_qualityquarantine | `quality_quarantine.manage_qualityquarantine` | Open cases, update permitted quantity refs, and track ERP status locally |
+| release_qualityquarantine | `quality_quarantine.release_qualityquarantine` | Release requires this scoped grant plus settings approval; business mapping EVIDENCE REQUIRED |
+| manage_quarantinepolicystub | `quality_quarantine.manage_quarantinepolicystub` | Manage quantity and ERP synchronization policy stubs; does not approve live ERP |
+
+ERP remains the inventory ledger. No role is mapped to a Nelna job title by this technical foundation; owner and SoD mapping remain APR-066 EVIDENCE REQUIRED.
