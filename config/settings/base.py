@@ -70,6 +70,7 @@ INSTALLED_APPS = [
     "apps.capa",
     "apps.dispatch",
     "apps.notifications",
+    "apps.reports",
     "apps.supplier_quality",
     "apps.access_control",
     "apps.security_audit",

@@ -66,8 +66,9 @@ This document records **repository evidence**. It does not invent Nelna operatio
 | `capa` | **12** | IMPLEMENTED foundation · CAPA + actions + verification/effectiveness; human-only close; matrices **EVIDENCE REQUIRED** |
 | `dispatch` | **13** | IMPLEMENTED foundation · loading/dispatch quality + cold-chain temps + qty reconciliation; QA RELEASE gate **disabled by default**; no ERP writes; SOPs/limits **EVIDENCE REQUIRED** |
 | `notifications` | **15** | IMPLEMENTED foundation · in-app + optional SMTP; events default OFF; no SMS; privacy-safe payloads only |
+| `reports` | **16** | IMPLEMENTED foundation · catalogue + org-scoped CSV runs; immutable submission sources; Excel/PDF not implemented |
 
-Not started (by MODULE_MAP): `reports`, `integrations`, `ai_assistance`. (`loading` controls are delivered inside `dispatch` for Phase 13 — see ADR-025.)
+Not started (by MODULE_MAP): `integrations`, `ai_assistance`. (`loading` controls are delivered inside `dispatch` for Phase 13 — see ADR-025.)
 
 ---
 
@@ -117,7 +118,8 @@ Not started (by MODULE_MAP): `reports`, `integrations`, `ai_assistance`. (`loadi
 | 13 Loading / dispatch | Technical complete — DispatchQualityRecord, vehicle checklist links, cold-chain Decimal temps, qty reconciliation, QA RELEASE gate default OFF (ADR-025) | Dispatch SOPs / temperature limits / APR-017 gate enablement EVIDENCE REQUIRED |
 | 14 Offline PWA | **Decision gate complete** — offline **not** implemented (ADR-026); online-only MVP retained + paper fallback | APR-022 / Wi-Fi / device / logout-wipe evidence still required to reopen |
 | 15 Notifications | Technical complete — in-app notifications + optional SMTP; events default OFF; SMS not integrated (ADR-027) | Event matrix / SMTP / SMS provider EVIDENCE REQUIRED |
-| 16–21 Later roadmap | Not started | N/A |
+| 16 Reporting | Technical complete — catalogue, org RBAC, immutable submission sources, CSV + formula injection guard, async ReportRun (ADR-028) | Official report packs / Excel-PDF need EVIDENCE REQUIRED |
+| 17–21 Later roadmap | Not started | N/A |
 
 ---
 
@@ -355,4 +357,10 @@ Offline decision gate (ADR-026): Wi-Fi survey, device plan, hosting, outage prof
 **STATUS: PHASE 15 NOTIFICATIONS COMPLETE**
 
 Workflow notifications foundation (ADR-027): in-app notifications with privacy-safe titles/messages; org event policy default OFF; optional SMTP email when configured (no credentials in repo); Celery idempotent email delivery; SMS not integrated. Production event matrices and SMS remain EVIDENCE REQUIRED.
+
+## Phase 16 delivery status
+
+**STATUS: PHASE 16 REPORTING COMPLETE**
+
+Governed quality reporting foundation (ADR-028): org-scoped catalogue and `ReportRun` CSV generation; historical submission/review/QA/correction paths use immutable snapshots (never draft responses); formula-injection protection; background generation for large runs; export/download audited. Official Nelna report packs and Excel/PDF remain EVIDENCE REQUIRED / not implemented.
 

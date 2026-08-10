@@ -108,6 +108,10 @@
 | `NOTIFICATION_READ` | Notification marked read by recipient |
 | `NOTIFICATION_EMAIL_DELIVERED` | Notification email delivered |
 | `NOTIFICATION_EMAIL_FAILED` | Notification email delivery failed |
+| `REPORT_RUN_ENQUEUED` | Governed report run enqueued for background generation (Phase 16) |
+| `REPORT_RUN_COMPLETED` | Governed report run completed |
+| `REPORT_EXPORTED` | Governed report exported (CSV generated for export) |
+| `REPORT_EXPORT_DOWNLOADED` | Governed report CSV downloaded |
 
 ## Safe metadata
 

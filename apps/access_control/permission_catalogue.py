@@ -23,6 +23,7 @@ class CapabilityBucket(StrEnum):
     QUALITY_CASE = "quality_case"
     DISPATCH = "dispatch"
     NOTIFICATIONS = "notifications"
+    REPORTING = "reporting"
     EVIDENCE = "evidence"
     MASTER_DATA = "master_data"
     CHECKLIST_PUBLISH = "checklist_publish"
@@ -361,6 +362,30 @@ PERMISSION_CATALOGUE: Final[tuple[PermissionCatalogueEntry, ...]] = (
         scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
         description="Enable/disable notification event types and optional email channel.",
         notes="All events default OFF; SMS not integrated.",
+    ),
+    PermissionCatalogueEntry(
+        key="view_reportcatalogue",
+        permission="reports.view_reportcatalogue",
+        bucket=CapabilityBucket.REPORTING,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="View the governed quality report catalogue.",
+        notes="Catalogue codes are technical; official report packs EVIDENCE REQUIRED.",
+    ),
+    PermissionCatalogueEntry(
+        key="run_qualityreport",
+        permission="reports.run_qualityreport",
+        bucket=CapabilityBucket.REPORTING,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Run governed quality reports within organization scope.",
+        notes="Historical submission reports must use immutable snapshots only.",
+    ),
+    PermissionCatalogueEntry(
+        key="export_qualityreport",
+        permission="reports.export_qualityreport",
+        bucket=CapabilityBucket.REPORTING,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Export/download governed quality report CSV results.",
+        notes="Sensitive exports are audited. Excel/PDF not implemented in Phase 16.",
     ),
     PermissionCatalogueEntry(
         key="manage_supplierquality_qa",

@@ -406,6 +406,22 @@ class SecurityAuditEvent(models.Model):
             "NOTIFICATION_EMAIL_FAILED",
             "Notification email delivery failed",
         )
+        REPORT_RUN_ENQUEUED = (
+            "REPORT_RUN_ENQUEUED",
+            "Governed report run enqueued for background generation",
+        )
+        REPORT_RUN_COMPLETED = (
+            "REPORT_RUN_COMPLETED",
+            "Governed report run completed",
+        )
+        REPORT_EXPORTED = (
+            "REPORT_EXPORTED",
+            "Governed report exported (CSV generated for export)",
+        )
+        REPORT_EXPORT_DOWNLOADED = (
+            "REPORT_EXPORT_DOWNLOADED",
+            "Governed report CSV downloaded",
+        )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 

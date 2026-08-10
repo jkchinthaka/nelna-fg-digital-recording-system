@@ -23,6 +23,7 @@ ALLOWED_APPS = {
     "capa",
     "dispatch",
     "notifications",
+    "reports",
     "supplier_quality",
     "access_control",
     "security_audit",

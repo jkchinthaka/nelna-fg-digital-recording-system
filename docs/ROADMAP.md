@@ -307,13 +307,14 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 
 | Field | Content |
 | --- | --- |
-| Objective | Broader reports and audit export maturity |
-| Inputs | Internal audit expectations |
-| Outputs | `reports` enhancements; export packs |
-| Approval gate | QA / Internal audit |
-| Branch naming | `feature/phase-16-reports-audit` |
-| Exit criteria | Export matches approved pilot/prod needs |
+| Objective | Governed operational reports and CSV exports with org RBAC |
+| Inputs | Immutable submissions; audit/NCR/CAPA/dispatch domain data |
+| Outputs | `apps.reports`; ADR-028; catalogue + ReportRun |
+| Approval gate | QA / Internal audit (official packs EVIDENCE REQUIRED) |
+| Branch naming | Direct-main quality-first for Phase 16 foundation |
+| Exit criteria | Catalogue; org RBAC; immutable historical sources; CSV injection guard; async large runs; tests |
 | Dependencies | Audit events from earlier phases |
+| Status | **Technical foundation IMPLEMENTED** — official report packs / Excel-PDF EVIDENCE REQUIRED |
 
 ## Phase 17 — ERP integration
 
