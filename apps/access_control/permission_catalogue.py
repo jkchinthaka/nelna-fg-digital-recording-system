@@ -24,6 +24,7 @@ class CapabilityBucket(StrEnum):
     DISPATCH = "dispatch"
     NOTIFICATIONS = "notifications"
     REPORTING = "reporting"
+    INTEGRATIONS = "integrations"
     EVIDENCE = "evidence"
     MASTER_DATA = "master_data"
     CHECKLIST_PUBLISH = "checklist_publish"
@@ -386,6 +387,22 @@ PERMISSION_CATALOGUE: Final[tuple[PermissionCatalogueEntry, ...]] = (
         scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
         description="Export/download governed quality report CSV results.",
         notes="Sensitive exports are audited. Excel/PDF not implemented in Phase 16.",
+    ),
+    PermissionCatalogueEntry(
+        key="view_integrationboundary",
+        permission="integrations.view_integrationboundary",
+        bucket=CapabilityBucket.INTEGRATIONS,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE, ObjectScope.SYSTEM_WIDE),
+        description="View ERP/Bileeta integration evidence gate and attempt status.",
+        notes="Live connector remains blocked until APR-011/APR-012 evidence.",
+    ),
+    PermissionCatalogueEntry(
+        key="manage_integrationboundary",
+        permission="integrations.manage_integrationboundary",
+        bucket=CapabilityBucket.INTEGRATIONS,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE, ObjectScope.SYSTEM_WIDE),
+        description="Ingest mock/contract batch events via integration boundary.",
+        notes="Must not invent endpoints; outbound disposition blocked without APR-017.",
     ),
     PermissionCatalogueEntry(
         key="manage_supplierquality_qa",
