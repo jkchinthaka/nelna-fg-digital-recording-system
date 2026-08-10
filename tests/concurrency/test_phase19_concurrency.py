@@ -6,11 +6,11 @@ import uuid
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import pytest
-from django.db import connection
-
 from apps.integrations.bileeta.mock import MockBileetaAdapter, sample_mock_event
 from apps.integrations.errors import IntegrationError
 from apps.reports.csv_safe import sanitize_csv_cell
+from django.db import connection
+
 from tests.factories import make_org
 
 
@@ -55,13 +55,20 @@ def test_mock_auth_failure_is_non_retryable_poison() -> None:
 
 
 @pytest.mark.django_db
-def test_concurrent_draft_version_guard_is_documented_in_hardening() -> None:
+def test_double_submit_and_review_guards_remain_callable() -> None:
     """
-    Shop-floor concurrent drafts use optimistic draft_version (Phase 08C).
+    Critical concurrency surfaces must remain present for domain races:
 
-    This Phase 19 guard asserts the concurrency contract remains present.
+    double submit, supervisor review, correction start, QA review, concurrent drafts.
+    Full race coverage lives in domain Phase 08/09 suites; Phase 19 asserts contracts.
     """
+    from apps.quality import services as quality_services
+    from apps.recording import correction_services
     from apps.recording import services as recording_services
+    from apps.reviews import services as review_services
 
-    assert hasattr(recording_services, "save_checklist_draft_responses")
     assert hasattr(recording_services, "submit_checklist_record")
+    assert hasattr(recording_services, "save_checklist_draft_responses")
+    assert hasattr(correction_services, "start_checklist_correction")
+    assert hasattr(review_services, "create_supervisor_review")
+    assert hasattr(quality_services, "create_qa_review")
