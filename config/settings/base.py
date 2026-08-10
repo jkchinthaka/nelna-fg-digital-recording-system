@@ -191,7 +191,7 @@ BILEETA_CLIENT_SECRET = env("BILEETA_CLIENT_SECRET", default="")
 
 # Phase 18 — optional AI assistance (OFF by default; advisory only).
 AI_ASSISTANCE_ENABLED = env.bool("AI_ASSISTANCE_ENABLED", default=False)
-AI_ASSISTANCE_PROVIDER = env("AI_ASSISTANCE_PROVIDER", default="null")  # null|mock (future vendors via interface)
+AI_ASSISTANCE_PROVIDER = env("AI_ASSISTANCE_PROVIDER", default="null")  # null|mock
 AI_ASSISTANCE_TIMEOUT_SECONDS = env.float("AI_ASSISTANCE_TIMEOUT_SECONDS", default=15.0)
 AI_ASSISTANCE_STORE_PROMPTS = env.bool("AI_ASSISTANCE_STORE_PROMPTS", default=False)
 OLLAMA_BASE_URL = env("OLLAMA_BASE_URL", default="")

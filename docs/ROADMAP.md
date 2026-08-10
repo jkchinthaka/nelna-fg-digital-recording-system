@@ -352,7 +352,7 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Approval gate | IT security + ops |
 | Branch naming | `hardening/phase-19-security-ops` |
 | Exit criteria | Restore drill passed; security review recorded |
-| Status | **Technical controls delivered** on `hardening/phase-19-security-ops` (ADR-031); RPO/RTO still COMPANY DECISION REQUIRED |
+| Status | **Technical controls delivered** on `main` (ADR-031); RPO/RTO still COMPANY DECISION REQUIRED |
 | Dependencies | Staging-like environment |
 
 ## Phase 20 — Pilot, UAT and parallel paper run
