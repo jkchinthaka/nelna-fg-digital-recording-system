@@ -74,7 +74,6 @@ This document records **repository evidence**. It does not invent Nelna operatio
 | `sampling` | **24** | IMPLEMENTED foundation · versioned sampling plans; no ISO/AQL tables; sampling REJECT ≠ QA REJECT; company tables EVIDENCE REQUIRED |
 | `foreign_body` | **26** | IMPLEMENTED foundation · metal-detector challenge shells; no invented Fe/SS sizes; auto-HOLD default OFF (APR-052) |
 | `sanitation` | **27** | IMPLEMENTED foundation · checklist-bound SSOP programs; no invented chemicals/frequencies; fail-stop default OFF (APR-053) |
-| `sanitation` | **27** | IMPLEMENTED foundation · checklist-bound SSOP programs; no invented chemicals/frequencies; fail-stop default OFF (APR-053) |
 
 Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 27)._ (`loading` controls are delivered inside `dispatch` for Phase 13 — see ADR-025.)
 
