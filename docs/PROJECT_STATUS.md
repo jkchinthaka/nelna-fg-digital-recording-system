@@ -37,7 +37,7 @@ This document records **repository evidence**. It does not invent Nelna operatio
 | Phase 10A Docker full validation | **NOT confirmed complete** in this governance pass (prior Docker Desktop engine failures reported; re-validation remains outstanding) |
 | Business role mappings (recorder / Supervisor / QA) | **NOT BUSINESS APPROVED** — Phase 03C technical governance exists; permissions unassigned; mapping tables empty |
 | Segregation of duties | **EVIDENCE REQUIRED** — not invented in code as Nelna policy |
-| Offline / PWA | **NOT IMPLEMENTED** (ADR-003 direction only) |
+| Offline / PWA | **Offline NOT IMPLEMENTED** — Phase 14 gate retained online-only MVP (ADR-026); installable PWA still longer-term (ADR-003) |
 | ERP / Bileeta connector | **NOT IMPLEMENTED** — contract docs only |
 
 ---
@@ -113,7 +113,8 @@ Not started (by MODULE_MAP): `notifications`, `reports`, `integrations`, `ai_ass
 | 11 Evidence attachments | Technical complete — private store, SHA-256, auth download, soft-retire, scanner NOT_CONFIGURED | Object-store IAM / active malware scanner EVIDENCE REQUIRED |
 | 12 NCR / HOLD / CAPA | Technical complete — proposed NCR lifecycle, HoldCase, CAPA actions/verification/effectiveness; no auto-raise | Severity/resolution catalogues / auto-raise rules EVIDENCE REQUIRED |
 | 13 Loading / dispatch | Technical complete — DispatchQualityRecord, vehicle checklist links, cold-chain Decimal temps, qty reconciliation, QA RELEASE gate default OFF (ADR-025) | Dispatch SOPs / temperature limits / APR-017 gate enablement EVIDENCE REQUIRED |
-| 14–21 Later roadmap | Not started | N/A |
+| 14 Offline PWA | **Decision gate complete** — offline **not** implemented (ADR-026); online-only MVP retained + paper fallback | APR-022 / Wi-Fi / device / logout-wipe evidence still required to reopen |
+| 15–21 Later roadmap | Not started | N/A |
 
 ---
 
@@ -339,4 +340,10 @@ Configurable quality-case foundation (ADR-024): formal NCR lifecycle + HoldCase 
 **STATUS: PHASE 13 DISPATCH QUALITY FOUNDATION COMPLETE**
 
 Loading/dispatch quality foundation (ADR-025): DispatchQualityRecord with vehicle inspection checklist links, cold-chain Decimal temperature readings, released/loaded/remaining quantity lines (not ERP ledger), configurable QA RELEASE gate disabled by default, append-only history and audit. No AI loading release; no ERP writes; production SOPs/limits remain EVIDENCE REQUIRED.
+
+## Phase 14 delivery status
+
+**STATUS: PHASE 14 ONLINE ONLY APPROVED — OFFLINE NOT IMPLEMENTED**
+
+Offline decision gate (ADR-026): Wi-Fi survey, device plan, hosting, outage profile, and APR-022 remain EVIDENCE REQUIRED / open. Standing MVP direction is online-only recording with paper fallback. No IndexedDB draft sync, service worker offline queue, or offline QA/HOLD/REJECT paths were implemented. Re-open Phase 14 only after IT + Production + QA clear APR-022 with supporting evidence.
 

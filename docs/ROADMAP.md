@@ -283,12 +283,13 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Field | Content |
 | --- | --- |
 | Objective | IndexedDB drafts and sync queues |
-| Inputs | Risk mitigations for lost/duplicate data |
-| Outputs | Offline client + sync services |
+| Inputs | Risk mitigations for lost/duplicate data; Wi-Fi / device / APR-022 evidence |
+| Outputs | Offline client + sync services **or** documented online-only gate |
 | Approval gate | IT + QA |
 | Branch naming | `feature/phase-14-offline-sync` |
-| Exit criteria | Offline tests pass; idempotent sync |
+| Exit criteria | Offline tests pass; idempotent sync — **or** decision gate STOP with ADR |
 | Dependencies | Phase 08+ stable online flows |
+| Status | **14 gate complete — ONLINE ONLY; offline NOT implemented** (ADR-026). Re-open only after APR-022 + Wi-Fi/device/security evidence |
 
 ## Phase 15 — Notifications
 

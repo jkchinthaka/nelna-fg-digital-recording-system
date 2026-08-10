@@ -69,7 +69,7 @@
 | DL-044 | Require MongoDB despite ADR-002? | Open — company requested; **POC REQUIRED** before SoR change | IT / Management | open | APR-020; ADR-002; ADR-018 | Major architecture change if accepted | — |
 | DL-048 | May Mongo replace PostgreSQL on `main` without POC? | **No** — blind URI swap forbidden | Technical Lead (assessment) | 2026-08-10 | ADR-018; migration strategy | DB-02 NO-GO until POC | — |
 | DL-045 | Bileeta as batch/ERP source? | Open | IT / Vendor | open | APR-012 | Phase 17 / generation | — |
-| DL-046 | Offline required for pilot? | Open | IT / Production / QA | open | APR-022 | May force Phase 14 earlier | — |
+| DL-046 | Offline required for pilot? / implement Phase 14 offline now? | **Phase 14 gate:** do **not** implement offline sync now; retain online-only MVP assumption + paper fallback. Pilot offline *requirement* remains open until APR-022 + Wi-Fi/device evidence | Architecture (gate) / IT+Production+QA (APR-022 still open) | 2026-08-10 | ADR-026; PHASE_14_OFFLINE_DECISION_GATE; APR-022/030/031 | No IndexedDB sync in this phase | — |
 | DL-047 | SoD enforcement rules? | Open | QA / Management | open | APR-010 | UAT/pilot blocked | — |
 
 ---
