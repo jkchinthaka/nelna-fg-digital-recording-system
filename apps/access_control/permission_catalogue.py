@@ -40,6 +40,7 @@ class CapabilityBucket(StrEnum):
     BATCH_DOSSIER = "batch_dossier"
     BATCH_GENEALOGY = "batch_genealogy"
     RECALL = "recall"
+    CUSTOMER_COMPLAINTS = "customer_complaints"
     EVIDENCE = "evidence"
     MASTER_DATA = "master_data"
     CHECKLIST_PUBLISH = "checklist_publish"
@@ -490,7 +491,6 @@ PERMISSION_CATALOGUE: Final[tuple[PermissionCatalogueEntry, ...]] = (
         scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
         description="Read-only view of laboratory samples and results.",
     ),
-
     PermissionCatalogueEntry(
         key="manage_haccpplan",
         permission="haccp.manage_haccpplan",
@@ -514,7 +514,6 @@ PERMISSION_CATALOGUE: Final[tuple[PermissionCatalogueEntry, ...]] = (
         scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
         description="Read-only view of HACCP plans and control points.",
     ),
-
     PermissionCatalogueEntry(
         key="manage_samplingplan",
         permission="sampling.manage_samplingplan",
@@ -590,7 +589,6 @@ PERMISSION_CATALOGUE: Final[tuple[PermissionCatalogueEntry, ...]] = (
         scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE, ObjectScope.DEPARTMENT),
         description="Read-only view of sanitation programs.",
     ),
-
     PermissionCatalogueEntry(
         key="manage_environmental",
         permission="environmental.manage_environmental",
@@ -897,6 +895,58 @@ PERMISSION_CATALOGUE: Final[tuple[PermissionCatalogueEntry, ...]] = (
         scopes=(ObjectScope.ORGANIZATION,),
         description="Record mock findings and explicitly link NCR/CAPA/improvement.",
         notes="Findings never auto-open NCR/CAPA — explicit user action required.",
+    ),
+    PermissionCatalogueEntry(
+        key="view_customercomplaint",
+        permission="customer_complaints.view_customercomplaint",
+        bucket=CapabilityBucket.CUSTOMER_COMPLAINTS,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="View customer quality complaint cases and timelines.",
+    ),
+    PermissionCatalogueEntry(
+        key="create_customercomplaint",
+        permission="customer_complaints.create_customercomplaint",
+        bucket=CapabilityBucket.CUSTOMER_COMPLAINTS,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Create customer quality complaint cases.",
+    ),
+    PermissionCatalogueEntry(
+        key="manage_customercomplaint",
+        permission="customer_complaints.manage_customercomplaint",
+        bucket=CapabilityBucket.CUSTOMER_COMPLAINTS,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Update complaint investigation, batch refs, and quality links.",
+    ),
+    PermissionCatalogueEntry(
+        key="close_customercomplaint",
+        permission="customer_complaints.close_customercomplaint",
+        bucket=CapabilityBucket.CUSTOMER_COMPLAINTS,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Close customer complaint cases.",
+        notes="Not implied by manage_customercomplaint.",
+    ),
+    PermissionCatalogueEntry(
+        key="view_complaint_customer_sensitive",
+        permission="customer_complaints.view_complaint_customer_sensitive",
+        bucket=CapabilityBucket.CUSTOMER_COMPLAINTS,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="View customer-sensitive display labels on complaints.",
+        notes="Privacy-restricted — not implied by view_customercomplaint (APR-064).",
+    ),
+    PermissionCatalogueEntry(
+        key="record_complaint_communication",
+        permission="customer_complaints.record_complaint_communication",
+        bucket=CapabilityBucket.CUSTOMER_COMPLAINTS,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Record complaint communication references (no auto-send).",
+    ),
+    PermissionCatalogueEntry(
+        key="manage_complaintpolicy",
+        permission="customer_complaints.manage_complaintpolicy",
+        bucket=CapabilityBucket.CUSTOMER_COMPLAINTS,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Update complaint category config and auto-response policy stubs.",
+        notes="Dual-gated with COMPLAINT_CUSTOMER_RESPONSE_AUTO_SEND_APPROVED (default OFF).",
     ),
     PermissionCatalogueEntry(
         key="manage_supplierquality_qa",

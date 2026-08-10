@@ -927,6 +927,58 @@ class SecurityAuditEvent(models.Model):
             "MOCK_RECALL_IMPROVEMENT_CREATED",
             "MOCK recall improvement action created (explicit)",
         )
+        COMPLAINT_CASE_CREATED = (
+            "COMPLAINT_CASE_CREATED",
+            "Customer complaint case created",
+        )
+        COMPLAINT_CASE_OPENED = (
+            "COMPLAINT_CASE_OPENED",
+            "Customer complaint case opened",
+        )
+        COMPLAINT_BATCH_UPDATED = (
+            "COMPLAINT_BATCH_UPDATED",
+            "Customer complaint batch reference updated",
+        )
+        COMPLAINT_BATCH_TRACE_UPDATED = (
+            "COMPLAINT_BATCH_TRACE_UPDATED",
+            "Customer complaint batch-trace links updated",
+        )
+        COMPLAINT_EVIDENCE_LINKED = (
+            "COMPLAINT_EVIDENCE_LINKED",
+            "Evidence linked to customer complaint",
+        )
+        COMPLAINT_INVESTIGATION_LINKED = (
+            "COMPLAINT_INVESTIGATION_LINKED",
+            "Investigation/RCA/NCR/CAPA linked to complaint (explicit)",
+        )
+        COMPLAINT_COMMUNICATION_RECORDED = (
+            "COMPLAINT_COMMUNICATION_RECORDED",
+            "Complaint communication reference recorded (no auto-send)",
+        )
+        COMPLAINT_CUSTOMER_RESPONSE_BLOCKED = (
+            "COMPLAINT_CUSTOMER_RESPONSE_BLOCKED",
+            "Complaint customer response blocked by dual-gate",
+        )
+        COMPLAINT_CUSTOMER_RESPONSE_PREPARED = (
+            "COMPLAINT_CUSTOMER_RESPONSE_PREPARED",
+            "Complaint customer response prepared (message not sent)",
+        )
+        COMPLAINT_CASE_CLOSED = (
+            "COMPLAINT_CASE_CLOSED",
+            "Customer complaint case closed",
+        )
+        COMPLAINT_POLICY_UPDATED = (
+            "COMPLAINT_POLICY_UPDATED",
+            "Customer complaint policy stub updated",
+        )
+        COMPLAINT_CATEGORY_CONFIG_UPSERTED = (
+            "COMPLAINT_CATEGORY_CONFIG_UPSERTED",
+            "Complaint category/severity config upserted",
+        )
+        RETURN_ERP_STOCK_MOVEMENT_BLOCKED = (
+            "RETURN_ERP_STOCK_MOVEMENT_BLOCKED",
+            "Return ERP stock movement blocked by dual-gate",
+        )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 

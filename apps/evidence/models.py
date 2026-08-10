@@ -62,6 +62,10 @@ class EvidenceLinkedKind(models.TextChoices):
         "RECALL_CASE",
         "Product recall / withdrawal case",
     )
+    CUSTOMER_COMPLAINT_CASE = (
+        "CUSTOMER_COMPLAINT_CASE",
+        "Customer quality complaint case",
+    )
 
 
 class EvidenceLifecycleStatus(models.TextChoices):

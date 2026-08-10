@@ -526,3 +526,12 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Objective | Mock recall exercises without affecting real product/inventory status |
 | Outputs | `apps.recall` MOCK mode; ADR-049; metrics; isolation guards; findings→NCR/CAPA/improvement |
 | Status | **Technical foundation delivered** on `main` |
+
+## Phase 39 — Customer Quality Complaint Management
+
+| Field | Content |
+| --- | --- |
+| Objective | Traceable customer quality complaint management with batch-trace and investigation links |
+| Outputs | `apps.customer_complaints`; ADR-050; privacy redaction; dual-gate auto-send OFF; APR-064 |
+| Status | **Technical foundation delivered** on `main` |
+

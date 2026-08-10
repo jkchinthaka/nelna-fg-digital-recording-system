@@ -81,6 +81,7 @@ INSTALLED_APPS = [
     "apps.batch_dossier",
     "apps.batch_genealogy",
     "apps.recall",
+    "apps.customer_complaints",
     "apps.nonconformance",
     "apps.capa",
     "apps.dispatch",
@@ -340,7 +341,11 @@ RECALL_ERP_DISTRIBUTION_PULL_APPROVED = env.bool(
     "RECALL_ERP_DISTRIBUTION_PULL_APPROVED",
     default=False,
 )
-
+# Phase 39 — customer complaint auto-response remains OFF until company approval.
+COMPLAINT_CUSTOMER_RESPONSE_AUTO_SEND_APPROVED = env.bool(
+    "COMPLAINT_CUSTOMER_RESPONSE_AUTO_SEND_APPROVED",
+    default=False,
+)
 
 CORRELATION_ID_HEADER = "HTTP_X_REQUEST_ID"
 CORRELATION_ID_RESPONSE_HEADER = "X-Request-ID"

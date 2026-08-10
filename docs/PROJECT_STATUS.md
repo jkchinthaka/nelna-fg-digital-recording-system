@@ -83,7 +83,8 @@ This document records **repository evidence**. It does not invent Nelna operatio
 | `ipqc` | **34** | IMPLEMENTED foundation · process-check defs; triggers; measurement/equipment/sampling; fail dual-gate OFF; NCR/HOLD escalate; dashboard (APR-059) |
 | `batch_dossier` | **35** | IMPLEMENTED foundation · read-only batch dossier; timeline; section authz; paginated evidence/audit; PDF export hook dual-gate OFF (APR-060) |
 | `batch_genealogy` | **36** | IMPLEMENTED foundation · ERP-sourced nodes/edges; backward/forward; rework; cycle prevention; flat Mongo projection dual-gate OFF; partner redaction (APR-061) |
-| `recall` | **37–38** | IMPLEMENTED foundation · recall/withdrawal cases; genealogy expansion; qty reconciliation; communication refs; initiate high-risk; dual-gates OFF (APR-062); **MOCK_EXERCISE** isolation/metrics/findings (APR-063) |
+| `recall` | **37–38** | IMPLEMENTED foundation · recall/withdrawal + MOCK exercises (APR-062/063) |
+| `customer_complaints` | **39** | IMPLEMENTED foundation · complaint cases; batch-trace; evidence; RCA/NCR/CAPA links; privacy redaction; auto-send dual-gate OFF (APR-064) |
 
 Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 38 except gaps noted elsewhere)._ (`loading` controls are delivered inside `dispatch` for Phase 13 — see ADR-025.)
 
@@ -156,6 +157,8 @@ Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 38 except gaps n
 | 36 Batch Genealogy Traceability | Technical complete — ERP adjacency nodes/edges, forward/backward trace, rework, cycle prevention, capped Mongo projection, party dual-gate OFF (ADR-047) | Company ERP genealogy mapping / party SoD EVIDENCE REQUIRED (APR-061) |
 | 37 Product Recall / Withdrawal | Technical complete — recall cases, genealogy expansion, qty reconciliation, communication refs, high-risk initiate, dual-gate notify/ERP OFF (ADR-048) | Company recall procedure / notify SOP / ERP distribution EVIDENCE REQUIRED (APR-062) |
 | 38 Mock Recall Exercises | Technical complete — MOCK_EXERCISE mode, metrics, isolation (no ERP/notify/dispatch), findings→NCR/CAPA/improvement explicit (ADR-049) | Company mock-drill SOP / finding SoD EVIDENCE REQUIRED (APR-063) |
+| 39 Customer Quality Complaints | Technical complete — complaint cases, batch-trace, evidence, RCA/NCR/CAPA links, privacy redaction, dual-gate auto-send OFF (ADR-050) | Complaint SOP / taxonomy / response EVIDENCE REQUIRED (APR-064) |
+
 | 20–21 Pilot / production release | Not started | Depends on business gates + Phase 19 ops evidence |
 | 20 UAT / Pilot | Package opened — **BLOCKED** pending business evidence ([uat/README.md](uat/README.md)) | Pilot scope APR-034, FG-QA-001, roles/SoD, hosted env EVIDENCE REQUIRED |
 | 21 Production release | Package opened — **GO-LIVE BLOCKED** ([release/README.md](release/README.md)) | Phase 20 FAIL + hosting/config/support gates |
@@ -535,3 +538,10 @@ Product recall / withdrawal case management (ADR-048): organization-scoped cases
 **STATUS: PHASE 38 MOCK RECALL COMPLETE**
 
 Mock recall exercises (ADR-049): explicit `MOCK_EXERCISE` mode with `MOCK-` code prefix and banner so exercises cannot be confused with real recalls; exercise metrics (started/completed, scope, traceback/forward completeness, quantity reconciliation, gaps, actions); hard isolation from ERP stock, real customer/regulatory notifications, and dispatch blocking; findings may open NCR/CAPA/improvement only via explicit user action (`run_mock_recall` ≠ `initiate_recall`) (APR-063).
+
+## Phase 39 delivery status
+
+**STATUS: PHASE 39 CUSTOMER COMPLAINTS COMPLETE**
+
+Customer quality complaint management (ADR-050): organization-scoped cases with ERP customer references, configurable category/severity shells, batch-known/unknown, batch-trace to dossier/genealogy/QA/lab/dispatch, evidence links, explicit investigation/RCA/NCR/CAPA links, communication references without auto-send, and privacy-restricted customer-sensitive fields (APR-064).
+

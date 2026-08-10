@@ -394,3 +394,20 @@ Retention period is **deferred** â€” not decided in Phase 03. Events are ap
 | MOCK_RECALL_FINDING_LINKED_CAPA | Mock finding linked to CAPA (explicit) |
 | MOCK_RECALL_IMPROVEMENT_CREATED | Mock improvement action created (explicit) |
 
+### Customer Quality Complaints (Phase 39)
+
+| Event | Meaning |
+| --- | --- |
+| COMPLAINT_CASE_CREATED | Customer complaint case created |
+| COMPLAINT_CASE_OPENED | Customer complaint case opened |
+| COMPLAINT_BATCH_UPDATED | Complaint batch reference updated |
+| COMPLAINT_BATCH_TRACE_UPDATED | Batch-trace links updated |
+| COMPLAINT_EVIDENCE_LINKED | Evidence linked to complaint |
+| COMPLAINT_INVESTIGATION_LINKED | Investigation/RCA/NCR/CAPA linked (explicit) |
+| COMPLAINT_COMMUNICATION_RECORDED | Communication reference recorded (no auto-send) |
+| COMPLAINT_CUSTOMER_RESPONSE_BLOCKED | Customer response blocked by dual-gate |
+| COMPLAINT_CUSTOMER_RESPONSE_PREPARED | Customer response prepared (not sent) |
+| COMPLAINT_CASE_CLOSED | Customer complaint case closed |
+| COMPLAINT_POLICY_UPDATED | Complaint policy stub updated |
+| COMPLAINT_CATEGORY_CONFIG_UPSERTED | Category/severity config upserted |
+

@@ -40,6 +40,7 @@ ALLOWED_APPS = {
     "batch_dossier",
     "batch_genealogy",
     "recall",
+    "customer_complaints",
     "supplier_quality",
     "access_control",
     "security_audit",

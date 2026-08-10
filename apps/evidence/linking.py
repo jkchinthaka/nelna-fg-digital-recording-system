@@ -11,11 +11,19 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from apps.access_control.services import Scope, user_has_permission
 from apps.accounts.models import User
 from apps.capa.models import CorrectiveAction
+from apps.changeover.models import ChangeoverRecord, LineClearanceRecord
+from apps.customer_complaints.models import CustomerComplaintCase
+from apps.environmental.models import MonitoringReading
 from apps.evidence.models import EvidenceLinkedKind
 from apps.instruments.models import CalibrationRecord
+from apps.ipqc.models import IpqcInspectionCase
+from apps.iqc.models import IqcInspectionCase
 from apps.laboratory.models import LabExternalCertificate, LabSample
 from apps.nonconformance.models import NonConformanceRecord
+from apps.packaging.models import ArtworkVersion
 from apps.quality.models import QAReview
+from apps.recall.models import RecallCase
+from apps.receiving.models import ReceiptQualityRecord
 from apps.recording.models import (
     ChecklistRecordStatus,
     ChecklistResponse,
@@ -23,13 +31,6 @@ from apps.recording.models import (
 )
 from apps.reviews.models import SupervisorReview
 from apps.sanitation.models import SanitationProgram
-from apps.environmental.models import MonitoringReading
-from apps.packaging.models import ArtworkVersion
-from apps.changeover.models import ChangeoverRecord, LineClearanceRecord
-from apps.receiving.models import ReceiptQualityRecord
-from apps.iqc.models import IqcInspectionCase
-from apps.ipqc.models import IpqcInspectionCase
-from apps.recall.models import RecallCase
 from apps.scheduling.services import RECORD_CHECKLIST_TASK
 
 UPLOAD_EVIDENCE = "evidence.upload_evidenceattachment"
@@ -72,6 +73,10 @@ VIEW_RECALL = "recall.view_recall"
 MANAGE_RECALL = "recall.manage_recallcase"
 INITIATE_RECALL = "recall.initiate_recall"
 CLOSE_RECALL = "recall.close_recall"
+VIEW_COMPLAINT = "customer_complaints.view_customercomplaint"
+MANAGE_COMPLAINT = "customer_complaints.manage_customercomplaint"
+CREATE_COMPLAINT = "customer_complaints.create_customercomplaint"
+CLOSE_COMPLAINT = "customer_complaints.close_customercomplaint"
 
 
 @dataclass(frozen=True, slots=True)
@@ -222,15 +227,9 @@ def resolve_linked_target(*, kind: str, object_id: uuid.UUID) -> LinkedTarget:
         )
 
     if kind == EvidenceLinkedKind.CALIBRATION_CERTIFICATE:
-        calib = (
-            CalibrationRecord.objects.select_related("equipment")
-            .filter(pk=object_id)
-            .first()
-        )
+        calib = CalibrationRecord.objects.select_related("equipment").filter(pk=object_id).first()
         if calib is None:
-            raise ValidationError(
-                {"linked_object_id": "Calibration record not found."}
-            )
+            raise ValidationError({"linked_object_id": "Calibration record not found."})
         return LinkedTarget(
             kind=kind,
             object_id=calib.id,
@@ -266,15 +265,9 @@ def resolve_linked_target(*, kind: str, object_id: uuid.UUID) -> LinkedTarget:
         )
 
     if kind == EvidenceLinkedKind.PACKAGING_ARTWORK_VERSION:
-        version = (
-            ArtworkVersion.objects.select_related("artwork")
-            .filter(pk=object_id)
-            .first()
-        )
+        version = ArtworkVersion.objects.select_related("artwork").filter(pk=object_id).first()
         if version is None:
-            raise ValidationError(
-                {"linked_object_id": "Packaging artwork version not found."}
-            )
+            raise ValidationError({"linked_object_id": "Packaging artwork version not found."})
         return LinkedTarget(
             kind=kind,
             object_id=version.id,
@@ -291,17 +284,14 @@ def resolve_linked_target(*, kind: str, object_id: uuid.UUID) -> LinkedTarget:
             kind=kind,
             object_id=changeover.id,
             organization_id=changeover.organization_id,
-            linkage_immutable=changeover.status
-            in {"RECORDED", "VERIFIED", "VOIDED"},
+            linkage_immutable=changeover.status in {"RECORDED", "VERIFIED", "VOIDED"},
             obj=changeover,
         )
 
     if kind == EvidenceLinkedKind.LINE_CLEARANCE_RECORD:
         clearance = LineClearanceRecord.objects.filter(pk=object_id).first()
         if clearance is None:
-            raise ValidationError(
-                {"linked_object_id": "Line clearance record not found."}
-            )
+            raise ValidationError({"linked_object_id": "Line clearance record not found."})
         return LinkedTarget(
             kind=kind,
             object_id=clearance.id,
@@ -313,45 +303,36 @@ def resolve_linked_target(*, kind: str, object_id: uuid.UUID) -> LinkedTarget:
     if kind == EvidenceLinkedKind.RECEIPT_QUALITY_RECORD:
         receipt = ReceiptQualityRecord.objects.filter(pk=object_id).first()
         if receipt is None:
-            raise ValidationError(
-                {"linked_object_id": "Receipt quality record not found."}
-            )
+            raise ValidationError({"linked_object_id": "Receipt quality record not found."})
         return LinkedTarget(
             kind=kind,
             object_id=receipt.id,
             organization_id=receipt.organization_id,
-            linkage_immutable=receipt.quality_state
-            != "PENDING_INSPECTION",
+            linkage_immutable=receipt.quality_state != "PENDING_INSPECTION",
             obj=receipt,
         )
 
     if kind == EvidenceLinkedKind.IQC_INSPECTION_CASE:
         case = IqcInspectionCase.objects.filter(pk=object_id).first()
         if case is None:
-            raise ValidationError(
-                {"linked_object_id": "IQC inspection case not found."}
-            )
+            raise ValidationError({"linked_object_id": "IQC inspection case not found."})
         return LinkedTarget(
             kind=kind,
             object_id=case.id,
             organization_id=case.organization_id,
-            linkage_immutable=case.workflow_status
-            in {"DISPOSITIONED", "CLOSED"},
+            linkage_immutable=case.workflow_status in {"DISPOSITIONED", "CLOSED"},
             obj=case,
         )
 
     if kind == EvidenceLinkedKind.IPQC_INSPECTION_CASE:
         ipqc_case = IpqcInspectionCase.objects.filter(pk=object_id).first()
         if ipqc_case is None:
-            raise ValidationError(
-                {"linked_object_id": "IPQC inspection case not found."}
-            )
+            raise ValidationError({"linked_object_id": "IPQC inspection case not found."})
         return LinkedTarget(
             kind=kind,
             object_id=ipqc_case.id,
             organization_id=ipqc_case.organization_id,
-            linkage_immutable=ipqc_case.workflow_status
-            in {"COMPLETED", "CLOSED"},
+            linkage_immutable=ipqc_case.workflow_status in {"COMPLETED", "CLOSED"},
             obj=ipqc_case,
         )
 
@@ -363,10 +344,22 @@ def resolve_linked_target(*, kind: str, object_id: uuid.UUID) -> LinkedTarget:
             kind=kind,
             object_id=recall_case.id,
             organization_id=recall_case.organization_id,
-            linkage_immutable=recall_case.status
-            in {"CLOSED", "CANCELLED"},
+            linkage_immutable=recall_case.status in {"CLOSED", "CANCELLED"},
             obj=recall_case,
         )
+
+    if kind == EvidenceLinkedKind.CUSTOMER_COMPLAINT_CASE:
+        complaint = CustomerComplaintCase.objects.filter(pk=object_id).first()
+        if complaint is None:
+            raise ValidationError({"linked_object_id": "Customer complaint case not found."})
+        return LinkedTarget(
+            kind=kind,
+            object_id=complaint.id,
+            organization_id=complaint.organization_id,
+            linkage_immutable=complaint.status in {"CLOSED", "CANCELLED"},
+            obj=complaint,
+        )
+
 
     raise ValidationError({"linked_kind": "Unsupported linked kind."})
 
@@ -480,19 +473,17 @@ def _assert_parent_access(*, actor: User, target: LinkedTarget, for_mutate: bool
         return
 
     if kind == EvidenceLinkedKind.CALIBRATION_CERTIFICATE:
-        allowed = (
-            user_has_permission(actor, VIEW_EQUIPMENT, scope=org_scope)
-            or user_has_permission(actor, MANAGE_EQUIPMENT, scope=org_scope)
-        )
+        allowed = user_has_permission(
+            actor, VIEW_EQUIPMENT, scope=org_scope
+        ) or user_has_permission(actor, MANAGE_EQUIPMENT, scope=org_scope)
         if not allowed:
             raise PermissionDenied("Permission denied.")
         return
 
     if kind == EvidenceLinkedKind.SANITATION_PROGRAM:
-        allowed = (
-            user_has_permission(actor, VIEW_SANITATION, scope=org_scope)
-            or user_has_permission(actor, MANAGE_SANITATION, scope=org_scope)
-        )
+        allowed = user_has_permission(
+            actor, VIEW_SANITATION, scope=org_scope
+        ) or user_has_permission(actor, MANAGE_SANITATION, scope=org_scope)
         if not allowed:
             raise PermissionDenied("Permission denied.")
         return
@@ -580,5 +571,17 @@ def _assert_parent_access(*, actor: User, target: LinkedTarget, for_mutate: bool
         if not allowed:
             raise PermissionDenied("Permission denied.")
         return
+
+    if kind == EvidenceLinkedKind.CUSTOMER_COMPLAINT_CASE:
+        allowed = (
+            user_has_permission(actor, VIEW_COMPLAINT, scope=org_scope)
+            or user_has_permission(actor, MANAGE_COMPLAINT, scope=org_scope)
+            or user_has_permission(actor, CREATE_COMPLAINT, scope=org_scope)
+            or user_has_permission(actor, CLOSE_COMPLAINT, scope=org_scope)
+        )
+        if not allowed:
+            raise PermissionDenied("Permission denied.")
+        return
+
 
     raise PermissionDenied("Permission denied.")

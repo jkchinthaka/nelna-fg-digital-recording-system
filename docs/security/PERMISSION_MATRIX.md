@@ -259,3 +259,15 @@ AI default OFF. AI must not execute RELEASE/HOLD/REJECT, publish, spec/role chan
 | run_mock_recall | `recall.run_mock_recall` | Mock exercises only — not `initiate_recall` |
 | manage_mock_recall_findings | `recall.manage_mock_recall_findings` | Explicit NCR/CAPA/improvement links from mock findings |
 
+### Customer Quality Complaints (Phase 39)
+
+| Key | Permission | Notes |
+| --- | --- | --- |
+| view_customercomplaint | `customer_complaints.view_customercomplaint` | View cases (sensitive redacted) |
+| create_customercomplaint | `customer_complaints.create_customercomplaint` | Create cases |
+| manage_customercomplaint | `customer_complaints.manage_customercomplaint` | Investigation / batch-trace / evidence |
+| close_customercomplaint | `customer_complaints.close_customercomplaint` | Close cases |
+| view_complaint_customer_sensitive | `customer_complaints.view_complaint_customer_sensitive` | Privacy-restricted customer labels |
+| record_complaint_communication | `customer_complaints.record_complaint_communication` | Communication refs (no auto-send) |
+| manage_complaintpolicy | `customer_complaints.manage_complaintpolicy` | Category shells / auto-send stubs |
+
