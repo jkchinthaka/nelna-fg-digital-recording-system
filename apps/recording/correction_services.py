@@ -404,6 +404,15 @@ def _control_point_context_for_item(item: ChecklistItem) -> dict:
     sampling = snapshot_for_item_or_parent(item)
     if sampling:
         snap["sampling_context"] = sampling
+    from apps.sanitation.snapshots import snapshot_for_checklist_template
+
+    template_id = getattr(
+        getattr(getattr(item, "section", None), "version", None), "template_id", None
+    )
+    if template_id:
+        sanitation = snapshot_for_checklist_template(template_id)
+        if sanitation:
+            snap["sanitation_context"] = sanitation
     return snap
 
 

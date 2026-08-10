@@ -204,3 +204,14 @@ Retention period is **deferred** â€” not decided in Phase 03. Events are ap
 | FOREIGN_BODY_CHALLENGE_VERIFIED | Challenge verified |
 | FOREIGN_BODY_CHALLENGE_VOIDED | Challenge voided |
 | FOREIGN_BODY_CONTAINMENT_ASSESSED | FAIL containment assessed |
+
+### Sanitation (Phase 27)
+
+| Event | Meaning |
+| --- | --- |
+| SANITATION_PROGRAM_CREATED | Program shell created |
+| SANITATION_PROGRAM_VERSION_CREATED | Draft version created |
+| SANITATION_PROGRAM_VERSION_APPROVED | Version approved (immutable) |
+| SANITATION_PROGRAM_VERSION_RETIRED | Approved version retired |
+| SANITATION_CHECKLIST_BINDING_SET | Checklist template bound + frozen context |
+| SANITATION_FAIL_POLICY_UPDATED | Org fail / production-stop policy stub updated |

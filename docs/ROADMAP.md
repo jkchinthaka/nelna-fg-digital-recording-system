@@ -428,7 +428,7 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Field | Content |
 | --- | --- |
 | Objective | Configurable challenge verification without invented limits |
-| Outputs | apps.foreign_body; ADR-038 |
+| Outputs | `apps.foreign_body`; ADR-038 |
 | Status | **Technical foundation delivered** on main |
 
 ## Phase 27 — Sanitation / SSOP checklist workflows

@@ -26,6 +26,10 @@ class EvidenceLinkedKind(models.TextChoices):
         "CALIBRATION_CERTIFICATE",
         "Calibration certificate (equipment record)",
     )
+    SANITATION_PROGRAM = (
+        "SANITATION_PROGRAM",
+        "Sanitation / SSOP program",
+    )
 
 
 class EvidenceLifecycleStatus(models.TextChoices):

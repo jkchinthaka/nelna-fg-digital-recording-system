@@ -156,7 +156,15 @@ AI default OFF. AI must not execute RELEASE/HOLD/REJECT, publish, spec/role chan
 
 | Key | Permission | Notes |
 | --- | --- | --- |
-| manage_testpiece | oreign_body.manage_testpiece | Catalogue / schedule shells |
-| record_challengeresult | oreign_body.record_challengeresult | Record challenges |
-| verify_challengeresult | oreign_body.verify_challengeresult | Verify/void |
-| view_foreignbody | oreign_body.view_foreignbody | Read-only |
+| manage_testpiece | `foreign_body.manage_testpiece` | Catalogue / schedule shells |
+| record_challengeresult | `foreign_body.record_challengeresult` | Record challenges |
+| verify_challengeresult | `foreign_body.verify_challengeresult` | Verify/void |
+| view_foreignbody | `foreign_body.view_foreignbody` | Read-only |
+
+### Sanitation (Phase 27)
+
+| Key | Permission | Notes |
+| --- | --- | --- |
+| manage_sanitationprogram | `sanitation.manage_sanitationprogram` | Draft/edit programs, scopes, chemicals |
+| publish_sanitationprogram | `sanitation.publish_sanitationprogram` | Approve/retire + fail-policy stub |
+| view_sanitation | `sanitation.view_sanitation` | Read-only |
