@@ -480,6 +480,28 @@ class SecurityAuditEvent(models.Model):
             "Laboratory positive-release policy updated",
         )
 
+        HACCP_PLAN_CREATED = "HACCP_PLAN_CREATED", "HACCP plan created"
+        HACCP_PLAN_VERSION_CREATED = (
+            "HACCP_PLAN_VERSION_CREATED",
+            "HACCP plan version created",
+        )
+        HACCP_PLAN_VERSION_APPROVED = (
+            "HACCP_PLAN_VERSION_APPROVED",
+            "HACCP plan version approved",
+        )
+        HACCP_PLAN_VERSION_RETIRED = (
+            "HACCP_PLAN_VERSION_RETIRED",
+            "HACCP plan version retired",
+        )
+        HACCP_CONTROL_POINT_MAPPED = (
+            "HACCP_CONTROL_POINT_MAPPED",
+            "HACCP control point mapped",
+        )
+        HACCP_CHECKLIST_BINDING_SET = (
+            "HACCP_CHECKLIST_BINDING_SET",
+            "HACCP checklist item binding set",
+        )
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     event_type = models.CharField(max_length=64, choices=EventType.choices)

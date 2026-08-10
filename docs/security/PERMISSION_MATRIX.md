@@ -129,3 +129,11 @@ Live Bileeta HTTP remains blocked until APR-011/012 evidence is PRESENT. Outboun
 | view_laboratory | `laboratory.view_laboratory` | Read-only laboratory viewing |
 
 AI default OFF. AI must not execute RELEASE/HOLD/REJECT, publish, spec/role changes, ERP disposition, CAPA close, or factual root-cause declarations.
+
+### HACCP (Phase 23)
+
+| Key | Permission | Notes |
+| --- | --- | --- |
+| manage_haccpplan | `haccp.manage_haccpplan` | Draft/edit only |
+| approve_haccpplan | `haccp.approve_haccpplan` | Food-safety approval; not System Admin by default |
+| view_haccp | `haccp.view_haccp` | Read-only |

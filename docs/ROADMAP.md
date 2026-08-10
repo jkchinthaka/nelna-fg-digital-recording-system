@@ -397,3 +397,12 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 ---
 
 **Production readiness is not claimed by the existence of this roadmap.**
+
+## Phase 23 — HACCP / control-point foundation
+
+| Field | Content |
+| --- | --- |
+| Objective | Versioned HACCP plan architecture (no invented CCPs/limits) |
+| Outputs | `apps.haccp`; ADR-035 |
+| Approval gate | Actual company HACCP plan EVIDENCE REQUIRED |
+| Status | **Technical foundation delivered** on `main` |

@@ -74,6 +74,8 @@ ID · Decision / Evidence Needed · Business Owner · Requested Date · Needed B
 | APR-045 | Laboratory test catalogue (methods, parameters, units, limits if any) | QA Manager / Laboratory owner | — | Before production lab content | EVIDENCE REQUIRED | Yes | [ADR-032](../architecture/ADR-032-LABORATORY-LIMS-FOUNDATION.md); [PHASE_22](../business/PHASE_22_LABORATORY_LIMS_FOUNDATION.md) | — | — | Phase 22 stores empty catalogue shells only |
 | APR-046 | Positive-release / HOLD-until-lab-finalized policy (if any) | QA Manager | — | Before enabling lab release blocking | EVIDENCE REQUIRED | Yes | ADR-032; `LAB_POSITIVE_RELEASE_BLOCKING_APPROVED` | — | — | Runtime blocking default OFF |
 | APR-047 | Laboratory role mappings (register/enter/verify/finalize) | QA Manager / HR / IT | — | Before production lab RBAC mapping | EVIDENCE REQUIRED | Yes | Phase 22 permission catalogue | — | — | Technical permissions only; no auto role seed |
+| APR-048 | Company HACCP plan content (process steps, hazards, CCP/OPRP/PRP identification, critical limits, monitoring, corrective procedures) | QA Manager / Food Safety | 2026-08-10 | Before production HACCP-linked recording | EVIDENCE REQUIRED | Yes | [ADR-035](../architecture/ADR-035-HACCP-CONTROL-POINT-FOUNDATION.md); APR-027; ASM-002 | — | — | Phase 23 stores empty shells only; AI HACCP examples are not evidence |
+| APR-049 | HACCP plan approve authority mapping (`approve_haccpplan` holders) | QA Manager / Food Safety / Management Sponsor | 2026-08-10 | Before production HACCP approval workflow | EVIDENCE REQUIRED | Yes | Phase 23 permission catalogue | — | — | System Admin ≠ food-safety approver by default |
 
 ---
 

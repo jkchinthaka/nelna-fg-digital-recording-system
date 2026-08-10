@@ -69,8 +69,10 @@ This document records **repository evidence**. It does not invent Nelna operatio
 | `reports` | **16** | IMPLEMENTED foundation · catalogue + org-scoped CSV runs; immutable submission sources; Excel/PDF not implemented |
 | `integrations` | **17** | BOUNDARY ONLY · contracts/mocks/dead-letter/reconciliation; **live Bileeta blocked** (APR-011/012) |
 | `ai_assistance` | **18** | IMPLEMENTED foundation · optional advisory AI (default OFF); never final quality decisions |
+| `laboratory` | **22** | IMPLEMENTED foundation · sample/test/result; positive-release stub default OFF; catalogue EVIDENCE REQUIRED |
+| `haccp` | **23** | IMPLEMENTED foundation · versioned plan shells; no Nelna CCPs/limits; auto HOLD/NCR default OFF; company plan EVIDENCE REQUIRED |
 
-Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 18)._ (`loading` controls are delivered inside `dispatch` for Phase 13 — see ADR-025.)
+Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 23)._ (`loading` controls are delivered inside `dispatch` for Phase 13 — see ADR-025.)
 
 ---
 
@@ -125,6 +127,7 @@ Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 18)._ (`loading`
 | 18 Safe AI assistance | Technical complete — optional advisory AI default OFF; provider abstraction; safety gates (ADR-030) | QA/IT policy acknowledgement + prompt retention EVIDENCE REQUIRED |
 | 19 Security / backup / monitoring / performance | Technical complete - hardening, health, backup/restore harness, runbooks (ADR-031) | RPO/RTO + staging load/pen-test EVIDENCE REQUIRED |
 | 22 Laboratory / LIMS | Technical complete — sample/test/result foundation, immutability, external cert hook, positive-release policy stub default OFF (ADR-032) | Lab catalogue / role mapping / positive-release policy EVIDENCE REQUIRED |
+| 23 HACCP / control-point | Technical complete — versioned plan shells, CCP/OPRP/PRP metadata, limit/monitoring/CA references, checklist binding (ADR-035) | Company HACCP plan / CCP identification / limits EVIDENCE REQUIRED |
 | 20–21 Pilot / production release | Not started | Depends on business gates + Phase 19 ops evidence |
 | 20 UAT / Pilot | Package opened — **BLOCKED** pending business evidence ([uat/README.md](uat/README.md)) | Pilot scope APR-034, FG-QA-001, roles/SoD, hosted env EVIDENCE REQUIRED |
 | 21 Production release | Package opened — **GO-LIVE BLOCKED** ([release/README.md](release/README.md)) | Phase 20 FAIL + hosting/config/support gates |
@@ -408,3 +411,9 @@ Laboratory / LIMS technical foundation (ADR-032): `apps.laboratory` with sample 
 **STATUS: PHASE 21 GO-LIVE BLOCKED**
 
 Hard prerequisites failed (Phase 20 UAT/pilot not passed; production hosting, approved configuration, support owner, vault/ownership, and production-custody backup targets incomplete). No production deploy, no release tag, no paper decommission. Package: `docs/release/`.
+
+## Phase 23 delivery status
+
+**STATUS: PHASE 23 HACCP FOUNDATION COMPLETE**
+
+Versioned HACCP/control-point technical foundation (ADR-035): `apps.haccp` with plan/version immutability, generic hazard categories, CCP/OPRP/PRP control points, critical-limit and monitoring reference shells, corrective-action references (auto HOLD/NCR default OFF), and checklist bindings with frozen historical context. No Nelna CCPs/limits/actions invented. Company HACCP plan remains EVIDENCE REQUIRED.

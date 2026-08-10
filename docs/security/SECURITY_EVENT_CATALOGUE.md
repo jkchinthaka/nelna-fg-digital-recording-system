@@ -166,3 +166,14 @@ Retention period is **deferred** â€” not decided in Phase 03. Events are ap
 - [AUTHENTICATION_AND_ACCESS_CONTROL.md](AUTHENTICATION_AND_ACCESS_CONTROL.md)
 - [ADR-008-CONFIGURABLE-SHIFT-FOUNDATION.md](../architecture/ADR-008-CONFIGURABLE-SHIFT-FOUNDATION.md)
 - [ADR-009-FG-MASTER-DATA-DOMAIN.md](../architecture/ADR-009-FG-MASTER-DATA-DOMAIN.md)
+
+### HACCP (Phase 23)
+
+| Event | Meaning |
+| --- | --- |
+| HACCP_PLAN_CREATED | Plan shell created |
+| HACCP_PLAN_VERSION_CREATED | Draft version created |
+| HACCP_PLAN_VERSION_APPROVED | Version approved (immutable) |
+| HACCP_PLAN_VERSION_RETIRED | Approved version retired |
+| HACCP_CONTROL_POINT_MAPPED | Control point added on draft version |
+| HACCP_CHECKLIST_BINDING_SET | Checklist item bound to exact version/CP |

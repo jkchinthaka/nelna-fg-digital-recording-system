@@ -27,6 +27,7 @@ class CapabilityBucket(StrEnum):
     INTEGRATIONS = "integrations"
     AI_ASSISTANCE = "ai_assistance"
     LABORATORY = "laboratory"
+    HACCP = "haccp"
     EVIDENCE = "evidence"
     MASTER_DATA = "master_data"
     CHECKLIST_PUBLISH = "checklist_publish"
@@ -465,6 +466,30 @@ PERMISSION_CATALOGUE: Final[tuple[PermissionCatalogueEntry, ...]] = (
         bucket=CapabilityBucket.LABORATORY,
         scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
         description="Read-only view of laboratory samples and results.",
+    ),
+
+    PermissionCatalogueEntry(
+        key="manage_haccpplan",
+        permission="haccp.manage_haccpplan",
+        bucket=CapabilityBucket.HACCP,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Draft/edit HACCP plan versions and control-point mappings.",
+        notes="Does not grant food-safety approval authority.",
+    ),
+    PermissionCatalogueEntry(
+        key="approve_haccpplan",
+        permission="haccp.approve_haccpplan",
+        bucket=CapabilityBucket.HACCP,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Approve or retire HACCP plan versions.",
+        notes="High privilege; System Admin is not assumed to hold this by default.",
+    ),
+    PermissionCatalogueEntry(
+        key="view_haccp",
+        permission="haccp.view_haccp",
+        bucket=CapabilityBucket.HACCP,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Read-only view of HACCP plans and control points.",
     ),
     PermissionCatalogueEntry(
         key="manage_supplierquality_qa",

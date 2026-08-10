@@ -37,6 +37,7 @@ Do **not** rename FG master data, checklist, recording, review, or evidence work
 | audit | Audit event recording and export support | Audit events | Append-only audit APIs | Must not allow silent audit deletion | Cross-cutting from 03+ |
 | ai_assistance | Optional safe quality AI assistance (18) | AIAssistanceRequest | advisory request; anomaly hints | Never final FS/QA/loading/CAPA/access decisions; default OFF | **18** |
 | laboratory | Laboratory / LIMS foundation (22) | LabSample; LabTest; LabResult; policy stub | register/enter/verify/finalize; positive-release gate (default non-blocking); COA hooks | No invented methods/limits; no positive-release blocking without QA approval; PostgreSQL SoR | **22** |
+| haccp | Versioned HACCP / control-point foundation (23) | HaccpPlan; HaccpPlanVersion; ProcessStep; Hazard; ControlMeasure; ControlPoint; CriticalLimitReference; MonitoringRule; CorrectiveActionReference; ChecklistItemHaccpBinding | manage/approve/view; draft→approve→retire; frozen checklist binding | No invented Nelna CCPs/limits/actions; no auto HOLD/NCR; PostgreSQL SoR | **23** |
 
 ## Phase mapping reminder
 
