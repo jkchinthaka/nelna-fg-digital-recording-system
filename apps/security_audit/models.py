@@ -579,6 +579,41 @@ class SecurityAuditEvent(models.Model):
             "Sanitation fail / production-stop policy updated",
         )
 
+        EM_POINT_CREATED = "EM_POINT_CREATED", "Environmental monitoring point created"
+        EM_PARAMETER_CREATED = (
+            "EM_PARAMETER_CREATED",
+            "Environmental monitoring parameter created",
+        )
+        EM_SPEC_CREATED = "EM_SPEC_CREATED", "Environmental monitoring spec created"
+        EM_SPEC_VERSION_CREATED = (
+            "EM_SPEC_VERSION_CREATED",
+            "Environmental monitoring spec version created",
+        )
+        EM_SPEC_VERSION_APPROVED = (
+            "EM_SPEC_VERSION_APPROVED",
+            "Environmental monitoring spec version approved",
+        )
+        EM_SPEC_VERSION_RETIRED = (
+            "EM_SPEC_VERSION_RETIRED",
+            "Environmental monitoring spec version retired",
+        )
+        EM_SCHEDULE_LINKED = (
+            "EM_SCHEDULE_LINKED",
+            "Environmental monitoring schedule linked",
+        )
+        EM_READING_RECORDED = (
+            "EM_READING_RECORDED",
+            "Environmental monitoring reading recorded",
+        )
+        EM_EXCURSION_EVALUATED = (
+            "EM_EXCURSION_EVALUATED",
+            "Environmental monitoring excursion/warning evaluated",
+        )
+        EM_EXCURSION_POLICY_UPDATED = (
+            "EM_EXCURSION_POLICY_UPDATED",
+            "Environmental excursion auto-HOLD policy updated",
+        )
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     event_type = models.CharField(max_length=64, choices=EventType.choices)

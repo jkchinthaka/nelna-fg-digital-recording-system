@@ -31,6 +31,7 @@ class CapabilityBucket(StrEnum):
     SAMPLING = "sampling"
     FOREIGN_BODY = "foreign_body"
     SANITATION = "sanitation"
+    ENVIRONMENTAL = "environmental"
     EVIDENCE = "evidence"
     MASTER_DATA = "master_data"
     CHECKLIST_PUBLISH = "checklist_publish"
@@ -580,6 +581,29 @@ PERMISSION_CATALOGUE: Final[tuple[PermissionCatalogueEntry, ...]] = (
         bucket=CapabilityBucket.SANITATION,
         scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE, ObjectScope.DEPARTMENT),
         description="Read-only view of sanitation programs.",
+    ),
+
+    PermissionCatalogueEntry(
+        key="manage_environmental",
+        permission="environmental.manage_environmental",
+        bucket=CapabilityBucket.ENVIRONMENTAL,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE, ObjectScope.DEPARTMENT),
+        description="Manage monitoring points, parameters, specs, and excursion policy stubs.",
+        notes="Does not invent EM limits, frequencies, or parameter catalogues.",
+    ),
+    PermissionCatalogueEntry(
+        key="record_environmentalreading",
+        permission="environmental.record_environmentalreading",
+        bucket=CapabilityBucket.ENVIRONMENTAL,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE, ObjectScope.DEPARTMENT),
+        description="Record MANUAL/LAB/SENSOR environmental monitoring readings.",
+    ),
+    PermissionCatalogueEntry(
+        key="view_environmental",
+        permission="environmental.view_environmental",
+        bucket=CapabilityBucket.ENVIRONMENTAL,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE, ObjectScope.DEPARTMENT),
+        description="Read-only environmental monitoring history and trend index.",
     ),
     PermissionCatalogueEntry(
         key="manage_supplierquality_qa",

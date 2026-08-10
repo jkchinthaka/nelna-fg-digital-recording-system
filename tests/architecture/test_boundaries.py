@@ -31,6 +31,7 @@ ALLOWED_APPS = {
     "sampling",
     "foreign_body",
     "sanitation",
+    "environmental",
     "supplier_quality",
     "access_control",
     "security_audit",

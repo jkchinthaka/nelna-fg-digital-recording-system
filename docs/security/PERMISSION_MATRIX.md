@@ -168,3 +168,11 @@ AI default OFF. AI must not execute RELEASE/HOLD/REJECT, publish, spec/role chan
 | manage_sanitationprogram | `sanitation.manage_sanitationprogram` | Draft/edit programs, scopes, chemicals |
 | publish_sanitationprogram | `sanitation.publish_sanitationprogram` | Approve/retire + fail-policy stub |
 | view_sanitation | `sanitation.view_sanitation` | Read-only |
+
+### Environmental monitoring (Phase 28)
+
+| Key | Permission | Notes |
+| --- | --- | --- |
+| manage_environmental | `environmental.manage_environmental` | Points, params, specs, policy stubs |
+| record_environmentalreading | `environmental.record_environmentalreading` | MANUAL/LAB/SENSOR readings |
+| view_environmental | `environmental.view_environmental` | Read-only / trend |

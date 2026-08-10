@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     "apps.sampling",
     "apps.foreign_body",
     "apps.sanitation",
+    "apps.environmental",
     "apps.nonconformance",
     "apps.capa",
     "apps.dispatch",
@@ -290,6 +291,11 @@ FOREIGN_BODY_AUTO_HOLD_APPROVED = env.bool(
 # Phase 27 — sanitation FAIL production-stop remains OFF until company SOP approval.
 SANITATION_FAIL_STOP_PRODUCTION_APPROVED = env.bool(
     "SANITATION_FAIL_STOP_PRODUCTION_APPROVED",
+    default=False,
+)
+# Phase 28 — environmental excursion auto-HOLD remains OFF until company approval.
+ENVIRONMENTAL_AUTO_HOLD_APPROVED = env.bool(
+    "ENVIRONMENTAL_AUTO_HOLD_APPROVED",
     default=False,
 )
 

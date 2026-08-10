@@ -74,8 +74,9 @@ This document records **repository evidence**. It does not invent Nelna operatio
 | `sampling` | **24** | IMPLEMENTED foundation · versioned sampling plans; no ISO/AQL tables; sampling REJECT ≠ QA REJECT; company tables EVIDENCE REQUIRED |
 | `foreign_body` | **26** | IMPLEMENTED foundation · metal-detector challenge shells; no invented Fe/SS sizes; auto-HOLD default OFF (APR-052) |
 | `sanitation` | **27** | IMPLEMENTED foundation · checklist-bound SSOP programs; no invented chemicals/frequencies; fail-stop default OFF (APR-053) |
+| `environmental` | **28** | IMPLEMENTED foundation · monitoring points/params/versioned limits; MANUAL/LAB/SENSOR; auto-HOLD default OFF (APR-054) |
 
-Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 27)._ (`loading` controls are delivered inside `dispatch` for Phase 13 — see ADR-025.)
+Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 28)._ (`loading` controls are delivered inside `dispatch` for Phase 13 — see ADR-025.)
 
 ---
 
@@ -135,6 +136,7 @@ Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 27)._ (`loading`
 | 25 Device traceability | Technical complete — device eligibility, OFF/WARN/BLOCK settings (default OFF), frozen calibration snapshot (ADR-037) | Company calibration enforcement / override policy EVIDENCE REQUIRED |
 | 26 Foreign body control | Technical complete — challenge tests, configurable pieces, advisory containment (ADR-038) | Company piece/frequency/HOLD policy EVIDENCE REQUIRED |
 | 27 Sanitation / SSOP | Technical complete — checklist-bound programs, scopes, schedule kinds, chemical shells, fail-stop default OFF (ADR-039) | Company SSOP content / production-stop policy EVIDENCE REQUIRED |
+| 28 Environmental monitoring | Technical complete — points, versioned limits, MANUAL/LAB/SENSOR, trend index, auto-HOLD default OFF (ADR-040) | Company EM catalogue / limits / HOLD policy EVIDENCE REQUIRED |
 | 20–21 Pilot / production release | Not started | Depends on business gates + Phase 19 ops evidence |
 | 20 UAT / Pilot | Package opened — **BLOCKED** pending business evidence ([uat/README.md](uat/README.md)) | Pilot scope APR-034, FG-QA-001, roles/SoD, hosted env EVIDENCE REQUIRED |
 | 21 Production release | Package opened — **GO-LIVE BLOCKED** ([release/README.md](release/README.md)) | Phase 20 FAIL + hosting/config/support gates |
@@ -448,3 +450,9 @@ Foreign-body / metal-detector challenge foundation (ADR-038): device-linked chal
 **STATUS: PHASE 27 SANITATION MANAGEMENT COMPLETE**
 
 Sanitation / SSOP checklist workflows (ADR-039): programs bind to existing ChecklistTemplate (no separate form engine), configurable site/department/line/work-area/equipment scopes, schedule kinds via ChecklistSchedule links, unseeded ChemicalReference, verification modes mapping to existing self/Supervisor/QA workflows, and FAIL production-stop gated OFF by default (APR-053).
+
+## Phase 28 delivery status
+
+**STATUS: PHASE 28 ENVIRONMENTAL MONITORING COMPLETE**
+
+Environmental monitoring foundation (ADR-040): reusable MonitoringPoint locations, versioned limit shells (no invented bounds), MANUAL/LAB/SENSOR readings, scheduler links, trend index, optional equipment device trace, and excursion auto-HOLD dual-gated OFF by default (APR-054).

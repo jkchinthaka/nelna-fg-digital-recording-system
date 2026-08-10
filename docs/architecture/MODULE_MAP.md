@@ -41,6 +41,7 @@ Do **not** rename FG master data, checklist, recording, review, or evidence work
 | sampling | Configurable sampling-plan engine (24) | SamplingPlan; SamplingPlanVersion; SamplingRule; SampleRequirement; ChecklistItemSamplingBinding | resolve sample count; accept/reject advisory; frozen checklist binding | No ISO/AQL tables; sampling FAIL ≠ QA REJECT; PostgreSQL SoR | **24** |
 | foreign_body | Metal-detector / foreign-body challenge foundation (26) | TestPiece; MetalDetectorChallengeTest; ContainmentAssessment; ChallengeScheduleRule | record/verify challenge; advisory containment interval | No invented Fe/SS sizes; auto-HOLD default OFF; PostgreSQL SoR | **26** |
 | sanitation | Sanitation / SSOP checklist workflows (27) | SanitationProgram; SanitationScope; ChemicalReference; SanitationFailPolicy; ChecklistTemplateSanitationBinding | bind checklist template; schedule kinds; fail-stop gate (default OFF) | No invented chemicals/concentrations/frequencies/ATP limits; reuses checklist engine | **27** |
+| environmental | Environmental monitoring foundation (28) | MonitoringPoint; MonitoringParameter; MonitoringSpecVersion; MonitoringLimitRule; MonitoringReading; MonitoringTrendIndex | record MANUAL/LAB/SENSOR; evaluate limits; trend index; excursion events | No invented limits; auto-HOLD default OFF; PostgreSQL SoR | **28** |
 
 ## Phase mapping reminder
 

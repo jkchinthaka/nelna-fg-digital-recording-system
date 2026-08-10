@@ -215,3 +215,18 @@ Retention period is **deferred** â€” not decided in Phase 03. Events are ap
 | SANITATION_PROGRAM_VERSION_RETIRED | Approved version retired |
 | SANITATION_CHECKLIST_BINDING_SET | Checklist template bound + frozen context |
 | SANITATION_FAIL_POLICY_UPDATED | Org fail / production-stop policy stub updated |
+
+### Environmental monitoring (Phase 28)
+
+| Event | Meaning |
+| --- | --- |
+| EM_POINT_CREATED | Monitoring point created |
+| EM_PARAMETER_CREATED | Monitoring parameter created |
+| EM_SPEC_CREATED | Monitoring specification created |
+| EM_SPEC_VERSION_CREATED | Spec version drafted |
+| EM_SPEC_VERSION_APPROVED | Spec version approved |
+| EM_SPEC_VERSION_RETIRED | Spec version retired |
+| EM_SCHEDULE_LINKED | ChecklistSchedule linked for recurring readings |
+| EM_READING_RECORDED | Reading recorded |
+| EM_EXCURSION_EVALUATED | WARN/EXCURSION evaluated |
+| EM_EXCURSION_POLICY_UPDATED | Auto-HOLD policy stub updated |

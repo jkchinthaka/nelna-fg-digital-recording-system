@@ -23,6 +23,7 @@ from apps.recording.models import (
 )
 from apps.reviews.models import SupervisorReview
 from apps.sanitation.models import SanitationProgram
+from apps.environmental.models import MonitoringReading
 from apps.scheduling.services import RECORD_CHECKLIST_TASK
 
 UPLOAD_EVIDENCE = "evidence.upload_evidenceattachment"
@@ -42,6 +43,9 @@ MANAGE_EQUIPMENT = "instruments.manage_equipment"
 VIEW_EQUIPMENT = "instruments.view_equipment"
 VIEW_SANITATION = "sanitation.view_sanitation"
 MANAGE_SANITATION = "sanitation.manage_sanitationprogram"
+VIEW_ENVIRONMENTAL = "environmental.view_environmental"
+RECORD_ENVIRONMENTAL = "environmental.record_environmentalreading"
+MANAGE_ENVIRONMENTAL = "environmental.manage_environmental"
 
 
 @dataclass(frozen=True, slots=True)
@@ -221,6 +225,20 @@ def resolve_linked_target(*, kind: str, object_id: uuid.UUID) -> LinkedTarget:
             obj=program,
         )
 
+    if kind == EvidenceLinkedKind.MONITORING_READING:
+        reading = MonitoringReading.objects.filter(pk=object_id).first()
+        if reading is None:
+            raise ValidationError(
+                {"linked_object_id": "Environmental monitoring reading not found."}
+            )
+        return LinkedTarget(
+            kind=kind,
+            object_id=reading.id,
+            organization_id=reading.organization_id,
+            linkage_immutable=True,
+            obj=reading,
+        )
+
     raise ValidationError({"linked_kind": "Unsupported linked kind."})
 
 
@@ -345,6 +363,16 @@ def _assert_parent_access(*, actor: User, target: LinkedTarget, for_mutate: bool
         allowed = (
             user_has_permission(actor, VIEW_SANITATION, scope=org_scope)
             or user_has_permission(actor, MANAGE_SANITATION, scope=org_scope)
+        )
+        if not allowed:
+            raise PermissionDenied("Permission denied.")
+        return
+
+    if kind == EvidenceLinkedKind.MONITORING_READING:
+        allowed = (
+            user_has_permission(actor, VIEW_ENVIRONMENTAL, scope=org_scope)
+            or user_has_permission(actor, RECORD_ENVIRONMENTAL, scope=org_scope)
+            or user_has_permission(actor, MANAGE_ENVIRONMENTAL, scope=org_scope)
         )
         if not allowed:
             raise PermissionDenied("Permission denied.")

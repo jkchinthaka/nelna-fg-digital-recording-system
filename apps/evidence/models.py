@@ -30,6 +30,10 @@ class EvidenceLinkedKind(models.TextChoices):
         "SANITATION_PROGRAM",
         "Sanitation / SSOP program",
     )
+    MONITORING_READING = (
+        "MONITORING_READING",
+        "Environmental monitoring reading",
+    )
 
 
 class EvidenceLifecycleStatus(models.TextChoices):
