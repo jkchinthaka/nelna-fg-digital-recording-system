@@ -464,3 +464,49 @@ def test_auto_hold_when_dual_gate_enabled() -> None:
     )
     assert excursion.auto_hold_created is True
     assert excursion.hold_case_id is not None
+
+
+@pytest.mark.django_db
+def test_warning_band_evaluation() -> None:
+    org = make_org(code=f"E{uuid.uuid4().hex[:6].upper()}")
+    manager = _manager(org=org)
+    point, param = _setup_point_param(manager, org)
+    from apps.environmental.selectors import (
+        parameters_for_organization,
+        points_for_organization,
+        specs_for_organization,
+    )
+
+    assert points_for_organization(org.id).filter(pk=point.id).exists()
+    assert parameters_for_organization(org.id).filter(pk=param.id).exists()
+    spec = create_monitoring_spec(
+        actor=manager, organization=org, code=f"SP-{uuid.uuid4().hex[:5].upper()}", title="Warn"
+    )
+    assert specs_for_organization(org.id).filter(pk=spec.id).exists()
+    version = create_draft_spec_version(actor=manager, spec_id=spec.id)
+    add_limit_rule(
+        actor=manager,
+        spec_version_id=version.id,
+        monitoring_point=point,
+        parameter=param,
+        bound_min=Decimal("0"),
+        bound_max=Decimal("10"),
+        warn_min=Decimal("2"),
+        warn_max=Decimal("8"),
+    )
+    approve_spec_version(actor=manager, spec_version_id=version.id)
+    version.refresh_from_db()
+    _reading, excursion = record_monitoring_reading(
+        actor=manager,
+        organization=org,
+        monitoring_point=point,
+        parameter=param,
+        source_type=MonitoringSourceType.MANUAL,
+        numeric_value=Decimal("1.5"),
+        spec_version=version,
+    )
+    assert excursion.outcome == MonitoringEvaluationOutcome.WARN
+    assert excursion.hold_recommended is False
+    assert evaluate_excursion_hold_policy(
+        organization_id=org.id, evaluation_outcome=MonitoringEvaluationOutcome.WARN
+    ).as_dict()["create_hold"] is False
