@@ -20,8 +20,26 @@ from pathlib import Path
 
 
 def run(cmd: list[str], env: dict[str, str]) -> None:
-    print("+", " ".join(cmd))
+    print("+", " ".join(_redact_cmd(cmd)))
     subprocess.check_call(cmd, env=env)
+
+
+def _redact_cmd(cmd: list[str]) -> list[str]:
+    out: list[str] = []
+    i = 0
+    while i < len(cmd):
+        part = cmd[i]
+        if part == "-e" and i + 1 < len(cmd) and cmd[i + 1].startswith("PGPASSWORD="):
+            out.extend(["-e", "PGPASSWORD=[REDACTED]"])
+            i += 2
+            continue
+        if part.startswith("PGPASSWORD="):
+            out.append("PGPASSWORD=[REDACTED]")
+            i += 1
+            continue
+        out.append(part)
+        i += 1
+    return out
 
 
 def _write_not_executed(evidence: Path, reason: str) -> None:
@@ -43,13 +61,16 @@ def _docker_service() -> str:
     return (os.environ.get("RESTORE_DRILL_DOCKER_SERVICE") or "").strip()
 
 
-def _pg_cmd(tool: str, *args: str) -> list[str]:
+def _pg_cmd(tool: str, *args: str, password: str = "") -> list[str]:
     """Build a pg client command for host tools or docker compose exec."""
     service = _docker_service()
     if service:
-        # Inside the official postgres image, tools talk over the container network.
-        # Host/port default to the service itself when using docker exec.
-        return ["docker", "compose", "exec", "-T", service, tool, *args]
+        # Inside the official postgres image, tools talk to localhost in-container.
+        prefix = ["docker", "compose", "exec", "-T"]
+        if password:
+            prefix.extend(["-e", f"PGPASSWORD={password}"])
+        prefix.append(service)
+        return [*prefix, tool, *args]
     return [tool, *args]
 
 
@@ -159,7 +180,7 @@ def main() -> int:
         if using_docker:
             # Dump to stdout inside container, capture on host.
             dump_cmd = pg("pg_dump", *common, "-Fc", source_db)
-            print("+", " ".join(dump_cmd), ">", str(dump))
+            print("+", " ".join(_redact_cmd(dump_cmd)), ">", str(dump))
             with dump.open("wb") as handle:
                 subprocess.check_call(dump_cmd, env=env, stdout=handle)
             # Stream restore via stdin into scratch DB.
@@ -171,7 +192,7 @@ def main() -> int:
                 "--clean",
                 "--if-exists",
             )
-            print("+", " ".join(restore_cmd), "<", str(dump))
+            print("+", " ".join(_redact_cmd(restore_cmd)), "<", str(dump))
             with dump.open("rb") as handle:
                 subprocess.check_call(restore_cmd, env=env, stdin=handle)
         else:
