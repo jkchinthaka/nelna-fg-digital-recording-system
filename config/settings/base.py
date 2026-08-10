@@ -32,6 +32,7 @@ env = environ.Env(
     AUTH_MAX_FAILED_ATTEMPTS=(int, 5),
     AUTH_LOCKOUT_MINUTES=(int, 15),
     AUTH_LOGIN_RATE_LIMIT_WINDOW=(int, 300),
+    AUTH_LOGIN_RATE_LIMIT_MAX=(int, 40),
     AUTH_PASSWORD_CHANGE_REQUIRED_ON_ADMIN_RESET=(bool, True),
 )
 
@@ -90,6 +91,7 @@ MIDDLEWARE = [
     "django_htmx.middleware.HtmxMiddleware",
     "apps.core.middleware.CorrelationIdMiddleware",
     "apps.core.middleware.RequestLoggingMiddleware",
+    "apps.core.middleware.SecurityHeadersMiddleware",
 ]
 
 AUTHENTICATION_BACKENDS = [
@@ -100,6 +102,7 @@ AUTHENTICATION_BACKENDS = [
 AUTH_MAX_FAILED_ATTEMPTS = env.int("AUTH_MAX_FAILED_ATTEMPTS", default=5)
 AUTH_LOCKOUT_MINUTES = env.int("AUTH_LOCKOUT_MINUTES", default=15)
 AUTH_LOGIN_RATE_LIMIT_WINDOW = env.int("AUTH_LOGIN_RATE_LIMIT_WINDOW", default=300)
+AUTH_LOGIN_RATE_LIMIT_MAX = env.int("AUTH_LOGIN_RATE_LIMIT_MAX", default=40)
 AUTH_PASSWORD_CHANGE_REQUIRED_ON_ADMIN_RESET = env.bool(
     "AUTH_PASSWORD_CHANGE_REQUIRED_ON_ADMIN_RESET",
     default=True,
@@ -233,6 +236,32 @@ CSRF_COOKIE_SAMESITE = "Lax"
 X_FRAME_OPTIONS = "DENY"
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_REFERRER_POLICY = "same-origin"
+
+# Phase 19 — browser security headers (middleware). Style inline retained for current UI.
+CONTENT_SECURITY_POLICY = env(
+    "CONTENT_SECURITY_POLICY",
+    default=(
+        "default-src 'self'; "
+        "base-uri 'self'; "
+        "frame-ancestors 'none'; "
+        "form-action 'self'; "
+        "img-src 'self' data:; "
+        "font-src 'self' data:; "
+        "style-src 'self' 'unsafe-inline'; "
+        "script-src 'self'; "
+        "connect-src 'self'; "
+        "object-src 'none'"
+    ),
+)
+PERMISSIONS_POLICY = env(
+    "PERMISSIONS_POLICY",
+    default="camera=(), microphone=(), geolocation=(), payment=(), usb=()",
+)
+# Session absolute timeout — idle/absolute policy values remain OWNER/IT DECISION REQUIRED.
+SESSION_COOKIE_AGE = env.int("SESSION_COOKIE_AGE", default=28800)  # 8 hours technical default
+SESSION_SAVE_EVERY_REQUEST = env.bool("SESSION_SAVE_EVERY_REQUEST", default=True)
+HEALTHCHECK_MONGODB_ENABLED = env.bool("HEALTHCHECK_MONGODB_ENABLED", default=False)
+
 
 CORRELATION_ID_HEADER = "HTTP_X_REQUEST_ID"
 CORRELATION_ID_RESPONSE_HEADER = "X-Request-ID"

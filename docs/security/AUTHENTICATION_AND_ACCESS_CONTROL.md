@@ -18,7 +18,8 @@ Password-hash work runs on unknown, inactive, and locked paths to reduce timing-
 | --- | --- | --- |
 | `AUTH_MAX_FAILED_ATTEMPTS` | 5 | Failures before temporary lock |
 | `AUTH_LOCKOUT_MINUTES` | 15 | Lock duration |
-| `AUTH_LOGIN_RATE_LIMIT_WINDOW` | 300 | Reserved / deferred — **not** active request throttling |
+| `AUTH_LOGIN_RATE_LIMIT_WINDOW` | 300 | IP login throttle window (seconds) — Phase 19 |
+| `AUTH_LOGIN_RATE_LIMIT_MAX` | 40 | Max login attempts per IP per window — Phase 19 |
 
 PostgreSQL account lockout (`failed_login_count`, `locked_until`) is the active brute-force control. Updates use transactions and `select_for_update`. Redis is not authoritative for lockout. Already-locked attempts do not extend counters.
 

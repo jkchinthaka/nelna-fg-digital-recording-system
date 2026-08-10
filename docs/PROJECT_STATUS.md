@@ -123,7 +123,8 @@ Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 18)._ (`loading`
 | 16 Reporting | Technical complete — catalogue, org RBAC, immutable submission sources, CSV + formula injection guard, async ReportRun (ADR-028) | Official report packs / Excel-PDF need EVIDENCE REQUIRED |
 | 17 ERP / Bileeta | Adapter boundary complete — contracts/mocks, evidence gate, dead-letter, reconciliation, outbound prepare-only (ADR-029) | **BLOCKED — VENDOR API EVIDENCE REQUIRED** (APR-011/012/016/017) |
 | 18 Safe AI assistance | Technical complete — optional advisory AI default OFF; provider abstraction; safety gates (ADR-030) | QA/IT policy acknowledgement + prompt retention EVIDENCE REQUIRED |
-| 19–21 Later roadmap | Not started | N/A |
+| 19 Security / backup / monitoring / performance | Technical complete - hardening, health, backup/restore harness, runbooks (ADR-031) | RPO/RTO + staging load/pen-test EVIDENCE REQUIRED |
+| 20–21 Pilot / production release | Not started | Depends on Phase 19 ops evidence + business gates |
 
 ---
 
@@ -380,3 +381,8 @@ Bileeta/ERP adapter boundary (ADR-029): `apps.integrations` with inbound contrac
 
 Safe quality AI assistance foundation (ADR-030): optional advisory assistance behind env flag (default OFF); allowed summarization/search/trend use cases with advisory anomaly hints; hard deny of RELEASE/HOLD/REJECT and other prohibited actions; org RBAC before context; provider abstraction (null/mock); audited usage without full prompt storage by default. Core workflows do not depend on AI.
 
+## Phase 19 delivery status
+
+**STATUS: PHASE 19 TECHNICAL PRODUCTION READINESS COMPLETE**
+
+Technical production-readiness controls (ADR-031): security headers, expanded health/readiness, structured logging enrichment, backup/restore harness + evidence template, monitoring/DR/incident runbooks, synthetic perf + concurrency/e2e/security regressions. RPO/RTO and final session policy remain COMPANY DECISION REQUIRED. Business production go-live is NOT claimed.

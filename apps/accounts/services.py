@@ -75,6 +75,28 @@ def create_application_user(
     return user
 
 
+def _login_rate_limit_exceeded(request: HttpRequest) -> bool:
+    """
+    IP-scoped login attempt throttle (Phase 19).
+
+    Complements per-account lockout. Failures are generic to callers.
+    """
+    from django.core.cache import cache
+
+    window = int(getattr(settings, "AUTH_LOGIN_RATE_LIMIT_WINDOW", 300))
+    max_attempts = int(getattr(settings, "AUTH_LOGIN_RATE_LIMIT_MAX", 40))
+    if window <= 0 or max_attempts <= 0:
+        return False
+    ip = (request.META.get("REMOTE_ADDR") or "unknown").strip() or "unknown"
+    key = f"auth:login_rate:{ip}"
+    try:
+        current = cache.incr(key)
+    except ValueError:
+        cache.add(key, 1, timeout=window)
+        current = 1
+    return int(current) > max_attempts
+
+
 def authenticate_login(
     request: HttpRequest,
     *,
@@ -91,6 +113,18 @@ def authenticate_login(
     from apps.security_audit.services import record_event
 
     meta = _client_meta(request)
+    if _login_rate_limit_exceeded(request):
+        record_event(
+            event_type="LOGIN_FAILURE",
+            subject_user=None,
+            request_id=meta["request_id"],
+            ip_address=meta["ip_address"],
+            user_agent_summary=meta["user_agent"],
+            metadata={"reason": "rate_limited"},
+            unknown_identifier="rate_limited",
+        )
+        return AuthResult(success=False, error_code="invalid_credentials")
+
     normalized = normalize_employee_code(employee_code)
 
     backend = EmployeeCodeBackend()

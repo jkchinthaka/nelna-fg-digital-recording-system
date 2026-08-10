@@ -52,12 +52,22 @@ def test_readiness_ok_with_dependencies() -> None:
 @pytest.mark.django_db
 def test_readiness_503_when_postgres_fails() -> None:
     client = Client()
-    with patch(
-        "apps.core.health.check_postgres",
-        return_value={"name": "postgresql", "status": "unavailable"},
+    with (
+        patch(
+            "apps.core.health.check_postgres",
+            return_value={"name": "postgresql", "status": "unavailable"},
+        ),
+        patch("apps.core.health.check_redis", return_value={"name": "redis", "status": "ok"}),
+        patch(
+            "apps.core.health.check_celery_broker",
+            return_value={"name": "celery_broker", "status": "ok"},
+        ),
+        patch(
+            "apps.core.health.check_evidence_storage",
+            return_value={"name": "evidence_storage", "status": "ok"},
+        ),
     ):
-        with patch("apps.core.health.check_redis", return_value={"name": "redis", "status": "ok"}):
-            response = client.get(reverse("core:health-ready"))
+        response = client.get(reverse("core:health-ready"))
     assert response.status_code == 503
     assert "redis://" not in response.content.decode()
 
@@ -65,13 +75,23 @@ def test_readiness_503_when_postgres_fails() -> None:
 @pytest.mark.django_db
 def test_readiness_503_when_redis_fails() -> None:
     client = Client()
-    with patch(
-        "apps.core.health.check_postgres", return_value={"name": "postgresql", "status": "ok"}
-    ):
-        with patch(
+    with (
+        patch(
+            "apps.core.health.check_postgres", return_value={"name": "postgresql", "status": "ok"}
+        ),
+        patch(
             "apps.core.health.check_redis", return_value={"name": "redis", "status": "unavailable"}
-        ):
-            response = client.get(reverse("core:health-ready"))
+        ),
+        patch(
+            "apps.core.health.check_celery_broker",
+            return_value={"name": "celery_broker", "status": "ok"},
+        ),
+        patch(
+            "apps.core.health.check_evidence_storage",
+            return_value={"name": "evidence_storage", "status": "ok"},
+        ),
+    ):
+        response = client.get(reverse("core:health-ready"))
     assert response.status_code == 503
 
 
