@@ -124,7 +124,8 @@ Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 18)._ (`loading`
 | 17 ERP / Bileeta | Adapter boundary complete — contracts/mocks, evidence gate, dead-letter, reconciliation, outbound prepare-only (ADR-029) | **BLOCKED — VENDOR API EVIDENCE REQUIRED** (APR-011/012/016/017) |
 | 18 Safe AI assistance | Technical complete — optional advisory AI default OFF; provider abstraction; safety gates (ADR-030) | QA/IT policy acknowledgement + prompt retention EVIDENCE REQUIRED |
 | 19 Security / backup / monitoring / performance | Technical complete - hardening, health, backup/restore harness, runbooks (ADR-031) | RPO/RTO + staging load/pen-test EVIDENCE REQUIRED |
-| 20–21 Pilot / production release | Not started | Depends on Phase 19 ops evidence + business gates |
+| 20 UAT / Pilot | Package opened — **BLOCKED** pending business evidence ([uat/README.md](uat/README.md)) | Pilot scope APR-034, FG-QA-001, roles/SoD, hosted env EVIDENCE REQUIRED |
+| 21 Production release | Not started | Depends on Phase 20 UAT PASSED |
 
 ---
 
@@ -138,7 +139,7 @@ Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 18)._ (`loading`
 | [PHASE_10_QA_REVIEW_READINESS_GATE.md](business/PHASE_10_QA_REVIEW_READINESS_GATE.md) | OPEN — production QA use BLOCKED |
 | [PHASE_10_POST_QA_WORKFLOW_GATE.md](business/PHASE_10_POST_QA_WORKFLOW_GATE.md) | OPEN — all downstream items EVIDENCE REQUIRED |
 
-**UAT PASSED:** No
+**UAT PASSED:** No — Phase 20 package opened; business execution **NOT STARTED** ([PHASE_20_UAT_PILOT.md](business/PHASE_20_UAT_PILOT.md))
 **PRODUCTION READY:** No
 
 ---
@@ -209,6 +210,7 @@ Tracked for request/approval workflow: [governance/APPROVAL_REGISTER.md](governa
 4. No hosted UAT environment decision (ASM-015)
 5. Device / Wi-Fi / hygiene evidence incomplete (ASM-009–011)
 6. Production readiness gates for Phases 07–10 remain OPEN
+7. Phase 20 package: pilot scope / signoff empty ([docs/uat/](uat/README.md)) — **NO-GO**
 
 ---
 
@@ -386,3 +388,9 @@ Safe quality AI assistance foundation (ADR-030): optional advisory assistance be
 **STATUS: PHASE 19 TECHNICAL PRODUCTION READINESS COMPLETE**
 
 Technical production-readiness controls (ADR-031): security headers, expanded health/readiness, structured logging enrichment, backup/restore harness + evidence template, monitoring/DR/incident runbooks, synthetic perf + concurrency/e2e/security regressions. RPO/RTO and final session policy remain COMPANY DECISION REQUIRED. Business production go-live is NOT claimed.
+
+## Phase 20 delivery status
+
+**STATUS: PHASE 20 UAT/PILOT BLOCKED**
+
+UAT/pilot package delivered under `docs/uat/` with prerequisites, scenarios, test record (all NOT EXECUTED), pilot scope template, baseline/parallel/defect/signoff registers, and NO-GO final report. Cursor did not invent business PASS or signatures. Re-open PASS only when real business evidence is attached.

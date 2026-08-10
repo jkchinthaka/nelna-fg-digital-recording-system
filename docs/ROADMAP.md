@@ -366,6 +366,7 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Branch naming | `pilot/phase-20-uat` (config/docs); code fixes via fix branches |
 | Exit criteria | Exit criteria met; critical defects closed |
 | Dependencies | Phases through applicable MVP scope + Phase 19 as required |
+| Status | **BLOCKED** — UAT package on `main` (`docs/uat/`); business evidence / APR-034 / FG-QA-001 / hosted pilot EVIDENCE REQUIRED; no invented PASS |
 
 ## Phase 21 — Production release and handover
 
