@@ -406,3 +406,11 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Outputs | `apps.haccp`; ADR-035 |
 | Approval gate | Actual company HACCP plan EVIDENCE REQUIRED |
 | Status | **Technical foundation delivered** on `main` |
+
+## Phase 24 — Configurable sampling engine
+
+| Field | Content |
+| --- | --- |
+| Objective | Versioned sampling plans without inventing AQL/ISO tables |
+| Outputs | `apps.sampling`; ADR-036 |
+| Status | **Technical foundation delivered** on `main` |

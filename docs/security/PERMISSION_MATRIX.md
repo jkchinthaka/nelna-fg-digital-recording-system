@@ -137,3 +137,11 @@ AI default OFF. AI must not execute RELEASE/HOLD/REJECT, publish, spec/role chan
 | manage_haccpplan | `haccp.manage_haccpplan` | Draft/edit only |
 | approve_haccpplan | `haccp.approve_haccpplan` | Food-safety approval; not System Admin by default |
 | view_haccp | `haccp.view_haccp` | Read-only |
+
+### Sampling (Phase 24)
+
+| Key | Permission | Notes |
+| --- | --- | --- |
+| manage_samplingplan | `sampling.manage_samplingplan` | Draft/edit |
+| publish_samplingplan | `sampling.publish_samplingplan` | Approve/retire |
+| view_sampling | `sampling.view_sampling` | Read-only |

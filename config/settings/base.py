@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     "apps.evidence",
     "apps.laboratory",
     "apps.haccp",
+    "apps.sampling",
     "apps.nonconformance",
     "apps.capa",
     "apps.dispatch",

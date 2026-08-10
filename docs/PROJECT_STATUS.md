@@ -128,6 +128,7 @@ Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 23)._ (`loading`
 | 19 Security / backup / monitoring / performance | Technical complete - hardening, health, backup/restore harness, runbooks (ADR-031) | RPO/RTO + staging load/pen-test EVIDENCE REQUIRED |
 | 22 Laboratory / LIMS | Technical complete — sample/test/result foundation, immutability, external cert hook, positive-release policy stub default OFF (ADR-032) | Lab catalogue / role mapping / positive-release policy EVIDENCE REQUIRED |
 | 23 HACCP / control-point | Technical complete — versioned plan shells, CCP/OPRP/PRP metadata, limit/monitoring/CA references, checklist binding (ADR-035) | Company HACCP plan / CCP identification / limits EVIDENCE REQUIRED |
+| 24 Sampling engine | Technical complete — versioned plans/rules/requirements, lot resolution, checklist binding, advisory accept/reject (ADR-036) | Company sampling tables / external-standard adoption EVIDENCE REQUIRED |
 | 20–21 Pilot / production release | Not started | Depends on business gates + Phase 19 ops evidence |
 | 20 UAT / Pilot | Package opened — **BLOCKED** pending business evidence ([uat/README.md](uat/README.md)) | Pilot scope APR-034, FG-QA-001, roles/SoD, hosted env EVIDENCE REQUIRED |
 | 21 Production release | Package opened — **GO-LIVE BLOCKED** ([release/README.md](release/README.md)) | Phase 20 FAIL + hosting/config/support gates |
@@ -417,3 +418,9 @@ Hard prerequisites failed (Phase 20 UAT/pilot not passed; production hosting, ap
 **STATUS: PHASE 23 HACCP FOUNDATION COMPLETE**
 
 Versioned HACCP/control-point technical foundation (ADR-035): `apps.haccp` with plan/version immutability, generic hazard categories, CCP/OPRP/PRP control points, critical-limit and monitoring reference shells, corrective-action references (auto HOLD/NCR default OFF), and checklist bindings with frozen historical context. No Nelna CCPs/limits/actions invented. Company HACCP plan remains EVIDENCE REQUIRED.
+
+## Phase 24 delivery status
+
+**STATUS: PHASE 24 SAMPLING ENGINE COMPLETE**
+
+Configurable sampling engine (ADR-036): `apps.sampling` with versioned plans, optional match dimensions, sample-requirement shells (no invented AQL/ISO tables), deterministic resolution, REPEATING_GROUP bindings with frozen context, and sampling ACCEPT/REJECT that never auto QA disposition. Company sampling configuration remains EVIDENCE REQUIRED.

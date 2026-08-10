@@ -28,6 +28,7 @@ class CapabilityBucket(StrEnum):
     AI_ASSISTANCE = "ai_assistance"
     LABORATORY = "laboratory"
     HACCP = "haccp"
+    SAMPLING = "sampling"
     EVIDENCE = "evidence"
     MASTER_DATA = "master_data"
     CHECKLIST_PUBLISH = "checklist_publish"
@@ -490,6 +491,29 @@ PERMISSION_CATALOGUE: Final[tuple[PermissionCatalogueEntry, ...]] = (
         bucket=CapabilityBucket.HACCP,
         scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
         description="Read-only view of HACCP plans and control points.",
+    ),
+
+    PermissionCatalogueEntry(
+        key="manage_samplingplan",
+        permission="sampling.manage_samplingplan",
+        bucket=CapabilityBucket.SAMPLING,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Draft/edit sampling plan versions and rules.",
+        notes="No invented AQL/ISO tables; values from approved configuration only.",
+    ),
+    PermissionCatalogueEntry(
+        key="publish_samplingplan",
+        permission="sampling.publish_samplingplan",
+        bucket=CapabilityBucket.SAMPLING,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Approve or retire sampling plan versions.",
+    ),
+    PermissionCatalogueEntry(
+        key="view_sampling",
+        permission="sampling.view_sampling",
+        bucket=CapabilityBucket.SAMPLING,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Read-only view of sampling plans.",
     ),
     PermissionCatalogueEntry(
         key="manage_supplierquality_qa",

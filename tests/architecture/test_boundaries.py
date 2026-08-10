@@ -28,6 +28,7 @@ ALLOWED_APPS = {
     "ai_assistance",
     "laboratory",
     "haccp",
+    "sampling",
     "supplier_quality",
     "access_control",
     "security_audit",

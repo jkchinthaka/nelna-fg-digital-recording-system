@@ -177,3 +177,13 @@ Retention period is **deferred** â€” not decided in Phase 03. Events are ap
 | HACCP_PLAN_VERSION_RETIRED | Approved version retired |
 | HACCP_CONTROL_POINT_MAPPED | Control point added on draft version |
 | HACCP_CHECKLIST_BINDING_SET | Checklist item bound to exact version/CP |
+
+### Sampling (Phase 24)
+
+| Event | Meaning |
+| --- | --- |
+| SAMPLING_PLAN_CREATED | Plan shell created |
+| SAMPLING_PLAN_VERSION_CREATED | Draft version created |
+| SAMPLING_PLAN_VERSION_APPROVED | Version approved (immutable) |
+| SAMPLING_PLAN_VERSION_RETIRED | Approved version retired |
+| SAMPLING_CHECKLIST_BINDING_SET | REPEATING_GROUP bound to plan version |

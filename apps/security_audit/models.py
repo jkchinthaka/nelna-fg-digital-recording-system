@@ -502,6 +502,24 @@ class SecurityAuditEvent(models.Model):
             "HACCP checklist item binding set",
         )
 
+        SAMPLING_PLAN_CREATED = "SAMPLING_PLAN_CREATED", "Sampling plan created"
+        SAMPLING_PLAN_VERSION_CREATED = (
+            "SAMPLING_PLAN_VERSION_CREATED",
+            "Sampling plan version created",
+        )
+        SAMPLING_PLAN_VERSION_APPROVED = (
+            "SAMPLING_PLAN_VERSION_APPROVED",
+            "Sampling plan version approved",
+        )
+        SAMPLING_PLAN_VERSION_RETIRED = (
+            "SAMPLING_PLAN_VERSION_RETIRED",
+            "Sampling plan version retired",
+        )
+        SAMPLING_CHECKLIST_BINDING_SET = (
+            "SAMPLING_CHECKLIST_BINDING_SET",
+            "Sampling checklist item binding set",
+        )
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     event_type = models.CharField(max_length=64, choices=EventType.choices)
