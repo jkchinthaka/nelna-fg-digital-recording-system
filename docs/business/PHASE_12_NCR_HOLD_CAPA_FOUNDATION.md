@@ -27,5 +27,6 @@
 | When FAIL/CCP must raise NCR/HOLD | EVIDENCE REQUIRED / DECISION REQUIRED |
 | Hold resolution catalogue | EVIDENCE REQUIRED |
 | CAPA effectiveness criteria | EVIDENCE REQUIRED |
-## STATUS: PHASE 12 NCR HOLD CAPA FOUNDATION COMPLETE
+| Quantity/sub-lot disposition | Architecture not present |
 
+## STATUS: PHASE 12 NCR HOLD CAPA FOUNDATION COMPLETE
