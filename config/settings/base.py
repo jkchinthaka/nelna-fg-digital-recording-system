@@ -79,6 +79,7 @@ INSTALLED_APPS = [
     "apps.iqc",
     "apps.ipqc",
     "apps.batch_dossier",
+    "apps.batch_genealogy",
     "apps.nonconformance",
     "apps.capa",
     "apps.dispatch",
@@ -322,6 +323,11 @@ IPQC_STOP_PRODUCTION_ON_FAIL_APPROVED = env.bool(
 # Phase 35 — batch dossier PDF evidence-pack export remains OFF until company approval.
 BATCH_DOSSIER_PDF_EXPORT_APPROVED = env.bool(
     "BATCH_DOSSIER_PDF_EXPORT_APPROVED",
+    default=False,
+)
+# Phase 36 — genealogy Mongo projection remains OFF until company / ERP evidence approval.
+BATCH_GENEALOGY_MONGO_PROJECTION_APPROVED = env.bool(
+    "BATCH_GENEALOGY_MONGO_PROJECTION_APPROVED",
     default=False,
 )
 

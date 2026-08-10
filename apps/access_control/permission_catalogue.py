@@ -38,6 +38,7 @@ class CapabilityBucket(StrEnum):
     IQC = "iqc"
     IPQC = "ipqc"
     BATCH_DOSSIER = "batch_dossier"
+    BATCH_GENEALOGY = "batch_genealogy"
     EVIDENCE = "evidence"
     MASTER_DATA = "master_data"
     CHECKLIST_PUBLISH = "checklist_publish"
@@ -805,6 +806,36 @@ PERMISSION_CATALOGUE: Final[tuple[PermissionCatalogueEntry, ...]] = (
         bucket=CapabilityBucket.BATCH_DOSSIER,
         scopes=(ObjectScope.ORGANIZATION,),
         description="Update batch dossier PDF export policy stubs.",
+    ),
+    PermissionCatalogueEntry(
+        key="view_batchgenealogy",
+        permission="batch_genealogy.view_batchgenealogy",
+        bucket=CapabilityBucket.BATCH_GENEALOGY,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="View backward/forward batch genealogy traces.",
+    ),
+    PermissionCatalogueEntry(
+        key="ingest_batchgenealogy",
+        permission="batch_genealogy.ingest_batchgenealogy",
+        bucket=CapabilityBucket.BATCH_GENEALOGY,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Ingest ERP/integration genealogy edges (never invent).",
+    ),
+    PermissionCatalogueEntry(
+        key="view_genealogy_partner",
+        permission="batch_genealogy.view_genealogy_partner",
+        bucket=CapabilityBucket.BATCH_GENEALOGY,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="View supplier/customer references on genealogy nodes.",
+        notes="Not implied by view_batchgenealogy.",
+    ),
+    PermissionCatalogueEntry(
+        key="manage_batchgenealogypolicy",
+        permission="batch_genealogy.manage_batchgenealogypolicy",
+        bucket=CapabilityBucket.BATCH_GENEALOGY,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Update genealogy Mongo projection / depth policy stubs.",
+        notes="Dual-gated with BATCH_GENEALOGY_MONGO_PROJECTION_APPROVED (default OFF).",
     ),
     PermissionCatalogueEntry(
         key="manage_supplierquality_qa",

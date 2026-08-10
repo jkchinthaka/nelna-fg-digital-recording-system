@@ -82,8 +82,9 @@ This document records **repository evidence**. It does not invent Nelna operatio
 | `iqc` | **33** | IMPLEMENTED foundation · GRN ingest; ChecklistTask IQC; sampling/lab/review; local disposition; ERP dual-gate OFF (APR-058) |
 | `ipqc` | **34** | IMPLEMENTED foundation · process-check defs; triggers; measurement/equipment/sampling; fail dual-gate OFF; NCR/HOLD escalate; dashboard (APR-059) |
 | `batch_dossier` | **35** | IMPLEMENTED foundation · read-only batch dossier; timeline; section authz; paginated evidence/audit; PDF export hook dual-gate OFF (APR-060) |
+| `batch_genealogy` | **36** | IMPLEMENTED foundation · ERP-sourced nodes/edges; backward/forward; rework; cycle prevention; flat Mongo projection dual-gate OFF; partner redaction (APR-061) |
 
-Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 35 except gaps noted elsewhere)._ (`loading` controls are delivered inside `dispatch` for Phase 13 — see ADR-025.)
+Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 36 except gaps noted elsewhere)._ (`loading` controls are delivered inside `dispatch` for Phase 13 — see ADR-025.)
 
 ---
 
@@ -151,6 +152,7 @@ Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 35 except gaps n
 | 33 Incoming Quality Control (IQC) | Technical complete — idempotent GRN ingest, ChecklistTask generation, sampling/lab/review gate, local disposition, ERP dual-gate OFF (ADR-044) | Company IQC checklists / sampling / ERP contract EVIDENCE REQUIRED (APR-058) |
 | 34 In-Process Quality Control (IPQC) | Technical complete — process-check definitions, trigger shells, measurement/equipment/sampling/HACCP metadata, fail dual-gate OFF, controlled NCR/HOLD, dashboard (ADR-045) | Company IPQC frequencies / stop-line / SoD EVIDENCE REQUIRED (APR-059) |
 | 35 Electronic Batch Quality Dossier (EBR) | Technical complete — read-only aggregation by batch_reference, timeline, section authz, paginated evidence/audit, PDF export hook dual-gate OFF (ADR-046) | Company batch identity / retention / export SoD EVIDENCE REQUIRED (APR-060) |
+| 36 Batch Genealogy Traceability | Technical complete — ERP adjacency nodes/edges, forward/backward trace, rework, cycle prevention, capped Mongo projection, party dual-gate OFF (ADR-047) | Company ERP genealogy mapping / party SoD EVIDENCE REQUIRED (APR-061) |
 | 20–21 Pilot / production release | Not started | Depends on business gates + Phase 19 ops evidence |
 | 20 UAT / Pilot | Package opened — **BLOCKED** pending business evidence ([uat/README.md](uat/README.md)) | Pilot scope APR-034, FG-QA-001, roles/SoD, hosted env EVIDENCE REQUIRED |
 | 21 Production release | Package opened — **GO-LIVE BLOCKED** ([release/README.md](release/README.md)) | Phase 20 FAIL + hosting/config/support gates |
@@ -512,3 +514,10 @@ In-Process Quality Control workflows (ADR-045): configurable process-check defin
 **STATUS: PHASE 35 ELECTRONIC BATCH RECORD COMPLETE**
 
 Electronic batch quality dossier (ADR-046): read-only aggregation of authorized references for one opaque `batch_reference` spanning FG checklist tasks, immutable submissions/corrections, Supervisor/QA reviews, IPQC, lab results, equipment/calibration snapshots, NCR/HOLD/CAPA, loading/dispatch, evidence, integration shells, and audit references — chronological timeline, object-level section gates, paginated evidence/audit, and PDF evidence-pack export hook dual-gated OFF (APR-060). Mutable draft responses are not duplicated; viewing a dossier is not FG RELEASE.
+
+## Phase 36 delivery status
+
+**STATUS: PHASE 36 BATCH GENEALOGY COMPLETE**
+
+Batch / product genealogy (ADR-047): opaque ERP-sourced genealogy nodes and directed edges (raw/supplier/production/rework/FG/sub-lot/shipment), backward and forward BFS traces with depth caps, rework parent→child preservation, cycle prevention on ingest, supplier/customer field restriction (`view_genealogy_partner`), and flat Mongo edge-list projection dual-gated OFF — no invented genealogy and no unbounded embedded graphs (APR-061).
+

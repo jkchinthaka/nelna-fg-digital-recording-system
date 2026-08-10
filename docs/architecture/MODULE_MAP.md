@@ -49,6 +49,7 @@ Do **not** rename FG master data, checklist, recording, review, or evidence work
 | iqc | Incoming Quality Control workflow (33) | IncomingReceiptEvent; IqcInspectionCase; IqcWorkflowPolicy | ingest GRN event; generate ChecklistTask; sampling; lab; review gate; local disposition | No hardcoded questions; ERP outbound dual-gate OFF | **33** |
 | ipqc | In-process quality control workflows (34) | IpqcProcessCheckDefinition; IpqcInspectionCase; IpqcWorkflowPolicy | generate process checks; measure; equipment; sampling; failure dual-gate; NCR/HOLD escalate; dashboard | No hardcoded questions; FAIL≠line stop; not FG release | **34** |
 | batch_dossier | Electronic batch quality dossier / EBR (35) | BatchDossierPolicy; BatchDossierExportRequest | assemble read-only dossier by batch_reference; timeline; paginated evidence/audit; PDF export hook | No mutable copies; no ProductionBatch master; PDF dual-gate OFF | **35** |
+| batch_genealogy | Batch genealogy traceability (36) | GenealogyNode; GenealogyEdge; GenealogyPolicy | ERP-sourced ingest; backward/forward trace; rework; cycle prevention; flat Mongo projection | No invented genealogy; no unbounded embeds; partner fields restricted; Mongo dual-gate OFF | **36** |
 
 ## Phase mapping reminder
 

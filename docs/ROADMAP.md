@@ -502,3 +502,11 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Objective | Read-only aggregated batch quality dossier without duplicating source data |
 | Outputs | `apps.batch_dossier`; ADR-046; timeline; section authz; paginated evidence/audit; PDF export hook dual-gate OFF |
 | Status | **Technical foundation delivered** on `main` |
+
+## Phase 36 — Batch Genealogy Traceability
+
+| Field | Content |
+| --- | --- |
+| Objective | Backward/forward product genealogy from authoritative ERP/production data |
+| Outputs | `apps.batch_genealogy`; ADR-047; opaque nodes/edges; rework; cycle prevention; flat Mongo projection dual-gate OFF |
+| Status | **Technical foundation delivered** on `main` |

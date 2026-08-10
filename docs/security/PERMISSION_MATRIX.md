@@ -232,3 +232,12 @@ AI default OFF. AI must not execute RELEASE/HOLD/REJECT, publish, spec/role chan
 | view_batchdossier | `batch_dossier.view_batchdossier` | Assemble/view read-only dossier |
 | export_batchdossier | `batch_dossier.export_batchdossier` | PDF export hook (dual-gate OFF) |
 | manage_batchdossierpolicy | `batch_dossier.manage_batchdossierpolicy` | Export policy stubs |
+
+### Batch Genealogy Traceability (Phase 36)
+
+| Key | Permission | Notes |
+| --- | --- | --- |
+| view_batchgenealogy | `batch_genealogy.view_batchgenealogy` | Backward/forward traces |
+| ingest_batchgenealogy | `batch_genealogy.ingest_batchgenealogy` | ERP edge/node ingest |
+| view_genealogy_partner | `batch_genealogy.view_genealogy_partner` | Supplier/customer refs (restricted) |
+| manage_batchgenealogypolicy | `batch_genealogy.manage_batchgenealogypolicy` | Mongo projection policy stubs (dual-gate OFF) |

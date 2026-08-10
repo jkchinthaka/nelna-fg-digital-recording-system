@@ -321,4 +321,24 @@ Retention period is **deferred** â€” not decided in Phase 03. Events are ap
 | BATCH_DOSSIER_EXPORT_BLOCKED | PDF export hook blocked |
 | BATCH_DOSSIER_POLICY_UPDATED | Dossier policy stub updated |
 
+### Batch Genealogy (Phase 36)
 
+| Event type | Meaning |
+| --- | --- |
+| BATCH_GENEALOGY_EDGE_INGESTED | ERP genealogy edge ingested |
+| BATCH_GENEALOGY_EDGE_DUPLICATE | Duplicate ERP genealogy edge (idempotent) |
+| BATCH_GENEALOGY_CYCLE_REJECTED | Edge rejected by cycle prevention |
+| BATCH_GENEALOGY_BACKWARD_TRACE | Backward genealogy trace executed |
+| BATCH_GENEALOGY_FORWARD_TRACE | Forward genealogy trace executed |
+| BATCH_GENEALOGY_POLICY_UPDATED | Genealogy policy stub updated |
+
+### Phase 36 — Batch genealogy
+
+| Event | Meaning |
+| --- | --- |
+| GENEALOGY_EDGE_INGESTED | ERP/integration edge accepted |
+| GENEALOGY_EDGE_DUPLICATE | Idempotent duplicate ingest |
+| GENEALOGY_EDGE_REJECTED | Ingest rejected |
+| GENEALOGY_CYCLE_PREVENTED | Cycle-creating edge blocked |
+| GENEALOGY_TRACE_EXECUTED | Forward/backward trace run |
+| GENEALOGY_POLICY_UPDATED | Party-detail policy stub updated |

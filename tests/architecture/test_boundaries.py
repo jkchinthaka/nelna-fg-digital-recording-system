@@ -38,6 +38,7 @@ ALLOWED_APPS = {
     "iqc",
     "ipqc",
     "batch_dossier",
+    "batch_genealogy",
     "supplier_quality",
     "access_control",
     "security_audit",

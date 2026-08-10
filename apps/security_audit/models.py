@@ -810,6 +810,30 @@ class SecurityAuditEvent(models.Model):
             "BATCH_DOSSIER_POLICY_UPDATED",
             "Batch dossier policy stub updated",
         )
+        BATCH_GENEALOGY_EDGE_INGESTED = (
+            "BATCH_GENEALOGY_EDGE_INGESTED",
+            "ERP genealogy edge ingested",
+        )
+        BATCH_GENEALOGY_EDGE_DUPLICATE = (
+            "BATCH_GENEALOGY_EDGE_DUPLICATE",
+            "Duplicate ERP genealogy edge (idempotent)",
+        )
+        BATCH_GENEALOGY_CYCLE_REJECTED = (
+            "BATCH_GENEALOGY_CYCLE_REJECTED",
+            "Genealogy edge rejected by cycle prevention",
+        )
+        BATCH_GENEALOGY_BACKWARD_TRACE = (
+            "BATCH_GENEALOGY_BACKWARD_TRACE",
+            "Backward genealogy trace executed",
+        )
+        BATCH_GENEALOGY_FORWARD_TRACE = (
+            "BATCH_GENEALOGY_FORWARD_TRACE",
+            "Forward genealogy trace executed",
+        )
+        BATCH_GENEALOGY_POLICY_UPDATED = (
+            "BATCH_GENEALOGY_POLICY_UPDATED",
+            "Genealogy policy stub updated",
+        )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
