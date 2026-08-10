@@ -424,21 +424,16 @@ def test_unauthorized_finalize_denied() -> None:
 
 @pytest.mark.django_db
 def test_cross_org_provenance_fk_denied() -> None:
-    """Site / product / NCR / hold from another org must not attach to a sample."""
-    from apps.capa.models import HoldCase
-    from apps.master_data.models import FGProduct
-    from apps.nonconformance.models import NonConformanceRecord
-    from apps.organizations.models import Site
+    """Site / NCR / hold from another org must not attach to a sample."""
+    from tests.factories import make_site
+
+    from apps.nonconformance.models import HoldCase, NonConformanceRecord
 
     org_a = make_org(code=f"A{uuid.uuid4().hex[:6].upper()}")
     org_b = make_org(code=f"B{uuid.uuid4().hex[:6].upper()}")
     user = make_user(employee_code=f"U{uuid.uuid4().hex[:6].upper()}")
     _grant(user, org_a, LabSample, "register_labsample")
-    site_b = Site.objects.create(
-        organization=org_b,
-        code=f"SB{uuid.uuid4().hex[:4].upper()}",
-        name="Other site",
-    )
+    site_b = make_site(org_b, code=f"SB{uuid.uuid4().hex[:4].upper()}")
     with pytest.raises(PermissionDenied):
         register_lab_sample(
             actor=user,
@@ -446,11 +441,6 @@ def test_cross_org_provenance_fk_denied() -> None:
             code=f"S-{uuid.uuid4().hex[:6].upper()}",
             site=site_b,
         )
-    # Product / NCR / Hold only if models accept minimal create in this suite.
-    product_b = FGProduct.objects.filter(organization=org_b).first()
-    if product_b is None:
-        # Skip product FK when factory seed is unavailable — site denial already proves gate.
-        product_b = None
     ncr_b = NonConformanceRecord.objects.create(
         organization=org_b,
         code=f"NCR-{uuid.uuid4().hex[:6].upper()}",
@@ -466,25 +456,20 @@ def test_cross_org_provenance_fk_denied() -> None:
             code=f"S-{uuid.uuid4().hex[:6].upper()}",
             nonconformance=ncr_b,
         )
-    hold_b = (
-        HoldCase.objects.create(
-            organization=org_b,
-            code=f"H-{uuid.uuid4().hex[:6].upper()}",
-            title="Other hold",
-            status="OPEN",
-            created_by=user,
-        )
-        if hasattr(HoldCase, "objects")
-        else None
+    hold_b = HoldCase.objects.create(
+        organization=org_b,
+        code=f"H-{uuid.uuid4().hex[:6].upper()}",
+        reason_reference="cross-org-hold",
+        status="OPEN",
+        opened_by=user,
     )
-    if hold_b is not None:
-        with pytest.raises(PermissionDenied):
-            register_lab_sample(
-                actor=user,
-                organization=org_a,
-                code=f"S-{uuid.uuid4().hex[:6].upper()}",
-                hold_case=hold_b,
-            )
+    with pytest.raises(PermissionDenied):
+        register_lab_sample(
+            actor=user,
+            organization=org_a,
+            code=f"S-{uuid.uuid4().hex[:6].upper()}",
+            hold_case=hold_b,
+        )
 
 
 @pytest.mark.django_db
@@ -507,3 +492,133 @@ def test_sample_full_lifecycle_to_completed() -> None:
     assert sample.status == LabSampleStatus.COMPLETED
     with pytest.raises(ValidationError):
         transition_lab_sample(actor=user, sample_id=sample.id, to_status=LabSampleStatus.RECEIVED)
+
+
+@pytest.mark.django_db
+def test_sample_cancel_and_invalid_transition() -> None:
+    org = make_org(code=f"L{uuid.uuid4().hex[:6].upper()}")
+    user = make_user(employee_code=f"U{uuid.uuid4().hex[:6].upper()}")
+    _grant(user, org, LabSample, "register_labsample")
+    sample = register_lab_sample(
+        actor=user, organization=org, code=f"S-{uuid.uuid4().hex[:6].upper()}"
+    )
+    with pytest.raises(ValidationError):
+        transition_lab_sample(
+            actor=user, sample_id=sample.id, to_status=LabSampleStatus.COMPLETED
+        )
+    cancelled = transition_lab_sample(
+        actor=user, sample_id=sample.id, to_status=LabSampleStatus.CANCELLED
+    )
+    assert cancelled.status == LabSampleStatus.CANCELLED
+    assert cancelled.cancelled_at is not None
+    with pytest.raises(ValidationError):
+        transition_lab_sample(
+            actor=user, sample_id=sample.id, to_status=LabSampleStatus.RECEIVED
+        )
+
+
+@pytest.mark.django_db
+def test_select_result_rejects_unknown_option_and_verify_gate() -> None:
+    org = make_org(code=f"L{uuid.uuid4().hex[:6].upper()}")
+    user = make_user(employee_code=f"U{uuid.uuid4().hex[:6].upper()}")
+    _grant(user, org, LabSample, "register_labsample")
+    _grant(
+        user,
+        org,
+        LabResult,
+        "enter_labresult",
+        "verify_labresult",
+        "finalize_labresult",
+    )
+    _grant(user, org, LabTestParameter, "manage_laboratory")
+    sample = register_lab_sample(
+        actor=user, organization=org, code=f"S-{uuid.uuid4().hex[:6].upper()}"
+    )
+    param = create_lab_test_parameter(
+        actor=user,
+        organization=org,
+        code="P-SEL2",
+        name="Qual",
+        result_type=LabResultType.SELECT,
+        select_options=["A", "B"],
+    )
+    test = create_lab_test(actor=user, sample_id=sample.id, code="T-SEL2")
+    with pytest.raises(ValidationError):
+        enter_lab_result(
+            actor=user,
+            lab_test_id=test.id,
+            parameter_id=param.id,
+            select_value="NOT-IN-LIST",
+        )
+    result = enter_lab_result(
+        actor=user, lab_test_id=test.id, parameter_id=param.id, select_value="A"
+    )
+    with pytest.raises(ValidationError):
+        finalize_lab_result(actor=user, result_id=result.id)
+    verify_lab_result(actor=user, result_id=result.id)
+
+
+@pytest.mark.django_db
+def test_parameter_bound_validation_and_method_create() -> None:
+    org = make_org(code=f"L{uuid.uuid4().hex[:6].upper()}")
+    user = make_user(employee_code=f"U{uuid.uuid4().hex[:6].upper()}")
+    _grant(user, org, LabTestParameter, "manage_laboratory")
+    method = create_test_method_reference(
+        actor=user, organization=org, code="M-2", title="Opaque"
+    )
+    assert method.is_active is True
+    with pytest.raises(ValidationError):
+        create_lab_test_parameter(
+            actor=user,
+            organization=org,
+            code="P-BAD",
+            name="Bad bounds",
+            result_type=LabResultType.NUMERIC,
+            bound_min=Decimal("10"),
+            bound_max=Decimal("1"),
+        )
+    ok = create_lab_test_parameter(
+        actor=user,
+        organization=org,
+        code="P-OK",
+        name="Ok bounds",
+        result_type=LabResultType.NUMERIC,
+        bound_min=Decimal("1"),
+        bound_max=Decimal("10"),
+        method_reference=method,
+    )
+    assert ok.bound_min == Decimal("1")
+
+
+@pytest.mark.django_db
+def test_positive_release_no_batch_and_policy_disabled_message() -> None:
+    org = make_org(code=f"L{uuid.uuid4().hex[:6].upper()}")
+    gate = evaluate_batch_positive_release_gate(organization=org, batch_reference="")
+    assert gate.blocking is False
+    # Without org policy row, get_or_init creates disabled policy
+    assert gate.reason_code == "POLICY_DISABLED"
+
+
+@pytest.mark.django_db
+def test_amend_requires_reason_and_finalized_only() -> None:
+    org = make_org(code=f"L{uuid.uuid4().hex[:6].upper()}")
+    user = make_user(employee_code=f"U{uuid.uuid4().hex[:6].upper()}")
+    _grant(user, org, LabSample, "register_labsample")
+    _grant(user, org, LabResult, "enter_labresult", "verify_labresult", "finalize_labresult")
+    _grant(user, org, LabTestParameter, "manage_laboratory")
+    sample = register_lab_sample(
+        actor=user, organization=org, code=f"S-{uuid.uuid4().hex[:6].upper()}"
+    )
+    param = create_lab_test_parameter(
+        actor=user, organization=org, code="P-A", name="A", result_type=LabResultType.TEXT
+    )
+    test = create_lab_test(actor=user, sample_id=sample.id, code="T-A")
+    result = enter_lab_result(
+        actor=user, lab_test_id=test.id, parameter_id=param.id, text_value="v1"
+    )
+    with pytest.raises(ValidationError):
+        amend_lab_result(actor=user, result_id=result.id, reason="too early", text_value="x")
+    result = verify_lab_result(actor=user, result_id=result.id)
+    result = finalize_lab_result(actor=user, result_id=result.id)
+    with pytest.raises(ValidationError):
+        amend_lab_result(actor=user, result_id=result.id, reason="x", text_value="y")
