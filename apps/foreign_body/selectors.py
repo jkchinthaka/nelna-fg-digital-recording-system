@@ -13,7 +13,7 @@ from apps.foreign_body.models import (
 )
 
 
-def test_pieces_for_organization(organization_id: uuid.UUID) -> QuerySet[TestPiece]:
+def list_test_pieces_for_organization(organization_id: uuid.UUID) -> QuerySet[TestPiece]:
     return TestPiece.objects.filter(organization_id=organization_id, is_active=True)
 
 

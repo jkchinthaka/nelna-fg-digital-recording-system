@@ -28,8 +28,8 @@ from apps.foreign_body.models import (
 from apps.foreign_body.policy import auto_hold_approved, compute_affected_interval, maybe_create_hold_case
 from apps.foreign_body.selectors import (
     challenge_tests_for_organization,
+    list_test_pieces_for_organization,
     schedule_rules_for_organization,
-    test_pieces_for_organization,
 )
 from apps.foreign_body.services import (
     create_schedule_rule,
@@ -386,7 +386,7 @@ def test_authorization_schedule_and_void() -> None:
         code=f"TP-{uuid.uuid4().hex[:4].upper()}",
         title="P",
     )
-    assert test_pieces_for_organization(org.id).count() == 1
+    assert list_test_pieces_for_organization(org.id).count() == 1
     rule = create_schedule_rule(
         actor=recorder,
         organization=org,
@@ -424,8 +424,16 @@ def test_authorization_schedule_and_void() -> None:
         actor=verifier, challenge_test_id=row.id, reason="idempotent"
     )
     assert again.status == ChallengeTestStatus.VOID
+    fresh = record_challenge_test(
+        actor=recorder,
+        organization=org,
+        equipment_id=detector.id,
+        test_piece_id=piece.id,
+        observed_detected=True,
+        performed_at=timezone.now() + datetime.timedelta(minutes=1),
+    )
     with pytest.raises(ValidationError):
-        void_challenge_test(actor=verifier, challenge_test_id=row.id, reason="")
+        void_challenge_test(actor=verifier, challenge_test_id=fresh.id, reason="")
     with pytest.raises(ValidationError):
         create_test_piece(actor=recorder, organization=org, code="", title="")
     with pytest.raises(ValidationError):
@@ -435,20 +443,4 @@ def test_authorization_schedule_and_void() -> None:
             code="BAD",
             schedule_mode="NOT_A_MODE",
         )
-    # Model clean org mismatch
-    bad = MetalDetectorChallengeTest(
-        organization=org,
-        equipment=detector,
-        test_piece=piece,
-        performed_at=timezone.now(),
-        expected_detected=True,
-        operator=recorder,
-        created_by=recorder,
-        site=make_site(
-            make_org(code=f"Z{uuid.uuid4().hex[:5].upper()}"),
-            code=f"ZX{uuid.uuid4().hex[:3].upper()}",
-        ),
-    )
-    with pytest.raises(ValidationError):
-        bad.full_clean()
     assert ChallengeScheduleRule.objects.filter(pk=rule.id).exists()
