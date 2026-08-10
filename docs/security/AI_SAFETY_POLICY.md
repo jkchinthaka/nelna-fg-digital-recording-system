@@ -14,18 +14,21 @@ Define how optional AI assistance may be used without undermining food-safety ac
 - Anomaly hints that a human must interpret
 - Non-binding summaries for human reviewers
 - Local-model experimentation in non-production first
+- Phase 18 technical catalogue: summarize batch history / NCR-CAPA, explain report metrics, assist search, trend narration (all advisory)
 
-AI features are **out of MVP** and belong to later roadmap phases.
+AI features remain **optional**. `AI_ASSISTANCE_ENABLED` defaults **OFF**. Core recording, review, and release must work with AI disabled.
 
 ## Prohibited AI decisions
 
 AI must **never** make final decisions for:
 
 - Food-safety disposition
-- QA verification outcome
+- QA verification outcome (RELEASE / HOLD / REJECT)
 - Loading release
 - CAPA closure
 - Access control grant/deny/escalate
+- Checklist publish / specification change / ERP disposition writes
+- Declaring root cause as fact
 
 Deterministic configured rules and human approvals remain authoritative.
 
