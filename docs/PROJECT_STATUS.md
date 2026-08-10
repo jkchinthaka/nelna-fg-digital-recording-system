@@ -71,8 +71,9 @@ This document records **repository evidence**. It does not invent Nelna operatio
 | `ai_assistance` | **18** | IMPLEMENTED foundation · optional advisory AI (default OFF); never final quality decisions |
 | `laboratory` | **22** | IMPLEMENTED foundation · sample/test/result; positive-release stub default OFF; catalogue EVIDENCE REQUIRED |
 | `haccp` | **23** | IMPLEMENTED foundation · versioned plan shells; no Nelna CCPs/limits; auto HOLD/NCR default OFF; company plan EVIDENCE REQUIRED |
+| `sampling` | **24** | IMPLEMENTED foundation · versioned sampling plans; no ISO/AQL tables; sampling REJECT ≠ QA REJECT; company tables EVIDENCE REQUIRED |
 
-Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 23)._ (`loading` controls are delivered inside `dispatch` for Phase 13 — see ADR-025.)
+Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 24)._ (`loading` controls are delivered inside `dispatch` for Phase 13 — see ADR-025.)
 
 ---
 
