@@ -244,12 +244,13 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | --- | --- |
 | Objective | MinIO/S3 evidence upload, attachment metadata, and controlled access |
 | Inputs | Security baseline; volume assumptions (ASM-017) |
-| Outputs | `evidence` module |
+| Outputs | `evidence` module — private attachments, SHA-256, auth download, soft-retire, scanner interface |
 | Approval gate | IT security review of access patterns |
-| Branch naming | `feature/phase-11-evidence-storage` |
-| Exit criteria | No DB BLOBs; signed URL pattern |
-| Dependencies | Phase 08+ (can start in parallel after foundation) |
-| Notes | **Not** Phase 04. Malware scanning and retention remain deferred until decided. |
+| Branch naming | Direct-main quality-first for Phase 11 technical foundation |
+| Exit criteria | No DB BLOBs; private storage; authorized download; allowlist/size/hash; soft-retire; honest NOT_CONFIGURED scan status. Signed URL / MinIO production IAM remain follow-up |
+| Dependencies | Phase 08+ |
+| Notes | **Not** Phase 04. Malware scanning and retention remain deferred until decided. See ADR-023. |
+| Status | **11 implemented** — production object-store IAM / active malware scanner still EVIDENCE REQUIRED |
 
 ## Phase 12 — Non-conformance, holds and CAPA
 

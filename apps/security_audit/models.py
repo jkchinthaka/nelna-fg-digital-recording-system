@@ -309,6 +309,22 @@ class SecurityAuditEvent(models.Model):
             "SUPPLIER_QUALITY_EVENT_RECORDED",
             "Supplier quality event recorded",
         )
+        EVIDENCE_UPLOADED = (
+            "EVIDENCE_UPLOADED",
+            "Evidence attachment uploaded",
+        )
+        EVIDENCE_DOWNLOADED = (
+            "EVIDENCE_DOWNLOADED",
+            "Evidence attachment downloaded",
+        )
+        EVIDENCE_RETIRED = (
+            "EVIDENCE_RETIRED",
+            "Evidence attachment soft-retired",
+        )
+        EVIDENCE_ACCESS_DENIED = (
+            "EVIDENCE_ACCESS_DENIED",
+            "Evidence attachment access denied or missing blob",
+        )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     event_type = models.CharField(max_length=64, choices=EventType.choices)

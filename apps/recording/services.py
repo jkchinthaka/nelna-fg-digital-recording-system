@@ -568,7 +568,7 @@ def _apply_equipment_refs(
             response.equipment = None
             response.evidence_hook = {
                 "status": "EQUIPMENT_REFERENCE_CLEARED",
-                "attachment_module": "Phase 11 - not available",
+                "attachment_module": "Phase 11 - apps.evidence available",
             }
             response.save(update_fields=["equipment", "evidence_hook", "updated_at"])
             continue
@@ -584,7 +584,7 @@ def _apply_equipment_refs(
             "status": "EQUIPMENT_REFERENCE_SET",
             "equipment_id": str(equipment.id),
             "equipment_code": equipment.code,
-            "attachment_module": "Phase 11 - not available",
+            "attachment_module": "Phase 11 - apps.evidence available",
             "calibration_policy": "EVIDENCE REQUIRED - not enforced on draft save",
         }
         response.save(update_fields=["equipment", "evidence_hook", "updated_at"])
@@ -984,6 +984,9 @@ def submit_checklist_record(
             ChecklistSubmissionResponse.objects.bulk_create(snapshot_rows)
 
             transition_record_to_submitted(record)
+            from apps.evidence.services import mark_draft_response_evidence_immutable_for_record
+
+            mark_draft_response_evidence_immutable_for_record(record_id=record.id)
             record_event(
                 event_type="CHECKLIST_RECORD_SUBMITTED",
                 actor=user,

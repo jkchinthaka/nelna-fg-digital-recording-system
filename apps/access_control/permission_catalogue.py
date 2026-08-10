@@ -20,6 +20,7 @@ class CapabilityBucket(StrEnum):
     SUPERVISOR_REVIEW = "supervisor_review"
     CORRECTION = "correction"
     QA_REVIEW = "qa_review"
+    EVIDENCE = "evidence"
     MASTER_DATA = "master_data"
     CHECKLIST_PUBLISH = "checklist_publish"
     AUDIT_ACCESS = "audit_access"
@@ -308,6 +309,30 @@ PERMISSION_CATALOGUE: Final[tuple[PermissionCatalogueEntry, ...]] = (
         scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE, ObjectScope.DEPARTMENT),
         description="Record immutable QA final disposition (RELEASE/HOLD/REJECT labels).",
         notes="Does not imply Supervisor review or recording.",
+    ),
+    PermissionCatalogueEntry(
+        key="upload_evidenceattachment",
+        permission="evidence.upload_evidenceattachment",
+        bucket=CapabilityBucket.EVIDENCE,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE, ObjectScope.DEPARTMENT),
+        description="Upload optional evidence attachments to allowlisted quality objects.",
+        notes="Does not force evidence for checklist items; parent capability also required.",
+    ),
+    PermissionCatalogueEntry(
+        key="view_evidenceattachment",
+        permission="evidence.view_evidenceattachment",
+        bucket=CapabilityBucket.EVIDENCE,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE, ObjectScope.DEPARTMENT),
+        description="View/download evidence via authorized endpoints (no public URLs).",
+        notes="Every download is authorization-checked; binaries stay in private storage.",
+    ),
+    PermissionCatalogueEntry(
+        key="retire_evidenceattachment",
+        permission="evidence.retire_evidenceattachment",
+        bucket=CapabilityBucket.EVIDENCE,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE, ObjectScope.DEPARTMENT),
+        description="Soft-retire evidence (no casual hard-delete), including immutable linkages.",
+        notes="Immutable parent linkages require this permission plus a retirement reason.",
     ),
     PermissionCatalogueEntry(
         key="audit_event_view",

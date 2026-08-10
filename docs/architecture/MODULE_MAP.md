@@ -30,7 +30,7 @@ Do **not** rename FG master data, checklist, recording, review, or evidence work
 | capa | Corrective and preventive actions | CAPA entities | CAPA lifecycle services | No AI final CAPA closure | **12** |
 | loading | Loading controls | Loading check records | Loading workflow services | Post-MVP | **13** |
 | dispatch | Dispatch-related controls | Dispatch records as approved | Dispatch services | Post-MVP; no ERP DB writes | **13** |
-| evidence | Evidence metadata and storage orchestration | Evidence metadata; object keys | Upload/register/access services | No PostgreSQL BLOB storage of files | **11** |
+| evidence | Evidence metadata and private storage orchestration (Phase 11) | EvidenceAttachment (no BLOBs) | upload/download/soft-retire; private store; SHA-256; scanner stub | No PostgreSQL BLOBs; no public MEDIA URLs; no fake malware scanning claims; no casual hard-delete | **11** |
 | notifications | Email/SMS/in-app notifications | Notification outbox/status | Notify services | Must not bypass auth to spam users | **15** |
 | reports | Operational and management reports | Report definitions/runs as needed | Report generation services | Must not claim unsupported compliance | **16** |
 | integrations | ERP and external API adapters | Integration configs, cursors, logs | Anti-corruption adapters | **No direct ERP database writes** | **17** |

@@ -59,8 +59,9 @@ This document records **repository evidence**. It does not invent Nelna operatio
 | `recording` | 08A–08C + 09B | IMPLEMENTED · shop-floor hardening + draft/submit; production recording **BLOCKED** |
 | `reviews` | 09A–09C | IMPLEMENTED · governance hardening + immutable review; production Supervisor review **BLOCKED** |
 | `quality` | 10A | IMPLEMENTED · production QA **BLOCKED**; no ERP/warehouse/dispatch side effects |
+| `evidence` | **11** | IMPLEMENTED · private attachments + SHA-256 + soft-retire; malware scanner NOT_CONFIGURED; object-store IAM **EVIDENCE REQUIRED** |
 
-Not started (by MODULE_MAP): `evidence`, `nonconformance`, `capa`, `loading`, `dispatch`, `notifications`, `reports`, `integrations`, `ai_assistance`.
+Not started (by MODULE_MAP): `loading`, `dispatch`, `notifications`, `reports`, `integrations`, `ai_assistance`.
 
 ---
 
@@ -105,7 +106,8 @@ Not started (by MODULE_MAP): `evidence`, `nonconformance`, `capa`, `loading`, `d
 | 10A QA disposition | Complete (manual RELEASE/HOLD/REJECT only) | Production QA blocked; post-QA workflows not started |
 | 10B Workflow lifecycle | Technical complete - derived operational workflow (ADR-022); no duplicated status columns | Production still BLOCKED; QA does not close warehouse/ERP/dispatch |
 | 10C+ Post-QA operational | Not started | EVIDENCE REQUIRED |
-| 11–21 Later roadmap | Not started | N/A |
+| 11 Evidence attachments | Technical complete — private store, SHA-256, auth download, soft-retire, scanner NOT_CONFIGURED | Object-store IAM / active malware scanner EVIDENCE REQUIRED |
+| 12–21 Later roadmap | Not started | N/A |
 
 ---
 
@@ -154,7 +156,7 @@ Tracked for request/approval workflow: [governance/APPROVAL_REGISTER.md](governa
 | Phase 10A Docker re-validation | Outstanding | Claiming TECHNICALLY VALIDATED for 10A in Docker |
 | Direct-main delivery vs PR-only rule text | Process debt | Consistency of contribution docs |
 | Unseeded permissions without role assignment | By design until owners map | Operational use |
-| Evidence module | Not started | Later MVP completeness |
+| Evidence module | Phase 11 technical complete (ADR-023) | Object-store IAM / active malware scan EVIDENCE REQUIRED |
 
 ---
 
@@ -313,4 +315,10 @@ Supervisor review governance hardening: Phase 03C permission mappings (no invent
 **STATUS: PHASE 10B WORKFLOW LIFECYCLE COMPLETE**
 
 Derived operational workflow (ADR-022): authoritative state remains on Task / Record / Submission / SupervisorReview / Correction / QAReview. One read-time lifecycle label (`PENDING` … `QA_*` / `CANCELLED`) with consistent badges and queue filters. QA terminals are provisional in-app dispositions only — they do not close warehouse / ERP / dispatch.
+
+## Phase 11 delivery status
+
+**STATUS: PHASE 11 EVIDENCE ATTACHMENTS COMPLETE**
+
+Secure quality evidence attachments (ADR-023): private storage, allowlisted types, SHA-256 integrity, authorized download, soft-retire only, malware scanner interface defaulting to NOT_CONFIGURED. Production MinIO/S3 IAM and active scanning remain EVIDENCE REQUIRED.
 

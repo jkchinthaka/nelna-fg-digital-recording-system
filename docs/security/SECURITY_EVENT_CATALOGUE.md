@@ -76,6 +76,10 @@
 | `CHECKLIST_CORRECTION_STARTED` | Controlled correction cycle started for a RETURNED submission |
 | `CHECKLIST_CORRECTION_RESUBMITTED` | Correction resubmitted as next immutable ChecklistSubmission |
 | `QA_REVIEW_COMPLETED` | Immutable QA disposition recorded for a ChecklistSubmission |
+| `EVIDENCE_UPLOADED` | Evidence attachment stored in private storage (SHA-256; no answer values) |
+| `EVIDENCE_DOWNLOADED` | Authorized evidence download served (attachment disposition) |
+| `EVIDENCE_RETIRED` | Evidence soft-retired (no hard delete) |
+| `EVIDENCE_ACCESS_DENIED` | Evidence download denied or blob missing |
 
 ## Safe metadata
 

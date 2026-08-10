@@ -65,6 +65,7 @@ INSTALLED_APPS = [
     "apps.recording",
     "apps.reviews",
     "apps.quality",
+    "apps.evidence",
     "apps.nonconformance",
     "apps.capa",
     "apps.supplier_quality",
@@ -146,6 +147,15 @@ STATICFILES_DIRS = [BASE_DIR / "static" / "dist"]
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+# Phase 11 — private evidence storage (never mapped as world-readable MEDIA_URL).
+# Production object-store IAM/lifecycle remain EVIDENCE REQUIRED (DEC-008 / ASM-017).
+EVIDENCE_STORAGE_ROOT = Path(
+    env("EVIDENCE_STORAGE_ROOT", default=str(BASE_DIR / "media" / "evidence_private"))
+)
+EVIDENCE_MAX_UPLOAD_BYTES = env.int("EVIDENCE_MAX_UPLOAD_BYTES", default=10 * 1024 * 1024)
+EVIDENCE_MALWARE_SCANNER = env("EVIDENCE_MALWARE_SCANNER", default="")
+# Empty scanner path => NullMalwareScanner (NOT_CONFIGURED). Do not claim scanning active.
 
 REDIS_URL = env("REDIS_URL", default="redis://127.0.0.1:6379/0")
 REDIS_CACHE_TIMEOUT = env.int("REDIS_CACHE_TIMEOUT", default=300)
