@@ -720,6 +720,7 @@ def complete_dispatch_quality_record(
 
 
 @transaction.atomic
+@transaction.atomic
 def cancel_dispatch_quality_record(
     *,
     actor: User | None,
