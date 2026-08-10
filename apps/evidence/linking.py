@@ -11,6 +11,7 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from apps.access_control.services import Scope, user_has_permission
 from apps.accounts.models import User
 from apps.capa.models import CorrectiveAction
+from apps.laboratory.models import LabExternalCertificate, LabSample
 from apps.evidence.models import EvidenceLinkedKind
 from apps.nonconformance.models import NonConformanceRecord
 from apps.quality.models import QAReview
@@ -31,6 +32,10 @@ REVIEW_SUBMISSION = "reviews.review_checklistsubmission"
 QA_REVIEW_SUBMISSION = "quality.qa_review_checklistsubmission"
 MANAGE_NCR = "nonconformance.manage_nonconformance"
 MANAGE_CAPA = "capa.manage_capa"
+VIEW_LAB = "laboratory.view_laboratory"
+REGISTER_SAMPLE = "laboratory.register_labsample"
+ENTER_RESULT = "laboratory.enter_labresult"
+MANAGE_LAB = "laboratory.manage_laboratory"
 
 
 @dataclass(frozen=True, slots=True)
@@ -154,6 +159,32 @@ def resolve_linked_target(*, kind: str, object_id: uuid.UUID) -> LinkedTarget:
             obj=capa,
         )
 
+    if kind == EvidenceLinkedKind.LAB_SAMPLE:
+        sample = LabSample.objects.filter(pk=object_id).first()
+        if sample is None:
+            raise ValidationError({"linked_object_id": "Laboratory sample not found."})
+        return LinkedTarget(
+            kind=kind,
+            object_id=sample.id,
+            organization_id=sample.organization_id,
+            linkage_immutable=sample.status in {"COMPLETED", "CANCELLED"},
+            obj=sample,
+        )
+
+    if kind == EvidenceLinkedKind.LAB_EXTERNAL_CERTIFICATE:
+        cert = LabExternalCertificate.objects.filter(pk=object_id).first()
+        if cert is None:
+            raise ValidationError(
+                {"linked_object_id": "Laboratory external certificate not found."}
+            )
+        return LinkedTarget(
+            kind=kind,
+            object_id=cert.id,
+            organization_id=cert.organization_id,
+            linkage_immutable=True,
+            obj=cert,
+        )
+
     raise ValidationError({"linked_kind": "Unsupported linked kind."})
 
 
@@ -232,6 +263,36 @@ def _assert_parent_access(*, actor: User, target: LinkedTarget, for_mutate: bool
 
     if kind == EvidenceLinkedKind.CAPA:
         if not user_has_permission(actor, MANAGE_CAPA, scope=org_scope):
+            raise PermissionDenied("Permission denied.")
+        return
+
+    if kind == EvidenceLinkedKind.LAB_SAMPLE:
+        allowed = (
+            user_has_permission(actor, VIEW_LAB, scope=org_scope)
+            or user_has_permission(actor, REGISTER_SAMPLE, scope=org_scope)
+            or user_has_permission(actor, MANAGE_LAB, scope=org_scope)
+        )
+        if not allowed:
+            raise PermissionDenied("Permission denied.")
+        if for_mutate and target.linkage_immutable:
+            raise ValidationError(
+                {
+                    "linked_object_id": (
+                        "Evidence cannot be attached to a completed/cancelled lab sample "
+                        "without controlled retirement policy."
+                    )
+                }
+            )
+        return
+
+    if kind == EvidenceLinkedKind.LAB_EXTERNAL_CERTIFICATE:
+        allowed = (
+            user_has_permission(actor, VIEW_LAB, scope=org_scope)
+            or user_has_permission(actor, ENTER_RESULT, scope=org_scope)
+            or user_has_permission(actor, MANAGE_LAB, scope=org_scope)
+            or user_has_permission(actor, REGISTER_SAMPLE, scope=org_scope)
+        )
+        if not allowed:
             raise PermissionDenied("Permission denied.")
         return
 
