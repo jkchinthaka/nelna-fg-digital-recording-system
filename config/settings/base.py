@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     "apps.notifications",
     "apps.reports",
     "apps.integrations",
+    "apps.ai_assistance",
     "apps.supplier_quality",
     "apps.access_control",
     "apps.security_audit",
@@ -184,6 +185,14 @@ BILEETA_VERIFY_TLS = env.bool("BILEETA_VERIFY_TLS", default=True)
 # Auth material must come from env/vault only — never commit real secrets.
 BILEETA_CLIENT_ID = env("BILEETA_CLIENT_ID", default="")
 BILEETA_CLIENT_SECRET = env("BILEETA_CLIENT_SECRET", default="")
+
+# Phase 18 — optional AI assistance (OFF by default; advisory only).
+AI_ASSISTANCE_ENABLED = env.bool("AI_ASSISTANCE_ENABLED", default=False)
+AI_ASSISTANCE_PROVIDER = env("AI_ASSISTANCE_PROVIDER", default="null")  # null|mock (future vendors via interface)
+AI_ASSISTANCE_TIMEOUT_SECONDS = env.float("AI_ASSISTANCE_TIMEOUT_SECONDS", default=15.0)
+AI_ASSISTANCE_STORE_PROMPTS = env.bool("AI_ASSISTANCE_STORE_PROMPTS", default=False)
+OLLAMA_BASE_URL = env("OLLAMA_BASE_URL", default="")
+OLLAMA_MODEL = env("OLLAMA_MODEL", default="")
 
 REDIS_URL = env("REDIS_URL", default="redis://127.0.0.1:6379/0")
 REDIS_CACHE_TIMEOUT = env.int("REDIS_CACHE_TIMEOUT", default=300)

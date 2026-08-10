@@ -25,6 +25,7 @@ class CapabilityBucket(StrEnum):
     NOTIFICATIONS = "notifications"
     REPORTING = "reporting"
     INTEGRATIONS = "integrations"
+    AI_ASSISTANCE = "ai_assistance"
     EVIDENCE = "evidence"
     MASTER_DATA = "master_data"
     CHECKLIST_PUBLISH = "checklist_publish"
@@ -403,6 +404,22 @@ PERMISSION_CATALOGUE: Final[tuple[PermissionCatalogueEntry, ...]] = (
         scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE, ObjectScope.SYSTEM_WIDE),
         description="Ingest mock/contract batch events via integration boundary.",
         notes="Must not invent endpoints; outbound disposition blocked without APR-017.",
+    ),
+    PermissionCatalogueEntry(
+        key="use_aiassistance",
+        permission="ai_assistance.use_aiassistance",
+        bucket=CapabilityBucket.AI_ASSISTANCE,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Use advisory AI assistance within organization scope.",
+        notes="AI never RELEASE/HOLD/REJECT, close CAPA, publish, or change roles/specs.",
+    ),
+    PermissionCatalogueEntry(
+        key="view_aiassistanceaudit",
+        permission="ai_assistance.view_aiassistanceaudit",
+        bucket=CapabilityBucket.AI_ASSISTANCE,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="View high-level AI assistance usage audit metadata.",
+        notes="Full prompts are not stored by default.",
     ),
     PermissionCatalogueEntry(
         key="manage_supplierquality_qa",

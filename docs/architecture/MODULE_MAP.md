@@ -35,7 +35,7 @@ Do **not** rename FG master data, checklist, recording, review, or evidence work
 | reports | Governed quality reports (16) | ReportRun; catalogue codes | run/export CSV; async generation; org RBAC | Immutable snapshots for history; no Excel/PDF yet; no compliance claims | **16** |
 | integrations | ERP/Bileeta anti-corruption boundary (17) | IntegrationAttempt; vendor evidence register; mock + gated live client | ingest mock/contract events; reconcile; prepare outbound | **No invented endpoints**; live HTTP blocked; no ERP DB writes; outbound disposition not approved | **17** |
 | audit | Audit event recording and export support | Audit events | Append-only audit APIs | Must not allow silent audit deletion | Cross-cutting from 03+ |
-| ai_assistance | Optional local AI assistance | Prompt/output logs as required | Advisory suggestion APIs only | Must not make final FS/QA decisions | **18** |
+| ai_assistance | Optional safe quality AI assistance (18) | AIAssistanceRequest | advisory request; anomaly hints | Never final FS/QA/loading/CAPA/access decisions; default OFF | **18** |
 
 ## Phase mapping reminder
 

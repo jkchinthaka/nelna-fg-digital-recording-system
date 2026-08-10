@@ -446,6 +446,22 @@ class SecurityAuditEvent(models.Model):
             "INTEGRATION_OUTBOUND_BLOCKED",
             "Outbound ERP disposition blocked pending approval",
         )
+        AI_ASSISTANCE_COMPLETED = (
+            "AI_ASSISTANCE_COMPLETED",
+            "AI assistance request completed (advisory)",
+        )
+        AI_ASSISTANCE_BLOCKED = (
+            "AI_ASSISTANCE_BLOCKED",
+            "AI assistance request blocked (safety/auth)",
+        )
+        AI_ASSISTANCE_DISABLED = (
+            "AI_ASSISTANCE_DISABLED",
+            "AI assistance invoked while feature disabled",
+        )
+        AI_ASSISTANCE_FALLBACK = (
+            "AI_ASSISTANCE_FALLBACK",
+            "AI assistance safe fallback after provider failure/timeout",
+        )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 

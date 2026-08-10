@@ -333,13 +333,14 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 
 | Field | Content |
 | --- | --- |
-| Objective | Optional local AI assistance |
+| Objective | Optional local AI assistance without delegating quality decisions |
 | Inputs | AI safety policy |
-| Outputs | `ai_assistance` |
-| Approval gate | QA + IT |
-| Branch naming | `feature/phase-18-local-ai` |
-| Exit criteria | Advisory only; core flows work with AI off |
+| Outputs | `apps.ai_assistance`; ADR-030 |
+| Approval gate | QA + IT acknowledgement before enabling in non-dev |
+| Branch naming | Direct-main quality-first for Phase 18 foundation |
+| Exit criteria | Advisory only; core flows work with AI off; safety tests |
 | Dependencies | Stable workflows; AI policy acknowledgement |
+| Status | **Technical foundation IMPLEMENTED** — enablement / prompt retention EVIDENCE REQUIRED |
 
 ## Phase 19 — Security, backup, monitoring and performance
 

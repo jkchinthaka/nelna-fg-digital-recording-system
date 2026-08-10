@@ -25,6 +25,7 @@ ALLOWED_APPS = {
     "notifications",
     "reports",
     "integrations",
+    "ai_assistance",
     "supplier_quality",
     "access_control",
     "security_audit",

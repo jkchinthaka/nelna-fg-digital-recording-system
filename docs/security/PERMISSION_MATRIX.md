@@ -113,3 +113,13 @@ Official report packs, Excel/PDF, and production distribution remain APPROVAL RE
 | manage_integrationboundary | `integrations.manage_integrationboundary` | Ingest mock/contract events, dead-letter, reconciliation ops |
 
 Live Bileeta HTTP remains blocked until APR-011/012 evidence is PRESENT. Outbound disposition send remains blocked until APR-017.
+
+
+## Phase 18 safe AI assistance permissions (technical)
+
+| key | permission | notes |
+| --- | --- | --- |
+| use_aiassistance | `ai_assistance.use_aiassistance` | Invoke optional advisory AI (still requires feature flag ON) |
+| view_aiassistanceaudit | `ai_assistance.view_aiassistanceaudit` | View high-level AI usage audit rows |
+
+AI default OFF. AI must not execute RELEASE/HOLD/REJECT, publish, spec/role changes, ERP disposition, CAPA close, or factual root-cause declarations.

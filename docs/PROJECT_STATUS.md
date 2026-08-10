@@ -68,8 +68,9 @@ This document records **repository evidence**. It does not invent Nelna operatio
 | `notifications` | **15** | IMPLEMENTED foundation · in-app + optional SMTP; events default OFF; no SMS; privacy-safe payloads only |
 | `reports` | **16** | IMPLEMENTED foundation · catalogue + org-scoped CSV runs; immutable submission sources; Excel/PDF not implemented |
 | `integrations` | **17** | BOUNDARY ONLY · contracts/mocks/dead-letter/reconciliation; **live Bileeta blocked** (APR-011/012) |
+| `ai_assistance` | **18** | IMPLEMENTED foundation · optional advisory AI (default OFF); never final quality decisions |
 
-Not started (by MODULE_MAP): `ai_assistance`. (`loading` controls are delivered inside `dispatch` for Phase 13 — see ADR-025.)
+Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 18)._ (`loading` controls are delivered inside `dispatch` for Phase 13 — see ADR-025.)
 
 ---
 
@@ -121,7 +122,8 @@ Not started (by MODULE_MAP): `ai_assistance`. (`loading` controls are delivered 
 | 15 Notifications | Technical complete — in-app notifications + optional SMTP; events default OFF; SMS not integrated (ADR-027) | Event matrix / SMTP / SMS provider EVIDENCE REQUIRED |
 | 16 Reporting | Technical complete — catalogue, org RBAC, immutable submission sources, CSV + formula injection guard, async ReportRun (ADR-028) | Official report packs / Excel-PDF need EVIDENCE REQUIRED |
 | 17 ERP / Bileeta | Adapter boundary complete — contracts/mocks, evidence gate, dead-letter, reconciliation, outbound prepare-only (ADR-029) | **BLOCKED — VENDOR API EVIDENCE REQUIRED** (APR-011/012/016/017) |
-| 18–21 Later roadmap | Not started | N/A |
+| 18 Safe AI assistance | Technical complete — optional advisory AI default OFF; provider abstraction; safety gates (ADR-030) | QA/IT policy acknowledgement + prompt retention EVIDENCE REQUIRED |
+| 19–21 Later roadmap | Not started | N/A |
 
 ---
 
@@ -371,4 +373,10 @@ Governed quality reporting foundation (ADR-028): org-scoped catalogue and `Repor
 **STATUS: PHASE 17 BLOCKED — VENDOR API EVIDENCE REQUIRED**
 
 Bileeta/ERP adapter boundary (ADR-029): `apps.integrations` with inbound contracts mapped only to the Phase 07F consumer, mock sandbox behaviours, live HTTP hard-gated, idempotent attempts + dead-letter, reconciliation, outbound disposition interface prepare-only (APR-017). No invented endpoints, no live connector, no ERP DB writes. Re-open live calls only after APR-011/012 artefacts land in the vendor evidence register.
+
+## Phase 18 delivery status
+
+**STATUS: PHASE 18 SAFE AI FOUNDATION COMPLETE**
+
+Safe quality AI assistance foundation (ADR-030): optional advisory assistance behind env flag (default OFF); allowed summarization/search/trend use cases with advisory anomaly hints; hard deny of RELEASE/HOLD/REJECT and other prohibited actions; org RBAC before context; provider abstraction (null/mock); audited usage without full prompt storage by default. Core workflows do not depend on AI.
 

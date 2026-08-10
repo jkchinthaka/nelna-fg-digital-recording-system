@@ -118,6 +118,10 @@
 | `INTEGRATION_LIVE_BLOCKED` | Live Bileeta pull blocked by evidence gate |
 | `INTEGRATION_DEAD_LETTER` | Integration attempt marked dead letter |
 | `INTEGRATION_OUTBOUND_BLOCKED` | Outbound ERP disposition blocked pending APR-017 |
+| `AI_ASSISTANCE_COMPLETED` | AI assistance request completed (advisory) (Phase 18) |
+| `AI_ASSISTANCE_BLOCKED` | AI assistance request blocked (safety/auth) |
+| `AI_ASSISTANCE_DISABLED` | AI assistance invoked while feature disabled |
+| `AI_ASSISTANCE_FALLBACK` | AI assistance safe fallback after provider failure/timeout |
 
 ## Safe metadata
 
