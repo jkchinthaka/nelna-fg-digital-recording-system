@@ -75,6 +75,7 @@ INSTALLED_APPS = [
     "apps.environmental",
     "apps.packaging",
     "apps.changeover",
+    "apps.receiving",
     "apps.nonconformance",
     "apps.capa",
     "apps.dispatch",

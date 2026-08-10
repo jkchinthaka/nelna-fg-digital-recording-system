@@ -44,6 +44,7 @@ Do **not** rename FG master data, checklist, recording, review, or evidence work
 | environmental | Environmental monitoring foundation (28) | MonitoringPoint; MonitoringParameter; MonitoringSpecVersion; MonitoringLimitRule; MonitoringReading; MonitoringTrendIndex | record MANUAL/LAB/SENSOR; evaluate limits; trend index; excursion events | No invented limits; auto-HOLD default OFF; PostgreSQL SoR | **28** |
 | packaging | Packaging label / artwork verification (29) | PackagingArtwork; ArtworkVersion; ChecklistItemArtworkBinding; LineClearanceArtworkHook; ArtworkVerificationRecord | draft/approve artwork; bind checklist; verify observed version; freeze history | No shelf-life math; no invented date-codes/artwork numbers; manage≠approve | **29** |
 | changeover | Allergen / changeover / line-clearance foundation (30) | AllergenReference; ProductAllergenDeclaration; ChangeoverRecord; LineClearanceRecord; AllergenRiskPolicy | record changeover; checklist-driven clearance; dual-gate block (default OFF) | No invented allergen lists/cleaning/sequencing; matrix block default OFF | **30** |
+| receiving | Raw / material receiving quality (31) | MaterialReference; MaterialSpecification*; ReceiptQualityRecord; ReceiptLabSampleLink | record receipt quality; disposition local-only; link LIMS; ERP outbound blocked | No ERP stock update; no invented material catalogues/limits | **31** |
 
 ## Phase mapping reminder
 

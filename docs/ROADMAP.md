@@ -462,3 +462,11 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Objective | Configurable allergen declaration, changeover, and checklist-driven line clearance |
 | Outputs | `apps.changeover`; ADR-042; production-block dual-gate default OFF |
 | Status | **Technical foundation delivered** on `main` |
+
+## Phase 31 — Raw / material receiving quality
+
+| Field | Content |
+| --- | --- |
+| Objective | Incoming material quality against ERP GRN without owning inventory |
+| Outputs | `apps.receiving`; ADR-043; LIMS link; ERP outbound blocked |
+| Status | **Technical foundation delivered** on `main` |

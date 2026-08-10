@@ -46,6 +46,10 @@ class EvidenceLinkedKind(models.TextChoices):
         "LINE_CLEARANCE_RECORD",
         "Line clearance record",
     )
+    RECEIPT_QUALITY_RECORD = (
+        "RECEIPT_QUALITY_RECORD",
+        "Raw material receipt quality record",
+    )
 
 
 class EvidenceLifecycleStatus(models.TextChoices):

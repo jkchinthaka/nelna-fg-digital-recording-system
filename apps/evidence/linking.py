@@ -26,6 +26,7 @@ from apps.sanitation.models import SanitationProgram
 from apps.environmental.models import MonitoringReading
 from apps.packaging.models import ArtworkVersion
 from apps.changeover.models import ChangeoverRecord, LineClearanceRecord
+from apps.receiving.models import ReceiptQualityRecord
 from apps.scheduling.services import RECORD_CHECKLIST_TASK
 
 UPLOAD_EVIDENCE = "evidence.upload_evidenceattachment"
@@ -54,6 +55,9 @@ APPROVE_PACKAGING = "packaging.approve_packagingartwork"
 VIEW_CHANGEOVER = "changeover.view_changeover"
 MANAGE_CHANGEOVER = "changeover.manage_changeover"
 VERIFY_CHANGEOVER = "changeover.verify_changeover"
+VIEW_RECEIVING = "receiving.view_receiptquality"
+MANAGE_RECEIVING = "receiving.manage_receiptquality"
+DISPOSITION_RECEIVING = "receiving.disposition_receiptquality"
 
 
 @dataclass(frozen=True, slots=True)
@@ -292,6 +296,21 @@ def resolve_linked_target(*, kind: str, object_id: uuid.UUID) -> LinkedTarget:
             obj=clearance,
         )
 
+    if kind == EvidenceLinkedKind.RECEIPT_QUALITY_RECORD:
+        receipt = ReceiptQualityRecord.objects.filter(pk=object_id).first()
+        if receipt is None:
+            raise ValidationError(
+                {"linked_object_id": "Receipt quality record not found."}
+            )
+        return LinkedTarget(
+            kind=kind,
+            object_id=receipt.id,
+            organization_id=receipt.organization_id,
+            linkage_immutable=receipt.quality_state
+            != "PENDING_INSPECTION",
+            obj=receipt,
+        )
+
     raise ValidationError({"linked_kind": "Unsupported linked kind."})
 
 
@@ -458,6 +477,16 @@ def _assert_parent_access(*, actor: User, target: LinkedTarget, for_mutate: bool
             user_has_permission(actor, VIEW_CHANGEOVER, scope=org_scope)
             or user_has_permission(actor, MANAGE_CHANGEOVER, scope=org_scope)
             or user_has_permission(actor, VERIFY_CHANGEOVER, scope=org_scope)
+        )
+        if not allowed:
+            raise PermissionDenied("Permission denied.")
+        return
+
+    if kind == EvidenceLinkedKind.RECEIPT_QUALITY_RECORD:
+        allowed = (
+            user_has_permission(actor, VIEW_RECEIVING, scope=org_scope)
+            or user_has_permission(actor, MANAGE_RECEIVING, scope=org_scope)
+            or user_has_permission(actor, DISPOSITION_RECEIVING, scope=org_scope)
         )
         if not allowed:
             raise PermissionDenied("Permission denied.")

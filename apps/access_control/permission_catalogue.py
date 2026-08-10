@@ -34,6 +34,7 @@ class CapabilityBucket(StrEnum):
     ENVIRONMENTAL = "environmental"
     PACKAGING = "packaging"
     CHANGEOVER = "changeover"
+    RECEIVING = "receiving"
     EVIDENCE = "evidence"
     MASTER_DATA = "master_data"
     CHECKLIST_PUBLISH = "checklist_publish"
@@ -667,6 +668,50 @@ PERMISSION_CATALOGUE: Final[tuple[PermissionCatalogueEntry, ...]] = (
         scopes=(ObjectScope.ORGANIZATION,),
         description="Update allergen risk / production-block policy stubs.",
         notes="Dual-gated with CHANGEOVER_ALLERGEN_BLOCK_APPROVED (default OFF).",
+    ),
+    PermissionCatalogueEntry(
+        key="manage_materialreference",
+        permission="receiving.manage_materialreference",
+        bucket=CapabilityBucket.RECEIVING,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Manage ERP-mapped material reference shells (not inventory master).",
+    ),
+    PermissionCatalogueEntry(
+        key="manage_receiptquality",
+        permission="receiving.manage_receiptquality",
+        bucket=CapabilityBucket.RECEIVING,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Create/edit raw material receipt quality records.",
+    ),
+    PermissionCatalogueEntry(
+        key="disposition_receiptquality",
+        permission="receiving.disposition_receiptquality",
+        bucket=CapabilityBucket.RECEIVING,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Set local receipt quality disposition (ACCEPTED/HOLD/REJECTED).",
+        notes="Does not update ERP stock; not implied by manage_receiptquality.",
+    ),
+    PermissionCatalogueEntry(
+        key="view_receiptquality",
+        permission="receiving.view_receiptquality",
+        bucket=CapabilityBucket.RECEIVING,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Read-only receipt quality / material receiving viewing.",
+    ),
+    PermissionCatalogueEntry(
+        key="manage_materialspecification",
+        permission="receiving.manage_materialspecification",
+        bucket=CapabilityBucket.RECEIVING,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Draft material specification versions (no invented limits).",
+    ),
+    PermissionCatalogueEntry(
+        key="approve_materialspecification",
+        permission="receiving.approve_materialspecification",
+        bucket=CapabilityBucket.RECEIVING,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Approve/retire material specification versions.",
+        notes="Not implied by manage_materialspecification.",
     ),
     PermissionCatalogueEntry(
         key="manage_supplierquality_qa",

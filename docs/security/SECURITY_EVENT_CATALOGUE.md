@@ -254,3 +254,15 @@ Retention period is **deferred** â€” not decided in Phase 03. Events are ap
 | CHANGEOVER_VERIFIED | Product changeover verified |
 | LINE_CLEARANCE_RECORDED | Line clearance recorded (checklist-driven) |
 | ALLERGEN_RISK_POLICY_UPDATED | Allergen risk / production-block policy stub updated |
+
+### Receiving / raw material quality (Phase 31)
+
+| Event type | Meaning |
+| --- | --- |
+| RECEIVING_MATERIAL_REFERENCE_CREATED | ERP-mapped material reference created |
+| RECEIVING_MATERIAL_SPEC_APPROVED | Material specification version approved |
+| RECEIVING_RECEIPT_QUALITY_CREATED | Receipt quality record created |
+| RECEIVING_RECEIPT_QUALITY_DISPOSITIONED | Local quality disposition set (ERP stock not updated) |
+| RECEIVING_LAB_SAMPLE_LINKED | Lab sample linked to receipt |
+| RECEIVING_ERP_OUTBOUND_BLOCKED | ERP outbound blocked (Phase 17 gate) |
+

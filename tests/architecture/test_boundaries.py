@@ -34,6 +34,7 @@ ALLOWED_APPS = {
     "environmental",
     "packaging",
     "changeover",
+    "receiving",
     "supplier_quality",
     "access_control",
     "security_audit",

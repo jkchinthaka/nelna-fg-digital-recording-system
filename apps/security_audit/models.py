@@ -672,6 +672,31 @@ class SecurityAuditEvent(models.Model):
             "Allergen risk / production-block policy stub updated",
         )
 
+        RECEIVING_MATERIAL_REFERENCE_CREATED = (
+            "RECEIVING_MATERIAL_REFERENCE_CREATED",
+            "ERP-mapped material reference created",
+        )
+        RECEIVING_MATERIAL_SPEC_APPROVED = (
+            "RECEIVING_MATERIAL_SPEC_APPROVED",
+            "Material specification version approved",
+        )
+        RECEIVING_RECEIPT_QUALITY_CREATED = (
+            "RECEIVING_RECEIPT_QUALITY_CREATED",
+            "Receipt quality record created",
+        )
+        RECEIVING_RECEIPT_QUALITY_DISPOSITIONED = (
+            "RECEIVING_RECEIPT_QUALITY_DISPOSITIONED",
+            "Receipt quality disposition set (local only)",
+        )
+        RECEIVING_LAB_SAMPLE_LINKED = (
+            "RECEIVING_LAB_SAMPLE_LINKED",
+            "Lab sample linked to receipt quality record",
+        )
+        RECEIVING_ERP_OUTBOUND_BLOCKED = (
+            "RECEIVING_ERP_OUTBOUND_BLOCKED",
+            "Receipt quality ERP outbound blocked (Phase 17 gate)",
+        )
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     event_type = models.CharField(max_length=64, choices=EventType.choices)

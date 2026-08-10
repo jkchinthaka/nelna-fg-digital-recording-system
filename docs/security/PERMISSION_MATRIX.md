@@ -194,3 +194,14 @@ AI default OFF. AI must not execute RELEASE/HOLD/REJECT, publish, spec/role chan
 | verify_changeover | `changeover.verify_changeover` | Verify changeover / approve declarations (not implied by manage) |
 | view_changeover | `changeover.view_changeover` | Read-only |
 | manage_allergenriskpolicy | `changeover.manage_allergenriskpolicy` | Dual-gate production-block stub (default OFF) |
+
+### Receiving / raw material quality (Phase 31)
+
+| Key | Permission | Notes |
+| --- | --- | --- |
+| manage_materialreference | `receiving.manage_materialreference` | ERP-mapped material shells (not inventory master) |
+| manage_receiptquality | `receiving.manage_receiptquality` | Create/edit receipt quality records |
+| disposition_receiptquality | `receiving.disposition_receiptquality` | Local ACCEPTED/HOLD/REJECTED (not ERP stock) |
+| view_receiptquality | `receiving.view_receiptquality` | Read-only |
+| manage_materialspecification | `receiving.manage_materialspecification` | Draft material specs (no invented limits) |
+| approve_materialspecification | `receiving.approve_materialspecification` | Approve/retire material specs |
