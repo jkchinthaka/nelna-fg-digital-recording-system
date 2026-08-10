@@ -387,13 +387,19 @@ def _measurement_context_for_response(response, item: ChecklistItem):
 
 
 def _control_point_context_for_item(item: ChecklistItem) -> dict:
-    """Frozen definition metadata snapshot (Phase 06L). Not a disposition."""
+    """Frozen definition metadata snapshot (Phase 06L + optional Phase 23 HACCP)."""
     from apps.checklists.control_point import build_control_point_snapshot
 
-    return build_control_point_snapshot(
+    snap = build_control_point_snapshot(
         control_point_class=getattr(item, "control_point_class", "NONE") or "NONE",
         criticality=getattr(item, "criticality", "") or "",
     )
+    from apps.haccp.snapshots import snapshot_for_checklist_item
+
+    haccp = snapshot_for_checklist_item(item.id)
+    if haccp:
+        snap["haccp_context"] = haccp
+    return snap
 
 
 def resubmit_checklist_correction(
