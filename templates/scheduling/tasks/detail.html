@@ -1,5 +1,5 @@
 ﻿{% extends "base.html" %}
-{% load scheduling_extras %}
+{% load scheduling_extras workflow_extras %}
 {% block title %}Task {% if task.batch_reference %}{{ task.batch_reference }}{% else %}{{ task.occurrence_key }}{% endif %} — Nelna FG{% endblock %}
 {% block body_class %}mgmt-shell{% endblock %}
 {% block content %}
@@ -11,8 +11,10 @@
         </h1>
         <p class="mgmt-page__lead">
           <span class="status-pill status-pill--muted">{{ task.get_status_display }}</span>
+          {% if workflow %}{% workflow_badge workflow %}{% endif %}
           <span class="{{ due_badge_class }}">{{ due_display_label }}</span>
           — orchestration task only. Overdue is not an automatic NCR.
+          Workflow badges are derived (ADR-022); QA terminals do not close warehouse/ERP/dispatch.
         </p>
       </div>
       <div class="mgmt-page__actions">
@@ -59,6 +61,25 @@
           {% if task.window_start_at %}{{ task.window_start_at }}{% else %}—{% endif %}
           /
           {% if task.window_end_at %}{{ task.window_end_at }}{% else %}—{% endif %}
+        </dd>
+      </div>
+      <div class="form-field">
+        <dt>Operational workflow</dt>
+        <dd>
+          {% if workflow %}
+            {% workflow_badge workflow %}
+            <span class="form-help">(derived — not a stored Task status)</span>
+            {% if workflow.is_qa_terminal %}
+              <p class="form-help">QA terminal in-app only — does not close warehouse/ERP/dispatch.</p>
+            {% endif %}
+            {% if workflow.inconsistencies %}
+              <p class="alert alert-error" role="alert">
+                Inconsistency markers: {{ workflow.inconsistencies|join:", " }}
+              </p>
+            {% endif %}
+          {% else %}
+            -
+          {% endif %}
         </dd>
       </div>
       <div class="form-field">

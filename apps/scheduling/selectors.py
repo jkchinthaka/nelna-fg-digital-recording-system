@@ -176,6 +176,7 @@ def list_checklist_tasks(
         "assigned_department",
         "assigned_shift",
         "assigned_by",
+        "checklist_record",
     ).filter(organization_id__in=allowed)
 
     if organization is not None:

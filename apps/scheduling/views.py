@@ -39,6 +39,14 @@ from apps.scheduling.selectors import (
     published_versions_for_template,
     templates_for_task_manage,
 )
+from apps.core.checklist_workflow import (
+    ChecklistOperationalWorkflowState,
+    attach_workflow_snapshots,
+    filter_tasks_by_workflow_state,
+    prefetch_workflow_graph,
+    workflow_prefilter_queryset,
+    derive_checklist_workflow,
+)
 from apps.scheduling.services import cancel_checklist_task, create_batch_checklist_task
 
 PAGE_SIZE = 25
@@ -162,6 +170,13 @@ def task_list(request: HttpRequest) -> HttpResponse:
     )
     template = filter_templates.filter(pk=template_id).first() if template_id else None
 
+    workflow_raw = (request.GET.get("workflow") or "all").strip().upper()
+    workflow_state = (
+        workflow_raw
+        if workflow_raw in ChecklistOperationalWorkflowState.ALL
+        else "all"
+    )
+
     tasks = list_checklist_tasks(
         _actor(request),
         organization=organization,
@@ -170,10 +185,25 @@ def task_list(request: HttpRequest) -> HttpResponse:
         batch_reference=batch_q or None,
         due_state=due_state,
     )
-    paginator = Paginator(tasks, PAGE_SIZE)
-    page_obj = paginator.get_page(request.GET.get("page"))
+    tasks = prefetch_workflow_graph(tasks)
+
+    if workflow_state != "all":
+        # Prefilter then exact derive — no duplicated workflow status column.
+        candidates = list(
+            workflow_prefilter_queryset(tasks, workflow_state=workflow_state)[:500]
+        )
+        matched = filter_tasks_by_workflow_state(candidates, workflow_state=workflow_state)
+        paginator = Paginator(matched, PAGE_SIZE)
+        page_obj = paginator.get_page(request.GET.get("page"))
+        annotated = annotate_due_display(list(page_obj.object_list))
+    else:
+        paginator = Paginator(tasks, PAGE_SIZE)
+        page_obj = paginator.get_page(request.GET.get("page"))
+        annotated = attach_workflow_snapshots(
+            annotate_due_display(list(page_obj.object_list))
+        )
+
     manage_org_ids = manageable_organization_ids(_actor(request))
-    annotated = annotate_due_display(list(page_obj.object_list))
     overdue_count = list_overdue_checklist_tasks(
         _actor(request), organization=organization
     ).count()
@@ -183,12 +213,19 @@ def task_list(request: HttpRequest) -> HttpResponse:
         "search": batch_q,
         "status": status,
         "due_state": due_state,
+        "workflow_state": workflow_state,
+        "workflow_choices": ChecklistOperationalWorkflowState.CHOICES,
         "organizations": organizations,
         "selected_organization": organization,
         "templates": filter_templates,
         "selected_template": template,
         "filters_active": bool(
-            batch_q or org_id or template_id or status != "all" or due_state != "all"
+            batch_q
+            or org_id
+            or template_id
+            or status != "all"
+            or due_state != "all"
+            or workflow_state != "all"
         ),
         "manageable_organization_ids": manage_org_ids,
         "can_create": bool(manage_org_ids),
@@ -335,6 +372,10 @@ def task_detail(request: HttpRequest, task_id: uuid.UUID) -> HttpResponse:
     from apps.scheduling.due import due_badge_css_class, due_display_label
 
     due_state = derive_due_display_state(task)
+    task = prefetch_workflow_graph(
+        ChecklistTask.objects.filter(pk=task.id)
+    ).get()
+    workflow = derive_checklist_workflow(task)
     return render(
         request,
         "scheduling/tasks/detail.html",
@@ -343,6 +384,7 @@ def task_detail(request: HttpRequest, task_id: uuid.UUID) -> HttpResponse:
             "due_display_state": due_state,
             "due_display_label": due_display_label(due_state),
             "due_badge_class": due_badge_css_class(due_state),
+            "workflow": workflow,
             "can_cancel": actor_can_manage_task(_actor(request), task)
             and task.status
             in {ChecklistTaskStatus.PENDING, ChecklistTaskStatus.OVERDUE},

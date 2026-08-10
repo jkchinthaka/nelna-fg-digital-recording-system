@@ -29,6 +29,7 @@
               <th scope="col">Supervisor reviewed by</th>
               <th scope="col">Supervisor reviewed at</th>
               <th scope="col">Organization</th>
+              <th scope="col">Workflow</th>
               <th scope="col">Action</th>
             </tr>
           </thead>
@@ -51,6 +52,9 @@
                   {{ submission.checklist_record.organization.code }}
                   —
                   {{ submission.checklist_record.organization.name }}
+                </td>
+                <td>
+                  <span class="status-pill status-pill--info">Awaiting QA</span>
                 </td>
                 <td>
                   <a href="{% url 'quality:submission_detail' submission_id=submission.id %}">QA review submission</a>

@@ -46,8 +46,8 @@ decision after review conflicts. Race-safe via locks + unique constraint.
 
 ### Record / task status
 
-ChecklistRecord remains SUBMITTED. ChecklistTask remains PENDING. Future
-lifecycle design is a separate unit.
+ChecklistRecord remains SUBMITTED. ChecklistTask remains PENDING. Operational
+workflow labels are derived (Phase 10B / ADR-022) — not duplicated onto these models.
 
 ### Privacy
 

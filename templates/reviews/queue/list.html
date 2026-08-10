@@ -50,6 +50,7 @@
               <th scope="col">Submitted by</th>
               <th scope="col">Submitted at</th>
               <th scope="col">Organization</th>
+              <th scope="col">Workflow</th>
               <th scope="col">Action</th>
             </tr>
           </thead>
@@ -75,6 +76,13 @@
                   {{ submission.checklist_record.organization.code }}
                   —
                   {{ submission.checklist_record.organization.name }}
+                </td>
+                <td>
+                  {% if submission.submission_number > 1 %}
+                    <span class="status-pill status-pill--warning">Awaiting Supervisor (resubmission)</span>
+                  {% else %}
+                    <span class="status-pill status-pill--warning">Awaiting Supervisor</span>
+                  {% endif %}
                 </td>
                 <td>
                   <a href="{% url 'reviews:submission_detail' submission_id=submission.id %}">Review submission</a>

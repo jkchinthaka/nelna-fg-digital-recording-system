@@ -1,14 +1,15 @@
 # Module Map
 
-**Document status:** Living module boundaries — Phase 04–10A
-**Phase:** 03–09B complete units · 10A QA disposition foundation · MASTER-001 / TEMPLATE pending
-**Last updated:** 2026-08-08
+**Document status:** Living module boundaries — Phase 04–10B
+**Phase:** 03–09C complete units · 10A QA disposition · **10B derived workflow lifecycle** · MASTER-001 / TEMPLATE pending
+**Last updated:** 2026-08-10
 
 This map guides implementation. Do not scaffold future business apps before their phase.
 Do **not** rename FG master data, checklist, recording, review, or evidence work as Phase 04.
 
 | Module | Responsibility | Data ownership | Public service boundary | Prohibited dependencies | Planned phase |
 | --- | --- | --- | --- | --- | --- |
+| core | Shared foundation + **10B** derived checklist operational workflow (ADR-022) | No business owner tables for workflow | `derive_checklist_workflow`; badges/filters | Must not persist duplicated workflow status on Task/Record/Submission/Review/Correction/QA; QA terminals ≠ ERP close | **02+ / 10B** |
 | accounts | Identity, employee-code authentication, password/lockout lifecycle | User | Auth services; admin account management | Must not embed checklist business rules | **03 complete** |
 | organizations | Organization / site / department scope hierarchy; configurable unseeded Shift (04A) + management UI (04B) + audited lifecycle/import (04C) | Organization, Site, Department, Shift | Hierarchy + Shift create/update/activate/deactivate services; controlled hierarchy import; scoped selectors; Shift management views | Must not invent or seed Nelna org/site/dept/shift business values; real catalogue gated by ASM-004/005/006 | **03 complete** + **04A/04B/04C technical** (real values pending) |
 | access_control | Roles, scoped assignments, RoleTemplate governance, authorization API | Role, RoleTemplate, ScopedRoleAssignment | Permission checks; governance services; decorators/mixins; permission catalogue | Must not seed business roles/templates as OWNER_APPROVED without APR evidence; SoD not invented | **03 complete** + **03C technical** (business mapping pending) |
@@ -44,7 +45,7 @@ Do **not** rename FG master data, checklist, recording, review, or evidence work
 | 07 | **07A** ChecklistTask foundation; **07B** batch-source contract; **07C** applicability; **07D** effective-version; **07E** recurring schedules; **07F** batch-event adapter (live contract required); **07G** task assignment (ownership ≠ authorization); **07H** due/overdue foundation |
 | 08 | **08A** draft recording; **08B** immutable submission snapshots; **08C** shop-floor recording hardening |
 | 09 | **09A** `reviews` Supervisor review; **09B** `recording` ChecklistCorrection / resubmission; **09C** Supervisor governance hardening |
-| 10 | **10A** `quality` QAReview manual disposition; later post-QA operational workflows |
+| 10 | **10A** QA disposition; **10B** derived workflow lifecycle (ADR-022; no duplicated status) |
 
 ## References
 

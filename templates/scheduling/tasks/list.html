@@ -51,6 +51,15 @@
           </select>
         </div>
         <div class="form-field">
+          <label for="id_workflow">Operational workflow</label>
+          <select class="form-input" name="workflow" id="id_workflow">
+            <option value="all" {% if workflow_state == "all" %}selected{% endif %}>All workflow states</option>
+            {% for code, label in workflow_choices %}
+              <option value="{{ code }}" {% if workflow_state == code %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-field">
           <label for="id_due">Due state</label>
           <select class="form-input" name="due" id="id_due">
             <option value="all" {% if due_state == "all" %}selected{% endif %}>All due states</option>

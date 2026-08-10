@@ -230,13 +230,13 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | --- | --- |
 | Objective | QA final review with manual provisional disposition; later operational follow-up only when evidenced |
 | Inputs | QA rules evidence |
-| Outputs | **10A:** `quality.QAReview` immutable RELEASE/HOLD/REJECT + QA UI; later units for post-QA workflows |
+| Outputs | **10A:** `quality.QAReview` immutable RELEASE/HOLD/REJECT + QA UI; **10B:** derived operational workflow (ADR-022) without duplicated status columns; later units for post-QA warehouse/ERP |
 | Approval gate | QA owner |
 | Branch naming | Direct-main quality-first for 10A |
 | Exit criteria | **10A:** separate QA permission; one immutable QAReview per submission; no auto disposition; no ERP side effects. Full production: follow-up evidence + role mapping + published definitions |
 | Dependencies | Phase 09 |
 | Notes | Supervisor-owned return/correction remains Phase 09. See PHASE_10_QA_REVIEW_READINESS_GATE and PHASE_10_POST_QA_WORKFLOW_GATE. Production QA **BLOCKED**. |
-| Status | **10A implemented** — production use blocked; post-QA operational workflows not started |
+| Status | **10A + 10B implemented** — QA disposition + derived workflow lifecycle; production use blocked; post-QA warehouse/ERP still not started |
 
 ## Phase 11 — Attachments and evidence storage
 

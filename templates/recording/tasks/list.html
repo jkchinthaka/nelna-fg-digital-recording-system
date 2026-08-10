@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load workflow_extras %}
 {% block title %}Checklist Recording — Nelna FG Digital Recording System{% endblock %}
 {% block body_class %}mgmt-shell{% endblock %}
 {% block content %}
@@ -8,12 +9,30 @@
         <h1 id="recording-list-heading">Checklist Recording</h1>
         <p class="mgmt-page__lead">
           Draft recording and submission for PENDING checklist tasks.
-          Supervisor review and QA disposition belong to later phases.
+          Operational workflow badges are derived from Task / Record / Submission /
+          Supervisor / Correction / QA owners — not a duplicated status column.
           Production recording remains blocked until approved published definitions
           and recorder role mapping are evidenced.
         </p>
       </div>
     </header>
+    <form class="mgmt-filters" method="get" action="{% url 'recording:task_list' %}">
+      <div class="mgmt-filters__grid">
+        <div class="form-field">
+          <label for="id_workflow">Operational workflow</label>
+          <select class="form-input" name="workflow" id="id_workflow">
+            <option value="all" {% if workflow_state == "all" %}selected{% endif %}>All workflow states</option>
+            {% for code, label in workflow_choices %}
+              <option value="{{ code }}" {% if workflow_state == code %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="mgmt-filters__actions">
+        <button type="submit" class="btn btn--secondary btn--inline">Apply filters</button>
+        <a class="btn btn--ghost btn--inline" href="{% url 'recording:task_list' %}">Clear</a>
+      </div>
+    </form>
     {% if not tasks %}
       <p class="mgmt-page__lead" role="status">No recordable checklist tasks are available.</p>
     {% else %}
@@ -28,7 +47,7 @@
               <th scope="col">Version</th>
               <th scope="col">Organization</th>
               <th scope="col">Task status</th>
-              <th scope="col">Recording state</th>
+              <th scope="col">Workflow</th>
               <th scope="col">Action</th>
             </tr>
           </thead>
@@ -41,18 +60,10 @@
                 <td>{{ task.organization.code }}</td>
                 <td>{{ task.get_status_display }}</td>
                 <td>
-                  {% if task.checklist_record %}
-                    {% if task.checklist_record.status == "SUBMITTED" %}
-                      {% if task.checklist_record.active_corrections %}
-                        Correction Draft
-                      {% else %}
-                        Submitted
-                      {% endif %}
-                    {% else %}
-                      Draft Started
-                    {% endif %}
+                  {% if task.workflow_snapshot %}
+                    {% workflow_badge task.workflow_snapshot %}
                   {% else %}
-                    Not Started
+                    {% workflow_badge task=task %}
                   {% endif %}
                 </td>
                 <td>
@@ -90,9 +101,9 @@
       </div>
       {% if page.has_other_pages %}
         <nav class="pagination" aria-label="Recording task pages">
-          {% if page.has_previous %}<a href="?page={{ page.previous_page_number }}">Previous</a>{% endif %}
+          {% if page.has_previous %}<a href="?page={{ page.previous_page_number }}&amp;workflow={{ workflow_state }}">Previous</a>{% endif %}
           <span>Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
-          {% if page.has_next %}<a href="?page={{ page.next_page_number }}">Next</a>{% endif %}
+          {% if page.has_next %}<a href="?page={{ page.next_page_number }}&amp;workflow={{ workflow_state }}">Next</a>{% endif %}
         </nav>
       {% endif %}
     {% endif %}

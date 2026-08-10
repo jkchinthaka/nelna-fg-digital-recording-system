@@ -57,6 +57,11 @@ from apps.recording.services import (
 )
 from apps.recording.snapshot_display import render_snapshot_sections
 from apps.reviews.models import SupervisorReviewDecision
+from apps.core.checklist_workflow import (
+    ChecklistOperationalWorkflowState,
+    attach_workflow_snapshots,
+    filter_tasks_by_workflow_state,
+)
 from apps.scheduling.models import ChecklistTask
 
 PAGE_SIZE = 25
@@ -170,8 +175,17 @@ def _apply_validation_error(form: ChecklistDraftForm, exc: ValidationError) -> N
 @require_GET
 def recordable_task_list(request: HttpRequest) -> HttpResponse:
     _require_recording_module(request)
-    tasks = list_recordable_checklist_tasks(_actor(request))
-    page = Paginator(tasks, PAGE_SIZE).get_page(request.GET.get("page") or 1)
+    workflow_raw = (request.GET.get("workflow") or "all").strip().upper()
+    workflow_state = (
+        workflow_raw
+        if workflow_raw in ChecklistOperationalWorkflowState.ALL
+        else "all"
+    )
+    tasks = list(list_recordable_checklist_tasks(_actor(request))[:500])
+    ordered = attach_workflow_snapshots(tasks)
+    if workflow_state != "all":
+        ordered = filter_tasks_by_workflow_state(ordered, workflow_state=workflow_state)
+    page = Paginator(ordered, PAGE_SIZE).get_page(request.GET.get("page") or 1)
     return render(
         request,
         "recording/tasks/list.html",
@@ -179,6 +193,8 @@ def recordable_task_list(request: HttpRequest) -> HttpResponse:
             "page": page,
             "tasks": page.object_list,
             "ChecklistRecordStatus": ChecklistRecordStatus,
+            "workflow_state": workflow_state,
+            "workflow_choices": ChecklistOperationalWorkflowState.CHOICES,
         },
     )
 

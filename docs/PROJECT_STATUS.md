@@ -46,7 +46,7 @@ This document records **repository evidence**. It does not invent Nelna operatio
 
 | App | Phase units | Status labels |
 | --- | --- | --- |
-| `core` | 02+ | IMPLEMENTED |
+| `core` | 02+ / **10B** | IMPLEMENTED - foundation + derived checklist workflow |
 | `accounts` | 03 | IMPLEMENTED · Phase 03 **Approved with conditions** (not production-configured) |
 | `organizations` (incl. Shift) | 03 + 04A/04B | IMPLEMENTED · official org/site/dept/shift values **EVIDENCE REQUIRED** |
 | `access_control` | 03 + **03C** | IMPLEMENTED · RoleTemplate + permission catalogue + governance services; **no** seeded business roles; **PHASE 03C BUSINESS ROLE APPROVAL PENDING** |
@@ -103,7 +103,8 @@ Not started (by MODULE_MAP): `evidence`, `nonconformance`, `capa`, `loading`, `d
 | 09A/09B Supervisor review + correction | Complete | Production review/correction blocked |
 | 09C Supervisor governance | Technical complete — PENDING/PROHIBIT/ALLOW self-review; configured review_sla_minutes; temporary delegation; queues | APR-010 / SOD-01 EVIDENCE REQUIRED |
 | 10A QA disposition | Complete (manual RELEASE/HOLD/REJECT only) | Production QA blocked; post-QA workflows not started |
-| 10B+ Post-QA operational | Not started | EVIDENCE REQUIRED |
+| 10B Workflow lifecycle | Technical complete - derived operational workflow (ADR-022); no duplicated status columns | Production still BLOCKED; QA does not close warehouse/ERP/dispatch |
+| 10C+ Post-QA operational | Not started | EVIDENCE REQUIRED |
 | 11–21 Later roadmap | Not started | N/A |
 
 ---
@@ -306,4 +307,10 @@ Shop-floor recording hardening: preserved start → Save Draft → submit → im
 **STATUS: PHASE 09C SUPERVISOR GOVERNANCE COMPLETE**
 
 Supervisor review governance hardening: Phase 03C permission mappings (no invented Supervisor titles); self-review PENDING by default (PROHIBIT/ALLOW only with evidence_reference); optional configured `review_sla_minutes` for overdue; temporary time-bounded review delegation via ScopedRoleAssignment; pending / overdue / resubmission queues; immutable audited decisions. Production Supervisor review remains BLOCKED.
+
+## Phase 10B delivery status
+
+**STATUS: PHASE 10B WORKFLOW LIFECYCLE COMPLETE**
+
+Derived operational workflow (ADR-022): authoritative state remains on Task / Record / Submission / SupervisorReview / Correction / QAReview. One read-time lifecycle label (`PENDING` … `QA_*` / `CANCELLED`) with consistent badges and queue filters. QA terminals are provisional in-app dispositions only — they do not close warehouse / ERP / dispatch.
 
