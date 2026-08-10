@@ -77,6 +77,7 @@ INSTALLED_APPS = [
     "apps.changeover",
     "apps.receiving",
     "apps.iqc",
+    "apps.ipqc",
     "apps.nonconformance",
     "apps.capa",
     "apps.dispatch",
@@ -310,6 +311,11 @@ CHANGEOVER_ALLERGEN_BLOCK_APPROVED = env.bool(
 # Phase 33 — IQC ERP outbound remains OFF until Phase 17 contract + company approval.
 IQC_ERP_OUTBOUND_APPROVED = env.bool(
     "IQC_ERP_OUTBOUND_APPROVED",
+    default=False,
+)
+# Phase 34 — IPQC fail → production stop remains OFF until company policy approval.
+IPQC_STOP_PRODUCTION_ON_FAIL_APPROVED = env.bool(
+    "IPQC_STOP_PRODUCTION_ON_FAIL_APPROVED",
     default=False,
 )
 

@@ -28,6 +28,7 @@ from apps.packaging.models import ArtworkVersion
 from apps.changeover.models import ChangeoverRecord, LineClearanceRecord
 from apps.receiving.models import ReceiptQualityRecord
 from apps.iqc.models import IqcInspectionCase
+from apps.ipqc.models import IpqcInspectionCase
 from apps.scheduling.services import RECORD_CHECKLIST_TASK
 
 UPLOAD_EVIDENCE = "evidence.upload_evidenceattachment"
@@ -62,6 +63,10 @@ DISPOSITION_RECEIVING = "receiving.disposition_receiptquality"
 VIEW_IQC = "iqc.view_iqc"
 MANAGE_IQC = "iqc.manage_iqc"
 DISPOSITION_IQC = "iqc.disposition_iqc"
+VIEW_IPQC = "ipqc.view_ipqc"
+MANAGE_IPQC = "ipqc.manage_ipqc"
+RECORD_IPQC = "ipqc.record_ipqc"
+ESCALATE_IPQC = "ipqc.escalate_ipqc"
 
 
 @dataclass(frozen=True, slots=True)
@@ -330,6 +335,21 @@ def resolve_linked_target(*, kind: str, object_id: uuid.UUID) -> LinkedTarget:
             obj=case,
         )
 
+    if kind == EvidenceLinkedKind.IPQC_INSPECTION_CASE:
+        ipqc_case = IpqcInspectionCase.objects.filter(pk=object_id).first()
+        if ipqc_case is None:
+            raise ValidationError(
+                {"linked_object_id": "IPQC inspection case not found."}
+            )
+        return LinkedTarget(
+            kind=kind,
+            object_id=ipqc_case.id,
+            organization_id=ipqc_case.organization_id,
+            linkage_immutable=ipqc_case.workflow_status
+            in {"COMPLETED", "CLOSED"},
+            obj=ipqc_case,
+        )
+
     raise ValidationError({"linked_kind": "Unsupported linked kind."})
 
 
@@ -516,6 +536,17 @@ def _assert_parent_access(*, actor: User, target: LinkedTarget, for_mutate: bool
             user_has_permission(actor, VIEW_IQC, scope=org_scope)
             or user_has_permission(actor, MANAGE_IQC, scope=org_scope)
             or user_has_permission(actor, DISPOSITION_IQC, scope=org_scope)
+        )
+        if not allowed:
+            raise PermissionDenied("Permission denied.")
+        return
+
+    if kind == EvidenceLinkedKind.IPQC_INSPECTION_CASE:
+        allowed = (
+            user_has_permission(actor, VIEW_IPQC, scope=org_scope)
+            or user_has_permission(actor, MANAGE_IPQC, scope=org_scope)
+            or user_has_permission(actor, RECORD_IPQC, scope=org_scope)
+            or user_has_permission(actor, ESCALATE_IPQC, scope=org_scope)
         )
         if not allowed:
             raise PermissionDenied("Permission denied.")

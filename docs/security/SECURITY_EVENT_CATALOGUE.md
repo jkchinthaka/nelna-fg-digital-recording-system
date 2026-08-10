@@ -292,4 +292,24 @@ Retention period is **deferred** â€” not decided in Phase 03. Events are ap
 | IQC_ERP_OUTBOUND_BLOCKED | ERP outbound blocked |
 | IQC_ERP_OUTBOUND_PREPARED | ERP outbound prepared (adapter not live) |
 
+### In-Process Quality Control (Phase 34)
+
+| Event type | Meaning |
+| --- | --- |
+| IPQC_DEFINITION_CREATED | Process-check definition created |
+| IPQC_CASE_OPENED | IPQC inspection case opened |
+| IPQC_CASE_DUPLICATE | Duplicate generation (idempotent) |
+| IPQC_TASK_CREATED | ChecklistTask created for IPQC |
+| IPQC_SCHEDULED_GENERATION_RUN | Scheduled TIME_INTERVAL/SHIFT generation |
+| IPQC_EQUIPMENT_LINKED | Equipment device trace linked |
+| IPQC_MEASUREMENT_RECORDED | Spec measurement recorded (not FG release) |
+| IPQC_SAMPLING_RESOLVED | Sampling requirement resolved (advisory) |
+| IPQC_HACCP_METADATA_ATTACHED | HACCP metadata snapshot attached |
+| IPQC_FAILURE_RECORDED | Failure recorded; stop dual-gate evaluated |
+| IPQC_STOP_PRODUCTION_SIGNALLED | Stop-production signal (dual-gate ON) |
+| IPQC_ESCALATED_TO_NCR | Controlled NCR escalation |
+| IPQC_ESCALATED_TO_HOLD | Controlled HOLD escalation |
+| IPQC_CASE_COMPLETED | Case completed (not FG release) |
+| IPQC_POLICY_UPDATED | IPQC policy stub updated |
+
 

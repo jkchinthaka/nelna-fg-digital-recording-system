@@ -36,6 +36,7 @@ ALLOWED_APPS = {
     "changeover",
     "receiving",
     "iqc",
+    "ipqc",
     "supplier_quality",
     "access_control",
     "security_audit",

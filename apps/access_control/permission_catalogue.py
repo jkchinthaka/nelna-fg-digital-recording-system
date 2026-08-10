@@ -36,6 +36,7 @@ class CapabilityBucket(StrEnum):
     CHANGEOVER = "changeover"
     RECEIVING = "receiving"
     IQC = "iqc"
+    IPQC = "ipqc"
     EVIDENCE = "evidence"
     MASTER_DATA = "master_data"
     CHECKLIST_PUBLISH = "checklist_publish"
@@ -743,6 +744,43 @@ PERMISSION_CATALOGUE: Final[tuple[PermissionCatalogueEntry, ...]] = (
         scopes=(ObjectScope.ORGANIZATION,),
         description="Update IQC review/ERP outbound policy stubs.",
         notes="Dual-gated with IQC_ERP_OUTBOUND_APPROVED (default OFF).",
+    ),
+    PermissionCatalogueEntry(
+        key="manage_ipqc",
+        permission="ipqc.manage_ipqc",
+        bucket=CapabilityBucket.IPQC,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Manage IPQC definitions and generate in-process inspection cases.",
+    ),
+    PermissionCatalogueEntry(
+        key="record_ipqc",
+        permission="ipqc.record_ipqc",
+        bucket=CapabilityBucket.IPQC,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Record IPQC measurements and equipment links.",
+    ),
+    PermissionCatalogueEntry(
+        key="escalate_ipqc",
+        permission="ipqc.escalate_ipqc",
+        bucket=CapabilityBucket.IPQC,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Escalate IPQC failures to NCR/HOLD (controlled; never auto from FAIL).",
+        notes="Not implied by manage_ipqc or record_ipqc.",
+    ),
+    PermissionCatalogueEntry(
+        key="view_ipqc",
+        permission="ipqc.view_ipqc",
+        bucket=CapabilityBucket.IPQC,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Read-only IPQC cases and due/overdue/failure dashboard.",
+    ),
+    PermissionCatalogueEntry(
+        key="manage_ipqcpolicy",
+        permission="ipqc.manage_ipqcpolicy",
+        bucket=CapabilityBucket.IPQC,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Update IPQC stop-production policy stubs.",
+        notes="Dual-gated with IPQC_STOP_PRODUCTION_ON_FAIL_APPROVED (default OFF).",
     ),
     PermissionCatalogueEntry(
         key="manage_supplierquality_qa",

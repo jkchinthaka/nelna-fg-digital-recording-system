@@ -736,6 +736,64 @@ class SecurityAuditEvent(models.Model):
             "IQC ERP outbound prepared (adapter not live)",
         )
 
+        IPQC_DEFINITION_CREATED = (
+            "IPQC_DEFINITION_CREATED",
+            "IPQC process-check definition created",
+        )
+        IPQC_CASE_OPENED = ("IPQC_CASE_OPENED", "IPQC inspection case opened")
+        IPQC_CASE_DUPLICATE = (
+            "IPQC_CASE_DUPLICATE",
+            "Duplicate IPQC case generation (idempotent)",
+        )
+        IPQC_TASK_CREATED = (
+            "IPQC_TASK_CREATED",
+            "IPQC checklist task created",
+        )
+        IPQC_SCHEDULED_GENERATION_RUN = (
+            "IPQC_SCHEDULED_GENERATION_RUN",
+            "IPQC scheduled generation run",
+        )
+        IPQC_EQUIPMENT_LINKED = (
+            "IPQC_EQUIPMENT_LINKED",
+            "Equipment trace linked to IPQC case",
+        )
+        IPQC_MEASUREMENT_RECORDED = (
+            "IPQC_MEASUREMENT_RECORDED",
+            "IPQC specification measurement recorded",
+        )
+        IPQC_SAMPLING_RESOLVED = (
+            "IPQC_SAMPLING_RESOLVED",
+            "IPQC sampling requirement resolved",
+        )
+        IPQC_HACCP_METADATA_ATTACHED = (
+            "IPQC_HACCP_METADATA_ATTACHED",
+            "IPQC HACCP metadata snapshot attached",
+        )
+        IPQC_FAILURE_RECORDED = (
+            "IPQC_FAILURE_RECORDED",
+            "IPQC failure recorded (advisory / dual-gate)",
+        )
+        IPQC_STOP_PRODUCTION_SIGNALLED = (
+            "IPQC_STOP_PRODUCTION_SIGNALLED",
+            "IPQC stop-production signal (dual-gate enabled)",
+        )
+        IPQC_ESCALATED_TO_NCR = (
+            "IPQC_ESCALATED_TO_NCR",
+            "IPQC case escalated to NCR",
+        )
+        IPQC_ESCALATED_TO_HOLD = (
+            "IPQC_ESCALATED_TO_HOLD",
+            "IPQC case escalated to HOLD",
+        )
+        IPQC_CASE_COMPLETED = (
+            "IPQC_CASE_COMPLETED",
+            "IPQC case completed (not FG release)",
+        )
+        IPQC_POLICY_UPDATED = (
+            "IPQC_POLICY_UPDATED",
+            "IPQC workflow policy stub updated",
+        )
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     event_type = models.CharField(max_length=64, choices=EventType.choices)

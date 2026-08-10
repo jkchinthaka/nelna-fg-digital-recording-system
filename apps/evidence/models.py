@@ -54,6 +54,10 @@ class EvidenceLinkedKind(models.TextChoices):
         "IQC_INSPECTION_CASE",
         "Incoming quality control inspection case",
     )
+    IPQC_INSPECTION_CASE = (
+        "IPQC_INSPECTION_CASE",
+        "In-process quality control inspection case",
+    )
 
 
 class EvidenceLifecycleStatus(models.TextChoices):

@@ -47,6 +47,7 @@ Do **not** rename FG master data, checklist, recording, review, or evidence work
 | receiving | Raw / material receiving quality (31) | MaterialReference; MaterialSpecification*; ReceiptQualityRecord; ReceiptLabSampleLink | record receipt quality; disposition local-only; link LIMS; ERP outbound blocked | No ERP stock update; no invented material catalogues/limits | **31** |
 | supplier_quality | Supplier quality management foundation (32) | SupplierQualityProfile; SupplierCertificate; SupplierQualityEvent | manage/view profiles; certificates; events; count-only metrics; NCR/CAPA links | No financial supplier master; no invented types/scores; QA≠Procurement | **32** |
 | iqc | Incoming Quality Control workflow (33) | IncomingReceiptEvent; IqcInspectionCase; IqcWorkflowPolicy | ingest GRN event; generate ChecklistTask; sampling; lab; review gate; local disposition | No hardcoded questions; ERP outbound dual-gate OFF | **33** |
+| ipqc | In-process quality control workflows (34) | IpqcProcessCheckDefinition; IpqcInspectionCase; IpqcWorkflowPolicy | generate process checks; measure; equipment; sampling; failure dual-gate; NCR/HOLD escalate; dashboard | No hardcoded questions; FAIL≠line stop; not FG release | **34** |
 
 ## Phase mapping reminder
 

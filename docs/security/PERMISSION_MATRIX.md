@@ -1,15 +1,15 @@
-# Permission Matrix — Technical vs Business
+# Permission Matrix â€” Technical vs Business
 
 **Document status:** Technical catalogue companion (Phase 03C)
 **Authority:** Code permissions + `apps/access_control/permission_catalogue.py`
-**Rule:** TECHNICALLY SUPPORTED ≠ BUSINESS APPROVED. Silence is not approval.
+**Rule:** TECHNICALLY SUPPORTED â‰  BUSINESS APPROVED. Silence is not approval.
 
 ## Vocabulary
 
 | Label | Meaning |
 | --- | --- |
 | TECHNICALLY SUPPORTED | Permission/codename exists and is enforceable via scoped RBAC |
-| BUSINESS APPROVED | Named owner mapping of permission → business responsibility with APR evidence |
+| BUSINESS APPROVED | Named owner mapping of permission â†’ business responsibility with APR evidence |
 | APPROVAL REQUIRED | No written owner mapping yet |
 
 ## Capability separation (non-negotiable technical)
@@ -214,3 +214,13 @@ AI default OFF. AI must not execute RELEASE/HOLD/REJECT, publish, spec/role chan
 | disposition_iqc | `iqc.disposition_iqc` | Local disposition (review gate when required) |
 | view_iqc | `iqc.view_iqc` | Read-only |
 | manage_iqcpolicy | `iqc.manage_iqcpolicy` | Review/ERP outbound policy stubs (default OFF) |
+
+### In-Process Quality Control (Phase 34)
+
+| Key | Permission | Notes |
+| --- | --- | --- |
+| manage_ipqc | `ipqc.manage_ipqc` | Manage definitions; generate IPQC cases / tasks |
+| record_ipqc | `ipqc.record_ipqc` | Record measurements and equipment links |
+| escalate_ipqc | `ipqc.escalate_ipqc` | Controlled NCR/HOLD escalation (not implied by manage/record) |
+| view_ipqc | `ipqc.view_ipqc` | Read-only cases and due/overdue/failure dashboard |
+| manage_ipqcpolicy | `ipqc.manage_ipqcpolicy` | Stop-production policy stubs (default OFF) |

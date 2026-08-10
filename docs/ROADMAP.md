@@ -486,3 +486,11 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Objective | Configurable IQC: GRN → task → record → review → local disposition |
 | Outputs | `apps.iqc`; ADR-044; sampling/LIMS hooks; ERP dual-gate OFF |
 | Status | **Technical foundation delivered** on `main` |
+
+## Phase 34 — In-Process Quality Control (IPQC) workflows
+
+| Field | Content |
+| --- | --- |
+| Objective | Process checks during production, separate from FG release |
+| Outputs | `apps.ipqc`; ADR-045; triggers; measurement/equipment/sampling; fail dual-gate OFF; NCR/HOLD escalate; dashboard |
+| Status | **Technical foundation delivered** on `main` |
