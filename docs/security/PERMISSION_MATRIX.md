@@ -84,3 +84,13 @@ Business role mapping for the above remains APPROVAL REQUIRED.
 
 Business role mapping and gate enablement remain APPROVAL REQUIRED / EVIDENCE REQUIRED.
 
+## Phase 15 notification permissions (technical)
+
+| key | permission | notes |
+| --- | --- | --- |
+| view_own_notifications | `notifications.view_own_notifications` | In-app inbox; own notifications only |
+| manage_notifications | `notifications.manage_notifications` | Create/dispatch policy-gated workflow notifications |
+| manage_notificationpolicy | `notifications.manage_notificationpolicy` | Enable event types / optional email (all default OFF) |
+
+Business event matrix, SMTP production use, and SMS provider remain APPROVAL REQUIRED / EVIDENCE REQUIRED.
+
