@@ -1,17 +1,19 @@
-# Phase 21 — Production data configuration
+# Phase 21 — Production data configuration load
 
-Load **only** management/QA-approved values via controlled import. Do not seed invented catalogues.
+**Status:** **NOT STARTED** — blocked by hard prerequisites and missing BUSINESS APPROVED catalogues.
 
-| Domain | Approved? | Load status |
-| --- | --- | --- |
-| Organization / Site | EVIDENCE REQUIRED (APR-002) | NOT LOADED |
-| Departments | EVIDENCE REQUIRED | NOT LOADED |
-| Shifts | EVIDENCE REQUIRED (APR-003/004) | NOT LOADED |
-| Products | EVIDENCE REQUIRED (APR-005) | NOT LOADED |
-| Roles / mappings / SoD | EVIDENCE REQUIRED (APR-007–010, APR-040) | NOT LOADED |
-| Checklist versions (published) | EVIDENCE REQUIRED (APR-001 / 06N) | NOT LOADED |
-| Product specs | EVIDENCE REQUIRED (APR-006) | NOT LOADED |
-| Applicability rules | EVIDENCE REQUIRED (APR-013/014) | NOT LOADED |
-| Integration mappings | EVIDENCE REQUIRED (APR-011/012) | NOT LOADED |
+Load **only** management-approved values via controlled import/configuration. Do not invent Nelna operational data.
 
-**Import execution:** NOT PERFORMED — release gate CLOSED.
+| Domain | Approved source | Load method | Loaded in prod? |
+| --- | --- | --- | --- |
+| Organization / Site | | Controlled import / admin | **No** |
+| Departments | | Controlled import / admin | **No** |
+| Shifts | | Controlled config | **No** |
+| Products | | Controlled import | **No** |
+| Roles / assignments | | Controlled RBAC services | **No** |
+| Checklist versions (published) | | Controlled publish after approval | **No** |
+| Product specifications | | Controlled config | **No** |
+| Applicability rules | | Controlled config | **No** |
+| Integration mappings | | Controlled config (if evidenced) | **No** |
+
+FG-QA-001 remains DRAFT / NOT APPROVED — must not be treated as production checklist content.

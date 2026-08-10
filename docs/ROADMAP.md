@@ -378,8 +378,8 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Approval gate | Project + Business + QA + IT owners |
 | Branch naming | `release/phase-21-production` |
 | Exit criteria | Explicit written approval; no silent go-live |
+| Status | **GO-LIVE BLOCKED** — release package on `main` (`docs/release/`); ADR-033; Phase 20 FAIL; no production tag; STOP |
 | Dependencies | Phase 20 pass |
-| Status | **GO-LIVE BLOCKED** — release package on `main` (`docs/release/`); Phase 20 FAIL; no production tag; STOP |
 
 ## Phase 22 — Laboratory / LIMS foundation
 

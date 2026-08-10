@@ -1,66 +1,45 @@
 # Phase 21 — Final production release report
 
-**Report posture:** Release gate **STOP** executed. No production deployment. No release tag.
+**Report date (UTC):** 2026-08-10  
+**Decision authority:** Hard prerequisites — **STOP**
 
-## Production environment
+---
 
-**NOT PROVISIONED** (local Compose only). MongoDB is **not** approved production SoR.
+## Final status fields
 
-## Release version
-
-**NONE** — git production release tag **not created** (gates failed).
-
-## Configuration loaded
-
-**NONE** — no approved production master data / checklist publish load.
-
-## Security status
-
-Phase 19 technical hardening on `main`. Critical/staging pen-test closure and production TLS/domain **EVIDENCE REQUIRED**. Not a production security attestation.
-
-## Backup / restore status
-
-Non-production restore drill **PASS** (Phase 19). Production backup custody + RPO/RTO **COMPANY DECISION REQUIRED** (APR-029). Insufficient alone for go-live.
-
-## Smoke-test result
-
-**NOT EXECUTED** — no production environment.
-
-## Monitoring
-
-Alert catalogue exists; production alert wiring + named owners **TBC**.
-
-## Support owner
-
-**NOT NAMED** — gate FAIL.
-
-## Handover completed
-
-**NO**.
-
-## Paper status
-
-**REMAINS IN FORCE** — no decommission approval.
-
-## Open risks (selected)
-
-1. Phase 20 UAT/pilot BLOCKED (APR-043)
-2. No hosted UAT/staging/production (APR-021)
-3. FG-QA-001 / master data / roles/SoD unapproved
-4. Repo ownership + vault (APR-025/026)
-5. Support / monitoring ownership unnamed
-6. Bileeta live integration still vendor-evidence gated
-
-## Final signoffs
-
-| Approver | Status |
+| Field | Result |
 | --- | --- |
-| Management Sponsor go-live | EVIDENCE REQUIRED |
-| QA Manager | EVIDENCE REQUIRED |
-| IT Manager | EVIDENCE REQUIRED |
-| Support owner acceptance | EVIDENCE REQUIRED |
+| Production environment | **None recorded** — local Compose only |
+| Release version / tag | **None created** (gates not passed) |
+| Configuration loaded | **None** in production |
+| Security status | Technical hardening on `main` (Phase 19); **production security signoff NOT RECEIVED** |
+| Backup/restore status | Local non-prod drill PASS only; **production custody / RPO-RTO NOT APPROVED** |
+| Smoke-test result | **NOT RUN** |
+| Monitoring | Runbooks exist; **company alerts/owners NOT CONFIRMED** |
+| Support owner | **OWNER REQUIRED** — not named |
+| Handover completed | **No** |
+| Paper status | **Must continue** — no decommission approval |
+| Open risks | Phase 20 blocked; no hosting; no approved master data/roles/checklists; no support owner; integration evidence incomplete |
+| Final signoffs | **NONE** — [GO_LIVE_SIGNOFF.md](GO_LIVE_SIGNOFF.md) blank |
 
-**Go / no-go: NO-GO — STOP**
+---
+
+## Release gate summary
+
+| Gate | Result |
+| --- | --- |
+| UAT signoff | **FAIL** (Phase 20 BLOCKED) |
+| Pilot signoff | **FAIL** |
+| QA / IT / Management go-live | **NOT RECEIVED** |
+| Approved production scope | **NOT RECEIVED** |
+
+---
+
+## Why STOP
+
+Hard prerequisite **H1** failed: Phase 20 business UAT/pilot is **BLOCKED** with 0 executed scenarios and no business signatures. Additional fails: hosting (APR-021), real configuration approvals, named support owner; production backup/restore not proven under company RPO/RTO.
+
+No production deploy, no release tag, no invented PASS.
 
 ---
 

@@ -2,7 +2,7 @@
 
 **Document status:** Package opened; business validation **BLOCKED**  
 **UAT package:** [../uat/README.md](../uat/README.md)  
-**ADR:** [ADR-032-UAT-PILOT-EVIDENCE-GATE.md](../architecture/ADR-032-UAT-PILOT-EVIDENCE-GATE.md)
+**ADR:** [ADR-034-UAT-PILOT-EVIDENCE-GATE.md](../architecture/ADR-034-UAT-PILOT-EVIDENCE-GATE.md)
 
 ## What engineering delivered
 

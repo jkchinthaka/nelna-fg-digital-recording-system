@@ -1,30 +1,29 @@
-# Phase 21 — Production release and handover
+# Phase 21 — Production Release & Handover
 
-**Document status:** Release gate **STOP** — go-live **BLOCKED**  
-**Package:** [../release/README.md](../release/README.md)
+**Document status:** Release **STOPPED** at hard prerequisites  
+**Branch:** `main`  
+**Package:** [../release/README.md](../release/README.md)  
+**ADR:** [ADR-033-PRODUCTION-GO-LIVE-GATE.md](../architecture/ADR-033-PRODUCTION-GO-LIVE-GATE.md)
 
-## Hard prerequisites (evaluated)
+## Hard prerequisites (must all be true)
 
-| Prerequisite | Result |
-| --- | --- |
-| Phase 20 business UAT/pilot passed | **FAIL** |
-| Critical security findings resolved | **FAIL** / EVIDENCE REQUIRED |
-| Backup/restore proven (production custody) | **PARTIAL** (non-prod drill only) |
-| Production hosting approved | **FAIL** |
-| Real business configuration approved | **FAIL** |
-| Support owner exists | **FAIL** |
+| # | Prerequisite | Status |
+| --- | --- | --- |
+| H1 | Phase 20 business UAT/pilot PASSED | **FAIL** — [PHASE 20 BLOCKED](../uat/PHASE_20_FINAL_REPORT.md) |
+| H2 | Critical security findings resolved | **NOT ATTESTED** for production |
+| H3 | Backup/restore proven for production custody | **PARTIAL** — local Compose drill only; company RPO/RTO + custody **EVIDENCE REQUIRED** |
+| H4 | Production hosting approved | **FAIL** — APR-021 EVIDENCE REQUIRED |
+| H5 | Real business configuration approved | **FAIL** — master data / checklist / roles not BUSINESS APPROVED |
+| H6 | Support owner exists | **FAIL** — OWNER REQUIRED |
 
-Per project rule: **STOP**. No production deploy, no smoke on live inventory, no release tag, no paper stop.
-
-## What was delivered
-
-Engineering opened the Phase 21 release/handover package with gate checklist, environment/data/secrets/pipeline/DB/smoke/support/handover/paper/post-go-live templates, and an honest NO-GO final report. Existing ops runbooks remain the reference library.
+**Rule:** If any hard prerequisite fails → **STOP**. Do not deploy, tag, or claim go-live.
 
 ## Explicit non-claims
 
-- Not PRODUCTION GO-LIVE COMPLETE
 - Not PRODUCTION READY
-- Not company handover complete
-- Not MongoDB production SoR
+- No production release tag created
+- No production secrets in git
+- No paper decommission
+- MongoDB is **not** SoR (PostgreSQL is); do not treat Mongo POC as production SoR
 
 ## STATUS: PHASE 21 GO-LIVE BLOCKED

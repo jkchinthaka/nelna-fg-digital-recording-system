@@ -141,8 +141,8 @@ Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 18)._ (`loading`
 | [PHASE_10_QA_REVIEW_READINESS_GATE.md](business/PHASE_10_QA_REVIEW_READINESS_GATE.md) | OPEN — production QA use BLOCKED |
 | [PHASE_10_POST_QA_WORKFLOW_GATE.md](business/PHASE_10_POST_QA_WORKFLOW_GATE.md) | OPEN — all downstream items EVIDENCE REQUIRED |
 
-**UAT PASSED:** No — Phase 20 package opened; business execution **NOT STARTED** ([PHASE_20_UAT_PILOT.md](business/PHASE_20_UAT_PILOT.md))
-**PRODUCTION READY:** No — Phase 21 release gate **STOP** ([PHASE_21_PRODUCTION_RELEASE.md](business/PHASE_21_PRODUCTION_RELEASE.md))
+**UAT PASSED:** No — Phase 20 package opened; business execution **NOT STARTED** ([PHASE_20_UAT_PILOT.md](business/PHASE_20_UAT_PILOT.md))  
+**PRODUCTION READY:** No — Phase 21 **GO-LIVE BLOCKED** ([PHASE_21_FINAL_REPORT.md](release/PHASE_21_FINAL_REPORT.md)) — Phase 21 release gate **STOP** ([PHASE_21_PRODUCTION_RELEASE.md](business/PHASE_21_PRODUCTION_RELEASE.md))
 
 ---
 

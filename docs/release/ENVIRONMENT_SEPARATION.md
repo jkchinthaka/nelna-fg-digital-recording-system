@@ -1,16 +1,15 @@
 # Phase 21 — Environment separation
 
-Strategy baseline: [../operations/ENVIRONMENT_STRATEGY.md](../operations/ENVIRONMENT_STRATEGY.md)
-
-| Environment | Exists today? | Separation status |
+| Environment | Purpose | Status in repo evidence |
 | --- | --- | --- |
-| Local | Yes (Compose) | OK for developers |
-| Test / CI | Yes (GitHub Actions / ephemeral) | OK |
-| Staging / UAT | **No hosted evidence** | **GAP** — APR-021 / ASM-015 |
-| Production | **No** | **GAP** — gate CLOSED |
+| Local | Developer Compose | **Exists** |
+| Test | CI / automated tests | **Exists** (GitHub Actions + Compose test profile) |
+| Staging / UAT | Business acceptance | **NOT AVAILABLE** (APR-021 open) |
+| Production | Live operations | **NOT AVAILABLE** |
 
-## Rules (in force)
+## Rules
 
-- No test credentials or synthetic fixtures in production.
-- No production secrets in git or developer `.env` committed to GitHub.
-- Promote only via explicit production gate ([RELEASE_PIPELINE.md](RELEASE_PIPELINE.md)).
+1. No test credentials or synthetic fixtures in production.
+2. No shared secrets across environments.
+3. Direct commits to `main` **do not** authorize production deploy.
+4. Production deploy requires explicit gate ([RELEASE_GATE.md](RELEASE_GATE.md) + CI/CD approval).

@@ -1,18 +1,21 @@
 # Phase 21 — Production environment verification
 
-Fill only when APR-021 production hosting exists. Current reality: **no production environment evidenced**.
+**Current deployment recorded in repo:** local / developer Docker Compose only.  
+**No production environment is claimed.**
 
-| Component | Required | Status | Notes |
+| Component | Required | Production status | Notes |
 | --- | --- | --- | --- |
-| Application service | Yes | NOT PROVISIONED | |
-| Reverse proxy / TLS / domain | Yes | NOT PROVISIONED | |
-| PostgreSQL (system of record) | Yes | NOT PROVISIONED | ADR-002 — primary SoR |
-| Redis | Yes | NOT PROVISIONED | |
-| Celery workers / beat | Yes | NOT PROVISIONED | |
-| Private evidence / media storage | Yes | NOT PROVISIONED | |
-| Secrets (vault) | Yes | NOT PROVISIONED | APR-026 |
-| Monitoring / alerts | Yes | NOT WIRED TO PROD | Catalogue exists (Phase 19); owners TBC |
-| Backups (encrypted, company custody) | Yes | NOT PRODUCTION | Non-prod drill only |
-| MongoDB production | Only if APR-020 approved cutover | **NOT APPROVED as SoR** | Optional POC; silence ≠ Mongo production SoR |
+| Application service | Yes | **NOT DEPLOYED** | |
+| PostgreSQL (SoR) | Yes | **NOT DEPLOYED** (prod) | ADR-002 — authoritative SoR |
+| Redis | Yes | **NOT DEPLOYED** (prod) | |
+| Celery / queue workers | Yes | **NOT DEPLOYED** (prod) | |
+| Reverse proxy | Yes | **NOT DEPLOYED** | |
+| TLS / certificates | Yes | **NOT DEPLOYED** | |
+| Domain / DNS | Yes | **NOT CONFIGURED** | |
+| Private media / evidence storage | Yes | **NOT DEPLOYED** (prod) | |
+| Secrets (vault) | Yes | **NOT CONFIGURED** for prod | Must not live in GitHub |
+| Monitoring / alerts | Yes | **NOT WIRED** to company stack | Owners TBC (Phase 19 docs) |
+| Backups (scheduled + custody) | Yes | **NOT PROVEN** for prod | |
+| MongoDB | Optional / not SoR | **N/A for SoR** | POC only (ADR-018); do not treat as production SoR |
 
-**MongoDB note:** Company interest in Mongo/Atlas is recorded (APR-020). PostgreSQL remains production SoR until explicit cutover approval after POC. Do not claim Mongo production readiness.
+PostgreSQL — not MongoDB — must be verified for production recording readiness.
