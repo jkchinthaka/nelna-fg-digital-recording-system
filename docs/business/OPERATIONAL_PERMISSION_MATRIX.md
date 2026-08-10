@@ -57,3 +57,14 @@
 
 Business role mapping for the above remains APPROVAL REQUIRED.
 
+## Phase 13 loading / dispatch permissions (technical)
+
+| key | permission | notes |
+| --- | --- | --- |
+| create_dispatchqualityrecord | `dispatch.create_dispatchqualityrecord` | Create loading/dispatch quality records |
+| manage_dispatchqualityrecord | `dispatch.manage_dispatchqualityrecord` | Update, link inspection/QA, temps, quantities |
+| complete_dispatchqualityrecord | `dispatch.complete_dispatchqualityrecord` | Complete (subject to configurable RELEASE gate) |
+| manage_dispatchreleasepolicy | `dispatch.manage_dispatchreleasepolicy` | Configure QA RELEASE-before-loading (default OFF) |
+
+Business role mapping and gate enablement remain APPROVAL REQUIRED / EVIDENCE REQUIRED.
+
