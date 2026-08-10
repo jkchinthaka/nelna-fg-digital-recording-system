@@ -82,6 +82,7 @@ INSTALLED_APPS = [
     "apps.batch_genealogy",
     "apps.recall",
     "apps.customer_complaints",
+    "apps.product_returns",
     "apps.nonconformance",
     "apps.capa",
     "apps.dispatch",
@@ -344,6 +345,12 @@ RECALL_ERP_DISTRIBUTION_PULL_APPROVED = env.bool(
 # Phase 39 — customer complaint auto-response remains OFF until company approval.
 COMPLAINT_CUSTOMER_RESPONSE_AUTO_SEND_APPROVED = env.bool(
     "COMPLAINT_CUSTOMER_RESPONSE_AUTO_SEND_APPROVED",
+    default=False,
+)
+
+# Phase 40 -- return ERP stock movement remains OFF until company approval.
+PRODUCT_RETURNS_ERP_STOCK_MOVEMENT_APPROVED = env.bool(
+    "PRODUCT_RETURNS_ERP_STOCK_MOVEMENT_APPROVED",
     default=False,
 )
 

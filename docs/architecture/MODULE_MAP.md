@@ -52,6 +52,7 @@ Do **not** rename FG master data, checklist, recording, review, or evidence work
 | batch_genealogy | Batch genealogy traceability (36) | GenealogyNode; GenealogyEdge; GenealogyPolicy | ERP-sourced ingest; backward/forward trace; rework; cycle prevention; flat Mongo projection | No invented genealogy; no unbounded embeds; partner fields restricted; Mongo dual-gate OFF | **36** |
 | recall | Product recall / withdrawal (37) + mock exercises (38) | RecallCase (+ MOCK mode); MockExerciseMetrics; MockRecallFinding; MockImprovementAction; quantity lines; communications; timeline; RecallPolicy | initiate/manage/close; genealogy expansion; qty reconciliation; mock metrics/findings | No invented regulatory classes; no auto-notify; mock never affects ERP/notify/dispatch; findings need explicit user action | **37–38** |
 | customer_complaints | Customer quality complaints (39) | CustomerComplaintCase; batch trace; evidence/investigation links; communications; category config; policy | create/manage/close; batch-trace; RCA/NCR/CAPA links; privacy redaction | No invented taxonomy; ERP customer SoR; no auto-send; sensitive reveal restricted | **39** |
+| product_returns | Returned product quality (40) | ReturnQualityRecord; ReturnQualityPolicy; ReturnQualityTimelineEntry | create/manage/inspect/disposition local return records; checklist inspection hook; prepare-only ERP stock boundary | No invented return taxonomies or quarantine rules; local RELEASE != ERP saleable; ERP stock movement dual-gate OFF by default; no invented ERP endpoints | **40** |
 
 ## Phase mapping reminder
 
@@ -62,6 +63,7 @@ Do **not** rename FG master data, checklist, recording, review, or evidence work
 | 08 | **08A** draft recording; **08B** immutable submission snapshots; **08C** shop-floor recording hardening |
 | 09 | **09A** `reviews` Supervisor review; **09B** `recording` ChecklistCorrection / resubmission; **09C** Supervisor governance hardening |
 | 10 | **10A** QA disposition; **10B** derived workflow lifecycle (ADR-022; no duplicated status) |
+| 40 | `product_returns` returned-product quality foundation; quarantine, inspection, local disposition, ERP dual-gate OFF |
 
 ## References
 

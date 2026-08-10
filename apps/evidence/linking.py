@@ -21,6 +21,7 @@ from apps.iqc.models import IqcInspectionCase
 from apps.laboratory.models import LabExternalCertificate, LabSample
 from apps.nonconformance.models import NonConformanceRecord
 from apps.packaging.models import ArtworkVersion
+from apps.product_returns.models import ReturnQualityRecord
 from apps.quality.models import QAReview
 from apps.recall.models import RecallCase
 from apps.receiving.models import ReceiptQualityRecord
@@ -77,6 +78,10 @@ VIEW_COMPLAINT = "customer_complaints.view_customercomplaint"
 MANAGE_COMPLAINT = "customer_complaints.manage_customercomplaint"
 CREATE_COMPLAINT = "customer_complaints.create_customercomplaint"
 CLOSE_COMPLAINT = "customer_complaints.close_customercomplaint"
+VIEW_RETURN = "product_returns.view_returnquality"
+MANAGE_RETURN = "product_returns.manage_returnquality"
+INSPECT_RETURN = "product_returns.inspect_returnquality"
+DISPOSITION_RETURN = "product_returns.disposition_returnquality"
 
 
 @dataclass(frozen=True, slots=True)
@@ -360,6 +365,18 @@ def resolve_linked_target(*, kind: str, object_id: uuid.UUID) -> LinkedTarget:
             obj=complaint,
         )
 
+    if kind == EvidenceLinkedKind.RETURN_QUALITY_RECORD:
+        return_record = ReturnQualityRecord.objects.filter(pk=object_id).first()
+        if return_record is None:
+            raise ValidationError({"linked_object_id": "Return quality record not found."})
+        return LinkedTarget(
+            kind=kind,
+            object_id=return_record.id,
+            organization_id=return_record.organization_id,
+            linkage_immutable=return_record.status
+            in {"DISPOSITIONED", "CANCELLED"},
+            obj=return_record,
+        )
 
     raise ValidationError({"linked_kind": "Unsupported linked kind."})
 
@@ -583,5 +600,15 @@ def _assert_parent_access(*, actor: User, target: LinkedTarget, for_mutate: bool
             raise PermissionDenied("Permission denied.")
         return
 
+    if kind == EvidenceLinkedKind.RETURN_QUALITY_RECORD:
+        allowed = (
+            user_has_permission(actor, VIEW_RETURN, scope=org_scope)
+            or user_has_permission(actor, MANAGE_RETURN, scope=org_scope)
+            or user_has_permission(actor, INSPECT_RETURN, scope=org_scope)
+            or user_has_permission(actor, DISPOSITION_RETURN, scope=org_scope)
+        )
+        if not allowed:
+            raise PermissionDenied("Permission denied.")
+        return
 
     raise PermissionDenied("Permission denied.")

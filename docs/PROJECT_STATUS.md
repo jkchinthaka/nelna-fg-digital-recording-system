@@ -85,6 +85,7 @@ This document records **repository evidence**. It does not invent Nelna operatio
 | `batch_genealogy` | **36** | IMPLEMENTED foundation · ERP-sourced nodes/edges; backward/forward; rework; cycle prevention; flat Mongo projection dual-gate OFF; partner redaction (APR-061) |
 | `recall` | **37–38** | IMPLEMENTED foundation · recall/withdrawal + MOCK exercises (APR-062/063) |
 | `customer_complaints` | **39** | IMPLEMENTED foundation · complaint cases; batch-trace; evidence; RCA/NCR/CAPA links; privacy redaction; auto-send dual-gate OFF (APR-064) |
+| `product_returns` | **40** | IMPLEMENTED foundation · returned-product quality records; quarantine; checklist inspection; disposition architecture; ERP stock dual-gate OFF (APR-065) |
 
 Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 38 except gaps noted elsewhere)._ (`loading` controls are delivered inside `dispatch` for Phase 13 — see ADR-025.)
 
@@ -158,6 +159,7 @@ Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 38 except gaps n
 | 37 Product Recall / Withdrawal | Technical complete — recall cases, genealogy expansion, qty reconciliation, communication refs, high-risk initiate, dual-gate notify/ERP OFF (ADR-048) | Company recall procedure / notify SOP / ERP distribution EVIDENCE REQUIRED (APR-062) |
 | 38 Mock Recall Exercises | Technical complete — MOCK_EXERCISE mode, metrics, isolation (no ERP/notify/dispatch), findings→NCR/CAPA/improvement explicit (ADR-049) | Company mock-drill SOP / finding SoD EVIDENCE REQUIRED (APR-063) |
 | 39 Customer Quality Complaints | Technical complete — complaint cases, batch-trace, evidence, RCA/NCR/CAPA links, privacy redaction, dual-gate auto-send OFF (ADR-050) | Complaint SOP / taxonomy / response EVIDENCE REQUIRED (APR-064) |
+| 40 Returned Product Quality | Technical complete — ERP/SFA return mapping, quarantine, checklist inspection, disposition architecture, ERP stock movement dual-gate OFF (ADR-051) | Return disposition / quarantine / ERP stock movement EVIDENCE REQUIRED (APR-065) |
 
 | 20–21 Pilot / production release | Not started | Depends on business gates + Phase 19 ops evidence |
 | 20 UAT / Pilot | Package opened — **BLOCKED** pending business evidence ([uat/README.md](uat/README.md)) | Pilot scope APR-034, FG-QA-001, roles/SoD, hosted env EVIDENCE REQUIRED |
@@ -544,4 +546,10 @@ Mock recall exercises (ADR-049): explicit `MOCK_EXERCISE` mode with `MOCK-` code
 **STATUS: PHASE 39 CUSTOMER COMPLAINTS COMPLETE**
 
 Customer quality complaint management (ADR-050): organization-scoped cases with ERP customer references, configurable category/severity shells, batch-known/unknown, batch-trace to dossier/genealogy/QA/lab/dispatch, evidence links, explicit investigation/RCA/NCR/CAPA links, communication references without auto-send, and privacy-restricted customer-sensitive fields (APR-064).
+
+## Phase 40 delivery status
+
+**STATUS: PHASE 40 PRODUCT RETURNS QUALITY COMPLETE**
+
+Returned product quality workflow (ADR-051): organization-scoped return quality records keyed to opaque ERP/SFA return references, default quarantine with `not_saleable_via_app=True`, checklist-engine inspection task hooks, configurable local disposition architecture (RELEASE/HOLD/REWORK/REJECT), allowlisted evidence links, and ERP stock movement blocked behind dual-gate approval by default. Company return disposition catalogue, quarantine procedure, and ERP movement enablement remain **EVIDENCE REQUIRED** (APR-065); local RELEASE does not make stock saleable in ERP.
 

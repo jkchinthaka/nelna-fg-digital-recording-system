@@ -3,7 +3,7 @@
 **Document status:** Governing roadmap for greenfield delivery
 **Canonical status:** [PROJECT_STATUS.md](PROJECT_STATUS.md) (prefer when summaries conflict)
 **Phase:** Through Phase **10A** technical foundations on `main`; MASTER-001 / TEMPLATE / role mappings / post-QA workflows still evidence-required
-**Last updated:** 2026-08-10 (06O product specifications)
+**Last updated:** 2026-08-10 (Phase 40 returned product quality)
 
 Branch naming pattern: `foundation/...`, `design/...`, `feature/phase-NN-short-name`, or `hardening/...` as appropriate. Prefer PR review; some authorized units have used direct-`main` quality-first delivery — see [governance/CHANGE_CONTROL.md](governance/CHANGE_CONTROL.md).
 
@@ -534,4 +534,15 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Objective | Traceable customer quality complaint management with batch-trace and investigation links |
 | Outputs | `apps.customer_complaints`; ADR-050; privacy redaction; dual-gate auto-send OFF; APR-064 |
 | Status | **Technical foundation delivered** on `main` |
+
+## Phase 40 — Returned Product Quality
+
+| Field | Content |
+| --- | --- |
+| Objective | Controlled returned-product quality workflow keyed to ERP/SFA return references without making stock saleable or moving ERP stock by default |
+| Outputs | `apps.product_returns`; ADR-051; quarantine-by-default records; checklist inspection hooks; disposition architecture; ERP stock movement dual-gate OFF; APR-065 |
+| Approval gate | Return disposition / quarantine / ERP stock movement evidence approval |
+| Branch naming | `feature/phase-40-returned-product-quality` |
+| Exit criteria | Return quality records are org-scoped and quarantine-on-create; checklist inspection uses the existing checklist engine; evidence linking is allowlisted; ERP stock movement remains blocked unless both runtime and organization gates are approved; no invented return catalogues, owners, or ERP endpoints |
+| Status | **Technical foundation delivered** on `main` — business SOP, disposition catalogue, and ERP stock movement enablement remain **EVIDENCE REQUIRED** |
 

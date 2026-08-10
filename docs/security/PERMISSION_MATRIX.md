@@ -271,3 +271,13 @@ AI default OFF. AI must not execute RELEASE/HOLD/REJECT, publish, spec/role chan
 | record_complaint_communication | `customer_complaints.record_complaint_communication` | Communication refs (no auto-send) |
 | manage_complaintpolicy | `customer_complaints.manage_complaintpolicy` | Category shells / auto-send stubs |
 
+### Returned Product Quality (Phase 40)
+
+| Key | Permission | Notes |
+| --- | --- | --- |
+| view_returnquality | `product_returns.view_returnquality` | View return quality records |
+| manage_returnquality | `product_returns.manage_returnquality` | Create/update; never saleable via app |
+| inspect_returnquality | `product_returns.inspect_returnquality` | Start checklist inspection tasks |
+| disposition_returnquality | `product_returns.disposition_returnquality` | RELEASE/HOLD/REWORK/REJECT (policy may restrict) |
+| manage_returnpolicystub | `product_returns.manage_returnpolicystub` | ERP stock gate / disposition allow-list stubs |
+

@@ -41,6 +41,7 @@ class CapabilityBucket(StrEnum):
     BATCH_GENEALOGY = "batch_genealogy"
     RECALL = "recall"
     CUSTOMER_COMPLAINTS = "customer_complaints"
+    PRODUCT_RETURNS = "product_returns"
     EVIDENCE = "evidence"
     MASTER_DATA = "master_data"
     CHECKLIST_PUBLISH = "checklist_publish"
@@ -947,6 +948,44 @@ PERMISSION_CATALOGUE: Final[tuple[PermissionCatalogueEntry, ...]] = (
         scopes=(ObjectScope.ORGANIZATION,),
         description="Update complaint category config and auto-response policy stubs.",
         notes="Dual-gated with COMPLAINT_CUSTOMER_RESPONSE_AUTO_SEND_APPROVED (default OFF).",
+    ),
+    PermissionCatalogueEntry(
+        key="view_returnquality",
+        permission="product_returns.view_returnquality",
+        bucket=CapabilityBucket.PRODUCT_RETURNS,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="View returned product quality records and timelines.",
+    ),
+    PermissionCatalogueEntry(
+        key="manage_returnquality",
+        permission="product_returns.manage_returnquality",
+        bucket=CapabilityBucket.PRODUCT_RETURNS,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Create/update return quality records and quantity references.",
+        notes="Returned stock never becomes saleable through this application.",
+    ),
+    PermissionCatalogueEntry(
+        key="inspect_returnquality",
+        permission="product_returns.inspect_returnquality",
+        bucket=CapabilityBucket.PRODUCT_RETURNS,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Start return inspection via checklist engine tasks.",
+    ),
+    PermissionCatalogueEntry(
+        key="disposition_returnquality",
+        permission="product_returns.disposition_returnquality",
+        bucket=CapabilityBucket.PRODUCT_RETURNS,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Apply return disposition (RELEASE/HOLD/REWORK/REJECT architecture).",
+        notes="Company policy governs allowed paths (APR-065). Local quality only.",
+    ),
+    PermissionCatalogueEntry(
+        key="manage_returnpolicystub",
+        permission="product_returns.manage_returnpolicystub",
+        bucket=CapabilityBucket.PRODUCT_RETURNS,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Manage return quality policy stubs (ERP stock gate / disposition allow-list).",
+        notes="Dual-gated with PRODUCT_RETURNS_ERP_STOCK_MOVEMENT_APPROVED (default OFF).",
     ),
     PermissionCatalogueEntry(
         key="manage_supplierquality_qa",

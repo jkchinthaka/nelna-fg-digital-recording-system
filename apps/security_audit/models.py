@@ -975,6 +975,26 @@ class SecurityAuditEvent(models.Model):
             "COMPLAINT_CATEGORY_CONFIG_UPSERTED",
             "Complaint category/severity config upserted",
         )
+        RETURN_QUALITY_CREATED = (
+            "RETURN_QUALITY_CREATED",
+            "Returned product quality record created (quarantine)",
+        )
+        RETURN_QUALITY_QUANTITY_UPDATED = (
+            "RETURN_QUALITY_QUANTITY_UPDATED",
+            "Return quality quantity/UOM reference updated",
+        )
+        RETURN_QUALITY_INSPECTION_STARTED = (
+            "RETURN_QUALITY_INSPECTION_STARTED",
+            "Return inspection checklist task started",
+        )
+        RETURN_QUALITY_DISPOSITIONED = (
+            "RETURN_QUALITY_DISPOSITIONED",
+            "Return quality disposition applied (local only)",
+        )
+        RETURN_QUALITY_POLICY_UPSERTED = (
+            "RETURN_QUALITY_POLICY_UPSERTED",
+            "Return quality policy stub upserted",
+        )
         RETURN_ERP_STOCK_MOVEMENT_BLOCKED = (
             "RETURN_ERP_STOCK_MOVEMENT_BLOCKED",
             "Return ERP stock movement blocked by dual-gate",

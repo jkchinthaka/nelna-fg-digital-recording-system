@@ -411,3 +411,14 @@ Retention period is **deferred** â€” not decided in Phase 03. Events are ap
 | COMPLAINT_POLICY_UPDATED | Complaint policy stub updated |
 | COMPLAINT_CATEGORY_CONFIG_UPSERTED | Category/severity config upserted |
 
+### Returned Product Quality (Phase 40)
+
+| Event | Meaning |
+| --- | --- |
+| RETURN_QUALITY_CREATED | Return quality record created (quarantine) |
+| RETURN_QUALITY_QUANTITY_UPDATED | Quantity/UOM reference updated |
+| RETURN_QUALITY_INSPECTION_STARTED | Checklist inspection task started |
+| RETURN_QUALITY_DISPOSITIONED | Local disposition applied (ERP stock unchanged) |
+| RETURN_QUALITY_POLICY_UPSERTED | Return quality policy stub upserted |
+| RETURN_ERP_STOCK_MOVEMENT_BLOCKED | ERP stock movement blocked / refused |
+

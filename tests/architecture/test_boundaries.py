@@ -41,6 +41,7 @@ ALLOWED_APPS = {
     "batch_genealogy",
     "recall",
     "customer_complaints",
+    "product_returns",
     "supplier_quality",
     "access_control",
     "security_audit",
