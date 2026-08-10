@@ -35,6 +35,8 @@ def send_disposition_to_erp(command: OutboundDispositionCommand) -> None:
 
     Architecture prepares the command interface only.
     """
+    from apps.security_audit.services import record_event
+
     safe = redact_mapping(
         {
             "organization_id": command.organization_id,
@@ -42,6 +44,11 @@ def send_disposition_to_erp(command: OutboundDispositionCommand) -> None:
             "disposition": command.disposition,
             "correlation_id": command.correlation_id,
         }
+    )
+    record_event(
+        event_type="INTEGRATION_OUTBOUND_BLOCKED",
+        actor=None,
+        metadata=safe,
     )
     raise IntegrationError(
         "Outbound QA disposition to ERP/Bileeta is not approved "
