@@ -446,3 +446,11 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Objective | Generic EM points, versioned limits, MANUAL/LAB/SENSOR readings |
 | Outputs | `apps.environmental`; ADR-040; auto-HOLD default OFF |
 | Status | **Technical foundation delivered** on `main` |
+
+## Phase 29 — Packaging label / artwork verification
+
+| Field | Content |
+| --- | --- |
+| Objective | Versioned packaging artwork linked to product, checklist, and batch history |
+| Outputs | `apps.packaging`; ADR-041; manage≠approve; no shelf-life calculation |
+| Status | **Technical foundation delivered** on `main` |

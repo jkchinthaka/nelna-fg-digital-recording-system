@@ -32,6 +32,7 @@ class CapabilityBucket(StrEnum):
     FOREIGN_BODY = "foreign_body"
     SANITATION = "sanitation"
     ENVIRONMENTAL = "environmental"
+    PACKAGING = "packaging"
     EVIDENCE = "evidence"
     MASTER_DATA = "master_data"
     CHECKLIST_PUBLISH = "checklist_publish"
@@ -604,6 +605,29 @@ PERMISSION_CATALOGUE: Final[tuple[PermissionCatalogueEntry, ...]] = (
         bucket=CapabilityBucket.ENVIRONMENTAL,
         scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE, ObjectScope.DEPARTMENT),
         description="Read-only environmental monitoring history and trend index.",
+    ),
+    PermissionCatalogueEntry(
+        key="manage_packagingartwork",
+        permission="packaging.manage_packagingartwork",
+        bucket=CapabilityBucket.PACKAGING,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Draft/edit packaging artwork versions (Product Master style).",
+        notes="Separated from approve_packagingartwork (Document Control).",
+    ),
+    PermissionCatalogueEntry(
+        key="approve_packagingartwork",
+        permission="packaging.approve_packagingartwork",
+        bucket=CapabilityBucket.PACKAGING,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Approve/retire packaging artwork versions (Document Control).",
+        notes="Not implied by manage_packagingartwork.",
+    ),
+    PermissionCatalogueEntry(
+        key="view_packagingartwork",
+        permission="packaging.view_packaging",
+        bucket=CapabilityBucket.PACKAGING,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Read-only packaging artwork viewing.",
     ),
     PermissionCatalogueEntry(
         key="manage_supplierquality_qa",

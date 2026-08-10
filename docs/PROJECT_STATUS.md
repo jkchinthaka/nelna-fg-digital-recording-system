@@ -75,8 +75,9 @@ This document records **repository evidence**. It does not invent Nelna operatio
 | `foreign_body` | **26** | IMPLEMENTED foundation · metal-detector challenge shells; no invented Fe/SS sizes; auto-HOLD default OFF (APR-052) |
 | `sanitation` | **27** | IMPLEMENTED foundation · checklist-bound SSOP programs; no invented chemicals/frequencies; fail-stop default OFF (APR-053) |
 | `environmental` | **28** | IMPLEMENTED foundation · monitoring points/params/versioned limits; MANUAL/LAB/SENSOR; auto-HOLD default OFF (APR-054) |
+| `packaging` | **29** | IMPLEMENTED foundation · versioned artwork; checklist bind; date-code shells; manage≠approve (APR-055) |
 
-Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 28)._ (`loading` controls are delivered inside `dispatch` for Phase 13 — see ADR-025.)
+Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 29)._ (`loading` controls are delivered inside `dispatch` for Phase 13 — see ADR-025.)
 
 ---
 
@@ -137,6 +138,7 @@ Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 28)._ (`loading`
 | 26 Foreign body control | Technical complete — challenge tests, configurable pieces, advisory containment (ADR-038) | Company piece/frequency/HOLD policy EVIDENCE REQUIRED |
 | 27 Sanitation / SSOP | Technical complete — checklist-bound programs, scopes, schedule kinds, chemical shells, fail-stop default OFF (ADR-039) | Company SSOP content / production-stop policy EVIDENCE REQUIRED |
 | 28 Environmental monitoring | Technical complete — points, versioned limits, MANUAL/LAB/SENSOR, trend index, auto-HOLD default OFF (ADR-040) | Company EM catalogue / limits / HOLD policy EVIDENCE REQUIRED |
+| 29 Packaging artwork verification | Technical complete — versioned artwork, checklist binding, date-code shells, line-clearance hook, historical freeze (ADR-041) | Company artwork / date-code / shelf-life policy EVIDENCE REQUIRED (APR-055) |
 | 20–21 Pilot / production release | Not started | Depends on business gates + Phase 19 ops evidence |
 | 20 UAT / Pilot | Package opened — **BLOCKED** pending business evidence ([uat/README.md](uat/README.md)) | Pilot scope APR-034, FG-QA-001, roles/SoD, hosted env EVIDENCE REQUIRED |
 | 21 Production release | Package opened — **GO-LIVE BLOCKED** ([release/README.md](release/README.md)) | Phase 20 FAIL + hosting/config/support gates |
@@ -456,3 +458,9 @@ Sanitation / SSOP checklist workflows (ADR-039): programs bind to existing Check
 **STATUS: PHASE 28 ENVIRONMENTAL MONITORING COMPLETE**
 
 Environmental monitoring foundation (ADR-040): reusable MonitoringPoint locations, versioned limit shells (no invented bounds), MANUAL/LAB/SENSOR readings, scheduler links, trend index, optional equipment device trace, and excursion auto-HOLD dual-gated OFF by default (APR-054).
+
+## Phase 29 delivery status
+
+**STATUS: PHASE 29 LABEL ARTWORK CONTROL COMPLETE**
+
+Packaging label / artwork verification foundation (ADR-041): versioned PackagingArtwork / ArtworkVersion linked to FG Product and pack-configuration labels, checklist binding to exact approved versions, date-coding shells (MFG/EXP/batch/format references without shelf-life calculation), line-clearance hook stub, historical frozen artwork context on submissions, and Product Master manage vs Document Control approve separation (APR-055).

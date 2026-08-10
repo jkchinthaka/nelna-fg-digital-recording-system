@@ -915,6 +915,11 @@ def _control_point_context_for_item(item: ChecklistItem) -> dict:
         sanitation = snapshot_for_checklist_template(template_id)
         if sanitation:
             snap["sanitation_context"] = sanitation
+    from apps.packaging.snapshots import snapshot_for_checklist_item as artwork_snapshot
+
+    packaging = artwork_snapshot(item.id)
+    if packaging:
+        snap["packaging_artwork_context"] = packaging
     return snap
 
 

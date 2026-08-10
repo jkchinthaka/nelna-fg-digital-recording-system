@@ -230,3 +230,15 @@ Retention period is **deferred** â€” not decided in Phase 03. Events are ap
 | EM_READING_RECORDED | Reading recorded |
 | EM_EXCURSION_EVALUATED | WARN/EXCURSION evaluated |
 | EM_EXCURSION_POLICY_UPDATED | Auto-HOLD policy stub updated |
+
+### Packaging artwork (Phase 29)
+
+| Event type | Meaning |
+| --- | --- |
+| PACKAGING_ARTWORK_CREATED | Packaging artwork identity created |
+| PACKAGING_ARTWORK_VERSION_CREATED | Artwork version drafted |
+| PACKAGING_ARTWORK_VERSION_APPROVED | Artwork version approved (immutable) |
+| PACKAGING_ARTWORK_VERSION_RETIRED | Approved artwork version retired |
+| PACKAGING_ARTWORK_CHECKLIST_BINDING_SET | Checklist item bound to approved artwork version |
+| PACKAGING_LINE_CLEARANCE_HOOK_CREATED | Future line-clearance / changeover hook created |
+| PACKAGING_ARTWORK_VERIFICATION_RECORDED | Batch artwork verification recorded |

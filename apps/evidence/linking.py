@@ -24,6 +24,7 @@ from apps.recording.models import (
 from apps.reviews.models import SupervisorReview
 from apps.sanitation.models import SanitationProgram
 from apps.environmental.models import MonitoringReading
+from apps.packaging.models import ArtworkVersion
 from apps.scheduling.services import RECORD_CHECKLIST_TASK
 
 UPLOAD_EVIDENCE = "evidence.upload_evidenceattachment"
@@ -46,6 +47,9 @@ MANAGE_SANITATION = "sanitation.manage_sanitationprogram"
 VIEW_ENVIRONMENTAL = "environmental.view_environmental"
 RECORD_ENVIRONMENTAL = "environmental.record_environmentalreading"
 MANAGE_ENVIRONMENTAL = "environmental.manage_environmental"
+VIEW_PACKAGING = "packaging.view_packagingartwork"
+MANAGE_PACKAGING = "packaging.manage_packagingartwork"
+APPROVE_PACKAGING = "packaging.approve_packagingartwork"
 
 
 @dataclass(frozen=True, slots=True)
@@ -239,6 +243,24 @@ def resolve_linked_target(*, kind: str, object_id: uuid.UUID) -> LinkedTarget:
             obj=reading,
         )
 
+    if kind == EvidenceLinkedKind.PACKAGING_ARTWORK_VERSION:
+        version = (
+            ArtworkVersion.objects.select_related("artwork")
+            .filter(pk=object_id)
+            .first()
+        )
+        if version is None:
+            raise ValidationError(
+                {"linked_object_id": "Packaging artwork version not found."}
+            )
+        return LinkedTarget(
+            kind=kind,
+            object_id=version.id,
+            organization_id=version.artwork.organization_id,
+            linkage_immutable=version.is_immutable,
+            obj=version,
+        )
+
     raise ValidationError({"linked_kind": "Unsupported linked kind."})
 
 
@@ -376,6 +398,25 @@ def _assert_parent_access(*, actor: User, target: LinkedTarget, for_mutate: bool
         )
         if not allowed:
             raise PermissionDenied("Permission denied.")
+        return
+
+    if kind == EvidenceLinkedKind.PACKAGING_ARTWORK_VERSION:
+        allowed = (
+            user_has_permission(actor, VIEW_PACKAGING, scope=org_scope)
+            or user_has_permission(actor, MANAGE_PACKAGING, scope=org_scope)
+            or user_has_permission(actor, APPROVE_PACKAGING, scope=org_scope)
+        )
+        if not allowed:
+            raise PermissionDenied("Permission denied.")
+        if for_mutate and target.obj.is_immutable:
+            raise ValidationError(
+                {
+                    "linked_object_id": (
+                        "Evidence cannot be attached/changed on an approved/retired "
+                        "artwork version without controlled retirement policy."
+                    )
+                }
+            )
         return
 
     raise PermissionDenied("Permission denied.")

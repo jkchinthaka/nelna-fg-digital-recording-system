@@ -34,6 +34,10 @@ class EvidenceLinkedKind(models.TextChoices):
         "MONITORING_READING",
         "Environmental monitoring reading",
     )
+    PACKAGING_ARTWORK_VERSION = (
+        "PACKAGING_ARTWORK_VERSION",
+        "Packaging artwork version evidence",
+    )
 
 
 class EvidenceLifecycleStatus(models.TextChoices):

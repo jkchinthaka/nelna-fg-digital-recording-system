@@ -176,3 +176,11 @@ AI default OFF. AI must not execute RELEASE/HOLD/REJECT, publish, spec/role chan
 | manage_environmental | `environmental.manage_environmental` | Points, params, specs, policy stubs |
 | record_environmentalreading | `environmental.record_environmentalreading` | MANUAL/LAB/SENSOR readings |
 | view_environmental | `environmental.view_environmental` | Read-only / trend |
+
+### Packaging artwork (Phase 29)
+
+| Key | Permission | Notes |
+| --- | --- | --- |
+| manage_packagingartwork | `packaging.manage_packagingartwork` | Product Master: draft/edit artwork versions |
+| approve_packagingartwork | `packaging.approve_packagingartwork` | Document Control: approve/retire (not implied by manage) |
+| view_packagingartwork | `packaging.view_packaging` | Read-only |

@@ -614,6 +614,35 @@ class SecurityAuditEvent(models.Model):
             "Environmental excursion auto-HOLD policy updated",
         )
 
+        PACKAGING_ARTWORK_CREATED = (
+            "PACKAGING_ARTWORK_CREATED",
+            "Packaging artwork created",
+        )
+        PACKAGING_ARTWORK_VERSION_CREATED = (
+            "PACKAGING_ARTWORK_VERSION_CREATED",
+            "Packaging artwork version created",
+        )
+        PACKAGING_ARTWORK_VERSION_APPROVED = (
+            "PACKAGING_ARTWORK_VERSION_APPROVED",
+            "Packaging artwork version approved",
+        )
+        PACKAGING_ARTWORK_VERSION_RETIRED = (
+            "PACKAGING_ARTWORK_VERSION_RETIRED",
+            "Packaging artwork version retired",
+        )
+        PACKAGING_ARTWORK_CHECKLIST_BINDING_SET = (
+            "PACKAGING_ARTWORK_CHECKLIST_BINDING_SET",
+            "Packaging artwork checklist item binding set",
+        )
+        PACKAGING_LINE_CLEARANCE_HOOK_CREATED = (
+            "PACKAGING_LINE_CLEARANCE_HOOK_CREATED",
+            "Line clearance artwork hook created",
+        )
+        PACKAGING_ARTWORK_VERIFICATION_RECORDED = (
+            "PACKAGING_ARTWORK_VERIFICATION_RECORDED",
+            "Packaging artwork verification recorded",
+        )
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     event_type = models.CharField(max_length=64, choices=EventType.choices)

@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     "apps.foreign_body",
     "apps.sanitation",
     "apps.environmental",
+    "apps.packaging",
     "apps.nonconformance",
     "apps.capa",
     "apps.dispatch",
