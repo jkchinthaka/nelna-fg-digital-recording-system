@@ -422,3 +422,19 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Objective | Link measurements to exact device + calibration state |
 | Outputs | device_traceability; ADR-037; frozen response snapshots |
 | Status | **Technical foundation delivered** on `main` |
+
+## Phase 26 — Foreign body / metal-detector control
+
+| Field | Content |
+| --- | --- |
+| Objective | Configurable challenge verification without invented limits |
+| Outputs | apps.foreign_body; ADR-038 |
+| Status | **Technical foundation delivered** on main |
+
+## Phase 27 — Sanitation / SSOP checklist workflows
+
+| Field | Content |
+| --- | --- |
+| Objective | Digital sanitation/SSOP using existing checklist engine + scheduler |
+| Outputs | apps.sanitation; ADR-039; fail-stop default OFF |
+| Status | **Technical foundation delivered** on `main` |

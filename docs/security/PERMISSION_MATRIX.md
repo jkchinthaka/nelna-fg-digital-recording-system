@@ -151,3 +151,12 @@ AI default OFF. AI must not execute RELEASE/HOLD/REJECT, publish, spec/role chan
 | Key | Permission | Notes |
 | --- | --- | --- |
 | override_calibration_gate | `instruments.override_calibration_gate` | Override BLOCK when company flag approved; audited |
+
+### Foreign body (Phase 26)
+
+| Key | Permission | Notes |
+| --- | --- | --- |
+| manage_testpiece | oreign_body.manage_testpiece | Catalogue / schedule shells |
+| record_challengeresult | oreign_body.record_challengeresult | Record challenges |
+| verify_challengeresult | oreign_body.verify_challengeresult | Verify/void |
+| view_foreignbody | oreign_body.view_foreignbody | Read-only |

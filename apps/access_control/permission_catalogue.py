@@ -29,6 +29,8 @@ class CapabilityBucket(StrEnum):
     LABORATORY = "laboratory"
     HACCP = "haccp"
     SAMPLING = "sampling"
+    FOREIGN_BODY = "foreign_body"
+    SANITATION = "sanitation"
     EVIDENCE = "evidence"
     MASTER_DATA = "master_data"
     CHECKLIST_PUBLISH = "checklist_publish"
@@ -525,6 +527,59 @@ PERMISSION_CATALOGUE: Final[tuple[PermissionCatalogueEntry, ...]] = (
         bucket=CapabilityBucket.SAMPLING,
         scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
         description="Read-only view of sampling plans.",
+    ),
+    PermissionCatalogueEntry(
+        key="manage_testpiece",
+        permission="foreign_body.manage_testpiece",
+        bucket=CapabilityBucket.FOREIGN_BODY,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Manage foreign-body test-piece catalogue and schedule rule shells.",
+        notes="Do not invent Fe/Non-Fe/SS sizes or frequencies.",
+    ),
+    PermissionCatalogueEntry(
+        key="record_challengeresult",
+        permission="foreign_body.record_challengeresult",
+        bucket=CapabilityBucket.FOREIGN_BODY,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Record metal-detector / foreign-body challenge tests.",
+        notes="Cannot verify own record (SoD).",
+    ),
+    PermissionCatalogueEntry(
+        key="verify_challengeresult",
+        permission="foreign_body.verify_challengeresult",
+        bucket=CapabilityBucket.FOREIGN_BODY,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Verify or void foreign-body challenge tests.",
+        notes="Separate from record permission.",
+    ),
+    PermissionCatalogueEntry(
+        key="view_foreignbody",
+        permission="foreign_body.view_foreignbody",
+        bucket=CapabilityBucket.FOREIGN_BODY,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Read-only foreign-body challenge history.",
+    ),
+    PermissionCatalogueEntry(
+        key="manage_sanitationprogram",
+        permission="sanitation.manage_sanitationprogram",
+        bucket=CapabilityBucket.SANITATION,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE, ObjectScope.DEPARTMENT),
+        description="Draft/edit sanitation programs, scopes, schedule links, chemical shells.",
+        notes="Does not invent cleaning chemicals, concentrations, or frequencies.",
+    ),
+    PermissionCatalogueEntry(
+        key="publish_sanitationprogram",
+        permission="sanitation.publish_sanitationprogram",
+        bucket=CapabilityBucket.SANITATION,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Approve/retire sanitation program versions and fail-policy stubs.",
+    ),
+    PermissionCatalogueEntry(
+        key="view_sanitation",
+        permission="sanitation.view_sanitation",
+        bucket=CapabilityBucket.SANITATION,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE, ObjectScope.DEPARTMENT),
+        description="Read-only view of sanitation programs.",
     ),
     PermissionCatalogueEntry(
         key="manage_supplierquality_qa",

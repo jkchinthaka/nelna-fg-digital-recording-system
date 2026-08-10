@@ -39,6 +39,7 @@ Do **not** rename FG master data, checklist, recording, review, or evidence work
 | laboratory | Laboratory / LIMS foundation (22) | LabSample; LabTest; LabResult; policy stub | register/enter/verify/finalize; positive-release gate (default non-blocking); COA hooks | No invented methods/limits; no positive-release blocking without QA approval; PostgreSQL SoR | **22** |
 | haccp | Versioned HACCP / control-point foundation (23) | HaccpPlan; HaccpPlanVersion; ProcessStep; Hazard; ControlMeasure; ControlPoint; CriticalLimitReference; MonitoringRule; CorrectiveActionReference; ChecklistItemHaccpBinding | manage/approve/view; draft→approve→retire; frozen checklist binding | No invented Nelna CCPs/limits/actions; no auto HOLD/NCR; PostgreSQL SoR | **23** |
 | sampling | Configurable sampling-plan engine (24) | SamplingPlan; SamplingPlanVersion; SamplingRule; SampleRequirement; ChecklistItemSamplingBinding | resolve sample count; accept/reject advisory; frozen checklist binding | No ISO/AQL tables; sampling FAIL ≠ QA REJECT; PostgreSQL SoR | **24** |
+| foreign_body | Metal-detector / foreign-body challenge foundation (26) | TestPiece; MetalDetectorChallengeTest; ContainmentAssessment; ChallengeScheduleRule | record/verify challenge; advisory containment interval | No invented Fe/SS sizes; auto-HOLD default OFF; PostgreSQL SoR | **26** |
 
 ## Phase mapping reminder
 

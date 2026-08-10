@@ -29,6 +29,8 @@ ALLOWED_APPS = {
     "laboratory",
     "haccp",
     "sampling",
+    "foreign_body",
+    "sanitation",
     "supplier_quality",
     "access_control",
     "security_audit",

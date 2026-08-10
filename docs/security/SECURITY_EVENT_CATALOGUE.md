@@ -193,3 +193,14 @@ Retention period is **deferred** â€” not decided in Phase 03. Events are ap
 | Event | Meaning |
 | --- | --- |
 | DEVICE_CALIBRATION_OVERRIDE | Manual override of calibration BLOCK gate (reason required) |
+
+### Foreign body (Phase 26)
+
+| Event | Meaning |
+| --- | --- |
+| FOREIGN_BODY_TEST_PIECE_CREATED | Test piece created |
+| FOREIGN_BODY_SCHEDULE_RULE_CREATED | Schedule rule shell created |
+| FOREIGN_BODY_CHALLENGE_RECORDED | Challenge recorded |
+| FOREIGN_BODY_CHALLENGE_VERIFIED | Challenge verified |
+| FOREIGN_BODY_CHALLENGE_VOIDED | Challenge voided |
+| FOREIGN_BODY_CONTAINMENT_ASSESSED | FAIL containment assessed |

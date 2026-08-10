@@ -78,6 +78,7 @@ ID · Decision / Evidence Needed · Business Owner · Requested Date · Needed B
 | APR-049 | HACCP plan approve authority mapping (`approve_haccpplan` holders) | QA Manager / Food Safety / Management Sponsor | 2026-08-10 | Before production HACCP approval workflow | EVIDENCE REQUIRED | Yes | Phase 23 permission catalogue | — | — | System Admin ≠ food-safety approver by default |
 | APR-050 | Company sampling plans / tables (sample sizes, accept/reject, inspection levels; external-standard source+verified data if used) | QA Manager | 2026-08-10 | Before production sampling-driven counts | EVIDENCE REQUIRED | Yes | [ADR-036](../architecture/ADR-036-QUALITY-SAMPLING-ENGINE.md) | — | — | Phase 24 stores empty shells only; do not copy ISO/AQL from memory |
 | APR-051 | Calibration enforcement policy (OFF/WARN/BLOCK) and override authority for measurement devices | QA Manager / Metrology | 2026-08-10 | Before enabling BLOCK or overrides | EVIDENCE REQUIRED | Yes | [ADR-037](../architecture/ADR-037-MEASUREMENT-DEVICE-TRACEABILITY.md); `INSTRUMENTS_CALIBRATION_*` | — | — | Runtime default OFF; override flag default False |
+| APR-052 | Foreign-body challenge catalogue, test frequency, and FAIL containment/HOLD policy | QA Manager / Food Safety | 2026-08-10 | Before production challenge enforcement / auto-HOLD | EVIDENCE REQUIRED | Yes | [ADR-038](../architecture/ADR-038-FOREIGN-BODY-CONTROL.md) | — | — | Default auto-HOLD OFF; do not invent Fe/SS sizes or frequencies |
 
 ---
 

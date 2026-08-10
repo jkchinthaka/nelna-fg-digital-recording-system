@@ -529,6 +529,56 @@ class SecurityAuditEvent(models.Model):
             "Measuring device attached to checklist response",
         )
 
+        FOREIGN_BODY_TEST_PIECE_CREATED = (
+            "FOREIGN_BODY_TEST_PIECE_CREATED",
+            "Foreign-body test piece created",
+        )
+        FOREIGN_BODY_SCHEDULE_RULE_CREATED = (
+            "FOREIGN_BODY_SCHEDULE_RULE_CREATED",
+            "Foreign-body schedule rule created",
+        )
+        FOREIGN_BODY_CHALLENGE_RECORDED = (
+            "FOREIGN_BODY_CHALLENGE_RECORDED",
+            "Metal-detector challenge test recorded",
+        )
+        FOREIGN_BODY_CHALLENGE_VERIFIED = (
+            "FOREIGN_BODY_CHALLENGE_VERIFIED",
+            "Metal-detector challenge test verified",
+        )
+        FOREIGN_BODY_CHALLENGE_VOIDED = (
+            "FOREIGN_BODY_CHALLENGE_VOIDED",
+            "Metal-detector challenge test voided",
+        )
+        FOREIGN_BODY_CONTAINMENT_ASSESSED = (
+            "FOREIGN_BODY_CONTAINMENT_ASSESSED",
+            "Foreign-body containment interval assessed",
+        )
+
+        SANITATION_PROGRAM_CREATED = (
+            "SANITATION_PROGRAM_CREATED",
+            "Sanitation program created",
+        )
+        SANITATION_PROGRAM_VERSION_CREATED = (
+            "SANITATION_PROGRAM_VERSION_CREATED",
+            "Sanitation program version created",
+        )
+        SANITATION_PROGRAM_VERSION_APPROVED = (
+            "SANITATION_PROGRAM_VERSION_APPROVED",
+            "Sanitation program version approved",
+        )
+        SANITATION_PROGRAM_VERSION_RETIRED = (
+            "SANITATION_PROGRAM_VERSION_RETIRED",
+            "Sanitation program version retired",
+        )
+        SANITATION_CHECKLIST_BINDING_SET = (
+            "SANITATION_CHECKLIST_BINDING_SET",
+            "Sanitation checklist template binding set",
+        )
+        SANITATION_FAIL_POLICY_UPDATED = (
+            "SANITATION_FAIL_POLICY_UPDATED",
+            "Sanitation fail / production-stop policy updated",
+        )
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     event_type = models.CharField(max_length=64, choices=EventType.choices)

@@ -70,6 +70,8 @@ INSTALLED_APPS = [
     "apps.laboratory",
     "apps.haccp",
     "apps.sampling",
+    "apps.foreign_body",
+    "apps.sanitation",
     "apps.nonconformance",
     "apps.capa",
     "apps.dispatch",
@@ -278,6 +280,16 @@ INSTRUMENTS_CALIBRATION_ENFORCEMENT = env(
 # Manual override of BLOCK only when company policy explicitly approves.
 INSTRUMENTS_CALIBRATION_OVERRIDE_APPROVED = env.bool(
     "INSTRUMENTS_CALIBRATION_OVERRIDE_APPROVED",
+    default=False,
+)
+# Phase 26 — foreign-body FAIL auto-HOLD remains OFF until company HACCP evidence.
+FOREIGN_BODY_AUTO_HOLD_APPROVED = env.bool(
+    "FOREIGN_BODY_AUTO_HOLD_APPROVED",
+    default=False,
+)
+# Phase 27 — sanitation FAIL production-stop remains OFF until company SOP approval.
+SANITATION_FAIL_STOP_PRODUCTION_APPROVED = env.bool(
+    "SANITATION_FAIL_STOP_PRODUCTION_APPROVED",
     default=False,
 )
 

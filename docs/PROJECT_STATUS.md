@@ -73,7 +73,7 @@ This document records **repository evidence**. It does not invent Nelna operatio
 | `haccp` | **23** | IMPLEMENTED foundation · versioned plan shells; no Nelna CCPs/limits; auto HOLD/NCR default OFF; company plan EVIDENCE REQUIRED |
 | `sampling` | **24** | IMPLEMENTED foundation · versioned sampling plans; no ISO/AQL tables; sampling REJECT ≠ QA REJECT; company tables EVIDENCE REQUIRED |
 
-Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 25)._ (`loading` controls are delivered inside `dispatch` for Phase 13 — see ADR-025.)
+Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 27)._ (`loading` controls are delivered inside `dispatch` for Phase 13 — see ADR-025.)
 
 ---
 
@@ -131,6 +131,8 @@ Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 25)._ (`loading`
 | 23 HACCP / control-point | Technical complete — versioned plan shells, CCP/OPRP/PRP metadata, limit/monitoring/CA references, checklist binding (ADR-035) | Company HACCP plan / CCP identification / limits EVIDENCE REQUIRED |
 | 24 Sampling engine | Technical complete — versioned plans/rules/requirements, lot resolution, checklist binding, advisory accept/reject (ADR-036) | Company sampling tables / external-standard adoption EVIDENCE REQUIRED |
 | 25 Device traceability | Technical complete — device eligibility, OFF/WARN/BLOCK settings (default OFF), frozen calibration snapshot (ADR-037) | Company calibration enforcement / override policy EVIDENCE REQUIRED |
+| 26 Foreign body control | Technical complete — challenge tests, configurable pieces, advisory containment (ADR-038) | Company piece/frequency/HOLD policy EVIDENCE REQUIRED |
+| 27 Sanitation / SSOP | Technical complete — checklist-bound programs, scopes, schedule kinds, chemical shells, fail-stop default OFF (ADR-039) | Company SSOP content / production-stop policy EVIDENCE REQUIRED |
 | 20–21 Pilot / production release | Not started | Depends on business gates + Phase 19 ops evidence |
 | 20 UAT / Pilot | Package opened — **BLOCKED** pending business evidence ([uat/README.md](uat/README.md)) | Pilot scope APR-034, FG-QA-001, roles/SoD, hosted env EVIDENCE REQUIRED |
 | 21 Production release | Package opened — **GO-LIVE BLOCKED** ([release/README.md](release/README.md)) | Phase 20 FAIL + hosting/config/support gates |
@@ -432,3 +434,15 @@ Configurable sampling engine (ADR-036): `apps.sampling` with versioned plans, op
 **STATUS: PHASE 25 DEVICE TRACEABILITY COMPLETE**
 
 Measurement device traceability (ADR-037): eligibility (org/site/active/type), calibration fitness mapped through OFF/WARN/BLOCK settings (default OFF), frozen `device_trace_context` on draft and submission responses, calibration-certificate evidence kind, and audited override path gated by company approval flag. Device fitness never implies QA disposition.
+
+## Phase 26 delivery status
+
+**STATUS: PHASE 26 FOREIGN BODY CONTROL COMPLETE**
+
+Foreign-body / metal-detector challenge foundation (ADR-038): device-linked challenge records, configurable test-piece shells (no invented sizes), deterministic PASS/FAIL, schedule-rule shells, and containment-interval architecture with auto-HOLD default OFF (APR-052).
+
+## Phase 27 delivery status
+
+**STATUS: PHASE 27 SANITATION MANAGEMENT COMPLETE**
+
+Sanitation / SSOP checklist workflows (ADR-039): programs bind to existing ChecklistTemplate (no separate form engine), configurable site/department/line/work-area/equipment scopes, schedule kinds via ChecklistSchedule links, unseeded ChemicalReference, verification modes mapping to existing self/Supervisor/QA workflows, and FAIL production-stop gated OFF by default (APR-053).
