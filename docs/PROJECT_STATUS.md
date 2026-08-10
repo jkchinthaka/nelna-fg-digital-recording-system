@@ -76,8 +76,9 @@ This document records **repository evidence**. It does not invent Nelna operatio
 | `sanitation` | **27** | IMPLEMENTED foundation · checklist-bound SSOP programs; no invented chemicals/frequencies; fail-stop default OFF (APR-053) |
 | `environmental` | **28** | IMPLEMENTED foundation · monitoring points/params/versioned limits; MANUAL/LAB/SENSOR; auto-HOLD default OFF (APR-054) |
 | `packaging` | **29** | IMPLEMENTED foundation · versioned artwork; checklist bind; date-code shells; manage≠approve (APR-055) |
+| `changeover` | **30** | IMPLEMENTED foundation · allergen shells; changeover/line-clearance; block dual-gate default OFF (APR-056) |
 
-Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 29)._ (`loading` controls are delivered inside `dispatch` for Phase 13 — see ADR-025.)
+Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 30)._ (`loading` controls are delivered inside `dispatch` for Phase 13 — see ADR-025.)
 
 ---
 
@@ -139,6 +140,7 @@ Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 29)._ (`loading`
 | 27 Sanitation / SSOP | Technical complete — checklist-bound programs, scopes, schedule kinds, chemical shells, fail-stop default OFF (ADR-039) | Company SSOP content / production-stop policy EVIDENCE REQUIRED |
 | 28 Environmental monitoring | Technical complete — points, versioned limits, MANUAL/LAB/SENSOR, trend index, auto-HOLD default OFF (ADR-040) | Company EM catalogue / limits / HOLD policy EVIDENCE REQUIRED |
 | 29 Packaging artwork verification | Technical complete — versioned artwork, checklist binding, date-code shells, line-clearance hook, historical freeze (ADR-041) | Company artwork / date-code / shelf-life policy EVIDENCE REQUIRED (APR-055) |
+| 30 Allergen / changeover / line clearance | Technical complete — allergen shells, product declarations, changeover + checklist clearance, dual-gate block default OFF (ADR-042) | Company allergen lists / cleaning / sequencing / matrix policy EVIDENCE REQUIRED (APR-056) |
 | 20–21 Pilot / production release | Not started | Depends on business gates + Phase 19 ops evidence |
 | 20 UAT / Pilot | Package opened — **BLOCKED** pending business evidence ([uat/README.md](uat/README.md)) | Pilot scope APR-034, FG-QA-001, roles/SoD, hosted env EVIDENCE REQUIRED |
 | 21 Production release | Package opened — **GO-LIVE BLOCKED** ([release/README.md](release/README.md)) | Phase 20 FAIL + hosting/config/support gates |
@@ -464,3 +466,9 @@ Environmental monitoring foundation (ADR-040): reusable MonitoringPoint location
 **STATUS: PHASE 29 LABEL ARTWORK CONTROL COMPLETE**
 
 Packaging label / artwork verification foundation (ADR-041): versioned PackagingArtwork / ArtworkVersion linked to FG Product and pack-configuration labels, checklist binding to exact approved versions, date-coding shells (MFG/EXP/batch/format references without shelf-life calculation), line-clearance hook stub, historical frozen artwork context on submissions, and Product Master manage vs Document Control approve separation (APR-055).
+
+## Phase 30 delivery status
+
+**STATUS: PHASE 30 ALLERGEN CHANGEOVER FOUNDATION COMPLETE**
+
+Allergen / changeover / line-clearance foundation (ADR-042): unseeded AllergenReference shells, ProductAllergenDeclaration association, ChangeoverRecord (previous/next product, line, time, checklist cleaning refs, packaging hook, verification, evidence), checklist-engine LineClearanceRecord with frozen dossier-ready context, and allergen-matrix production-block dual-gated OFF by default (APR-056).

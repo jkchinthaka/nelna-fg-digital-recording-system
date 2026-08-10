@@ -184,3 +184,13 @@ AI default OFF. AI must not execute RELEASE/HOLD/REJECT, publish, spec/role chan
 | manage_packagingartwork | `packaging.manage_packagingartwork` | Product Master: draft/edit artwork versions |
 | approve_packagingartwork | `packaging.approve_packagingartwork` | Document Control: approve/retire (not implied by manage) |
 | view_packagingartwork | `packaging.view_packaging` | Read-only |
+
+### Allergen / changeover (Phase 30)
+
+| Key | Permission | Notes |
+| --- | --- | --- |
+| manage_allergenreference | `changeover.manage_allergenreference` | Generic allergen reference shells (unseeded) |
+| manage_changeover | `changeover.manage_changeover` | Record changeover / line clearance |
+| verify_changeover | `changeover.verify_changeover` | Verify changeover / approve declarations (not implied by manage) |
+| view_changeover | `changeover.view_changeover` | Read-only |
+| manage_allergenriskpolicy | `changeover.manage_allergenriskpolicy` | Dual-gate production-block stub (default OFF) |

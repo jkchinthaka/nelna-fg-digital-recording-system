@@ -33,6 +33,7 @@ class CapabilityBucket(StrEnum):
     SANITATION = "sanitation"
     ENVIRONMENTAL = "environmental"
     PACKAGING = "packaging"
+    CHANGEOVER = "changeover"
     EVIDENCE = "evidence"
     MASTER_DATA = "master_data"
     CHECKLIST_PUBLISH = "checklist_publish"
@@ -628,6 +629,44 @@ PERMISSION_CATALOGUE: Final[tuple[PermissionCatalogueEntry, ...]] = (
         bucket=CapabilityBucket.PACKAGING,
         scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
         description="Read-only packaging artwork viewing.",
+    ),
+    PermissionCatalogueEntry(
+        key="manage_allergenreference",
+        permission="changeover.manage_allergenreference",
+        bucket=CapabilityBucket.CHANGEOVER,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Manage generic allergen reference shells (not seeded catalogues).",
+        notes="Does not invent Nelna allergen lists.",
+    ),
+    PermissionCatalogueEntry(
+        key="manage_changeover",
+        permission="changeover.manage_changeover",
+        bucket=CapabilityBucket.CHANGEOVER,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE, ObjectScope.DEPARTMENT),
+        description="Record changeover and line-clearance events.",
+    ),
+    PermissionCatalogueEntry(
+        key="verify_changeover",
+        permission="changeover.verify_changeover",
+        bucket=CapabilityBucket.CHANGEOVER,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Verify changeover / approve product allergen declarations (QA/Food Safety).",
+        notes="Not implied by manage_changeover.",
+    ),
+    PermissionCatalogueEntry(
+        key="view_changeover",
+        permission="changeover.view_changeover",
+        bucket=CapabilityBucket.CHANGEOVER,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE, ObjectScope.DEPARTMENT),
+        description="Read-only allergen/changeover/line-clearance viewing.",
+    ),
+    PermissionCatalogueEntry(
+        key="manage_allergenriskpolicy",
+        permission="changeover.manage_allergenriskpolicy",
+        bucket=CapabilityBucket.CHANGEOVER,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Update allergen risk / production-block policy stubs.",
+        notes="Dual-gated with CHANGEOVER_ALLERGEN_BLOCK_APPROVED (default OFF).",
     ),
     PermissionCatalogueEntry(
         key="manage_supplierquality_qa",

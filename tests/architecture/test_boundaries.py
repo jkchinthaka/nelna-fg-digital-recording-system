@@ -33,6 +33,7 @@ ALLOWED_APPS = {
     "sanitation",
     "environmental",
     "packaging",
+    "changeover",
     "supplier_quality",
     "access_control",
     "security_audit",

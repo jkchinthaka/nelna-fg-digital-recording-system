@@ -643,6 +643,35 @@ class SecurityAuditEvent(models.Model):
             "Packaging artwork verification recorded",
         )
 
+        ALLERGEN_REFERENCE_CREATED = (
+            "ALLERGEN_REFERENCE_CREATED",
+            "Allergen reference shell created",
+        )
+        PRODUCT_ALLERGEN_DECLARATION_CREATED = (
+            "PRODUCT_ALLERGEN_DECLARATION_CREATED",
+            "Product allergen declaration drafted",
+        )
+        PRODUCT_ALLERGEN_DECLARATION_APPROVED = (
+            "PRODUCT_ALLERGEN_DECLARATION_APPROVED",
+            "Product allergen declaration approved",
+        )
+        CHANGEOVER_RECORDED = (
+            "CHANGEOVER_RECORDED",
+            "Product changeover recorded",
+        )
+        CHANGEOVER_VERIFIED = (
+            "CHANGEOVER_VERIFIED",
+            "Product changeover verified",
+        )
+        LINE_CLEARANCE_RECORDED = (
+            "LINE_CLEARANCE_RECORDED",
+            "Line clearance recorded",
+        )
+        ALLERGEN_RISK_POLICY_UPDATED = (
+            "ALLERGEN_RISK_POLICY_UPDATED",
+            "Allergen risk / production-block policy stub updated",
+        )
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     event_type = models.CharField(max_length=64, choices=EventType.choices)

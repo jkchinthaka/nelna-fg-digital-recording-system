@@ -242,3 +242,15 @@ Retention period is **deferred** â€” not decided in Phase 03. Events are ap
 | PACKAGING_ARTWORK_CHECKLIST_BINDING_SET | Checklist item bound to approved artwork version |
 | PACKAGING_LINE_CLEARANCE_HOOK_CREATED | Future line-clearance / changeover hook created |
 | PACKAGING_ARTWORK_VERIFICATION_RECORDED | Batch artwork verification recorded |
+
+### Allergen / changeover (Phase 30)
+
+| Event type | Meaning |
+| --- | --- |
+| ALLERGEN_REFERENCE_CREATED | Allergen reference shell created |
+| PRODUCT_ALLERGEN_DECLARATION_CREATED | Product allergen declaration drafted |
+| PRODUCT_ALLERGEN_DECLARATION_APPROVED | Product allergen declaration approved |
+| CHANGEOVER_RECORDED | Product changeover recorded |
+| CHANGEOVER_VERIFIED | Product changeover verified |
+| LINE_CLEARANCE_RECORDED | Line clearance recorded (checklist-driven) |
+| ALLERGEN_RISK_POLICY_UPDATED | Allergen risk / production-block policy stub updated |

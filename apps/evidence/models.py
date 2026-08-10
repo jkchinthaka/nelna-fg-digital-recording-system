@@ -38,6 +38,14 @@ class EvidenceLinkedKind(models.TextChoices):
         "PACKAGING_ARTWORK_VERSION",
         "Packaging artwork version evidence",
     )
+    CHANGEOVER_RECORD = (
+        "CHANGEOVER_RECORD",
+        "Changeover / allergen changeover record",
+    )
+    LINE_CLEARANCE_RECORD = (
+        "LINE_CLEARANCE_RECORD",
+        "Line clearance record",
+    )
 
 
 class EvidenceLifecycleStatus(models.TextChoices):

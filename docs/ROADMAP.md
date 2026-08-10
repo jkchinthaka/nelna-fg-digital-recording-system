@@ -454,3 +454,11 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Objective | Versioned packaging artwork linked to product, checklist, and batch history |
 | Outputs | `apps.packaging`; ADR-041; manage≠approve; no shelf-life calculation |
 | Status | **Technical foundation delivered** on `main` |
+
+## Phase 30 — Allergen / changeover / line-clearance foundation
+
+| Field | Content |
+| --- | --- |
+| Objective | Configurable allergen declaration, changeover, and checklist-driven line clearance |
+| Outputs | `apps.changeover`; ADR-042; production-block dual-gate default OFF |
+| Status | **Technical foundation delivered** on `main` |

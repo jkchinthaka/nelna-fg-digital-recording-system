@@ -43,6 +43,7 @@ Do **not** rename FG master data, checklist, recording, review, or evidence work
 | sanitation | Sanitation / SSOP checklist workflows (27) | SanitationProgram; SanitationScope; ChemicalReference; SanitationFailPolicy; ChecklistTemplateSanitationBinding | bind checklist template; schedule kinds; fail-stop gate (default OFF) | No invented chemicals/concentrations/frequencies/ATP limits; reuses checklist engine | **27** |
 | environmental | Environmental monitoring foundation (28) | MonitoringPoint; MonitoringParameter; MonitoringSpecVersion; MonitoringLimitRule; MonitoringReading; MonitoringTrendIndex | record MANUAL/LAB/SENSOR; evaluate limits; trend index; excursion events | No invented limits; auto-HOLD default OFF; PostgreSQL SoR | **28** |
 | packaging | Packaging label / artwork verification (29) | PackagingArtwork; ArtworkVersion; ChecklistItemArtworkBinding; LineClearanceArtworkHook; ArtworkVerificationRecord | draft/approve artwork; bind checklist; verify observed version; freeze history | No shelf-life math; no invented date-codes/artwork numbers; manage≠approve | **29** |
+| changeover | Allergen / changeover / line-clearance foundation (30) | AllergenReference; ProductAllergenDeclaration; ChangeoverRecord; LineClearanceRecord; AllergenRiskPolicy | record changeover; checklist-driven clearance; dual-gate block (default OFF) | No invented allergen lists/cleaning/sequencing; matrix block default OFF | **30** |
 
 ## Phase mapping reminder
 

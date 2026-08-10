@@ -25,6 +25,7 @@ from apps.reviews.models import SupervisorReview
 from apps.sanitation.models import SanitationProgram
 from apps.environmental.models import MonitoringReading
 from apps.packaging.models import ArtworkVersion
+from apps.changeover.models import ChangeoverRecord, LineClearanceRecord
 from apps.scheduling.services import RECORD_CHECKLIST_TASK
 
 UPLOAD_EVIDENCE = "evidence.upload_evidenceattachment"
@@ -47,9 +48,12 @@ MANAGE_SANITATION = "sanitation.manage_sanitationprogram"
 VIEW_ENVIRONMENTAL = "environmental.view_environmental"
 RECORD_ENVIRONMENTAL = "environmental.record_environmentalreading"
 MANAGE_ENVIRONMENTAL = "environmental.manage_environmental"
-VIEW_PACKAGING = "packaging.view_packagingartwork"
+VIEW_PACKAGING = "packaging.view_packaging"
 MANAGE_PACKAGING = "packaging.manage_packagingartwork"
 APPROVE_PACKAGING = "packaging.approve_packagingartwork"
+VIEW_CHANGEOVER = "changeover.view_changeover"
+MANAGE_CHANGEOVER = "changeover.manage_changeover"
+VERIFY_CHANGEOVER = "changeover.verify_changeover"
 
 
 @dataclass(frozen=True, slots=True)
@@ -261,6 +265,33 @@ def resolve_linked_target(*, kind: str, object_id: uuid.UUID) -> LinkedTarget:
             obj=version,
         )
 
+    if kind == EvidenceLinkedKind.CHANGEOVER_RECORD:
+        changeover = ChangeoverRecord.objects.filter(pk=object_id).first()
+        if changeover is None:
+            raise ValidationError({"linked_object_id": "Changeover record not found."})
+        return LinkedTarget(
+            kind=kind,
+            object_id=changeover.id,
+            organization_id=changeover.organization_id,
+            linkage_immutable=changeover.status
+            in {"RECORDED", "VERIFIED", "VOIDED"},
+            obj=changeover,
+        )
+
+    if kind == EvidenceLinkedKind.LINE_CLEARANCE_RECORD:
+        clearance = LineClearanceRecord.objects.filter(pk=object_id).first()
+        if clearance is None:
+            raise ValidationError(
+                {"linked_object_id": "Line clearance record not found."}
+            )
+        return LinkedTarget(
+            kind=kind,
+            object_id=clearance.id,
+            organization_id=clearance.organization_id,
+            linkage_immutable=clearance.status in {"COMPLETED", "VOIDED"},
+            obj=clearance,
+        )
+
     raise ValidationError({"linked_kind": "Unsupported linked kind."})
 
 
@@ -417,6 +448,19 @@ def _assert_parent_access(*, actor: User, target: LinkedTarget, for_mutate: bool
                     )
                 }
             )
+        return
+
+    if kind in {
+        EvidenceLinkedKind.CHANGEOVER_RECORD,
+        EvidenceLinkedKind.LINE_CLEARANCE_RECORD,
+    }:
+        allowed = (
+            user_has_permission(actor, VIEW_CHANGEOVER, scope=org_scope)
+            or user_has_permission(actor, MANAGE_CHANGEOVER, scope=org_scope)
+            or user_has_permission(actor, VERIFY_CHANGEOVER, scope=org_scope)
+        )
+        if not allowed:
+            raise PermissionDenied("Permission denied.")
         return
 
     raise PermissionDenied("Permission denied.")

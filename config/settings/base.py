@@ -74,6 +74,7 @@ INSTALLED_APPS = [
     "apps.sanitation",
     "apps.environmental",
     "apps.packaging",
+    "apps.changeover",
     "apps.nonconformance",
     "apps.capa",
     "apps.dispatch",
@@ -297,6 +298,11 @@ SANITATION_FAIL_STOP_PRODUCTION_APPROVED = env.bool(
 # Phase 28 — environmental excursion auto-HOLD remains OFF until company approval.
 ENVIRONMENTAL_AUTO_HOLD_APPROVED = env.bool(
     "ENVIRONMENTAL_AUTO_HOLD_APPROVED",
+    default=False,
+)
+# Phase 30 — allergen matrix / changeover production-block remains OFF until company approval.
+CHANGEOVER_ALLERGEN_BLOCK_APPROVED = env.bool(
+    "CHANGEOVER_ALLERGEN_BLOCK_APPROVED",
     default=False,
 )
 
