@@ -50,6 +50,10 @@ class EvidenceLinkedKind(models.TextChoices):
         "RECEIPT_QUALITY_RECORD",
         "Raw material receipt quality record",
     )
+    IQC_INSPECTION_CASE = (
+        "IQC_INSPECTION_CASE",
+        "Incoming quality control inspection case",
+    )
 
 
 class EvidenceLifecycleStatus(models.TextChoices):

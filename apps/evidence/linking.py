@@ -27,6 +27,7 @@ from apps.environmental.models import MonitoringReading
 from apps.packaging.models import ArtworkVersion
 from apps.changeover.models import ChangeoverRecord, LineClearanceRecord
 from apps.receiving.models import ReceiptQualityRecord
+from apps.iqc.models import IqcInspectionCase
 from apps.scheduling.services import RECORD_CHECKLIST_TASK
 
 UPLOAD_EVIDENCE = "evidence.upload_evidenceattachment"
@@ -58,6 +59,9 @@ VERIFY_CHANGEOVER = "changeover.verify_changeover"
 VIEW_RECEIVING = "receiving.view_receiptquality"
 MANAGE_RECEIVING = "receiving.manage_receiptquality"
 DISPOSITION_RECEIVING = "receiving.disposition_receiptquality"
+VIEW_IQC = "iqc.view_iqc"
+MANAGE_IQC = "iqc.manage_iqc"
+DISPOSITION_IQC = "iqc.disposition_iqc"
 
 
 @dataclass(frozen=True, slots=True)
@@ -311,6 +315,21 @@ def resolve_linked_target(*, kind: str, object_id: uuid.UUID) -> LinkedTarget:
             obj=receipt,
         )
 
+    if kind == EvidenceLinkedKind.IQC_INSPECTION_CASE:
+        case = IqcInspectionCase.objects.filter(pk=object_id).first()
+        if case is None:
+            raise ValidationError(
+                {"linked_object_id": "IQC inspection case not found."}
+            )
+        return LinkedTarget(
+            kind=kind,
+            object_id=case.id,
+            organization_id=case.organization_id,
+            linkage_immutable=case.workflow_status
+            in {"DISPOSITIONED", "CLOSED"},
+            obj=case,
+        )
+
     raise ValidationError({"linked_kind": "Unsupported linked kind."})
 
 
@@ -487,6 +506,16 @@ def _assert_parent_access(*, actor: User, target: LinkedTarget, for_mutate: bool
             user_has_permission(actor, VIEW_RECEIVING, scope=org_scope)
             or user_has_permission(actor, MANAGE_RECEIVING, scope=org_scope)
             or user_has_permission(actor, DISPOSITION_RECEIVING, scope=org_scope)
+        )
+        if not allowed:
+            raise PermissionDenied("Permission denied.")
+        return
+
+    if kind == EvidenceLinkedKind.IQC_INSPECTION_CASE:
+        allowed = (
+            user_has_permission(actor, VIEW_IQC, scope=org_scope)
+            or user_has_permission(actor, MANAGE_IQC, scope=org_scope)
+            or user_has_permission(actor, DISPOSITION_IQC, scope=org_scope)
         )
         if not allowed:
             raise PermissionDenied("Permission denied.")

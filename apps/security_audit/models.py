@@ -697,6 +697,45 @@ class SecurityAuditEvent(models.Model):
             "Receipt quality ERP outbound blocked (Phase 17 gate)",
         )
 
+        IQC_CASE_OPENED = ("IQC_CASE_OPENED", "IQC inspection case opened")
+        IQC_TASK_CREATED = ("IQC_TASK_CREATED", "IQC checklist task created")
+        IQC_SAMPLING_RESOLVED = (
+            "IQC_SAMPLING_RESOLVED",
+            "IQC sampling requirement resolved",
+        )
+        IQC_LAB_SAMPLE_LINKED = (
+            "IQC_LAB_SAMPLE_LINKED",
+            "Lab sample linked via IQC case",
+        )
+        IQC_REVIEW_ATTACHED = (
+            "IQC_REVIEW_ATTACHED",
+            "IQC supervisor review attached",
+        )
+        IQC_DISPOSITIONED = (
+            "IQC_DISPOSITIONED",
+            "IQC local disposition completed",
+        )
+        IQC_RECEIPT_EVENT_PROCESSED = (
+            "IQC_RECEIPT_EVENT_PROCESSED",
+            "Incoming receipt/GRN event processed",
+        )
+        IQC_RECEIPT_EVENT_DUPLICATE = (
+            "IQC_RECEIPT_EVENT_DUPLICATE",
+            "Duplicate incoming receipt event (idempotent)",
+        )
+        IQC_POLICY_UPDATED = (
+            "IQC_POLICY_UPDATED",
+            "IQC workflow policy stub updated",
+        )
+        IQC_ERP_OUTBOUND_BLOCKED = (
+            "IQC_ERP_OUTBOUND_BLOCKED",
+            "IQC ERP outbound blocked",
+        )
+        IQC_ERP_OUTBOUND_PREPARED = (
+            "IQC_ERP_OUTBOUND_PREPARED",
+            "IQC ERP outbound prepared (adapter not live)",
+        )
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     event_type = models.CharField(max_length=64, choices=EventType.choices)

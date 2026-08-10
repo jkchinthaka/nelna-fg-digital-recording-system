@@ -78,8 +78,10 @@ This document records **repository evidence**. It does not invent Nelna operatio
 | `packaging` | **29** | IMPLEMENTED foundation · versioned artwork; checklist bind; date-code shells; manage≠approve (APR-055) |
 | `changeover` | **30** | IMPLEMENTED foundation · allergen shells; changeover/line-clearance; block dual-gate default OFF (APR-056) |
 | `receiving` | **31** | IMPLEMENTED foundation · ERP-mapped materials; receipt quality; LIMS link; ERP outbound blocked (APR-057) |
+| `supplier_quality` | **32** | IMPLEMENTED foundation · ERP supplier refs; certificates/events; NCR/CAPA links; count-only metrics (APR-039) |
+| `iqc` | **33** | IMPLEMENTED foundation · GRN ingest; ChecklistTask IQC; sampling/lab/review; local disposition; ERP dual-gate OFF (APR-058) |
 
-Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 31)._ (`loading` controls are delivered inside `dispatch` for Phase 13 — see ADR-025.)
+Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 33 except gaps noted elsewhere)._ (`loading` controls are delivered inside `dispatch` for Phase 13 — see ADR-025.)
 
 ---
 
@@ -143,6 +145,8 @@ Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 31)._ (`loading`
 | 29 Packaging artwork verification | Technical complete — versioned artwork, checklist binding, date-code shells, line-clearance hook, historical freeze (ADR-041) | Company artwork / date-code / shelf-life policy EVIDENCE REQUIRED (APR-055) |
 | 30 Allergen / changeover / line clearance | Technical complete — allergen shells, product declarations, changeover + checklist clearance, dual-gate block default OFF (ADR-042) | Company allergen lists / cleaning / sequencing / matrix policy EVIDENCE REQUIRED (APR-056) |
 | 31 Raw / material receiving quality | Technical complete — ERP-mapped materials, receipt quality, local disposition, LIMS link, ERP outbound blocked (ADR-043) | Company material catalogues / specs / ERP stock effect EVIDENCE REQUIRED (APR-057) |
+| 32 Supplier quality management | Technical complete — ERP supplier refs, certificates/events, NCR/CAPA links, count-only metrics, QA≠Procurement (ADR-020) | Official certificate types / status labels / scorecards EVIDENCE REQUIRED (APR-039) |
+| 33 Incoming Quality Control (IQC) | Technical complete — idempotent GRN ingest, ChecklistTask generation, sampling/lab/review gate, local disposition, ERP dual-gate OFF (ADR-044) | Company IQC checklists / sampling / ERP contract EVIDENCE REQUIRED (APR-058) |
 | 20–21 Pilot / production release | Not started | Depends on business gates + Phase 19 ops evidence |
 | 20 UAT / Pilot | Package opened — **BLOCKED** pending business evidence ([uat/README.md](uat/README.md)) | Pilot scope APR-034, FG-QA-001, roles/SoD, hosted env EVIDENCE REQUIRED |
 | 21 Production release | Package opened — **GO-LIVE BLOCKED** ([release/README.md](release/README.md)) | Phase 20 FAIL + hosting/config/support gates |
@@ -480,3 +484,15 @@ Allergen / changeover / line-clearance foundation (ADR-042): unseeded AllergenRe
 **STATUS: PHASE 31 RAW MATERIAL QUALITY COMPLETE**
 
 Raw / material receiving quality foundation (ADR-043): ERP-mapped MaterialReference shells (not inventory master), ReceiptQualityRecord keyed to GRN/supplier lot/material with checklist and evidence, versioned material specification shells without invented limits, Phase 22 LIMS sample linking, local PENDING/ACCEPTED/HOLD/REJECTED states that do not update ERP stock, and prepare-only ERP outbound always blocked pending Phase 17 contract (APR-057).
+
+## Phase 32 delivery status
+
+**STATUS: PHASE 32 SUPPLIER QUALITY COMPLETE**
+
+Supplier quality management foundation (ADR-020): ERP-referenced SupplierQualityProfile (not a financial supplier master), free-form certificates with expiry/verification/evidence keys, quality events (defect/audit/complaint/other) linking existing NCR/CAPA domains, count-only metrics with no invented scores/thresholds, and QA manage vs Procurement view separation (APR-039).
+
+## Phase 33 delivery status
+
+**STATUS: PHASE 33 IQC COMPLETE**
+
+Incoming Quality Control workflow (ADR-044): idempotent ERP receipt/GRN event ingest, IqcInspectionCase orchestration over ChecklistTask (PUBLISHED checklist versions only — no hardcoded questions), Phase 24 sampling resolve, Phase 22 lab links, optional Supervisor APPROVED disposition gate, frozen lot→receipt→inspection→decision traceability, and ERP outbound dual-gated OFF by default (APR-058).

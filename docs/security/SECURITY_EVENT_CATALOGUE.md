@@ -266,3 +266,30 @@ Retention period is **deferred** â€” not decided in Phase 03. Events are ap
 | RECEIVING_LAB_SAMPLE_LINKED | Lab sample linked to receipt |
 | RECEIVING_ERP_OUTBOUND_BLOCKED | ERP outbound blocked (Phase 17 gate) |
 
+### Supplier quality (Phase 32)
+
+| Event type | Meaning |
+| --- | --- |
+| SUPPLIER_QUALITY_PROFILE_CREATED | ERP-referenced supplier quality profile created |
+| SUPPLIER_QUALITY_PROFILE_UPDATED | Supplier quality profile updated |
+| SUPPLIER_CERTIFICATE_RECORDED | Supplier certificate recorded |
+| SUPPLIER_CERTIFICATE_VERIFIED | Supplier certificate verified |
+| SUPPLIER_QUALITY_EVENT_RECORDED | Supplier quality event recorded (defect/audit/complaint/other) |
+
+### Incoming Quality Control (Phase 33)
+
+| Event type | Meaning |
+| --- | --- |
+| IQC_CASE_OPENED | IQC inspection case opened |
+| IQC_TASK_CREATED | ChecklistTask created for IQC |
+| IQC_SAMPLING_RESOLVED | Sampling requirement resolved (advisory) |
+| IQC_LAB_SAMPLE_LINKED | Lab sample linked via IQC |
+| IQC_REVIEW_ATTACHED | Supervisor review attached |
+| IQC_DISPOSITIONED | Local disposition completed |
+| IQC_RECEIPT_EVENT_PROCESSED | Incoming GRN event processed |
+| IQC_RECEIPT_EVENT_DUPLICATE | Duplicate GRN event (idempotent) |
+| IQC_POLICY_UPDATED | IQC policy stub updated |
+| IQC_ERP_OUTBOUND_BLOCKED | ERP outbound blocked |
+| IQC_ERP_OUTBOUND_PREPARED | ERP outbound prepared (adapter not live) |
+
+

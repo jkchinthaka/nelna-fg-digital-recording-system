@@ -205,3 +205,12 @@ AI default OFF. AI must not execute RELEASE/HOLD/REJECT, publish, spec/role chan
 | view_receiptquality | `receiving.view_receiptquality` | Read-only |
 | manage_materialspecification | `receiving.manage_materialspecification` | Draft material specs (no invented limits) |
 | approve_materialspecification | `receiving.approve_materialspecification` | Approve/retire material specs |
+
+### Incoming Quality Control (Phase 33)
+
+| Key | Permission | Notes |
+| --- | --- | --- |
+| manage_iqc | `iqc.manage_iqc` | Ingest GRN events; open cases; generate tasks |
+| disposition_iqc | `iqc.disposition_iqc` | Local disposition (review gate when required) |
+| view_iqc | `iqc.view_iqc` | Read-only |
+| manage_iqcpolicy | `iqc.manage_iqcpolicy` | Review/ERP outbound policy stubs (default OFF) |

@@ -45,6 +45,8 @@ Do **not** rename FG master data, checklist, recording, review, or evidence work
 | packaging | Packaging label / artwork verification (29) | PackagingArtwork; ArtworkVersion; ChecklistItemArtworkBinding; LineClearanceArtworkHook; ArtworkVerificationRecord | draft/approve artwork; bind checklist; verify observed version; freeze history | No shelf-life math; no invented date-codes/artwork numbers; manage≠approve | **29** |
 | changeover | Allergen / changeover / line-clearance foundation (30) | AllergenReference; ProductAllergenDeclaration; ChangeoverRecord; LineClearanceRecord; AllergenRiskPolicy | record changeover; checklist-driven clearance; dual-gate block (default OFF) | No invented allergen lists/cleaning/sequencing; matrix block default OFF | **30** |
 | receiving | Raw / material receiving quality (31) | MaterialReference; MaterialSpecification*; ReceiptQualityRecord; ReceiptLabSampleLink | record receipt quality; disposition local-only; link LIMS; ERP outbound blocked | No ERP stock update; no invented material catalogues/limits | **31** |
+| supplier_quality | Supplier quality management foundation (32) | SupplierQualityProfile; SupplierCertificate; SupplierQualityEvent | manage/view profiles; certificates; events; count-only metrics; NCR/CAPA links | No financial supplier master; no invented types/scores; QA≠Procurement | **32** |
+| iqc | Incoming Quality Control workflow (33) | IncomingReceiptEvent; IqcInspectionCase; IqcWorkflowPolicy | ingest GRN event; generate ChecklistTask; sampling; lab; review gate; local disposition | No hardcoded questions; ERP outbound dual-gate OFF | **33** |
 
 ## Phase mapping reminder
 

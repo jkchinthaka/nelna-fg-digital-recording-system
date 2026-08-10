@@ -35,6 +35,7 @@ class CapabilityBucket(StrEnum):
     PACKAGING = "packaging"
     CHANGEOVER = "changeover"
     RECEIVING = "receiving"
+    IQC = "iqc"
     EVIDENCE = "evidence"
     MASTER_DATA = "master_data"
     CHECKLIST_PUBLISH = "checklist_publish"
@@ -712,6 +713,36 @@ PERMISSION_CATALOGUE: Final[tuple[PermissionCatalogueEntry, ...]] = (
         scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
         description="Approve/retire material specification versions.",
         notes="Not implied by manage_materialspecification.",
+    ),
+    PermissionCatalogueEntry(
+        key="manage_iqc",
+        permission="iqc.manage_iqc",
+        bucket=CapabilityBucket.IQC,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Ingest receipt events and orchestrate IQC workflow / tasks.",
+    ),
+    PermissionCatalogueEntry(
+        key="disposition_iqc",
+        permission="iqc.disposition_iqc",
+        bucket=CapabilityBucket.IQC,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Complete IQC local disposition (not ERP stock).",
+        notes="Review gate when review_required; not implied by manage_iqc.",
+    ),
+    PermissionCatalogueEntry(
+        key="view_iqc",
+        permission="iqc.view_iqc",
+        bucket=CapabilityBucket.IQC,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Read-only IQC inspection cases.",
+    ),
+    PermissionCatalogueEntry(
+        key="manage_iqcpolicy",
+        permission="iqc.manage_iqcpolicy",
+        bucket=CapabilityBucket.IQC,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Update IQC review/ERP outbound policy stubs.",
+        notes="Dual-gated with IQC_ERP_OUTBOUND_APPROVED (default OFF).",
     ),
     PermissionCatalogueEntry(
         key="manage_supplierquality_qa",

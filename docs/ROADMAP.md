@@ -470,3 +470,19 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Objective | Incoming material quality against ERP GRN without owning inventory |
 | Outputs | `apps.receiving`; ADR-043; LIMS link; ERP outbound blocked |
 | Status | **Technical foundation delivered** on `main` |
+
+## Phase 32 — Supplier quality management foundation
+
+| Field | Content |
+| --- | --- |
+| Objective | Supplier quality records keyed by ERP supplier reference without a financial supplier master |
+| Outputs | `apps.supplier_quality`; ADR-020; QA manage ≠ Procurement view; count-only metrics |
+| Status | **Technical foundation delivered** on `main` |
+
+## Phase 33 — Incoming Quality Control (IQC) workflow
+
+| Field | Content |
+| --- | --- |
+| Objective | Configurable IQC: GRN → task → record → review → local disposition |
+| Outputs | `apps.iqc`; ADR-044; sampling/LIMS hooks; ERP dual-gate OFF |
+| Status | **Technical foundation delivered** on `main` |
