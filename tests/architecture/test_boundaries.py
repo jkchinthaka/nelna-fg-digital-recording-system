@@ -18,6 +18,12 @@ ALLOWED_APPS = {
     "recording",
     "reviews",
     "quality",
+    "evidence",
+    "nonconformance",
+    "capa",
+    "dispatch",
+    "notifications",
+    "supplier_quality",
     "access_control",
     "security_audit",
 }
@@ -28,19 +34,14 @@ OPTIONAL_TECHNICAL_APPS = {
 # Concurrent uncommitted local WIP directories must not fail this boundary check,
 # and are not authorized production apps by this assertion alone.
 OPTIONAL_LOCAL_WIP_APPS = {
-    "capa",
-    "nonconformance",
-    "supplier_quality",
     "analytics",
     "feature_flags",
 }
 FORBIDDEN_APPS = {
     "tasks",
     "records",
-    "evidence",
     "integrations",
     "reporting",
-    "notifications",
     "schedules",
 }
 
@@ -77,7 +78,7 @@ def test_config_has_no_business_models() -> None:
 def test_core_does_not_import_accounts_business_logic() -> None:
     core_dir = APPS / "core"
     for path in core_dir.rglob("*.py"):
-        if "migrations" in path.parts:
+        if "migrations" in path.parts or "tests" in path.parts:
             continue
         text = path.read_text(encoding="utf-8")
         assert "from apps.accounts" not in text

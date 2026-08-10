@@ -31,7 +31,7 @@ Do **not** rename FG master data, checklist, recording, review, or evidence work
 | loading | Loading controls (Phase 13 via `dispatch`) | See `dispatch.DispatchQualityRecord` | Loading fields + vehicle checklist links | SOPs / temps EVIDENCE REQUIRED; no AI release | **13** |
 | dispatch | Dispatch / cold-chain quality foundation (13) | DispatchQualityRecord, DispatchReleasePolicy, ColdChainTemperatureReading, DispatchQuantityLine, DispatchHistoryEntry | create/update/complete; release gate (default OFF); temps; qty reconciliation | No ERP writes; no invented limits; AI never releases | **13** |
 | evidence | Evidence metadata and private storage orchestration (Phase 11) | EvidenceAttachment (no BLOBs) | upload/download/soft-retire; private store; SHA-256; scanner stub | No PostgreSQL BLOBs; no public MEDIA URLs; no fake malware scanning claims; no casual hard-delete | **11** |
-| notifications | Email/SMS/in-app notifications | Notification outbox/status | Notify services | Must not bypass auth to spam users | **15** |
+| notifications | Workflow notifications (15) | Notification, OrganizationNotificationPolicy, NotificationDeliveryAttempt | create in-app; policy; optional email Celery delivery | Events default OFF; no SMS; no answers/notes in payloads | **15** |
 | reports | Operational and management reports | Report definitions/runs as needed | Report generation services | Must not claim unsupported compliance | **16** |
 | integrations | ERP and external API adapters | Integration configs, cursors, logs | Anti-corruption adapters | **No direct ERP database writes** | **17** |
 | audit | Audit event recording and export support | Audit events | Append-only audit APIs | Must not allow silent audit deletion | Cross-cutting from 03+ |

@@ -22,6 +22,7 @@ class CapabilityBucket(StrEnum):
     QA_REVIEW = "qa_review"
     QUALITY_CASE = "quality_case"
     DISPATCH = "dispatch"
+    NOTIFICATIONS = "notifications"
     EVIDENCE = "evidence"
     MASTER_DATA = "master_data"
     CHECKLIST_PUBLISH = "checklist_publish"
@@ -337,6 +338,29 @@ PERMISSION_CATALOGUE: Final[tuple[PermissionCatalogueEntry, ...]] = (
         scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
         description="Configure org QA RELEASE-before-loading gate (default disabled).",
         notes="Enabling requires Dispatch + QA owner evidence (APR-017) — not seeded.",
+    ),
+    PermissionCatalogueEntry(
+        key="view_own_notifications",
+        permission="notifications.view_own_notifications",
+        bucket=CapabilityBucket.NOTIFICATIONS,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE, ObjectScope.DEPARTMENT),
+        description="View own in-app workflow notifications.",
+    ),
+    PermissionCatalogueEntry(
+        key="manage_notifications",
+        permission="notifications.manage_notifications",
+        bucket=CapabilityBucket.NOTIFICATIONS,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Dispatch workflow notifications (policy-gated event types).",
+        notes="Must not include checklist answers or sensitive notes in payloads.",
+    ),
+    PermissionCatalogueEntry(
+        key="manage_notificationpolicy",
+        permission="notifications.manage_notificationpolicy",
+        bucket=CapabilityBucket.NOTIFICATIONS,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Enable/disable notification event types and optional email channel.",
+        notes="All events default OFF; SMS not integrated.",
     ),
     PermissionCatalogueEntry(
         key="manage_supplierquality_qa",

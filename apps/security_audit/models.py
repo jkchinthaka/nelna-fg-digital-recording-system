@@ -386,6 +386,26 @@ class SecurityAuditEvent(models.Model):
             "DISPATCH_RELEASE_GATE_BLOCKED",
             "Dispatch completion blocked by QA release gate",
         )
+        NOTIFICATION_POLICY_UPDATED = (
+            "NOTIFICATION_POLICY_UPDATED",
+            "Notification policy updated",
+        )
+        NOTIFICATION_CREATED = (
+            "NOTIFICATION_CREATED",
+            "In-app notification created",
+        )
+        NOTIFICATION_READ = (
+            "NOTIFICATION_READ",
+            "Notification marked read",
+        )
+        NOTIFICATION_EMAIL_DELIVERED = (
+            "NOTIFICATION_EMAIL_DELIVERED",
+            "Notification email delivered",
+        )
+        NOTIFICATION_EMAIL_FAILED = (
+            "NOTIFICATION_EMAIL_FAILED",
+            "Notification email delivery failed",
+        )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 

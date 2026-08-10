@@ -103,6 +103,11 @@
 | `DISPATCH_RELEASE_GATE_BLOCKED` | Completion blocked by enabled QA RELEASE gate |
 | `DISPATCH_QUALITY_RECORD_COMPLETED` | Dispatch quality record completed |
 | `DISPATCH_QUALITY_RECORD_CANCELLED` | Dispatch quality record cancelled |
+| `NOTIFICATION_POLICY_UPDATED` | Org notification event/email policy updated (Phase 15) |
+| `NOTIFICATION_CREATED` | In-app notification created (safe payload only) |
+| `NOTIFICATION_READ` | Notification marked read by recipient |
+| `NOTIFICATION_EMAIL_DELIVERED` | Notification email delivered |
+| `NOTIFICATION_EMAIL_FAILED` | Notification email delivery failed |
 
 ## Safe metadata
 

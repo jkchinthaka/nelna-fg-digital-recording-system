@@ -302,6 +302,7 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Branch naming | `feature/phase-15-notifications` |
 | Exit criteria | Failure-safe sending; no secret leak |
 | Dependencies | Provider decision |
+| Status | **15 foundation implemented** — in-app + optional SMTP; events default OFF; SMS not integrated (EVIDENCE REQUIRED) |
 
 ## Phase 16 — Reports and audit export
 

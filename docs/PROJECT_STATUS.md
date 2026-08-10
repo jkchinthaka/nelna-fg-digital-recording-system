@@ -64,8 +64,9 @@ This document records **repository evidence**. It does not invent Nelna operatio
 | `nonconformance` | **12** | IMPLEMENTED foundation · NCR + HoldCase + history; no FAIL/CCP auto-raise; policies **EVIDENCE REQUIRED** |
 | `capa` | **12** | IMPLEMENTED foundation · CAPA + actions + verification/effectiveness; human-only close; matrices **EVIDENCE REQUIRED** |
 | `dispatch` | **13** | IMPLEMENTED foundation · loading/dispatch quality + cold-chain temps + qty reconciliation; QA RELEASE gate **disabled by default**; no ERP writes; SOPs/limits **EVIDENCE REQUIRED** |
+| `notifications` | **15** | IMPLEMENTED foundation · in-app + optional SMTP; events default OFF; no SMS; privacy-safe payloads only |
 
-Not started (by MODULE_MAP): `notifications`, `reports`, `integrations`, `ai_assistance`. (`loading` controls are delivered inside `dispatch` for Phase 13 — see ADR-025.)
+Not started (by MODULE_MAP): `reports`, `integrations`, `ai_assistance`. (`loading` controls are delivered inside `dispatch` for Phase 13 — see ADR-025.)
 
 ---
 
@@ -114,7 +115,8 @@ Not started (by MODULE_MAP): `notifications`, `reports`, `integrations`, `ai_ass
 | 12 NCR / HOLD / CAPA | Technical complete — proposed NCR lifecycle, HoldCase, CAPA actions/verification/effectiveness; no auto-raise | Severity/resolution catalogues / auto-raise rules EVIDENCE REQUIRED |
 | 13 Loading / dispatch | Technical complete — DispatchQualityRecord, vehicle checklist links, cold-chain Decimal temps, qty reconciliation, QA RELEASE gate default OFF (ADR-025) | Dispatch SOPs / temperature limits / APR-017 gate enablement EVIDENCE REQUIRED |
 | 14 Offline PWA | **Decision gate complete** — offline **not** implemented (ADR-026); online-only MVP retained + paper fallback | APR-022 / Wi-Fi / device / logout-wipe evidence still required to reopen |
-| 15–21 Later roadmap | Not started | N/A |
+| 15 Notifications | Technical complete — in-app notifications + optional SMTP; events default OFF; SMS not integrated (ADR-027) | Event matrix / SMTP / SMS provider EVIDENCE REQUIRED |
+| 16–21 Later roadmap | Not started | N/A |
 
 ---
 
@@ -346,4 +348,10 @@ Loading/dispatch quality foundation (ADR-025): DispatchQualityRecord with vehicl
 **STATUS: PHASE 14 ONLINE ONLY APPROVED — OFFLINE NOT IMPLEMENTED**
 
 Offline decision gate (ADR-026): Wi-Fi survey, device plan, hosting, outage profile, and APR-022 remain EVIDENCE REQUIRED / open. Standing MVP direction is online-only recording with paper fallback. No IndexedDB draft sync, service worker offline queue, or offline QA/HOLD/REJECT paths were implemented. Re-open Phase 14 only after IT + Production + QA clear APR-022 with supporting evidence.
+
+## Phase 15 delivery status
+
+**STATUS: PHASE 15 NOTIFICATIONS COMPLETE**
+
+Workflow notifications foundation (ADR-027): in-app notifications with privacy-safe titles/messages; org event policy default OFF; optional SMTP email when configured (no credentials in repo); Celery idempotent email delivery; SMS not integrated. Production event matrices and SMS remain EVIDENCE REQUIRED.
 
