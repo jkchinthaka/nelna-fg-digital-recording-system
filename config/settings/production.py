@@ -64,3 +64,7 @@ X_FRAME_OPTIONS = "DENY"
 
 LOGGING["handlers"]["console"]["formatter"] = "json"  # type: ignore[index]
 LOGGING["root"]["level"] = env.str("LOG_LEVEL", default="INFO")  # type: ignore[index]
+
+# Phase 19 — production session defaults (override via env; final IT policy EVIDENCE REQUIRED).
+SESSION_COOKIE_AGE = env.int("SESSION_COOKIE_AGE", default=28800)
+SESSION_SAVE_EVERY_REQUEST = True

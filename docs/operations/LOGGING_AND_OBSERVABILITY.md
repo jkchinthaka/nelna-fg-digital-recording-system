@@ -1,8 +1,8 @@
 # Logging and Observability
 
-**Document status:** Phase 02 foundation guidance
-**Branch:** `foundation/django-postgresql`
-**Last updated:** 2026-08-05
+**Document status:** Phase 02 foundation + Phase 19 enrichment  
+**Branch:** `hardening/phase-19-security-ops`  
+**Last updated:** 2026-08-10
 
 ## Approach
 
@@ -31,7 +31,7 @@ Do not log secrets, passwords, session tokens, or full evidence payloads.
 | Path | Meaning |
 | --- | --- |
 | `/health/live/` | Process alive — no DB/Redis dependency |
-| `/health/ready/` | PostgreSQL + Redis checks; `503` when not ready |
+| `/health/ready/` | PostgreSQL + Redis + Celery broker + evidence storage; optional Mongo/Bileeta skipped; `503` when required checks fail |
 
 Dockerfile `HEALTHCHECK` uses liveness. Readiness is for orchestrators / local diagnosis.
 
@@ -50,3 +50,10 @@ Worker log level is set on the command line (compose uses `--loglevel=INFO`). Ta
 - [CONFIGURATION_REFERENCE.md](CONFIGURATION_REFERENCE.md)
 - [SECURE_CONFIGURATION.md](../security/SECURE_CONFIGURATION.md)
 - `config/settings/base.py`, `apps/core/health.py`
+
+
+## Phase 19 fields
+
+Request logs may include: correlation/request id, user id, organization id (when set), event, duration, status, error class.
+
+Never log: passwords, tokens, Mongo URI, full checklist free-text, attachment bytes.

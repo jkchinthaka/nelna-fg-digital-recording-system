@@ -66,6 +66,7 @@ ignore = ["S101"]
 "apps/accounts/middleware.py" = ["S110"]
 "config/settings/**" = ["S105"]
 "scripts/build_design_tokens.py" = ["S105"]
+"scripts/ops/restore_drill.py" = ["S603", "S608"]
 "apps/mongo_poc/models.py" = ["DJ008"]
 "apps/mongo_poc/admin.py" = ["DJ008"]
 

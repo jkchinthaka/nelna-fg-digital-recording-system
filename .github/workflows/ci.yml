@@ -134,6 +134,10 @@ jobs:
       - name: Frontend build
         run: npm run build
 
+      - name: npm audit (production deps)
+        continue-on-error: true
+        run: npm audit --omit=dev --audit-level=high
+
       - name: Generated token consistency after build
         run: uv run python scripts/build_design_tokens.py --check
 
@@ -187,6 +191,11 @@ jobs:
 
       - name: Docker runtime image build
         run: docker compose build web
+
+      - name: Container image scan (Trivy FS on compose build context)
+        continue-on-error: true
+        run: |
+          docker run --rm -v "$PWD:/project" aquasec/trivy:0.67.0 fs --severity HIGH,CRITICAL --exit-code 0 /project
 
       - name: Docker test image build
         run: docker compose --profile test build test
