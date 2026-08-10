@@ -20,6 +20,8 @@ Phase 14 may add controlled offline checklist drafts (IndexedDB + sync) only aft
 | Offline requirement vs online MVP | [APR-022](../governance/APPROVAL_REGISTER.md): *Online MVP assumed until decided*; [DL-046](../governance/DECISION_LOG.md) open | **EVIDENCE REQUIRED** |
 | Security requirements for cached drafts | No owner-approved offline retention / logout wipe policy | **EVIDENCE REQUIRED** |
 | Standing technical direction | [ADR-003](ADR-003-RESPONSIVE-PWA.md): MVP recording remains online; offline later with sync controls | Retained |
+| MVP scope | [MVP_SCOPE.md](../requirements/MVP_SCOPE.md): online-only operator submission; offline sync is an MVP non-goal | Retained |
+| Phase 08C hardening | Online autosave / session recovery only — not IndexedDB | Retained |
 
 ## Decision
 

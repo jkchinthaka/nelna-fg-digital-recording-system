@@ -35,3 +35,6 @@
 
 - Unapproved business decisions (DEC-014 onward and similar) must not be implemented as if confirmed.
 - Technical direction decisions still require named owner confirmation where “TBC” appears, but development may proceed against the stated direction in later authorized phases.
+
+| DEC-046 | Phase 14: do not implement offline checklist drafts until evidence/approvals exist; continue online-only MVP | Accepted (2026-08-10) | Architecture + IT/QA gate review (owner signatures still EVIDENCE REQUIRED for any future offline enablement) | 2026-08-10 | Missing Wi-Fi/device/hosting/outage/security evidence; APR-022 open; ADR-003 online MVP | Build IndexedDB sync without surveys | Paper fallback for sustained outages; re-open Phase 14 on evidence | ADR-026; ADR-003; APR-022 | Written APR-022 approval + ASM-010 survey demonstrating offline need |
+
