@@ -1,4 +1,4 @@
-# ADR-042 — Allergen / changeover / line-clearance foundation
+﻿# ADR-042 — Allergen / changeover / line-clearance foundation
 
 **Status:** Accepted (technical foundation)  
 **Date:** 2026-08-10  
@@ -6,27 +6,22 @@
 
 ## Context
 
-Factories need configurable allergen declaration association, product-to-product
-changeover records, and line-clearance evidence without inventing company allergen
-lists, cleaning sequences, or matrix-based production block rules.
+Allergen Control, Production Changeover, Food Safety, and QA need configurable shells for allergen references, product declarations, changeover records, and line clearance — without inventing Nelna allergen catalogues, cleaning sequences, or automatic production start/stop matrices.
 
 ## Decision
 
-1. Introduce `apps.changeover` with optional `AllergenReference` shells (unseeded).
-2. `ProductAllergenDeclaration` links FG products to opaque approved declaration
-   references; optional M2M to allergen references remains empty until evidenced.
-3. `ChangeoverRecord` captures previous/next product, opaque line code, time,
-   checklist cleaning references, optional packaging artwork hook, verification,
-   evidence object keys, and frozen context for future batch dossiers.
-4. `LineClearanceRecord` prefers checklist template/version/submission references
-   rather than hardcoded clearance fields.
-5. `AllergenRiskPolicy` + `CHANGEOVER_ALLERGEN_BLOCK_APPROVED` dual-gate production
-   block — default OFF; never invent matrix outcomes.
-6. Permissions separate record (`manage_changeover`) from verify/approve
-   (`verify_changeover`) and policy (`manage_allergenriskpolicy`).
+1. Introduce `apps.changeover` with:
+   - `AllergenReference` — generic unseeded allergen code/name shell
+   - `ProductAllergenDeclaration` — draft/approve product association to optional allergen references (EVIDENCE REQUIRED for company mappings)
+   - `ChangeoverRecord` — previous/next product, line, time, cleaning checklist template/version, packaging artwork hook, verification, evidence metadata, frozen context
+   - `LineClearanceRecord` — checklist-engine driven clearance (template/version/submission), optional packaging hook, frozen context
+   - `AllergenRiskPolicy` — org stub dual-gated with `CHANGEOVER_ALLERGEN_BLOCK_APPROVED` (default OFF)
+2. Line clearance prefers checklist engine bindings over hardcoded cleaning fields.
+3. Do **not** automatically block/start production from an allergen matrix unless org policy is enabled **and** settings approval is true; callers must assert `matrix_conflict_asserted` (never invented by the platform).
+4. Frozen changeover/clearance context marks `batch_dossier_ready` for later batch-dossier traceability.
+5. Evidence linked kinds: `CHANGEOVER_RECORD`, `LINE_CLEARANCE_RECORD`.
 
 ## Consequences
 
-- Company allergen catalogues, cleaning SOPs, sequencing, and matrix block policy
-  remain **EVIDENCE REQUIRED** (APR-056).
-- Batch dossier UI integration is deferred; frozen contexts are dossier-ready.
+- Company allergen lists, cleaning rules, sequencing rules, and matrix block policy remain **EVIDENCE REQUIRED** (APR-056).
+- Production-block signal is advisory architecture only until formal policy and integration wiring exist.

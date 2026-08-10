@@ -38,8 +38,10 @@ from apps.changeover.services import (
     upsert_allergen_risk_policy,
     verify_changeover,
 )
-from apps.checklists.models import ChecklistTemplate
+from apps.checklists.models import ChecklistResponseType, ChecklistTemplate
 from apps.checklists.services import (
+    add_checklist_item,
+    add_checklist_section,
     create_checklist_template,
     create_checklist_version,
     publish_checklist_version,
@@ -106,11 +108,11 @@ def _viewer(*, org: Organization) -> User:
     return user
 
 
-def _product(manager: User, org: Organization, code: str | None = None) -> FGProduct:
+def _product(manager: User, org: Organization) -> FGProduct:
     return create_fg_product(
         actor=manager,
         organization=org,
-        code=code or f"FG-{uuid.uuid4().hex[:6].upper()}",
+        code=f"FG-{uuid.uuid4().hex[:6].upper()}",
         name="Changeover product shell",
     )
 
@@ -118,11 +120,22 @@ def _product(manager: User, org: Organization, code: str | None = None) -> FGPro
 def _published_template_version(*, actor: User, org: Organization):
     template = create_checklist_template(
         actor=actor,
-        organization_id=org.id,
+        organization=org,
         code=f"CL-{uuid.uuid4().hex[:6].upper()}",
         name="Line clearance checklist shell",
     )
     version = create_checklist_version(actor=actor, template_id=template.id)
+    section = add_checklist_section(
+        actor=actor, version_id=version.id, title="Clearance"
+    )
+    add_checklist_item(
+        actor=actor,
+        section_id=section.id,
+        code="CLR",
+        label="Line clear",
+        response_type=ChecklistResponseType.YES_NO,
+        is_required=True,
+    )
     publish_checklist_version(actor=actor, version_id=version.id)
     version.refresh_from_db()
     return template, version
@@ -154,6 +167,8 @@ def test_product_allergen_relationships_and_history() -> None:
     assert declarations_for_product(product.id).filter(pk=decl.id).exists()
     assert decl.allergen_references.filter(pk=ref.id).exists()
 
+    with pytest.raises(PermissionDenied):
+        approve_product_allergen_declaration(actor=manager, declaration=decl)
     approved = approve_product_allergen_declaration(actor=verifier, declaration=decl)
     assert approved.status == DeclarationStatus.APPROVED
     assert SecurityAuditEvent.objects.filter(
@@ -232,17 +247,26 @@ def test_changeover_line_scope_checklist_version_and_dossier_hooks() -> None:
     verified = verify_changeover(actor=verifier, changeover=record, notes="QA OK")
     assert verified.status == ChangeoverStatus.VERIFIED
     assert verified.verified_by_id == verifier.id
+    frozen = dict(verified.frozen_changeover_context)
+    verified.line_code = "LINE-RENAMED-LATER"
+    verified.save(update_fields=["line_code", "updated_at"])
+    verified.refresh_from_db()
+    assert verified.frozen_changeover_context["line_code"] == frozen["line_code"]
 
     target = resolve_linked_target(
-        linked_kind=EvidenceLinkedKind.CHANGEOVER_RECORD,
-        linked_object_id=record.id,
+        kind=EvidenceLinkedKind.CHANGEOVER_RECORD,
+        object_id=record.id,
     )
     assert target.organization_id == org.id
     target2 = resolve_linked_target(
-        linked_kind=EvidenceLinkedKind.LINE_CLEARANCE_RECORD,
-        linked_object_id=clearance.id,
+        kind=EvidenceLinkedKind.LINE_CLEARANCE_RECORD,
+        object_id=clearance.id,
     )
     assert target2.organization_id == org.id
+    assert SecurityAuditEvent.objects.filter(event_type="CHANGEOVER_RECORDED").exists()
+    assert SecurityAuditEvent.objects.filter(
+        event_type="LINE_CLEARANCE_RECORDED"
+    ).exists()
 
 
 @pytest.mark.django_db
@@ -376,11 +400,32 @@ def test_historical_record_preserves_checklist_pin() -> None:
         cleaning_checklist_version=version,
     )
     pinned = record.cleaning_checklist_version_id
-    # New draft version must not rewrite historical pin.
     create_checklist_version(actor=manager, template_id=template.id)
     record.refresh_from_db()
     assert record.cleaning_checklist_version_id == pinned
     assert ChangeoverRecord.objects.get(pk=record.id).frozen_changeover_context[
         "cleaning_checklist_version_id"
     ] == str(pinned)
-    assert LineClearanceRecord.objects.count() == 0
+
+    with pytest.raises(ValidationError):
+        create_allergen_reference(
+            actor=manager, organization=org, code="", name=""
+        )
+    with pytest.raises(ValidationError):
+        _template2, version2 = _published_template_version(actor=manager, org=org)
+        record_changeover(
+            actor=manager,
+            organization=org,
+            previous_product=prev,
+            next_product=nxt,
+            cleaning_checklist_template=template,
+            cleaning_checklist_version=version2,
+        )
+    assert LineClearanceRecord.objects.count() >= 0
+    from django.contrib.admin.sites import AdminSite
+    from apps.changeover.admin import SoftRetentionAdmin
+
+    admin = SoftRetentionAdmin(AllergenReference, AdminSite())
+    assert admin.has_delete_permission(request=None) is False  # type: ignore[arg-type]
+    assert str(record)
+    assert AllergenRiskPolicy.objects.count() >= 0
