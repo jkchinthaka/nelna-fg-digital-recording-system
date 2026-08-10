@@ -27,6 +27,7 @@ ALLOWED_APPS = {
     "integrations",
     "ai_assistance",
     "laboratory",
+    "haccp",
     "supplier_quality",
     "access_control",
     "security_audit",
