@@ -31,6 +31,7 @@ Place approved charter, scope, UAT, design, and release approval records in this
 - Phase 04 scope reconciliation is **approved with conditions** (see form). Official Shift **values** remain blocked by ASM-004 / ASM-005 / ASM-006 even though Shift technical foundation was later implemented under provisional direction.
 - A **one-time documentation-only CI exception** for PR #10 baseline head `b1c3f18` is recorded in [PR_10_DOCUMENTATION_CI_EXCEPTION.md](PR_10_DOCUMENTATION_CI_EXCEPTION.md). Missing CI remains missing and is not treated as passed.
 - Outstanding business approvals are tracked in [APPROVAL_REGISTER.md](../governance/APPROVAL_REGISTER.md). Silence is not approval.
+- Phase 20 UAT/pilot signoff form (blank until real evidence): [../uat/BUSINESS_SIGNOFF.md](../uat/BUSINESS_SIGNOFF.md). Agents must not invent signatures.
 - No deployment or production-readiness approval exists.
 - Do not treat other draft documents as approved unless listed here with a completed approval form.
 - Do not publish the Figma library without final design-system review.

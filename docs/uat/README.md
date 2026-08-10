@@ -16,6 +16,7 @@
 | [BUSINESS_SIGNOFF.md](BUSINESS_SIGNOFF.md) | Real approval evidence only |
 | [PHASE_20_FINAL_REPORT.md](PHASE_20_FINAL_REPORT.md) | Go / no-go summary |
 | [../business/PHASE_20_UAT_PILOT.md](../business/PHASE_20_UAT_PILOT.md) | Phase status narrative |
+| [../architecture/ADR-032-UAT-PILOT-EVIDENCE-GATE.md](../architecture/ADR-032-UAT-PILOT-EVIDENCE-GATE.md) | Evidence gate — no invented PASS |
 
 ## Current outcome
 
