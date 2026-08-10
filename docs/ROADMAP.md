@@ -436,5 +436,13 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Field | Content |
 | --- | --- |
 | Objective | Digital sanitation/SSOP using existing checklist engine + scheduler |
-| Outputs | apps.sanitation; ADR-039; fail-stop default OFF |
+| Outputs | `apps.sanitation`; ADR-039; fail-stop default OFF |
+| Status | **Technical foundation delivered** on `main` |
+
+## Phase 28 — Environmental monitoring foundation
+
+| Field | Content |
+| --- | --- |
+| Objective | Generic EM points, versioned limits, MANUAL/LAB/SENSOR readings |
+| Outputs | `apps.environmental`; ADR-040; auto-HOLD default OFF |
 | Status | **Technical foundation delivered** on `main` |

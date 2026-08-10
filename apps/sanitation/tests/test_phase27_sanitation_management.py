@@ -56,9 +56,16 @@ from apps.sanitation.services import (
     upsert_sanitation_fail_policy,
 )
 from apps.sanitation.snapshots import snapshot_for_checklist_template
-from apps.scheduling.generation import create_checklist_schedule
+from apps.scheduling.generation import create_checklist_schedule, create_manual_schedule_occurrence
 from apps.scheduling.models import ChecklistSchedule, ChecklistTask, ChecklistTriggerType
 from apps.security_audit.models import SecurityAuditEvent
+from apps.recording.models import ChecklistSubmissionResponse
+from apps.recording.services import (
+    save_checklist_draft_responses,
+    start_checklist_recording,
+    submit_checklist_record,
+)
+from apps.scheduling.services import create_batch_checklist_task
 
 
 def _perm(model: type[Any], codename: str) -> Permission:
@@ -391,3 +398,89 @@ def test_snapshot_none_and_policy_as_dict() -> None:
     )
     assert decision.as_dict()["stop_production"] is False
     assert decision.as_dict()["not_qa_disposition"] is True
+
+
+@pytest.mark.django_db
+def test_linked_schedule_creates_recurring_manual_task() -> None:
+    """Sanitation schedule links reuse Phase 07E ChecklistSchedule occurrence generation."""
+    org = make_org(code=f"S{uuid.uuid4().hex[:6].upper()}")
+    manager = _manager(org=org)
+    template = _published_template(actor=manager, org=org)
+    program = create_sanitation_program(
+        actor=manager,
+        organization=org,
+        checklist_template=template,
+        code=f"R-{uuid.uuid4().hex[:5].upper()}",
+        title="Recurring shell",
+    )
+    version = create_draft_program_version(actor=manager, program_id=program.id)
+    schedule = create_checklist_schedule(
+        actor=manager,
+        organization_id=org.id,
+        checklist_template_id=template.id,
+        code=f"SCH-{uuid.uuid4().hex[:5].upper()}",
+        trigger_type=ChecklistTriggerType.MANUAL,
+        name="Daily sanitation shell",
+    )
+    add_schedule_link(
+        actor=manager,
+        program_version_id=version.id,
+        schedule_kind=SanitationScheduleKind.DAILY,
+        checklist_schedule=schedule,
+        label="Daily link",
+    )
+    approve_program_version(actor=manager, program_version_id=version.id)
+    task = create_manual_schedule_occurrence(
+        actor=manager,
+        schedule_id=schedule.id,
+        manual_token=f"san-{uuid.uuid4().hex[:8]}",
+    )
+    assert task.checklist_template_id == template.id
+    assert task.schedule_id == schedule.id
+    assert ChecklistTask.objects.filter(pk=task.id).exists()
+
+
+@pytest.mark.django_db
+def test_submission_freezes_sanitation_context() -> None:
+    org = make_org(code=f"S{uuid.uuid4().hex[:6].upper()}")
+    manager = _manager(org=org)
+    recorder = make_user(employee_code=f"SR{uuid.uuid4().hex[:6].upper()}", is_staff=True)
+    _grant(recorder, org, ChecklistTask, "record_checklisttask")
+    template = _published_template(actor=manager, org=org)
+    program = create_sanitation_program(
+        actor=manager,
+        organization=org,
+        checklist_template=template,
+        code=f"FZ-{uuid.uuid4().hex[:5].upper()}",
+        title="Freeze program",
+    )
+    version = create_draft_program_version(
+        actor=manager,
+        program_id=program.id,
+        verification_mode=SanitationVerificationMode.SELF_CHECK,
+    )
+    approve_program_version(actor=manager, program_version_id=version.id)
+    bind_checklist_template_to_sanitation_program(
+        actor=manager, program_version_id=version.id
+    )
+    published = template.versions.filter(status="PUBLISHED").first()
+    assert published is not None
+    item = published.sections.first().items.first()
+    task = create_batch_checklist_task(
+        actor=manager,
+        organization_id=org.id,
+        checklist_template_id=template.id,
+        checklist_version_id=published.id,
+        batch_reference=f"SAN-{uuid.uuid4().hex[:8].upper()}",
+    )
+    record = start_checklist_recording(actor=recorder, task_id=task.id)
+    save_checklist_draft_responses(
+        actor=recorder,
+        record_id=record.id,
+        answers={(item.id, 1): "YES"},
+    )
+    submit_checklist_record(actor=recorder, record_id=record.id)
+    snap_row = ChecklistSubmissionResponse.objects.get(checklist_item=item)
+    assert "sanitation_context" in (snap_row.control_point_context or {})
+    assert snap_row.control_point_context["sanitation_context"]["program_code"] == program.code
+    assert snap_row.control_point_context["sanitation_context"]["reuses_checklist_engine"] is True
