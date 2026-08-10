@@ -11,8 +11,8 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from apps.access_control.services import Scope, user_has_permission
 from apps.accounts.models import User
 from apps.capa.models import CorrectiveAction
-from apps.laboratory.models import LabExternalCertificate, LabSample
 from apps.evidence.models import EvidenceLinkedKind
+from apps.laboratory.models import LabExternalCertificate, LabSample
 from apps.nonconformance.models import NonConformanceRecord
 from apps.quality.models import QAReview
 from apps.recording.models import (

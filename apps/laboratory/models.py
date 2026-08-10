@@ -30,15 +30,9 @@ class LabSampleStatus(models.TextChoices):
 
 
 LAB_SAMPLE_STATUS_TRANSITIONS: dict[str, frozenset[str]] = {
-    LabSampleStatus.REGISTERED: frozenset(
-        {LabSampleStatus.RECEIVED, LabSampleStatus.CANCELLED}
-    ),
-    LabSampleStatus.RECEIVED: frozenset(
-        {LabSampleStatus.IN_TESTING, LabSampleStatus.CANCELLED}
-    ),
-    LabSampleStatus.IN_TESTING: frozenset(
-        {LabSampleStatus.COMPLETED, LabSampleStatus.CANCELLED}
-    ),
+    LabSampleStatus.REGISTERED: frozenset({LabSampleStatus.RECEIVED, LabSampleStatus.CANCELLED}),
+    LabSampleStatus.RECEIVED: frozenset({LabSampleStatus.IN_TESTING, LabSampleStatus.CANCELLED}),
+    LabSampleStatus.IN_TESTING: frozenset({LabSampleStatus.COMPLETED, LabSampleStatus.CANCELLED}),
     LabSampleStatus.COMPLETED: frozenset(),
     LabSampleStatus.CANCELLED: frozenset(),
 }
@@ -168,6 +162,9 @@ class LabTestParameter(models.Model):
             ),
         ]
 
+    def __str__(self) -> str:
+        return f"{self.organization.code}/{self.code}"
+
     def clean(self) -> None:
         errors: dict[str, str] = {}
         if (
@@ -177,18 +174,13 @@ class LabTestParameter(models.Model):
         ):
             errors["bound_max"] = "bound_max cannot be less than bound_min."
         if self.specification_parameter_id and self.organization_id:
-            spec_org = (
-                self.specification_parameter.version.product_specification.organization_id
-            )
+            spec_org = self.specification_parameter.version.product_specification.organization_id
             if spec_org != self.organization_id:
                 errors["specification_parameter"] = (
                     "Specification parameter must belong to the same organization."
                 )
         if errors:
             raise ValidationError(errors)
-
-    def __str__(self) -> str:
-        return f"{self.organization.code}/{self.code}"
 
 
 class LabSample(models.Model):
@@ -383,9 +375,7 @@ class LabResult(models.Model):
         default=LabResultStatus.ENTERED,
     )
     result_type = models.CharField(max_length=16, choices=LabResultType.choices)
-    numeric_value = models.DecimalField(
-        max_digits=26, decimal_places=12, null=True, blank=True
-    )
+    numeric_value = models.DecimalField(max_digits=26, decimal_places=12, null=True, blank=True)
     text_value = models.CharField(max_length=512, blank=True, default="")
     select_value = models.CharField(max_length=128, blank=True, default="")
     unit = models.CharField(max_length=64, blank=True, default="")
@@ -445,12 +435,12 @@ class LabResult(models.Model):
             ),
         ]
 
+    def __str__(self) -> str:
+        return f"{self.lab_test.code}/{self.parameter.code}/r{self.revision_number}"
+
     @property
     def is_immutable(self) -> bool:
         return self.status == LabResultStatus.FINALIZED
-
-    def __str__(self) -> str:
-        return f"{self.lab_test.code}/{self.parameter.code}/r{self.revision_number}"
 
 
 class LabExternalCertificate(models.Model):
@@ -609,3 +599,6 @@ class LabHistoryEntry(models.Model):
         ordering = ("-created_at",)
         verbose_name = "Lab history entry"
         verbose_name_plural = "Lab history entries"
+
+    def __str__(self) -> str:
+        return f"{self.event_type}@{self.created_at:%Y-%m-%d}"

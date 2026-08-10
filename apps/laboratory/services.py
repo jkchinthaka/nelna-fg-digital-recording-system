@@ -112,9 +112,7 @@ def register_lab_sample(
         site=site.organization_id if site else None,
         product=product.organization_id if product else None,
         checklist_submission=(
-            checklist_submission.checklist_record.organization_id
-            if checklist_submission
-            else None
+            checklist_submission.checklist_record.organization_id if checklist_submission else None
         ),
         nonconformance=nonconformance.organization_id if nonconformance else None,
         hold_case=hold_case.organization_id if hold_case else None,
@@ -177,9 +175,7 @@ def transition_lab_sample(
     require_permission(user, REGISTER_SAMPLE, scope=_org_scope(sample.organization_id))
     allowed = LAB_SAMPLE_STATUS_TRANSITIONS.get(sample.status, frozenset())
     if to_status not in allowed:
-        raise ValidationError(
-            {"status": f"Cannot transition from {sample.status} to {to_status}."}
-        )
+        raise ValidationError({"status": f"Cannot transition from {sample.status} to {to_status}."})
     previous = sample.status
     sample.status = to_status
     if to_status == LabSampleStatus.CANCELLED:
@@ -451,7 +447,9 @@ def amend_lab_result(
     previous.status = LabResultStatus.SUPERSEDED
     previous.save(update_fields=["status"])
 
-    num = _parse_decimal(numeric_value) if numeric_value not in (None, "") else previous.numeric_value
+    num = (
+        _parse_decimal(numeric_value) if numeric_value not in (None, "") else previous.numeric_value
+    )
     text = (text_value or "").strip() or previous.text_value
     select = (select_value or "").strip() or previous.select_value
 
