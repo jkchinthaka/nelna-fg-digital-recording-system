@@ -124,8 +124,10 @@ Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 18)._ (`loading`
 | 17 ERP / Bileeta | Adapter boundary complete — contracts/mocks, evidence gate, dead-letter, reconciliation, outbound prepare-only (ADR-029) | **BLOCKED — VENDOR API EVIDENCE REQUIRED** (APR-011/012/016/017) |
 | 18 Safe AI assistance | Technical complete — optional advisory AI default OFF; provider abstraction; safety gates (ADR-030) | QA/IT policy acknowledgement + prompt retention EVIDENCE REQUIRED |
 | 19 Security / backup / monitoring / performance | Technical complete - hardening, health, backup/restore harness, runbooks (ADR-031) | RPO/RTO + staging load/pen-test EVIDENCE REQUIRED |
+| 22 Laboratory / LIMS | Technical complete — sample/test/result foundation, immutability, external cert hook, positive-release policy stub default OFF (ADR-032) | Lab catalogue / role mapping / positive-release policy EVIDENCE REQUIRED |
+| 20–21 Pilot / production release | Not started | Depends on business gates + Phase 19 ops evidence |
 | 20 UAT / Pilot | Package opened — **BLOCKED** pending business evidence ([uat/README.md](uat/README.md)) | Pilot scope APR-034, FG-QA-001, roles/SoD, hosted env EVIDENCE REQUIRED |
-| 21 Production release | Not started | Depends on Phase 20 UAT PASSED |
+| 21 Production release | Package opened — **GO-LIVE BLOCKED** ([release/README.md](release/README.md)) | Phase 20 FAIL + hosting/config/support gates |
 
 ---
 
@@ -140,7 +142,7 @@ Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 18)._ (`loading`
 | [PHASE_10_POST_QA_WORKFLOW_GATE.md](business/PHASE_10_POST_QA_WORKFLOW_GATE.md) | OPEN — all downstream items EVIDENCE REQUIRED |
 
 **UAT PASSED:** No — Phase 20 package opened; business execution **NOT STARTED** ([PHASE_20_UAT_PILOT.md](business/PHASE_20_UAT_PILOT.md))
-**PRODUCTION READY:** No
+**PRODUCTION READY:** No — Phase 21 release gate **STOP** ([PHASE_21_PRODUCTION_RELEASE.md](business/PHASE_21_PRODUCTION_RELEASE.md))
 
 ---
 
@@ -394,3 +396,15 @@ Technical production-readiness controls (ADR-031): security headers, expanded he
 **STATUS: PHASE 20 UAT/PILOT BLOCKED**
 
 UAT/pilot package delivered under `docs/uat/` with prerequisites, scenarios, test record (all NOT EXECUTED), pilot scope template, baseline/parallel/defect/signoff registers, and NO-GO final report. Cursor did not invent business PASS or signatures. Re-open PASS only when real business evidence is attached.
+
+## Phase 22 delivery status
+
+**STATUS: PHASE 22 LAB LIMS FOUNDATION COMPLETE**
+
+Laboratory / LIMS technical foundation (ADR-032): `apps.laboratory` with sample provenance, tests/parameters/results, finalized immutability + amendment revisions, external certificate metadata, COA interface hooks, and positive-release policy stub that remains non-blocking by default. PostgreSQL remains SoR (APR-020 Mongo cutover still PENDING). Lab catalogues, role mappings, and positive-release enablement remain COMPANY EVIDENCE REQUIRED.
+
+## Phase 21 delivery status
+
+**STATUS: PHASE 21 GO-LIVE BLOCKED**
+
+Hard prerequisites failed (Phase 20 UAT/pilot not passed; production hosting, approved configuration, support owner, vault/ownership, and production-custody backup targets incomplete). No production deploy, no release tag, no paper decommission. Package: `docs/release/`.

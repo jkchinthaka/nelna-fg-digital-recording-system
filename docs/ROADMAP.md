@@ -379,6 +379,20 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Branch naming | `release/phase-21-production` |
 | Exit criteria | Explicit written approval; no silent go-live |
 | Dependencies | Phase 20 pass |
+| Status | **GO-LIVE BLOCKED** — release package on `main` (`docs/release/`); Phase 20 FAIL; no production tag; STOP |
+
+## Phase 22 — Laboratory / LIMS foundation
+
+| Field | Content |
+| --- | --- |
+| Objective | Generic lab sample/test/result foundation linked to FG quality workflows |
+| Inputs | QA/lab evidence (catalogue & positive-release policy still open) |
+| Outputs | `apps.laboratory`; ADR-032 |
+| Approval gate | QA owner for catalogue/positive-release; technical review of foundation |
+| Branch naming | Direct-main quality-first for Phase 22 technical foundation |
+| Exit criteria | Sample provenance, immutable finalized results + amendment, policy stub default OFF, tests |
+| Dependencies | Org/RBAC, product/spec hooks, NCR/Hold, evidence, QA modules |
+| Status | **Technical foundation complete** — lab catalogue / positive-release EVIDENCE REQUIRED |
 
 ---
 
