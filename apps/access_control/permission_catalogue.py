@@ -20,6 +20,7 @@ class CapabilityBucket(StrEnum):
     SUPERVISOR_REVIEW = "supervisor_review"
     CORRECTION = "correction"
     QA_REVIEW = "qa_review"
+    QUALITY_CASE = "quality_case"
     EVIDENCE = "evidence"
     MASTER_DATA = "master_data"
     CHECKLIST_PUBLISH = "checklist_publish"
@@ -239,18 +240,71 @@ PERMISSION_CATALOGUE: Final[tuple[PermissionCatalogueEntry, ...]] = (
         description="Manage Shift configuration rows.",
     ),
     PermissionCatalogueEntry(
-        key="manage_capa",
-        permission="capa.manage_capa",
-        bucket=CapabilityBucket.MANAGE,
+        key="create_nonconformance",
+        permission="nonconformance.create_nonconformance",
+        bucket=CapabilityBucket.QUALITY_CASE,
         scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE, ObjectScope.DEPARTMENT),
-        description="Manage CAPA records (module foundation).",
+        description="Create formal nonconformance cases (manual only; no FAIL/CCP auto-raise).",
+        notes="Distinct from recording ChecklistCorrection / resubmission.",
     ),
     PermissionCatalogueEntry(
         key="manage_nonconformance",
         permission="nonconformance.manage_nonconformance",
-        bucket=CapabilityBucket.MANAGE,
+        bucket=CapabilityBucket.QUALITY_CASE,
         scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE, ObjectScope.DEPARTMENT),
-        description="Manage nonconformance records (module foundation).",
+        description="Update/transition open nonconformance cases.",
+        notes="Does not invent severity or auto-HOLD rules.",
+    ),
+    PermissionCatalogueEntry(
+        key="close_nonconformance",
+        permission="nonconformance.close_nonconformance",
+        bucket=CapabilityBucket.QUALITY_CASE,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE, ObjectScope.DEPARTMENT),
+        description="Close nonconformance cases (separate from manage).",
+    ),
+    PermissionCatalogueEntry(
+        key="create_holdcase",
+        permission="nonconformance.create_holdcase",
+        bucket=CapabilityBucket.QUALITY_CASE,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE, ObjectScope.DEPARTMENT),
+        description="Open Hold cases manually (free-text reason/scope).",
+        notes="Resolution catalogues remain EVIDENCE REQUIRED — not seeded.",
+    ),
+    PermissionCatalogueEntry(
+        key="manage_holdcase",
+        permission="nonconformance.manage_holdcase",
+        bucket=CapabilityBucket.QUALITY_CASE,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE, ObjectScope.DEPARTMENT),
+        description="Manage open Hold cases.",
+    ),
+    PermissionCatalogueEntry(
+        key="close_holdcase",
+        permission="nonconformance.close_holdcase",
+        bucket=CapabilityBucket.QUALITY_CASE,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE, ObjectScope.DEPARTMENT),
+        description="Close Hold cases with free-text resolution.",
+    ),
+    PermissionCatalogueEntry(
+        key="create_capa",
+        permission="capa.create_capa",
+        bucket=CapabilityBucket.QUALITY_CASE,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE, ObjectScope.DEPARTMENT),
+        description="Create CAPA headers (human workflow foundation).",
+    ),
+    PermissionCatalogueEntry(
+        key="manage_capa",
+        permission="capa.manage_capa",
+        bucket=CapabilityBucket.QUALITY_CASE,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE, ObjectScope.DEPARTMENT),
+        description="Manage CAPA actions, verification, and effectiveness review fields.",
+        notes="No AI final CAPA closure.",
+    ),
+    PermissionCatalogueEntry(
+        key="close_capa",
+        permission="capa.close_capa",
+        bucket=CapabilityBucket.QUALITY_CASE,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE, ObjectScope.DEPARTMENT),
+        description="Human-only CAPA closure.",
     ),
     PermissionCatalogueEntry(
         key="manage_supplierquality_qa",

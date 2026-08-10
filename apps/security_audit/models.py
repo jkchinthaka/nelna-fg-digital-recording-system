@@ -286,8 +286,25 @@ class SecurityAuditEvent(models.Model):
             "QA review disposition completed",
         )
         NONCONFORMANCE_CREATED = "NONCONFORMANCE_CREATED", "Nonconformance created"
+        NONCONFORMANCE_UPDATED = "NONCONFORMANCE_UPDATED", "Nonconformance updated"
+        NONCONFORMANCE_STATUS_CHANGED = (
+            "NONCONFORMANCE_STATUS_CHANGED",
+            "Nonconformance status changed",
+        )
         NONCONFORMANCE_CLOSED = "NONCONFORMANCE_CLOSED", "Nonconformance closed"
+        HOLD_CASE_CREATED = "HOLD_CASE_CREATED", "Hold case created"
+        HOLD_CASE_CLOSED = "HOLD_CASE_CLOSED", "Hold case closed"
         CAPA_CREATED = "CAPA_CREATED", "CAPA created"
+        CAPA_STATUS_CHANGED = "CAPA_STATUS_CHANGED", "CAPA status changed"
+        CAPA_ACTION_ADDED = "CAPA_ACTION_ADDED", "CAPA action item added"
+        CAPA_VERIFICATION_RECORDED = (
+            "CAPA_VERIFICATION_RECORDED",
+            "CAPA verification recorded",
+        )
+        CAPA_EFFECTIVENESS_REVIEWED = (
+            "CAPA_EFFECTIVENESS_REVIEWED",
+            "CAPA effectiveness review recorded",
+        )
         CAPA_CLOSED = "CAPA_CLOSED", "CAPA closed"
         SUPPLIER_QUALITY_PROFILE_CREATED = (
             "SUPPLIER_QUALITY_PROFILE_CREATED",

@@ -256,13 +256,14 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 
 | Field | Content |
 | --- | --- |
-| Objective | NC/hold/CAPA after MVP |
-| Inputs | QA procedures |
-| Outputs | `nonconformance`, `capa` |
+| Objective | Configurable quality-case foundation (NCR / HOLD / CAPA) without invented Nelna policies |
+| Inputs | QA procedures (still EVIDENCE REQUIRED for production rules) |
+| Outputs | Expanded `nonconformance` + `HoldCase`; expanded `capa` + action items + history; ADR-024 |
 | Approval gate | QA |
-| Branch naming | `feature/phase-12-nc-capa` |
-| Exit criteria | Human-only CAPA closure |
-| Dependencies | Phase 10 |
+| Branch naming | Direct-main quality-first for Phase 12 technical foundation |
+| Exit criteria | Human-only CAPA closure; no FAIL/CCP auto-raise; correction ≠ NCR; separate create/manage/close permissions |
+| Dependencies | Phase 10–11 |
+| Status | **12 foundation implemented** — severity/resolution catalogues / auto-raise rules still EVIDENCE REQUIRED |
 
 ## Phase 13 — Loading, dispatch and cold-chain controls
 

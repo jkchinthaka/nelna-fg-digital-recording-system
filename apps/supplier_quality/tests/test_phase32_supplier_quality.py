@@ -54,9 +54,13 @@ def _qa_user(*, org: Organization) -> User:
         permission=_perm(SupplierQualityProfile, "manage_supplierquality_qa"),
     )
     role.permissions.add(_perm(SupplierQualityProfile, "view_supplierqualityprofile"))
+    role.permissions.add(_perm(NonConformanceRecord, "create_nonconformance"))
     role.permissions.add(_perm(NonConformanceRecord, "manage_nonconformance"))
+    role.permissions.add(_perm(NonConformanceRecord, "close_nonconformance"))
     role.permissions.add(_perm(NonConformanceRecord, "view_nonconformancerecord"))
+    role.permissions.add(_perm(CorrectiveAction, "create_capa"))
     role.permissions.add(_perm(CorrectiveAction, "manage_capa"))
+    role.permissions.add(_perm(CorrectiveAction, "close_capa"))
     role.permissions.add(_perm(CorrectiveAction, "view_correctiveaction"))
     grant_role(user, role, organization=org)
     return user

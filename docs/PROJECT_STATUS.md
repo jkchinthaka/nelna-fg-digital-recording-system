@@ -60,6 +60,8 @@ This document records **repository evidence**. It does not invent Nelna operatio
 | `reviews` | 09A–09C | IMPLEMENTED · governance hardening + immutable review; production Supervisor review **BLOCKED** |
 | `quality` | 10A | IMPLEMENTED · production QA **BLOCKED**; no ERP/warehouse/dispatch side effects |
 | `evidence` | **11** | IMPLEMENTED · private attachments + SHA-256 + soft-retire; malware scanner NOT_CONFIGURED; object-store IAM **EVIDENCE REQUIRED** |
+| `nonconformance` | **12** | IMPLEMENTED foundation · NCR + HoldCase + history; no FAIL/CCP auto-raise; policies **EVIDENCE REQUIRED** |
+| `capa` | **12** | IMPLEMENTED foundation · CAPA + actions + verification/effectiveness; human-only close; matrices **EVIDENCE REQUIRED** |
 
 Not started (by MODULE_MAP): `loading`, `dispatch`, `notifications`, `reports`, `integrations`, `ai_assistance`.
 
@@ -107,7 +109,8 @@ Not started (by MODULE_MAP): `loading`, `dispatch`, `notifications`, `reports`, 
 | 10B Workflow lifecycle | Technical complete - derived operational workflow (ADR-022); no duplicated status columns | Production still BLOCKED; QA does not close warehouse/ERP/dispatch |
 | 10C+ Post-QA operational | Not started | EVIDENCE REQUIRED |
 | 11 Evidence attachments | Technical complete — private store, SHA-256, auth download, soft-retire, scanner NOT_CONFIGURED | Object-store IAM / active malware scanner EVIDENCE REQUIRED |
-| 12–21 Later roadmap | Not started | N/A |
+| 12 NCR / HOLD / CAPA | Technical complete — proposed NCR lifecycle, HoldCase, CAPA actions/verification/effectiveness; no auto-raise | Severity/resolution catalogues / auto-raise rules EVIDENCE REQUIRED |
+| 13–21 Later roadmap | Not started | N/A |
 
 ---
 
@@ -321,4 +324,10 @@ Derived operational workflow (ADR-022): authoritative state remains on Task / Re
 **STATUS: PHASE 11 EVIDENCE ATTACHMENTS COMPLETE**
 
 Secure quality evidence attachments (ADR-023): private storage, allowlisted types, SHA-256 integrity, authorized download, soft-retire only, malware scanner interface defaulting to NOT_CONFIGURED. Production MinIO/S3 IAM and active scanning remain EVIDENCE REQUIRED.
+
+## Phase 12 delivery status
+
+**STATUS: PHASE 12 NCR HOLD CAPA FOUNDATION COMPLETE**
+
+Configurable quality-case foundation (ADR-024): formal NCR lifecycle + HoldCase + CAPA actions/verification/effectiveness with human-only closure; append-only history and audit; separate create/manage/close permissions; no FAIL/CCP auto-raise; checklist correction remains distinct from NCR. Production severity/resolution/auto-raise policies remain EVIDENCE REQUIRED.
 

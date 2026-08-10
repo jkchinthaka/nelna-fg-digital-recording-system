@@ -80,6 +80,18 @@
 | `EVIDENCE_DOWNLOADED` | Authorized evidence download served (attachment disposition) |
 | `EVIDENCE_RETIRED` | Evidence soft-retired (no hard delete) |
 | `EVIDENCE_ACCESS_DENIED` | Evidence download denied or blob missing |
+| `NONCONFORMANCE_CREATED` | Formal NCR created (manual; Phase 12) |
+| `NONCONFORMANCE_UPDATED` | NCR case fields updated |
+| `NONCONFORMANCE_STATUS_CHANGED` | NCR proposed lifecycle transition |
+| `NONCONFORMANCE_CLOSED` | NCR closed |
+| `HOLD_CASE_CREATED` | Hold case opened (free-text reason/scope) |
+| `HOLD_CASE_CLOSED` | Hold case closed (free-text resolution) |
+| `CAPA_CREATED` | CAPA header created |
+| `CAPA_STATUS_CHANGED` | CAPA proposed lifecycle transition |
+| `CAPA_ACTION_ADDED` | CAPA action item added |
+| `CAPA_VERIFICATION_RECORDED` | CAPA verification notes recorded |
+| `CAPA_EFFECTIVENESS_REVIEWED` | CAPA effectiveness review recorded |
+| `CAPA_CLOSED` | CAPA closed (human-only) |
 
 ## Safe metadata
 
