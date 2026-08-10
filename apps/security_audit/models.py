@@ -306,6 +306,46 @@ class SecurityAuditEvent(models.Model):
             "CAPA effectiveness review recorded",
         )
         CAPA_CLOSED = "CAPA_CLOSED", "CAPA closed"
+        DISPATCH_QUALITY_RECORD_CREATED = (
+            "DISPATCH_QUALITY_RECORD_CREATED",
+            "Dispatch quality record created",
+        )
+        DISPATCH_QUALITY_RECORD_UPDATED = (
+            "DISPATCH_QUALITY_RECORD_UPDATED",
+            "Dispatch quality record updated",
+        )
+        DISPATCH_VEHICLE_INSPECTION_LINKED = (
+            "DISPATCH_VEHICLE_INSPECTION_LINKED",
+            "Dispatch vehicle inspection linked",
+        )
+        DISPATCH_QA_REVIEW_LINKED = (
+            "DISPATCH_QA_REVIEW_LINKED",
+            "Dispatch QA review linked",
+        )
+        DISPATCH_TEMPERATURE_RECORDED = (
+            "DISPATCH_TEMPERATURE_RECORDED",
+            "Dispatch cold-chain temperature recorded",
+        )
+        DISPATCH_QUANTITY_LINE_SET = (
+            "DISPATCH_QUANTITY_LINE_SET",
+            "Dispatch quantity line set",
+        )
+        DISPATCH_RELEASE_POLICY_UPDATED = (
+            "DISPATCH_RELEASE_POLICY_UPDATED",
+            "Dispatch QA release policy updated",
+        )
+        DISPATCH_RELEASE_GATE_EVALUATED = (
+            "DISPATCH_RELEASE_GATE_EVALUATED",
+            "Dispatch QA release gate evaluated",
+        )
+        DISPATCH_QUALITY_RECORD_COMPLETED = (
+            "DISPATCH_QUALITY_RECORD_COMPLETED",
+            "Dispatch quality record completed",
+        )
+        DISPATCH_QUALITY_RECORD_CANCELLED = (
+            "DISPATCH_QUALITY_RECORD_CANCELLED",
+            "Dispatch quality record cancelled",
+        )
         SUPPLIER_QUALITY_PROFILE_CREATED = (
             "SUPPLIER_QUALITY_PROFILE_CREATED",
             "Supplier quality profile created",
@@ -342,8 +382,13 @@ class SecurityAuditEvent(models.Model):
             "EVIDENCE_ACCESS_DENIED",
             "Evidence attachment access denied or missing blob",
         )
+        DISPATCH_RELEASE_GATE_BLOCKED = (
+            "DISPATCH_RELEASE_GATE_BLOCKED",
+            "Dispatch completion blocked by QA release gate",
+        )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
     event_type = models.CharField(max_length=64, choices=EventType.choices)
     actor = models.ForeignKey(
         settings.AUTH_USER_MODEL,

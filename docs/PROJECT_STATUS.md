@@ -59,11 +59,13 @@ This document records **repository evidence**. It does not invent Nelna operatio
 | `recording` | 08A–08C + 09B | IMPLEMENTED · shop-floor hardening + draft/submit; production recording **BLOCKED** |
 | `reviews` | 09A–09C | IMPLEMENTED · governance hardening + immutable review; production Supervisor review **BLOCKED** |
 | `quality` | 10A | IMPLEMENTED · production QA **BLOCKED**; no ERP/warehouse/dispatch side effects |
+| `dispatch` | **13** | IMPLEMENTED foundation · loading/dispatch quality + cold-chain temps + quantity lines; QA RELEASE gate default OFF; no ERP writes |
 | `evidence` | **11** | IMPLEMENTED · private attachments + SHA-256 + soft-retire; malware scanner NOT_CONFIGURED; object-store IAM **EVIDENCE REQUIRED** |
 | `nonconformance` | **12** | IMPLEMENTED foundation · NCR + HoldCase + history; no FAIL/CCP auto-raise; policies **EVIDENCE REQUIRED** |
 | `capa` | **12** | IMPLEMENTED foundation · CAPA + actions + verification/effectiveness; human-only close; matrices **EVIDENCE REQUIRED** |
+| `dispatch` | **13** | IMPLEMENTED foundation · loading/dispatch quality + cold-chain temps + qty reconciliation; QA RELEASE gate **disabled by default**; no ERP writes; SOPs/limits **EVIDENCE REQUIRED** |
 
-Not started (by MODULE_MAP): `loading`, `dispatch`, `notifications`, `reports`, `integrations`, `ai_assistance`.
+Not started (by MODULE_MAP): `notifications`, `reports`, `integrations`, `ai_assistance`. (`loading` controls are delivered inside `dispatch` for Phase 13 — see ADR-025.)
 
 ---
 
@@ -110,7 +112,8 @@ Not started (by MODULE_MAP): `loading`, `dispatch`, `notifications`, `reports`, 
 | 10C+ Post-QA operational | Not started | EVIDENCE REQUIRED |
 | 11 Evidence attachments | Technical complete — private store, SHA-256, auth download, soft-retire, scanner NOT_CONFIGURED | Object-store IAM / active malware scanner EVIDENCE REQUIRED |
 | 12 NCR / HOLD / CAPA | Technical complete — proposed NCR lifecycle, HoldCase, CAPA actions/verification/effectiveness; no auto-raise | Severity/resolution catalogues / auto-raise rules EVIDENCE REQUIRED |
-| 13–21 Later roadmap | Not started | N/A |
+| 13 Loading / dispatch | Technical complete — DispatchQualityRecord, vehicle checklist links, cold-chain Decimal temps, qty reconciliation, QA RELEASE gate default OFF (ADR-025) | Dispatch SOPs / temperature limits / APR-017 gate enablement EVIDENCE REQUIRED |
+| 14–21 Later roadmap | Not started | N/A |
 
 ---
 
@@ -330,4 +333,10 @@ Secure quality evidence attachments (ADR-023): private storage, allowlisted type
 **STATUS: PHASE 12 NCR HOLD CAPA FOUNDATION COMPLETE**
 
 Configurable quality-case foundation (ADR-024): formal NCR lifecycle + HoldCase + CAPA actions/verification/effectiveness with human-only closure; append-only history and audit; separate create/manage/close permissions; no FAIL/CCP auto-raise; checklist correction remains distinct from NCR. Production severity/resolution/auto-raise policies remain EVIDENCE REQUIRED.
+
+## Phase 13 delivery status
+
+**STATUS: PHASE 13 DISPATCH QUALITY FOUNDATION COMPLETE**
+
+Loading/dispatch quality foundation (ADR-025): DispatchQualityRecord with vehicle inspection checklist links, cold-chain Decimal temperature readings, released/loaded/remaining quantity lines (not ERP ledger), configurable QA RELEASE gate disabled by default, append-only history and audit. No AI loading release; no ERP writes; production SOPs/limits remain EVIDENCE REQUIRED.
 

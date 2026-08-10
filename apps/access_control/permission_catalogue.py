@@ -21,6 +21,7 @@ class CapabilityBucket(StrEnum):
     CORRECTION = "correction"
     QA_REVIEW = "qa_review"
     QUALITY_CASE = "quality_case"
+    DISPATCH = "dispatch"
     EVIDENCE = "evidence"
     MASTER_DATA = "master_data"
     CHECKLIST_PUBLISH = "checklist_publish"
@@ -305,6 +306,37 @@ PERMISSION_CATALOGUE: Final[tuple[PermissionCatalogueEntry, ...]] = (
         bucket=CapabilityBucket.QUALITY_CASE,
         scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE, ObjectScope.DEPARTMENT),
         description="Human-only CAPA closure.",
+    ),
+    PermissionCatalogueEntry(
+        key="create_dispatchqualityrecord",
+        permission="dispatch.create_dispatchqualityrecord",
+        bucket=CapabilityBucket.DISPATCH,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE, ObjectScope.DEPARTMENT),
+        description="Create loading/dispatch quality records.",
+        notes="No ERP writes; no invented temperature/release rules.",
+    ),
+    PermissionCatalogueEntry(
+        key="manage_dispatchqualityrecord",
+        permission="dispatch.manage_dispatchqualityrecord",
+        bucket=CapabilityBucket.DISPATCH,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE, ObjectScope.DEPARTMENT),
+        description="Update dispatch records, link vehicle inspection/QA, record temps/qty.",
+    ),
+    PermissionCatalogueEntry(
+        key="complete_dispatchqualityrecord",
+        permission="dispatch.complete_dispatchqualityrecord",
+        bucket=CapabilityBucket.DISPATCH,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE, ObjectScope.DEPARTMENT),
+        description="Complete dispatch quality records (subject to configurable release gate).",
+        notes="Separate from manage; AI suggestions never authorize completion.",
+    ),
+    PermissionCatalogueEntry(
+        key="manage_dispatchreleasepolicy",
+        permission="dispatch.manage_dispatchreleasepolicy",
+        bucket=CapabilityBucket.DISPATCH,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Configure org QA RELEASE-before-loading gate (default disabled).",
+        notes="Enabling requires Dispatch + QA owner evidence (APR-017) — not seeded.",
     ),
     PermissionCatalogueEntry(
         key="manage_supplierquality_qa",

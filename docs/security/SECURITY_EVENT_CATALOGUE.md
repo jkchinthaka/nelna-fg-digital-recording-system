@@ -92,6 +92,17 @@
 | `CAPA_VERIFICATION_RECORDED` | CAPA verification notes recorded |
 | `CAPA_EFFECTIVENESS_REVIEWED` | CAPA effectiveness review recorded |
 | `CAPA_CLOSED` | CAPA closed (human-only) |
+| `DISPATCH_QUALITY_RECORD_CREATED` | Loading/dispatch quality record created (Phase 13) |
+| `DISPATCH_QUALITY_RECORD_UPDATED` | Dispatch quality record fields updated |
+| `DISPATCH_VEHICLE_INSPECTION_LINKED` | Dynamic vehicle inspection checklist linked |
+| `DISPATCH_QA_REVIEW_LINKED` | QAReview linked for traceability / optional gate |
+| `DISPATCH_TEMPERATURE_RECORDED` | Cold-chain temperature recorded (Decimal; no limits) |
+| `DISPATCH_QUANTITY_LINE_SET` | Released/loaded/remaining quantity line set |
+| `DISPATCH_RELEASE_POLICY_UPDATED` | Org QA RELEASE-before-loading policy updated |
+| `DISPATCH_RELEASE_GATE_EVALUATED` | Release gate evaluated on completion attempt |
+| `DISPATCH_RELEASE_GATE_BLOCKED` | Completion blocked by enabled QA RELEASE gate |
+| `DISPATCH_QUALITY_RECORD_COMPLETED` | Dispatch quality record completed |
+| `DISPATCH_QUALITY_RECORD_CANCELLED` | Dispatch quality record cancelled |
 
 ## Safe metadata
 

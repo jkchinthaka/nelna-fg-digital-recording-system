@@ -269,13 +269,14 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 
 | Field | Content |
 | --- | --- |
-| Objective | Loading/dispatch digital controls |
-| Inputs | Dispatch SOPs |
-| Outputs | `loading`, `dispatch` |
-| Approval gate | Dispatch + QA |
-| Branch naming | `feature/phase-13-loading-dispatch` |
-| Exit criteria | No AI loading release |
-| Dependencies | Phase 10â€“11 |
+| Objective | Loading/dispatch quality foundation without invented release/temperature rules |
+| Inputs | Dispatch SOPs (EVIDENCE REQUIRED for production limits/policy) |
+| Outputs | `apps.dispatch` (DispatchQualityRecord, cold-chain, quantity lines, release policy); ADR-025 |
+| Approval gate | Dispatch + QA (business policy still EVIDENCE REQUIRED) |
+| Branch naming | Direct-main quality-first for Phase 13 technical foundation |
+| Exit criteria | No AI loading release; QA RELEASE gate configurable default OFF; no ERP writes |
+| Dependencies | Phase 10–11 |
+| Status | **13 foundation implemented** — SOPs / temperature limits / APR-017 gate enablement still EVIDENCE REQUIRED |
 
 ## Phase 14 — Offline PWA and synchronization
 
