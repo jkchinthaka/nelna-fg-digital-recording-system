@@ -1444,6 +1444,7 @@ def update_checklist_item(
     min_inclusive: Any = _UNSET,
     max_inclusive: Any = _UNSET,
     requires_equipment_reference: Any = _UNSET,
+    required_equipment_type: Any = _UNSET,
 ) -> ChecklistItem:
     user = _require_authenticated_actor(actor)
     item = _lock_item(item_id)
@@ -1572,6 +1573,8 @@ def update_checklist_item(
         item.criticality = assert_known_criticality(str(criticality or ""))
     if requires_equipment_reference is not _UNSET:
         item.requires_equipment_reference = bool(requires_equipment_reference)
+    if required_equipment_type is not _UNSET:
+        item.required_equipment_type = str(required_equipment_type or "").strip().upper()
 
     try:
         item.full_clean()
