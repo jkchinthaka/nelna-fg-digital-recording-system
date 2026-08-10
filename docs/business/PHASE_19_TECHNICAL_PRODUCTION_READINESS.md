@@ -8,11 +8,12 @@
 - Security headers (CSP, Permissions-Policy, nosniff, referrer) + production secure cookies/HSTS
 - Expanded `/health/live/` and `/health/ready/`
 - Structured logging enrichment (safe fields only)
-- Backup scripts (PostgreSQL + evidence tree) and restore drill harness
+- Backup scripts (PostgreSQL + evidence tree + critical config inventory) and restore drill harness
+- Controlled non-production restore drill evidence (Compose-backed PASS recorded; production RPO/RTO still COMPANY DECISION REQUIRED)
 - Monitoring alert catalogue + ownership placeholders
 - DR runbook with RPO/RTO **COMPANY DECISION REQUIRED**
 - Synthetic perf driver + concurrency/e2e/security regression tests
-- CI continues ruff/mypy/bandit/pip-audit/coverage/image build
+- CI continues ruff/mypy/bandit/pip-audit/coverage/image build (+ advisory npm audit / Trivy)
 
 ## Explicit non-claims
 
@@ -20,5 +21,6 @@
 - Not approved production RPO/RTO
 - Not MongoDB-as-SoR backup (PostgreSQL is primary)
 - Not live Bileeta health (evidence-gated)
+- Not business production go-live
 
 ## STATUS: PHASE 19 TECHNICAL PRODUCTION READINESS COMPLETE
