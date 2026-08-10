@@ -20,6 +20,8 @@ class EvidenceLinkedKind(models.TextChoices):
     QA_REVIEW = "QA_REVIEW", "QA review"
     NONCONFORMANCE = "NONCONFORMANCE", "Nonconformance (future)"
     CAPA = "CAPA", "CAPA (future)"
+    LAB_SAMPLE = "LAB_SAMPLE", "Laboratory sample"
+    LAB_EXTERNAL_CERTIFICATE = "LAB_EXTERNAL_CERTIFICATE", "Laboratory external certificate"
 
 
 class EvidenceLifecycleStatus(models.TextChoices):

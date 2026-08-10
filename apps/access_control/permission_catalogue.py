@@ -26,6 +26,7 @@ class CapabilityBucket(StrEnum):
     REPORTING = "reporting"
     INTEGRATIONS = "integrations"
     AI_ASSISTANCE = "ai_assistance"
+    LABORATORY = "laboratory"
     EVIDENCE = "evidence"
     MASTER_DATA = "master_data"
     CHECKLIST_PUBLISH = "checklist_publish"
@@ -420,6 +421,50 @@ PERMISSION_CATALOGUE: Final[tuple[PermissionCatalogueEntry, ...]] = (
         scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
         description="View high-level AI assistance usage audit metadata.",
         notes="Full prompts are not stored by default.",
+    ),
+    PermissionCatalogueEntry(
+        key="register_labsample",
+        permission="laboratory.register_labsample",
+        bucket=CapabilityBucket.LABORATORY,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Register laboratory samples and related tests.",
+        notes="No auto role mapping; lab catalogue evidence required for production content.",
+    ),
+    PermissionCatalogueEntry(
+        key="enter_labresult",
+        permission="laboratory.enter_labresult",
+        bucket=CapabilityBucket.LABORATORY,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Enter or amend laboratory results (amendments create new revisions).",
+    ),
+    PermissionCatalogueEntry(
+        key="verify_labresult",
+        permission="laboratory.verify_labresult",
+        bucket=CapabilityBucket.LABORATORY,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Verify entered laboratory results.",
+    ),
+    PermissionCatalogueEntry(
+        key="finalize_labresult",
+        permission="laboratory.finalize_labresult",
+        bucket=CapabilityBucket.LABORATORY,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Finalize verified laboratory results (immutable thereafter except amendment).",
+    ),
+    PermissionCatalogueEntry(
+        key="manage_laboratory",
+        permission="laboratory.manage_laboratory",
+        bucket=CapabilityBucket.LABORATORY,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Administer lab method/parameter catalogue and positive-release policy stubs.",
+        notes="Positive-release blocking stays OFF without company QA approval.",
+    ),
+    PermissionCatalogueEntry(
+        key="view_laboratory",
+        permission="laboratory.view_laboratory",
+        bucket=CapabilityBucket.LABORATORY,
+        scopes=(ObjectScope.ORGANIZATION, ObjectScope.SITE),
+        description="Read-only view of laboratory samples and results.",
     ),
     PermissionCatalogueEntry(
         key="manage_supplierquality_qa",

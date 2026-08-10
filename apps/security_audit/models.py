@@ -462,6 +462,23 @@ class SecurityAuditEvent(models.Model):
             "AI_ASSISTANCE_FALLBACK",
             "AI assistance safe fallback after provider failure/timeout",
         )
+        LAB_SAMPLE_CREATED = "LAB_SAMPLE_CREATED", "Laboratory sample created"
+        LAB_SAMPLE_STATUS_CHANGED = (
+            "LAB_SAMPLE_STATUS_CHANGED",
+            "Laboratory sample status changed",
+        )
+        LAB_RESULT_ENTERED = "LAB_RESULT_ENTERED", "Laboratory result entered"
+        LAB_RESULT_VERIFIED = "LAB_RESULT_VERIFIED", "Laboratory result verified"
+        LAB_RESULT_FINALIZED = "LAB_RESULT_FINALIZED", "Laboratory result finalized"
+        LAB_RESULT_AMENDED = "LAB_RESULT_AMENDED", "Laboratory result amended"
+        LAB_EXTERNAL_CERTIFICATE_RECORDED = (
+            "LAB_EXTERNAL_CERTIFICATE_RECORDED",
+            "Laboratory external certificate recorded",
+        )
+        LAB_POSITIVE_RELEASE_POLICY_UPDATED = (
+            "LAB_POSITIVE_RELEASE_POLICY_UPDATED",
+            "Laboratory positive-release policy updated",
+        )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 

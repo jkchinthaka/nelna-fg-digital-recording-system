@@ -121,5 +121,11 @@ Live Bileeta HTTP remains blocked until APR-011/012 evidence is PRESENT. Outboun
 | --- | --- | --- |
 | use_aiassistance | `ai_assistance.use_aiassistance` | Invoke optional advisory AI (still requires feature flag ON) |
 | view_aiassistanceaudit | `ai_assistance.view_aiassistanceaudit` | View high-level AI usage audit rows |
+| register_labsample | `laboratory.register_labsample` | Register lab samples / tests |
+| enter_labresult | `laboratory.enter_labresult` | Enter or amend lab results |
+| verify_labresult | `laboratory.verify_labresult` | Verify entered lab results |
+| finalize_labresult | `laboratory.finalize_labresult` | Finalize verified lab results |
+| manage_laboratory | `laboratory.manage_laboratory` | Lab catalogue + positive-release policy stub |
+| view_laboratory | `laboratory.view_laboratory` | Read-only laboratory viewing |
 
 AI default OFF. AI must not execute RELEASE/HOLD/REJECT, publish, spec/role changes, ERP disposition, CAPA close, or factual root-cause declarations.

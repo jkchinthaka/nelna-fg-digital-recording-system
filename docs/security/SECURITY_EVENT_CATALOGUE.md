@@ -122,6 +122,14 @@
 | `AI_ASSISTANCE_BLOCKED` | AI assistance request blocked (safety/auth) |
 | `AI_ASSISTANCE_DISABLED` | AI assistance invoked while feature disabled |
 | `AI_ASSISTANCE_FALLBACK` | AI assistance safe fallback after provider failure/timeout |
+| `LAB_SAMPLE_CREATED` | Laboratory sample created (Phase 22) |
+| `LAB_SAMPLE_STATUS_CHANGED` | Laboratory sample status changed |
+| `LAB_RESULT_ENTERED` | Laboratory result entered |
+| `LAB_RESULT_VERIFIED` | Laboratory result verified |
+| `LAB_RESULT_FINALIZED` | Laboratory result finalized |
+| `LAB_RESULT_AMENDED` | Laboratory result amended (new revision) |
+| `LAB_EXTERNAL_CERTIFICATE_RECORDED` | Laboratory external certificate recorded |
+| `LAB_POSITIVE_RELEASE_POLICY_UPDATED` | Laboratory positive-release policy updated |
 
 ## Safe metadata
 

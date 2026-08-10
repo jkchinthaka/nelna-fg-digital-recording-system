@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     "apps.reviews",
     "apps.quality",
     "apps.evidence",
+    "apps.laboratory",
     "apps.nonconformance",
     "apps.capa",
     "apps.dispatch",
@@ -261,6 +262,11 @@ PERMISSIONS_POLICY = env(
 SESSION_COOKIE_AGE = env.int("SESSION_COOKIE_AGE", default=28800)  # 8 hours technical default
 SESSION_SAVE_EVERY_REQUEST = env.bool("SESSION_SAVE_EVERY_REQUEST", default=True)
 HEALTHCHECK_MONGODB_ENABLED = env.bool("HEALTHCHECK_MONGODB_ENABLED", default=False)
+# Phase 22 — positive-release runtime blocking remains OFF until company QA approval.
+LAB_POSITIVE_RELEASE_BLOCKING_APPROVED = env.bool(
+    "LAB_POSITIVE_RELEASE_BLOCKING_APPROVED",
+    default=False,
+)
 
 
 CORRELATION_ID_HEADER = "HTTP_X_REQUEST_ID"
