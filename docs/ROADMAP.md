@@ -589,3 +589,14 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Branch naming | `feature/phase-44-change-control` |
 | Exit criteria | Org-scoped requests; impact before approval; engineering ≠ approval; closed historically immutable |
 | Status | **Technical foundation delivered** on `main` — change-control SOP remains **EVIDENCE REQUIRED** |
+
+## Phase 45 — Quality Audit Management
+
+| Field | Content |
+| --- | --- |
+| Objective | Structured QMS audit planning, execution, findings, and follow-up |
+| Outputs | `apps.quality_audits`; ADR-056; findings; explicit NCR/CAPA; audit-checklist bind; reports; APR-070 |
+| Approval gate | Audit programme, frequency, severity catalogue, and auditor SoD |
+| Branch naming | `feature/phase-45-quality-audit-management` |
+| Exit criteria | Org-scoped audits; findings do not auto-create CAPA; auditor perms ≠ operational QA; distinct from security_audit |
+| Status | **Technical foundation delivered** on `main` — audit programme remains **EVIDENCE REQUIRED** |

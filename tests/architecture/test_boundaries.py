@@ -46,6 +46,7 @@ ALLOWED_APPS = {
     "rework",
     "document_control",
     "change_control",
+    "quality_audits",
     "supplier_quality",
     "access_control",
     "security_audit",

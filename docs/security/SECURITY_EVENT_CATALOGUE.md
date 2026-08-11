@@ -476,3 +476,24 @@ Retention period is **deferred** â€” not decided in Phase 03. Events are ap
 | CHANGE_VERIFICATION_STARTED | Submitted for verification |
 | CHANGE_CLOSED | Verified and closed |
 
+### Quality Audit Management (Phase 45)
+
+These events are security-log records *about* the QMS audit module. They are
+not the QMS audit records themselves.
+
+| Event | Meaning |
+| --- | --- |
+| QUALITY_AUDIT_PLANNED | QMS audit planned |
+| QUALITY_AUDIT_PARTICIPANT_ADDED | Participant added |
+| QUALITY_AUDIT_CHECKLIST_REGISTERED | Template registered as audit checklist |
+| QUALITY_AUDIT_CHECKLIST_BOUND | Audit checklist version bound |
+| QUALITY_AUDIT_STARTED | Execution started |
+| QUALITY_AUDIT_FINDING_CREATED | Finding recorded (NCR/CAPA not auto-created) |
+| QUALITY_AUDIT_FINDING_ACTION_COMPLETED | Finding action completed |
+| QUALITY_AUDIT_FINDING_VERIFIED | Finding verified |
+| QUALITY_AUDIT_FINDING_CLOSED | Finding closed |
+| QUALITY_AUDIT_CASE_LINKED | Explicit NCR/CAPA link |
+| QUALITY_AUDIT_CLOSED | QMS audit closed |
+| QUALITY_AUDIT_CANCELLED | QMS audit cancelled |
+| QUALITY_AUDIT_FINDING_CODE_UPSERTED | Classification/severity shell upserted |
+

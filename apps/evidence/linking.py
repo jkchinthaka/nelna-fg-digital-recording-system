@@ -24,6 +24,7 @@ from apps.nonconformance.models import NonConformanceRecord
 from apps.packaging.models import ArtworkVersion
 from apps.product_returns.models import ReturnQualityRecord
 from apps.quality.models import QAReview
+from apps.quality_audits.models import QualityAuditFinding, QualityAuditStatus
 from apps.recall.models import RecallCase
 from apps.receiving.models import ReceiptQualityRecord
 from apps.recording.models import (
@@ -87,6 +88,9 @@ VIEW_EFFECTIVE_DOCUMENT = "document_control.view_effectivedocument"
 EDIT_DOCUMENT = "document_control.edit_qualitydocument"
 APPROVE_DOCUMENT = "document_control.approve_qualitydocument"
 PUBLISH_DOCUMENT = "document_control.publish_qualitydocument"
+VIEW_QUALITY_AUDIT = "quality_audits.view_qualityaudit"
+EXECUTE_QUALITY_AUDIT = "quality_audits.execute_qualityaudit"
+CLOSE_QUALITY_AUDIT = "quality_audits.close_qualityaudit"
 
 
 @dataclass(frozen=True, slots=True)
@@ -401,6 +405,19 @@ def resolve_linked_target(*, kind: str, object_id: uuid.UUID) -> LinkedTarget:
             obj=document_version,
         )
 
+    if kind == EvidenceLinkedKind.QUALITY_AUDIT_FINDING:
+        finding = QualityAuditFinding.objects.select_related("audit").filter(pk=object_id).first()
+        if finding is None:
+            raise ValidationError({"linked_object_id": "Quality audit finding not found."})
+        return LinkedTarget(
+            kind=kind,
+            object_id=finding.id,
+            organization_id=finding.audit.organization_id,
+            linkage_immutable=finding.audit.status
+            in {QualityAuditStatus.CLOSED, QualityAuditStatus.CANCELLED},
+            obj=finding,
+        )
+
     raise ValidationError({"linked_kind": "Unsupported linked kind."})
 
 
@@ -665,5 +682,19 @@ def _assert_parent_access(*, actor: User, target: LinkedTarget, for_mutate: bool
         ):
             return
         raise PermissionDenied("Operators may access only effective document files.")
+
+    if kind == EvidenceLinkedKind.QUALITY_AUDIT_FINDING:
+        allowed = (
+            user_has_permission(actor, VIEW_QUALITY_AUDIT, scope=org_scope)
+            or user_has_permission(actor, EXECUTE_QUALITY_AUDIT, scope=org_scope)
+            or user_has_permission(actor, CLOSE_QUALITY_AUDIT, scope=org_scope)
+        )
+        if not allowed:
+            raise PermissionDenied("Permission denied.")
+        if for_mutate and target.linkage_immutable:
+            raise ValidationError(
+                {"linked_object_id": "Evidence cannot be attached to a closed or cancelled audit."}
+            )
+        return
 
     raise PermissionDenied("Permission denied.")

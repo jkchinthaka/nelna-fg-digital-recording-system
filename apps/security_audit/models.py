@@ -1129,6 +1129,58 @@ class SecurityAuditEvent(models.Model):
             "CHANGE_CLOSED",
             "Quality change verified and closed",
         )
+        QUALITY_AUDIT_PLANNED = (
+            "QUALITY_AUDIT_PLANNED",
+            "QMS quality audit planned",
+        )
+        QUALITY_AUDIT_PARTICIPANT_ADDED = (
+            "QUALITY_AUDIT_PARTICIPANT_ADDED",
+            "QMS quality audit participant added",
+        )
+        QUALITY_AUDIT_CHECKLIST_REGISTERED = (
+            "QUALITY_AUDIT_CHECKLIST_REGISTERED",
+            "Checklist template registered for QMS audits",
+        )
+        QUALITY_AUDIT_CHECKLIST_BOUND = (
+            "QUALITY_AUDIT_CHECKLIST_BOUND",
+            "Audit checklist version bound",
+        )
+        QUALITY_AUDIT_STARTED = (
+            "QUALITY_AUDIT_STARTED",
+            "QMS quality audit execution started",
+        )
+        QUALITY_AUDIT_FINDING_CREATED = (
+            "QUALITY_AUDIT_FINDING_CREATED",
+            "QMS quality audit finding recorded",
+        )
+        QUALITY_AUDIT_FINDING_ACTION_COMPLETED = (
+            "QUALITY_AUDIT_FINDING_ACTION_COMPLETED",
+            "QMS audit finding action completed",
+        )
+        QUALITY_AUDIT_FINDING_VERIFIED = (
+            "QUALITY_AUDIT_FINDING_VERIFIED",
+            "QMS audit finding verified",
+        )
+        QUALITY_AUDIT_FINDING_CLOSED = (
+            "QUALITY_AUDIT_FINDING_CLOSED",
+            "QMS audit finding closed",
+        )
+        QUALITY_AUDIT_CASE_LINKED = (
+            "QUALITY_AUDIT_CASE_LINKED",
+            "NCR/CAPA explicitly linked from QMS audit finding",
+        )
+        QUALITY_AUDIT_CLOSED = (
+            "QUALITY_AUDIT_CLOSED",
+            "QMS quality audit closed",
+        )
+        QUALITY_AUDIT_CANCELLED = (
+            "QUALITY_AUDIT_CANCELLED",
+            "QMS quality audit cancelled",
+        )
+        QUALITY_AUDIT_FINDING_CODE_UPSERTED = (
+            "QUALITY_AUDIT_FINDING_CODE_UPSERTED",
+            "QMS audit finding classification/severity shell upserted",
+        )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 

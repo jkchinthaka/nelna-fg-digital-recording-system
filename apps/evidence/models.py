@@ -74,6 +74,10 @@ class EvidenceLinkedKind(models.TextChoices):
         "QUALITY_DOCUMENT_VERSION",
         "Quality document version file",
     )
+    QUALITY_AUDIT_FINDING = (
+        "QUALITY_AUDIT_FINDING",
+        "QMS quality audit finding evidence",
+    )
 
 
 class EvidenceLifecycleStatus(models.TextChoices):

@@ -90,6 +90,7 @@ This document records **repository evidence**. It does not invent Nelna operatio
 | `rework` | **42** | IMPLEMENTED foundation · create/authorize/execute; source/result genealogy; new reinspection; ERP stock dual-gate OFF (APR-067) |
 | `document_control` | **43** | IMPLEMENTED foundation · versioned QMS documents; immutability; effective lookup; historical links; Phase 11 files; ack ≠ competency (APR-068) |
 | `change_control` | **44** | IMPLEMENTED foundation · change requests; impact assessment; affected links; implementation citation; engineering ≠ approval (APR-069) |
+| `quality_audits` | **45** | IMPLEMENTED foundation · QMS audit plans/findings/follow-up; explicit NCR/CAPA; Phase 11 evidence; reports; distinct from security_audit (APR-070) |
 
 Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 38 except gaps noted elsewhere)._ (`loading` controls are delivered inside `dispatch` for Phase 13 — see ADR-025.)
 
@@ -168,6 +169,7 @@ Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 38 except gaps n
 | 42 Controlled Rework Management | Technical complete — explicit create/authorize, source/result genealogy, quantity conservation, new reinspection, ERP stock dual-gate OFF (ADR-053) | Rework SOP / SoD / ERP adapter EVIDENCE REQUIRED (APR-067) |
 | 43 Quality Document Control | Technical complete — versioned documents, immutability, effective lookup, historical links, Phase 11 files, optional acknowledgement (ADR-054) | Document numbering / type catalogue / SoD / acknowledgement obligation EVIDENCE REQUIRED (APR-068) |
 | 44 Quality Change Control | Technical complete — formal change records, impact assessment, affected-area links, implementation citation, verify/close SoD (ADR-055) | Change SOP / numbering / risk scoring / role mapping EVIDENCE REQUIRED (APR-069) |
+| 45 Quality Audit Management | Technical complete — audit plans, audit-only checklist bindings, findings, explicit NCR/CAPA, reports (ADR-056) | Audit programme / frequency / severity catalogue / SoD EVIDENCE REQUIRED (APR-070) |
 | 20–21 Pilot / production release | Not started | Depends on business gates + Phase 19 ops evidence |
 | 20 UAT / Pilot | Package opened — **BLOCKED** pending business evidence ([uat/README.md](uat/README.md)) | Pilot scope APR-034, FG-QA-001, roles/SoD, hosted env EVIDENCE REQUIRED |
 | 21 Production release | Package opened — **GO-LIVE BLOCKED** ([release/README.md](release/README.md)) | Phase 20 FAIL + hosting/config/support gates |
@@ -584,4 +586,10 @@ Quality document control (ADR-054): organization-scoped versioned QMS documents 
 **STATUS: PHASE 44 CHANGE CONTROL COMPLETE**
 
 Quality change control (ADR-055): organization-scoped change requests with owner-supplied identifiers, impact assessment (quality, food-safety, technical, training, validation, data migration), generic affected-area links, and implementation citations of deployed configuration/versions. Engineering completion is never business approval. Requester cannot self-approve; approver cannot also close. Closed records are historically immutable. Company change SOP, numbering, risk scoring, and role mapping remain **EVIDENCE REQUIRED** (APR-069).
+
+## Phase 45 delivery status
+
+**STATUS: PHASE 45 AUDIT MANAGEMENT COMPLETE**
+
+Quality audit management (ADR-056): organization-scoped QMS audit plans with owner-supplied identifiers, generic architectural types, participants, and audit-checklist bindings that do not reuse operational FG checklists automatically. Findings are generic and do not invent a severity taxonomy. NCR/CAPA may be linked or created only by explicit authorized action. Auditor permissions are separate from operational QA review. This module is not the security event log. Company audit programme, frequency, and classification catalogue remain **EVIDENCE REQUIRED** (APR-070).
 

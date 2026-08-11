@@ -87,6 +87,7 @@ INSTALLED_APPS = [
     "apps.rework",
     "apps.document_control",
     "apps.change_control",
+    "apps.quality_audits",
     "apps.nonconformance",
     "apps.capa",
     "apps.dispatch",

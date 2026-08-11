@@ -46,6 +46,7 @@ class CapabilityBucket(StrEnum):
     REWORK = "rework"
     DOCUMENT_CONTROL = "document_control"
     CHANGE_CONTROL = "change_control"
+    QUALITY_AUDITS = "quality_audits"
     EVIDENCE = "evidence"
     MASTER_DATA = "master_data"
     CHECKLIST_PUBLISH = "checklist_publish"
@@ -1153,6 +1154,50 @@ PERMISSION_CATALOGUE: Final[tuple[PermissionCatalogueEntry, ...]] = (
         bucket=CapabilityBucket.CHANGE_CONTROL,
         scopes=(ObjectScope.ORGANIZATION,),
         description="Verify and close a change. Approver cannot also close.",
+    ),
+    PermissionCatalogueEntry(
+        key="view_qualityaudit",
+        permission="quality_audits.view_qualityaudit",
+        bucket=CapabilityBucket.QUALITY_AUDITS,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="View QMS quality audits and findings (not security audit events).",
+        notes="Distinct from audit_access / security_audit.",
+    ),
+    PermissionCatalogueEntry(
+        key="plan_qualityaudit",
+        permission="quality_audits.plan_qualityaudit",
+        bucket=CapabilityBucket.QUALITY_AUDITS,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Plan QMS audits, participants, and audit-checklist bindings.",
+    ),
+    PermissionCatalogueEntry(
+        key="execute_qualityaudit",
+        permission="quality_audits.execute_qualityaudit",
+        bucket=CapabilityBucket.QUALITY_AUDITS,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Execute audits and record findings. Separate from operational QA review.",
+    ),
+    PermissionCatalogueEntry(
+        key="close_qualityaudit",
+        permission="quality_audits.close_qualityaudit",
+        bucket=CapabilityBucket.QUALITY_AUDITS,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Verify findings and close QMS quality audits.",
+    ),
+    PermissionCatalogueEntry(
+        key="link_audit_quality_case",
+        permission="quality_audits.link_audit_quality_case",
+        bucket=CapabilityBucket.QUALITY_AUDITS,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Explicitly link or create NCR/CAPA from a finding. Never automatic.",
+    ),
+    PermissionCatalogueEntry(
+        key="manage_auditfindingconfig",
+        permission="quality_audits.manage_auditfindingconfig",
+        bucket=CapabilityBucket.QUALITY_AUDITS,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Manage unseeded finding classification/severity code shells.",
+        notes="APR-070 EVIDENCE REQUIRED before claiming a company taxonomy.",
     ),
     PermissionCatalogueEntry(
         key="manage_supplierquality_qa",

@@ -331,3 +331,16 @@ Document numbering and role mapping remain APR-068 EVIDENCE REQUIRED.
 
 Change SOP and role mapping remain APR-069 EVIDENCE REQUIRED.
 
+### Quality Audit Management (Phase 45)
+
+| Key | Permission | Notes |
+| --- | --- | --- |
+| view_qualityaudit | `quality_audits.view_qualityaudit` | View QMS audits/findings; not security_audit |
+| plan_qualityaudit | `quality_audits.plan_qualityaudit` | Plan audits, participants, audit-checklist bindings |
+| execute_qualityaudit | `quality_audits.execute_qualityaudit` | Execute and record findings; not operational QA review |
+| close_qualityaudit | `quality_audits.close_qualityaudit` | Verify findings and close/cancel audits |
+| link_audit_quality_case | `quality_audits.link_audit_quality_case` | Explicit NCR/CAPA only; never automatic |
+| manage_auditfindingconfig | `quality_audits.manage_auditfindingconfig` | Unseeded classification/severity shells |
+
+Audit programme and role mapping remain APR-070 EVIDENCE REQUIRED.
+
