@@ -649,6 +649,8 @@ def link_gap_action(
     _assert_edition_mutable(gap.mapping.edition)
     if gap.status == ComplianceGap.Status.CLOSED:
         raise ValidationError({"status": "Closed gaps cannot receive new actions."})
+    if create_linked_record is not None:
+        create_follow_up = create_linked_record
     if not explicit_user_action:
         raise ValidationError(
             {"explicit_user_action": "Gap follow-up requires explicit_user_action=True."}
@@ -842,9 +844,9 @@ def open_compliance_gap(
 
 @transaction.atomic
 def close_compliance_gap(*, actor: User, gap_id: uuid.UUID) -> ComplianceGap:
-    gap = ComplianceGap.objects.select_related("mapping", "mapping__edition", "mapping__edition__source").get(
-        pk=gap_id
-    )
+    gap = ComplianceGap.objects.select_related(
+        "mapping", "mapping__edition", "mapping__edition__source"
+    ).get(pk=gap_id)
     _require(actor, PERM_MANAGE_CONTROL, gap.mapping.organization_id)
     _assert_edition_mutable(gap.mapping.edition)
     if gap.status == ComplianceGap.Status.CLOSED:
