@@ -559,3 +559,23 @@ RPN certificate and do not invent Action Priority bands.
 | PROCESS_FMEA_ACTION_RECORDED | Recommended action recorded |
 | PROCESS_FMEA_SCORING_POLICY_UPDATED | Scoring policy updated (default OFF) |
 
+### Structured RCA (Phase 49)
+
+These events record investigation actions. They are not an auto-confirmed root cause.
+
+| Event | Meaning |
+| --- | --- |
+| RCA_CREATED | RCA created (no cause confirmed) |
+| RCA_STARTED | RCA marked in progress |
+| RCA_PARTICIPANT_ADDED | Participant recorded |
+| RCA_FIVE_WHY_RECORDED | Optional 5 Why step recorded |
+| RCA_FISHBONE_RECORDED | Optional fishbone entry recorded |
+| RCA_HYPOTHESIS_RECORDED | Possible cause / AI hypothesis recorded |
+| RCA_CAUSE_STATE_CHANGED | Cause marked supported |
+| RCA_ROOT_CAUSE_CONFIRMED | Human confirmed root cause with evidence |
+| RCA_EVIDENCE_LINKED | Evidence citation linked |
+| RCA_CAPA_LINKED | Confirmed cause linked to CAPA (explicit) |
+| RCA_VERIFIED | Verification recorded |
+| RCA_CLOSED | RCA closed |
+| RCA_CANCELLED | RCA cancelled |
+

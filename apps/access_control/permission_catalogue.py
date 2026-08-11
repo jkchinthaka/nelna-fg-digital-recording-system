@@ -50,6 +50,7 @@ class CapabilityBucket(StrEnum):
     COMPLIANCE_MAPPING = "compliance_mapping"
     QUALITY_RISKS = "quality_risks"
     PROCESS_FMEA = "process_fmea"
+    RCA = "rca"
     EVIDENCE = "evidence"
     MASTER_DATA = "master_data"
     CHECKLIST_PUBLISH = "checklist_publish"
@@ -1314,6 +1315,35 @@ PERMISSION_CATALOGUE: Final[tuple[PermissionCatalogueEntry, ...]] = (
         description=(
             "Explicitly link recommended actions to CAPA or change request. Never automatic."
         ),
+    ),
+    PermissionCatalogueEntry(
+        key="view_rca",
+        permission="rca.view_rca",
+        bucket=CapabilityBucket.RCA,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="View structured RCA records and history.",
+        notes="AI hypotheses are not confirmed root causes.",
+    ),
+    PermissionCatalogueEntry(
+        key="manage_rca",
+        permission="rca.manage_rca",
+        bucket=CapabilityBucket.RCA,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Create and edit RCA records, optional methods, and possible/supported causes.",
+    ),
+    PermissionCatalogueEntry(
+        key="confirm_rca",
+        permission="rca.confirm_rca",
+        bucket=CapabilityBucket.RCA,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Human confirmation of a root cause with evidence. Software/AI cannot confirm.",
+    ),
+    PermissionCatalogueEntry(
+        key="link_rca_capa",
+        permission="rca.link_rca_capa",
+        bucket=CapabilityBucket.RCA,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Link a confirmed root cause to CAPA by explicit action. Never automatic.",
     ),
     PermissionCatalogueEntry(
         key="manage_supplierquality_qa",

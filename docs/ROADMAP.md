@@ -633,3 +633,14 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Branch naming | `feature/phase-48-process-fmea` |
 | Exit criteria | Approved versions immutable; scoring default OFF; S×O×D only after configured model; explicit CAPA/change |
 | Status | **Technical foundation delivered** on `main` — PFMEA methodology remains **EVIDENCE REQUIRED** |
+
+## Phase 49 — Structured RCA
+
+| Field | Content |
+| --- | --- |
+| Objective | Optional structured RCA tools for NCR, complaint, audit finding, and CAPA |
+| Outputs | `apps.rca`; ADR-060; 5 Why/fishbone/cause table; APR-074 |
+| Approval gate | RCA SOP, required method (if any), investigator SoD |
+| Branch naming | `feature/phase-49-structured-rca` |
+| Exit criteria | Methods optional; AI hypothesis ≠ confirmed; confirm perm separate; explicit CAPA |
+| Status | **Technical foundation delivered** on `main` — RCA SOP remains **EVIDENCE REQUIRED** |

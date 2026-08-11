@@ -94,6 +94,7 @@ This document records **repository evidence**. It does not invent Nelna operatio
 | `compliance_mapping` | **46** | IMPLEMENTED foundation · source register; clause→control mapping; evidence citations; explicit gap follow-up; no certification/legal claims (APR-071) |
 | `quality_risks` | **47** | IMPLEMENTED foundation · configurable risk register; historical assessments; mitigations; scoring default OFF; no invented matrix (APR-072) |
 | `process_fmea` | **48** | IMPLEMENTED foundation · versioned Process FMEA; S/O/D assessments; S×O×D only after owner-cited policy; no invented thresholds (APR-073) |
+| `rca` | **49** | IMPLEMENTED foundation · structured RCA; optional 5 Why/fishbone; human confirm; explicit CAPA (APR-074) |
 
 Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 38 except gaps noted elsewhere)._ (`loading` controls are delivered inside `dispatch` for Phase 13 — see ADR-025.)
 
@@ -176,6 +177,7 @@ Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 38 except gaps n
 | 46 Compliance Control Mapping | Technical complete — source register, edition citations, control mappings, evidence links, explicit gap actions (ADR-057) | Official sources / applicability / licensed clause text / owner mapping EVIDENCE REQUIRED (APR-071). No ISO/FSSC/HACCP/SLS/legal claim |
 | 47 Quality Risk Management | Technical complete — risk register, append-only assessments, reviews, mitigations, policy-gated high-rated dashboard (ADR-058) | Scoring method / category catalogue / acceptance criteria EVIDENCE REQUIRED (APR-072) |
 | 48 Process FMEA | Technical complete — versioned PFMEA, failure-mode structure, configured S×O×D only, explicit CAPA/change (ADR-059) | PFMEA method / rating scale / RPN or AP use EVIDENCE REQUIRED (APR-073) |
+| 49 Structured RCA | Technical complete — RCA record, optional 5 Why/fishbone/cause table, human confirm, explicit CAPA (ADR-060) | RCA SOP / required method / investigator SoD EVIDENCE REQUIRED (APR-074) |
 | 20–21 Pilot / production release | Not started | Depends on business gates + Phase 19 ops evidence |
 | 20 UAT / Pilot | Package opened — **BLOCKED** pending business evidence ([uat/README.md](uat/README.md)) | Pilot scope APR-034, FG-QA-001, roles/SoD, hosted env EVIDENCE REQUIRED |
 | 21 Production release | Package opened — **GO-LIVE BLOCKED** ([release/README.md](release/README.md)) | Phase 20 FAIL + hosting/config/support gates |
@@ -616,4 +618,10 @@ Quality risk management (ADR-058): organization-scoped risks with owner-supplied
 **STATUS: PHASE 48 PROCESS FMEA COMPLETE**
 
 Process FMEA (ADR-059): organization-scoped FMEA headers with numbered versions. Process steps, failure modes, effects, causes, current controls, and recommended actions are recorded on a version. Approved, superseded, and withdrawn versions are historically immutable; changes create a new revision. Severity, occurrence, and detection are stored as owner inputs. Scoring is **OFF** until an owner-cited method is configured. `SOD_PRODUCT` multiplies whole-number S×O×D only and does not invent thresholds or Action Priority bands. Recommended actions become CAPA or change requests only by explicit authorized action. Company PFMEA methodology remains **EVIDENCE REQUIRED** (APR-073).
+
+## Phase 49 delivery status
+
+**STATUS: PHASE 49 RCA TOOLKIT COMPLETE**
+
+Structured RCA (ADR-060): organization-scoped investigation records with owner-supplied identifiers, optional 5 Why / fishbone / cause-evidence tools, and separated edit vs confirm permissions. Cause states are POSSIBLE, SUPPORTED, and CONFIRMED. Software and AI may record hypotheses only. A human investigator confirms a root cause with evidence. Confirmed causes may generate CAPA only by explicit authorized action. Company RCA SOP remains **EVIDENCE REQUIRED** (APR-074).
 

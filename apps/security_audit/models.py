@@ -1349,6 +1349,58 @@ class SecurityAuditEvent(models.Model):
             "PROCESS_FMEA_SCORING_POLICY_UPDATED",
             "Process FMEA scoring policy updated",
         )
+        RCA_CREATED = (
+            "RCA_CREATED",
+            "Root-cause analysis created",
+        )
+        RCA_STARTED = (
+            "RCA_STARTED",
+            "Root-cause analysis started",
+        )
+        RCA_PARTICIPANT_ADDED = (
+            "RCA_PARTICIPANT_ADDED",
+            "RCA participant recorded",
+        )
+        RCA_FIVE_WHY_RECORDED = (
+            "RCA_FIVE_WHY_RECORDED",
+            "RCA 5 Why step recorded",
+        )
+        RCA_FISHBONE_RECORDED = (
+            "RCA_FISHBONE_RECORDED",
+            "RCA fishbone entry recorded",
+        )
+        RCA_HYPOTHESIS_RECORDED = (
+            "RCA_HYPOTHESIS_RECORDED",
+            "RCA possible cause recorded",
+        )
+        RCA_CAUSE_STATE_CHANGED = (
+            "RCA_CAUSE_STATE_CHANGED",
+            "RCA cause state changed",
+        )
+        RCA_ROOT_CAUSE_CONFIRMED = (
+            "RCA_ROOT_CAUSE_CONFIRMED",
+            "Human investigator confirmed root cause",
+        )
+        RCA_EVIDENCE_LINKED = (
+            "RCA_EVIDENCE_LINKED",
+            "RCA evidence or reference recorded",
+        )
+        RCA_CAPA_LINKED = (
+            "RCA_CAPA_LINKED",
+            "Confirmed root cause linked to CAPA",
+        )
+        RCA_VERIFIED = (
+            "RCA_VERIFIED",
+            "RCA verification recorded",
+        )
+        RCA_CLOSED = (
+            "RCA_CLOSED",
+            "Root-cause analysis closed",
+        )
+        RCA_CANCELLED = (
+            "RCA_CANCELLED",
+            "Root-cause analysis cancelled",
+        )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 

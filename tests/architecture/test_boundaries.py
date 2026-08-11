@@ -50,6 +50,7 @@ ALLOWED_APPS = {
     "compliance_mapping",
     "quality_risks",
     "process_fmea",
+    "rca",
     "supplier_quality",
     "access_control",
     "security_audit",

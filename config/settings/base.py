@@ -1,4 +1,4 @@
-"""Shared Django settings for all environments."""
+﻿"""Shared Django settings for all environments."""
 
 from __future__ import annotations
 
@@ -91,6 +91,7 @@ INSTALLED_APPS = [
     "apps.compliance_mapping",
     "apps.quality_risks",
     "apps.process_fmea",
+    "apps.rca",
     "apps.nonconformance",
     "apps.capa",
     "apps.dispatch",

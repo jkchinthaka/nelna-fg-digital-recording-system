@@ -60,6 +60,7 @@ Do **not** rename FG master data, checklist, recording, review, or evidence work
 | compliance_mapping | Compliance / control mapping (46) | ComplianceSource; ComplianceSourceEdition; ComplianceControlMapping; ComplianceEvidenceLink; ComplianceGap; ComplianceGapAction; ComplianceMappingEvent | source register; clause→control mapping; evidence citations; gap follow-up | No ISO/FSSC/HACCP/SLS/legal claims; IMPLEMENTED ≠ COMPLIANT; no seeded applicability; explicit gap actions only; APR-071 EVIDENCE REQUIRED | **46** |
 | quality_risks | Quality risk management (47) | QualityRisk; QualityRiskAssessment; QualityRiskScoringPolicy; QualityRiskLink; QualityRiskMitigation; QualityRiskReview; QualityRiskEvent | configurable risk register; historical assessments; mitigations; dashboard | No invented 1–5/RAG/acceptance matrix; scoring default OFF; accept perm separate; APR-072 EVIDENCE REQUIRED | **47** |
 | process_fmea | Process FMEA (48) | ProcessFmea; ProcessFmeaVersion; ProcessStep; FailureMode; FailureEffect; PotentialCause; CurrentControl; RecommendedAction; FailureModeAssessment; ProcessFmeaScoringPolicy; ProcessFmeaLink; ProcessFmeaEvent | versioned PFMEA; S/O/D assessment; explicit CAPA/change; quality-risk links | No invented RPN/AP thresholds; scoring default OFF; SOD_PRODUCT math-only after citation; approved versions immutable; APR-073 EVIDENCE REQUIRED | **48** |
+| rca | Structured RCA (49) | RootCauseAnalysis; RcaParticipant; RcaFiveWhyStep; RcaFishboneEntry; RcaCause; RcaEvidenceLink; RcaCapaLink; RcaEvent | optional 5 Why/fishbone/cause table; human confirm; explicit CAPA | Methods optional; AI hypothesis ≠ confirmed; confirm perm separate; APR-074 EVIDENCE REQUIRED | **49** |
 
 ## Phase mapping reminder
 
@@ -79,6 +80,7 @@ Do **not** rename FG master data, checklist, recording, review, or evidence work
 | 46 | `compliance_mapping` controlled source register and clause→system-control evidence mapping; no certification claims |
 | 47 | `quality_risks` configurable quality-risk register; append-only assessments; scoring default OFF |
 | 48 | `process_fmea` versioned Process FMEA; configurable S/O/D; S×O×D only after owner-cited policy |
+| 49 | `rca` structured RCA toolkit; optional methods; human confirm; explicit CAPA |
 
 ## References
 

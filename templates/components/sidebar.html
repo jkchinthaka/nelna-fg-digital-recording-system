@@ -1,4 +1,4 @@
-{% load organizations_extras master_data_extras checklists_extras scheduling_extras recording_extras reviews_extras quality_extras reports_extras %}
+{% load organizations_extras master_data_extras checklists_extras scheduling_extras recording_extras reviews_extras quality_extras reports_extras rca_extras %}
 <aside class="app-sidebar" id="app-sidebar" aria-label="Application">
   <div class="app-sidebar__brand">
     <a class="app-sidebar__logo" href="{% url 'accounts:landing' %}">
@@ -54,6 +54,12 @@
           <a class="app-nav-link{% if '/shifts/' in current_path %} is-active{% endif %}"
              href="{% url 'organizations:shift_list' %}">Shifts</a>
         {% endif %}
+      {% endif %}
+      {% user_can_view_rca as show_rca %}
+      {% if show_rca %}
+        <p class="app-nav-group">Quality cases</p>
+        <a class="app-nav-link{% if '/rca/' in current_path %} is-active{% endif %}"
+           href="{% url 'rca:list' %}">Root Cause Analysis</a>
       {% endif %}
       {% user_can_view_reports as show_reports %}
       {% if show_reports %}

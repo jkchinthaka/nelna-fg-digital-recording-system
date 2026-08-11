@@ -380,3 +380,14 @@ Scoring methodology remains APR-072 EVIDENCE REQUIRED.
 
 PFMEA methodology remains APR-073 EVIDENCE REQUIRED. S×O×D product is not an RPN policy.
 
+### Structured RCA (Phase 49)
+
+| Key | Permission | Notes |
+| --- | --- | --- |
+| view_rca | `rca.view_rca` | View RCA records and history |
+| manage_rca | `rca.manage_rca` | Create/edit RCA, methods, possible/supported causes |
+| confirm_rca | `rca.confirm_rca` | Human confirm + verification; AI cannot confirm |
+| link_rca_capa | `rca.link_rca_capa` | Explicit CAPA from confirmed root cause |
+
+RCA SOP remains APR-074 EVIDENCE REQUIRED.
+
