@@ -10,6 +10,7 @@ import pytest
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied, ValidationError
+from tests.factories import grant_role, make_org, make_role_with_permission, make_user
 
 from apps.accounts.models import User
 from apps.checklists.models import ChecklistResponseType, ChecklistTemplate
@@ -40,7 +41,6 @@ from apps.receiving.services import (
 from apps.security_audit.models import SecurityAuditEvent
 from apps.supplier_quality.models import SupplierQualityProfile
 from apps.supplier_quality.services import create_supplier_quality_profile
-from tests.factories import grant_role, make_org, make_role_with_permission, make_user
 
 
 def _perm(model: type[Any], codename: str) -> Permission:
@@ -88,7 +88,7 @@ def _inspector_only(*, org: Organization) -> User:
     return user
 
 
-def _checklist(actor: User, org: Organization):
+def _checklist(actor: User, org: Organization) -> Any:
     template = create_checklist_template(
         actor=actor,
         organization=org,
@@ -156,12 +156,18 @@ def test_supplier_lot_material_mapping_inspection_lab_and_state() -> None:
     assert receipt.quality_state == ReceiptQualityState.PENDING_INSPECTION
     assert receipt.frozen_receipt_context["erp_inventory_not_updated"] is True
     assert receipt.frozen_receipt_context["supplier_lot"] == "LOT-OPAQUE-001"
-    assert receipts_for_supplier_lot(
-        organization_id=org.id, supplier_lot="LOT-OPAQUE-001"
-    ).filter(pk=receipt.id).exists()
-    assert receipts_for_erp_grn(
-        organization_id=org.id, erp_receipt_reference=receipt.erp_receipt_reference
-    ).filter(pk=receipt.id).exists()
+    assert (
+        receipts_for_supplier_lot(organization_id=org.id, supplier_lot="LOT-OPAQUE-001")
+        .filter(pk=receipt.id)
+        .exists()
+    )
+    assert (
+        receipts_for_erp_grn(
+            organization_id=org.id, erp_receipt_reference=receipt.erp_receipt_reference
+        )
+        .filter(pk=receipt.id)
+        .exists()
+    )
 
     sample, link = register_incoming_lab_sample(
         actor=qa, receipt=receipt, sample_code=f"S-{uuid.uuid4().hex[:5].upper()}"
@@ -191,9 +197,7 @@ def test_supplier_lot_material_mapping_inspection_lab_and_state() -> None:
     assert SecurityAuditEvent.objects.filter(
         event_type="RECEIVING_RECEIPT_QUALITY_CREATED"
     ).exists()
-    assert SecurityAuditEvent.objects.filter(
-        event_type="RECEIVING_LAB_SAMPLE_LINKED"
-    ).exists()
+    assert SecurityAuditEvent.objects.filter(event_type="RECEIVING_LAB_SAMPLE_LINKED").exists()
 
 
 @pytest.mark.django_db
@@ -245,19 +249,13 @@ def test_authorization_cross_org_and_erp_boundary() -> None:
         material=material_a,
     )
     with pytest.raises(PermissionDenied):
-        set_receipt_quality_disposition(
-            actor=inspector, receipt=receipt, quality_state="ACCEPTED"
-        )
-    set_receipt_quality_disposition(
-        actor=qa_a, receipt=receipt, quality_state="ACCEPTED"
-    )
+        set_receipt_quality_disposition(actor=inspector, receipt=receipt, quality_state="ACCEPTED")
+    set_receipt_quality_disposition(actor=qa_a, receipt=receipt, quality_state="ACCEPTED")
     cmd = prepare_receipt_quality_outbound(receipt=receipt)
     assert cmd.quality_state == ReceiptQualityState.ACCEPTED
     with pytest.raises(IntegrationError):
         attempt_erp_outbound_for_receipt(actor=qa_a, receipt=receipt)
-    assert SecurityAuditEvent.objects.filter(
-        event_type="RECEIVING_ERP_OUTBOUND_BLOCKED"
-    ).exists()
+    assert SecurityAuditEvent.objects.filter(event_type="RECEIVING_ERP_OUTBOUND_BLOCKED").exists()
 
 
 @pytest.mark.django_db
@@ -361,9 +359,7 @@ def test_spec_parameters_selectors_and_rejected_state() -> None:
     assert param.bound_min is None
     assert param.bound_max is None
     with pytest.raises(ValidationError):
-        add_material_specification_parameter(
-            actor=qa, version=draft, code="", name=""
-        )
+        add_material_specification_parameter(actor=qa, version=draft, code="", name="")
     approve_material_specification_version(actor=qa, version=draft)
     draft.refresh_from_db()
     with pytest.raises(ValidationError):
@@ -420,9 +416,7 @@ def test_spec_parameters_selectors_and_rejected_state() -> None:
     assert SecurityAuditEvent.objects.filter(
         event_type="RECEIVING_RECEIPT_QUALITY_DISPOSITIONED"
     ).exists()
-    assert SecurityAuditEvent.objects.filter(
-        event_type="RECEIVING_MATERIAL_SPEC_APPROVED"
-    ).exists()
+    assert SecurityAuditEvent.objects.filter(event_type="RECEIVING_MATERIAL_SPEC_APPROVED").exists()
     assert SecurityAuditEvent.objects.filter(
         event_type="RECEIVING_MATERIAL_REFERENCE_CREATED"
     ).exists()
@@ -433,6 +427,6 @@ def test_spec_parameters_selectors_and_rejected_state() -> None:
         )
 
     admin = SoftRetentionAdmin(MaterialReference, AdminSite())
-    assert admin.has_delete_permission(request=None) is False  # type: ignore[arg-type]
+    assert admin.has_delete_permission(request=None) is False
     assert str(material)
     assert str(receipt)

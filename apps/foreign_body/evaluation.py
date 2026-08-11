@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Any
+from uuid import UUID
 
 from apps.instruments.models import (
     CalibrationFitness,
@@ -49,7 +50,7 @@ def evaluate_challenge_result(
 def assess_challenge_device(
     *,
     equipment: Equipment | None,
-    organization_id,
+    organization_id: UUID,
     require_metal_detector_type: bool = True,
 ) -> ChallengeDeviceDecision:
     """Validate device for challenge recording — no invented calibration limits."""

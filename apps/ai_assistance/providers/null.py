@@ -17,9 +17,11 @@ class NullLLMProvider(LLMProvider):
         context: dict[str, object],
         timeout_seconds: float,
     ) -> ProviderResult:
+        raw_ids = context.get("source_ids")
+        source_ids = tuple(str(x) for x in raw_ids) if isinstance(raw_ids, (list, tuple)) else ()
         return ProviderResult(
             text=SAFE_FALLBACK_MESSAGE,
             provider_name=self.name,
             failed=True,
-            source_ids=tuple(str(x) for x in (context.get("source_ids") or [])),
+            source_ids=source_ids,
         )

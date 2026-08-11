@@ -7,7 +7,6 @@ Uses checklist engine (no hardcoded questions), sampling engine, and LIMS links.
 from __future__ import annotations
 
 import uuid
-from datetime import date
 from decimal import Decimal
 from typing import Any
 
@@ -26,7 +25,7 @@ from apps.iqc.models import (
     IqcWorkflowPolicy,
     IqcWorkflowStatus,
 )
-from apps.iqc.policy import attempt_iqc_erp_outbound, evaluate_iqc_erp_outbound
+from apps.iqc.policy import attempt_iqc_erp_outbound
 from apps.iqc.snapshots import build_frozen_iqc_traceability
 from apps.organizations.models import Organization
 from apps.receiving.models import MaterialReference, ReceiptQualityRecord, ReceiptQualityState
@@ -410,11 +409,7 @@ def complete_iqc_disposition(
             )
         if review.decision != SupervisorReviewDecision.APPROVED:
             raise ValidationError(
-                {
-                    "supervisor_review": (
-                        "IQC disposition requires Supervisor APPROVED decision."
-                    )
-                }
+                {"supervisor_review": ("IQC disposition requires Supervisor APPROVED decision.")}
             )
     target = (quality_state or "").strip().upper()
     if target not in {
@@ -586,14 +581,15 @@ def ingest_incoming_receipt_event(
             )
         except ValidationError as exc:
             # Duplicate receipt mapping — reuse existing receipt for case.
-            receipt = ReceiptQualityRecord.objects.filter(
+            existing_receipt = ReceiptQualityRecord.objects.filter(
                 organization=organization,
                 erp_receipt_reference__iexact=event.erp_receipt_reference,
                 supplier_lot__iexact=event.supplier_lot,
                 material=material,
             ).first()
-            if receipt is None:
+            if existing_receipt is None:
                 raise exc
+            receipt = existing_receipt
 
         case = open_iqc_case_for_receipt(actor=user, receipt=receipt)
         if auto_generate_task and (

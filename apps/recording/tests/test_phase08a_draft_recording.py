@@ -370,7 +370,7 @@ def test_recording_ui_save_draft_and_csrf() -> None:
     list_resp = client.get(reverse("recording:task_list"))
     assert list_resp.status_code == 200
     assert b"BATCH-R04" in list_resp.content
-    assert b"Not Started" in list_resp.content
+    assert b"Pending recording" in list_resp.content
     assert b"Submit" not in list_resp.content
     assert b"Release" not in list_resp.content
     assert b"Hold" not in list_resp.content

@@ -4,9 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from celery import shared_task
-
 from apps.integrations.retry import DEFAULT_RETRY_POLICY
+from celery import shared_task
 
 
 @shared_task(name="apps.integrations.tasks.compute_backoff_delay")  # type: ignore[untyped-decorator]

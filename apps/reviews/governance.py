@@ -18,7 +18,13 @@ from django.db import transaction
 from django.utils import timezone
 
 from apps.access_control.models import Role, ScopedRoleAssignment
-from apps.access_control.services import Scope, assign_role, create_role, require_permission, revoke_role_assignment
+from apps.access_control.services import (
+    Scope,
+    assign_role,
+    create_role,
+    require_permission,
+    revoke_role_assignment,
+)
 from apps.accounts.models import User
 from apps.organizations.models import Organization
 from apps.recording.models import ChecklistSubmission
@@ -66,9 +72,7 @@ def _require_authenticated_actor(actor: User | None) -> User:
 def get_governance_policy(
     organization_id: uuid.UUID,
 ) -> SupervisorReviewGovernancePolicy | None:
-    return (
-        SupervisorReviewGovernancePolicy.objects.filter(organization_id=organization_id).first()
-    )
+    return SupervisorReviewGovernancePolicy.objects.filter(organization_id=organization_id).first()
 
 
 def default_self_review_evaluation(*, is_self_review: bool) -> SelfReviewEvaluation:
@@ -123,7 +127,9 @@ def evaluate_self_review(
     )
 
 
-def assert_self_review_allowed(*, actor: User, submission: ChecklistSubmission) -> SelfReviewEvaluation:
+def assert_self_review_allowed(
+    *, actor: User, submission: ChecklistSubmission
+) -> SelfReviewEvaluation:
     evaluation = evaluate_self_review(actor=actor, submission=submission)
     if evaluation.blocked:
         raise ValidationError(

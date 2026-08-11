@@ -171,19 +171,16 @@ class ProductAllergenDeclaration(models.Model):
 
     def clean(self) -> None:
         super().clean()
-        if self.product_id and self.organization_id:
-            if self.product.organization_id != self.organization_id:
-                raise ValidationError(
-                    {"product": "Product must belong to the same organization."}
-                )
+        product = self.product
+        if product is not None and self.organization_id:
+            if product.organization_id != self.organization_id:
+                raise ValidationError({"product": "Product must belong to the same organization."})
         if (
             self.effective_from is not None
             and self.effective_to is not None
             and self.effective_from > self.effective_to
         ):
-            raise ValidationError(
-                {"effective_to": "effective_to cannot be before effective_from."}
-            )
+            raise ValidationError({"effective_to": "effective_to cannot be before effective_from."})
 
 
 class ChangeoverRecord(models.Model):
@@ -303,19 +300,21 @@ class ChangeoverRecord(models.Model):
 
     def clean(self) -> None:
         super().clean()
-        if self.previous_product_id and self.organization_id:
-            if self.previous_product.organization_id != self.organization_id:
+        previous_product = self.previous_product
+        if previous_product is not None and self.organization_id:
+            if previous_product.organization_id != self.organization_id:
                 raise ValidationError(
                     {"previous_product": "Previous product must match organization."}
                 )
-        if self.next_product_id and self.organization_id:
-            if self.next_product.organization_id != self.organization_id:
-                raise ValidationError(
-                    {"next_product": "Next product must match organization."}
-                )
+        next_product = self.next_product
+        if next_product is not None and self.organization_id:
+            if next_product.organization_id != self.organization_id:
+                raise ValidationError({"next_product": "Next product must match organization."})
+        cleaning_checklist_template = self.cleaning_checklist_template
         if (
             self.cleaning_checklist_template_id
-            and self.cleaning_checklist_template.organization_id != self.organization_id
+            and cleaning_checklist_template is not None
+            and cleaning_checklist_template.organization_id != self.organization_id
         ):
             raise ValidationError(
                 {
@@ -324,11 +323,9 @@ class ChangeoverRecord(models.Model):
                     )
                 }
             )
-        if self.cleaning_checklist_version_id and self.cleaning_checklist_template_id:
-            if (
-                self.cleaning_checklist_version.template_id
-                != self.cleaning_checklist_template_id
-            ):
+        cleaning_checklist_version = self.cleaning_checklist_version
+        if cleaning_checklist_version is not None and self.cleaning_checklist_template_id:
+            if cleaning_checklist_version.template_id != self.cleaning_checklist_template_id:
                 raise ValidationError(
                     {
                         "cleaning_checklist_version": (
@@ -417,17 +414,15 @@ class LineClearanceRecord(models.Model):
 
     def clean(self) -> None:
         super().clean()
-        if self.checklist_template_id and self.organization_id:
-            if self.checklist_template.organization_id != self.organization_id:
+        checklist_template = self.checklist_template
+        if checklist_template is not None and self.organization_id:
+            if checklist_template.organization_id != self.organization_id:
                 raise ValidationError(
-                    {
-                        "checklist_template": (
-                            "Checklist template must belong to the organization."
-                        )
-                    }
+                    {"checklist_template": ("Checklist template must belong to the organization.")}
                 )
-        if self.checklist_version_id and self.checklist_template_id:
-            if self.checklist_version.template_id != self.checklist_template_id:
+        checklist_version = self.checklist_version
+        if checklist_version is not None and self.checklist_template_id:
+            if checklist_version.template_id != self.checklist_template_id:
                 raise ValidationError(
                     {
                         "checklist_version": (
@@ -435,11 +430,10 @@ class LineClearanceRecord(models.Model):
                         )
                     }
                 )
-        if self.changeover_id and self.organization_id:
-            if self.changeover.organization_id != self.organization_id:
-                raise ValidationError(
-                    {"changeover": "Changeover must belong to the organization."}
-                )
+        changeover = self.changeover
+        if changeover is not None and self.organization_id:
+            if changeover.organization_id != self.organization_id:
+                raise ValidationError({"changeover": "Changeover must belong to the organization."})
 
 
 class AllergenRiskPolicy(models.Model):
@@ -518,3 +512,6 @@ class ChangeoverHistoryEntry(models.Model):
         ordering = ("-created_at",)
         verbose_name = "Changeover history entry"
         verbose_name_plural = "Changeover history entries"
+
+    def __str__(self) -> str:
+        return f"{self.event_type}:{self.changeover_id or self.line_clearance_id}"

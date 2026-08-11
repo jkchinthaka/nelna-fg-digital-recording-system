@@ -307,14 +307,17 @@ class MetalDetectorChallengeTest(models.Model):
     def clean(self) -> None:
         super().clean()
         errors: dict[str, str] = {}
-        if self.equipment_id and self.organization_id:
-            if self.equipment.organization_id != self.organization_id:
+        equipment = self.equipment
+        if equipment is not None and self.organization_id:
+            if equipment.organization_id != self.organization_id:
                 errors["equipment"] = "Equipment must belong to the organization."
-        if self.test_piece_id and self.organization_id:
-            if self.test_piece.organization_id != self.organization_id:
+        test_piece = self.test_piece
+        if test_piece is not None and self.organization_id:
+            if test_piece.organization_id != self.organization_id:
                 errors["test_piece"] = "Test piece must belong to the organization."
-        if self.site_id and self.organization_id:
-            if self.site.organization_id != self.organization_id:
+        site = self.site
+        if site is not None and self.organization_id:
+            if site.organization_id != self.organization_id:
                 errors["site"] = "Site must belong to the organization."
         if errors:
             raise ValidationError(errors)

@@ -11,6 +11,7 @@ from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.test import override_settings
+from tests.factories import grant_role, make_org, make_role_with_permission, make_user
 
 from apps.accounts.models import User
 from apps.batch_genealogy.models import GenealogyNodeKind, GenealogyRelationKind
@@ -39,7 +40,6 @@ from apps.recall.services import (
     user_has_explicit_scoped_permission,
 )
 from apps.security_audit.models import SecurityAuditEvent
-from tests.factories import grant_role, make_org, make_role_with_permission, make_user
 
 
 def _perm(model: type[Any], codename: str) -> Permission:
@@ -81,7 +81,7 @@ def _recall_user(
     return user
 
 
-def _seed_genealogy(actor: User, org: Organization, *, fg: str, mat: str, ship: str):
+def _seed_genealogy(actor: User, org: Organization, *, fg: str, mat: str, ship: str) -> Any:
     ingest_erp_genealogy_link(
         actor=actor,
         organization=org,
@@ -113,9 +113,7 @@ def test_batch_selection_genealogy_qty_auth_cross_org_closure_missing_erp() -> N
     org_b = make_org(code=f"S{uuid.uuid4().hex[:5].upper()}")
     actor = _recall_user(org=org)
     outsider = _recall_user(org=org_b)
-    staff_only = make_user(
-        employee_code=f"ST{uuid.uuid4().hex[:6].upper()}", is_staff=True
-    )
+    staff_only = make_user(employee_code=f"ST{uuid.uuid4().hex[:6].upper()}", is_staff=True)
     # Staff System-Admin-like user without initiate_recall
     adminish = make_user(
         employee_code=f"AD{uuid.uuid4().hex[:6].upper()}",
@@ -199,15 +197,11 @@ def test_batch_selection_genealogy_qty_auth_cross_org_closure_missing_erp() -> N
         audience_reference="INTERNAL-QA-TBC",
     )
 
-    blocked = attempt_external_notification(
-        actor=actor, organization=org, case_id=case.id
-    )
+    blocked = attempt_external_notification(actor=actor, organization=org, case_id=case.id)
     assert blocked["allowed"] is False
     assert blocked["message_not_sent"] is True
 
-    erp = attempt_erp_distribution_pull(
-        actor=actor, organization=org, case_id=case.id
-    )
+    erp = attempt_erp_distribution_pull(actor=actor, organization=org, case_id=case.id)
     assert erp["allowed"] is False
     assert "ERP_DISTRIBUTION_PULL_GATE" in erp["missing_erp_links"]
     assert erp["live_pull_not_executed"] is True
@@ -221,17 +215,13 @@ def test_batch_selection_genealogy_qty_auth_cross_org_closure_missing_erp() -> N
         initiate=False,
     )
     with pytest.raises(PermissionDenied):
-        initiate_recall_case(
-            actor=staff_only, organization=org, case_id=draft.id
-        )
+        initiate_recall_case(actor=staff_only, organization=org, case_id=draft.id)
     # Superuser without scoped initiate_recall also denied (high-risk)
     assert not user_has_explicit_scoped_permission(
         adminish, "recall.initiate_recall", organization_id=org.id
     )
     with pytest.raises(PermissionDenied):
-        initiate_recall_case(
-            actor=adminish, organization=org, case_id=draft.id
-        )
+        initiate_recall_case(actor=adminish, organization=org, case_id=draft.id)
 
     # Cross-org
     with pytest.raises(PermissionDenied):
@@ -251,9 +241,7 @@ def test_batch_selection_genealogy_qty_auth_cross_org_closure_missing_erp() -> N
     assert closed.status == RecallCaseStatus.CLOSED
     assert closed.closed_by_id == actor.id
 
-    timeline = get_recall_timeline(
-        actor=actor, organization=org, case_id=case.id
-    )
+    timeline = get_recall_timeline(actor=actor, organization=org, case_id=case.id)
     assert len(timeline) >= 4
     assert all(row["immutable"] is True for row in timeline)
 
@@ -261,12 +249,8 @@ def test_batch_selection_genealogy_qty_auth_cross_org_closure_missing_erp() -> N
     assert payload["no_invented_regulatory_class"] is True
     assert any(q["no_invented_variance"] for q in payload["quantity_lines"])
 
-    assert SecurityAuditEvent.objects.filter(
-        event_type="RECALL_CASE_INITIATED"
-    ).exists()
-    assert SecurityAuditEvent.objects.filter(
-        event_type="RECALL_GENEALOGY_EXPANDED"
-    ).exists()
+    assert SecurityAuditEvent.objects.filter(event_type="RECALL_CASE_INITIATED").exists()
+    assert SecurityAuditEvent.objects.filter(event_type="RECALL_GENEALOGY_EXPANDED").exists()
     assert SoftRetentionAdmin(RecallCase, admin.site).has_delete_permission(None) is False
 
 
@@ -286,10 +270,7 @@ def test_policy_gates_and_helpers() -> None:
         RECALL_EXTERNAL_NOTIFICATION_APPROVED=False,
         RECALL_ERP_DISTRIBUTION_PULL_APPROVED=False,
     ):
-        assert (
-            evaluate_recall_external_notification(organization_id=org.id).allowed
-            is False
-        )
+        assert evaluate_recall_external_notification(organization_id=org.id).allowed is False
         assert (
             evaluate_recall_erp_distribution_pull(organization_id=org.id).reason_code
             == "SETTINGS_APPROVAL_MISSING"
@@ -298,10 +279,7 @@ def test_policy_gates_and_helpers() -> None:
         RECALL_EXTERNAL_NOTIFICATION_APPROVED=True,
         RECALL_ERP_DISTRIBUTION_PULL_APPROVED=True,
     ):
-        assert (
-            evaluate_recall_external_notification(organization_id=org.id).allowed
-            is True
-        )
+        assert evaluate_recall_external_notification(organization_id=org.id).allowed is True
         case = create_recall_case(
             actor=actor,
             organization=org,
@@ -315,14 +293,10 @@ def test_policy_gates_and_helpers() -> None:
             case_id=case.id,
             batch_reference=f"FG-{uuid.uuid4().hex[:6]}",
         )
-        prepared = attempt_external_notification(
-            actor=actor, organization=org, case_id=case.id
-        )
+        prepared = attempt_external_notification(actor=actor, organization=org, case_id=case.id)
         assert prepared["allowed"] is True
         assert prepared["message_not_sent"] is True
-        erp = attempt_erp_distribution_pull(
-            actor=actor, organization=org, case_id=case.id
-        )
+        erp = attempt_erp_distribution_pull(actor=actor, organization=org, case_id=case.id)
         assert erp["allowed"] is True
         assert "LIVE_ERP_ADAPTER_NOT_APPROVED" in erp["missing_erp_links"]
         assert "NO_ERP_SHIPMENT_CUSTOMER_LINKS" in erp["missing_erp_links"]

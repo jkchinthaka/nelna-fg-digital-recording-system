@@ -74,16 +74,12 @@ def mock_blocks_dispatch(*, case: RecallCase) -> bool:
     return False if case.is_mock else False  # real recall dispatch policy is out of Phase 38
 
 
-def _require_mock_case(
-    *, organization_id: uuid.UUID, case_id: uuid.UUID
-) -> RecallCase:
+def _require_mock_case(*, organization_id: uuid.UUID, case_id: uuid.UUID) -> RecallCase:
     case = get_recall_case(organization_id=organization_id, case_id=case_id)
     if case is None:
         raise ValidationError({"case_id": "Recall case not found."})
     if not case.is_mock or case.mode != RecallCaseMode.MOCK_EXERCISE:
-        raise ValidationError(
-            {"case_id": "Operation requires a MOCK_EXERCISE recall case."}
-        )
+        raise ValidationError({"case_id": "Operation requires a MOCK_EXERCISE recall case."})
     return case
 
 
@@ -184,9 +180,7 @@ def start_mock_exercise(
         case.status = RecallCaseStatus.OPEN
         case.initiated_by = user
         case.initiated_at = timezone.now()
-        case.save(
-            update_fields=["status", "initiated_by", "initiated_at", "updated_at"]
-        )
+        case.save(update_fields=["status", "initiated_by", "initiated_at", "updated_at"])
     metrics = _ensure_metrics(case, actor=user)
     if metrics.started_at is None:
         metrics.started_at = timezone.now()
@@ -242,9 +236,7 @@ def update_mock_exercise_metrics(
         metrics.traceback_notes = traceback_notes.strip()
     if traceforward_completeness is not None:
         if traceforward_completeness not in MockCompletenessMark.values:
-            raise ValidationError(
-                {"traceforward_completeness": "Unknown completeness mark."}
-            )
+            raise ValidationError({"traceforward_completeness": "Unknown completeness mark."})
         metrics.traceforward_completeness = traceforward_completeness
     if traceforward_notes is not None:
         metrics.traceforward_notes = traceforward_notes.strip()
@@ -283,9 +275,7 @@ def serialize_mock_metrics(metrics: MockExerciseMetrics) -> dict[str, Any]:
     return {
         "recall_case_id": str(metrics.recall_case_id),
         "started_at": metrics.started_at.isoformat() if metrics.started_at else None,
-        "completed_at": metrics.completed_at.isoformat()
-        if metrics.completed_at
-        else None,
+        "completed_at": metrics.completed_at.isoformat() if metrics.completed_at else None,
         "scope": metrics.scope_snapshot,
         "traceback_completeness": metrics.traceback_completeness,
         "traceback_notes": metrics.traceback_notes,
@@ -554,9 +544,7 @@ def link_mock_finding_to_ncr(
     )
     finding.link_kind = MockFindingLinkKind.NCR
     finding.nonconformance_id = ncr.id
-    finding.save(
-        update_fields=["link_kind", "nonconformance_id", "updated_at"]
-    )
+    finding.save(update_fields=["link_kind", "nonconformance_id", "updated_at"])
     _append_timeline(
         case=finding.recall_case,
         actor=user,
@@ -681,9 +669,7 @@ def create_mock_improvement_action(
     action.save()
     finding.link_kind = MockFindingLinkKind.IMPROVEMENT
     finding.improvement_action_id = action.id
-    finding.save(
-        update_fields=["link_kind", "improvement_action_id", "updated_at"]
-    )
+    finding.save(update_fields=["link_kind", "improvement_action_id", "updated_at"])
     _append_timeline(
         case=finding.recall_case,
         actor=user,

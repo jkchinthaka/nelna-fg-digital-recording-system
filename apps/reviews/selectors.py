@@ -24,7 +24,6 @@ from apps.recording.models import (
 from apps.recording.repeating import responses_by_key
 from apps.recording.snapshot_display import render_snapshot_sections
 from apps.reviews.governance import (
-    QUEUE_OVERDUE,
     QUEUE_PENDING,
     QUEUE_RESUBMISSION,
     get_governance_policy,
@@ -47,9 +46,7 @@ def actor_can_access_review_module(actor: User | None) -> bool:
 def _base_pending_queryset(org_ids: set[uuid.UUID]) -> QuerySet[ChecklistSubmission]:
     """Unreviewed SUBMITTED submissions; prefer latest-per-record via annotation filter."""
     latest_number = (
-        ChecklistSubmission.objects.filter(
-            checklist_record_id=OuterRef("checklist_record_id")
-        )
+        ChecklistSubmission.objects.filter(checklist_record_id=OuterRef("checklist_record_id"))
         .order_by("-submission_number", "-submitted_at")
         .values("submission_number")[:1]
     )

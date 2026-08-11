@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from uuid import UUID
 
 from django.conf import settings
 
@@ -29,9 +30,7 @@ class ReturnErpStockMovementDecision:
         }
 
 
-def evaluate_return_erp_stock_movement(
-    *, organization_id: object
-) -> ReturnErpStockMovementDecision:
+def evaluate_return_erp_stock_movement(*, organization_id: UUID) -> ReturnErpStockMovementDecision:
     policy = ReturnQualityPolicy.objects.filter(organization_id=organization_id).first()
     if policy is None or not policy.erp_stock_movement_enabled:
         return ReturnErpStockMovementDecision(

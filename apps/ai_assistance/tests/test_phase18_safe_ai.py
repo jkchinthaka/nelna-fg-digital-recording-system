@@ -71,7 +71,7 @@ def test_feature_flag_default_and_prohibitions() -> None:
 
 
 @pytest.mark.django_db
-def test_ai_disabled_core_safe_response(settings) -> None:
+def test_ai_disabled_core_safe_response(settings: Any) -> None:
     settings.AI_ASSISTANCE_ENABLED = False
     assert ai_assistance_enabled() is False
     org = make_org(code=f"AI{uuid.uuid4().hex[:6].upper()}")
@@ -91,7 +91,7 @@ def test_ai_disabled_core_safe_response(settings) -> None:
 
 
 @pytest.mark.django_db
-def test_provider_failure_and_timeout_fallback(settings) -> None:
+def test_provider_failure_and_timeout_fallback(settings: Any) -> None:
     settings.AI_ASSISTANCE_ENABLED = True
     org = make_org(code=f"AI{uuid.uuid4().hex[:6].upper()}")
     user = make_user(employee_code=f"U{uuid.uuid4().hex[:6].upper()}")
@@ -116,7 +116,7 @@ def test_provider_failure_and_timeout_fallback(settings) -> None:
 
 
 @pytest.mark.django_db
-def test_cross_org_and_unauthorized_ncr_denied(settings) -> None:
+def test_cross_org_and_unauthorized_ncr_denied(settings: Any) -> None:
     settings.AI_ASSISTANCE_ENABLED = True
     org_a = make_org(code=f"A{uuid.uuid4().hex[:6].upper()}")
     org_b = make_org(code=f"B{uuid.uuid4().hex[:6].upper()}")
@@ -154,7 +154,7 @@ def test_cross_org_and_unauthorized_ncr_denied(settings) -> None:
 
 
 @pytest.mark.django_db
-def test_prompt_injection_and_prohibited_blocked(settings) -> None:
+def test_prompt_injection_and_prohibited_blocked(settings: Any) -> None:
     settings.AI_ASSISTANCE_ENABLED = True
     org = make_org(code=f"AI{uuid.uuid4().hex[:6].upper()}")
     user = make_user(employee_code=f"U{uuid.uuid4().hex[:6].upper()}")
@@ -178,17 +178,14 @@ def test_prompt_injection_and_prohibited_blocked(settings) -> None:
             params={"metric_labels": ["x"], "counts": {"x": 1}},
             provider=get_mock_provider(),
         )
-    assert (
-        AIAssistanceRequest.objects.filter(status=AIAssistanceRequestStatus.BLOCKED).count()
-        >= 2
-    )
+    assert AIAssistanceRequest.objects.filter(status=AIAssistanceRequestStatus.BLOCKED).count() >= 2
     assert SecurityAuditEvent.objects.filter(event_type="AI_ASSISTANCE_BLOCKED").exists()
     with pytest.raises(PermissionDenied):
         list_allowed_use_cases(actor=stranger, organization=org)
 
 
 @pytest.mark.django_db
-def test_success_path_grounds_sources(settings) -> None:
+def test_success_path_grounds_sources(settings: Any) -> None:
     settings.AI_ASSISTANCE_ENABLED = True
     org = make_org(code=f"A{uuid.uuid4().hex[:6].upper()}")
     user = make_user(employee_code=f"U{uuid.uuid4().hex[:6].upper()}", is_staff=True)

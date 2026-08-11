@@ -12,7 +12,6 @@ from dataclasses import dataclass, field
 from typing import Any
 from uuid import UUID
 
-
 COLLECTION_NODES = "genealogy_nodes"
 COLLECTION_EDGES = "genealogy_edges"
 

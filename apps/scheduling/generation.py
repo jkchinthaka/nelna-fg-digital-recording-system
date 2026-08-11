@@ -99,9 +99,7 @@ def shift_occurrence_key(
     shift_id: uuid.UUID,
     operational_date: dt.date,
 ) -> str:
-    return (
-        f"{trigger_type.lower()}:{schedule_id}:{shift_id}:{operational_date.isoformat()}"
-    )
+    return f"{trigger_type.lower()}:{schedule_id}:{shift_id}:{operational_date.isoformat()}"
 
 
 def scheduled_occurrence_key(
@@ -109,7 +107,7 @@ def scheduled_occurrence_key(
     schedule_id: uuid.UUID,
     window_start_at: dt.datetime,
 ) -> str:
-    start = _aware(window_start_at).astimezone(dt.timezone.utc)
+    start = _aware(window_start_at).astimezone(dt.UTC)
     return f"scheduled:{schedule_id}:{start.strftime('%Y%m%dT%H%M%SZ')}"
 
 
@@ -251,9 +249,7 @@ def plan_scheduled_occurrences(
                 cursor = w_start
                 while cursor < w_end:
                     slot_end = min(cursor + dt.timedelta(minutes=interval), w_end)
-                    plans.extend(
-                        _scheduled_plan_for_slot(schedule, cursor, slot_end, as_of_a)
-                    )
+                    plans.extend(_scheduled_plan_for_slot(schedule, cursor, slot_end, as_of_a))
                     cursor = slot_end
             else:
                 plans.extend(_scheduled_plan_for_slot(schedule, w_start, w_end, as_of_a))
@@ -507,13 +503,15 @@ def run_active_schedule_generation(
 ) -> dict[str, Any]:
     """Replay-safe generation across active non-BATCH/MANUAL schedules."""
     as_of_a = _aware(as_of or timezone.now())
-    qs = ChecklistSchedule.objects.filter(is_active=True).exclude(
-        trigger_type__in=[ChecklistTriggerType.BATCH, ChecklistTriggerType.MANUAL]
-    ).select_related(
-        "organization",
-        "checklist_template",
-        "checklist_version",
-        "shift",
+    qs = (
+        ChecklistSchedule.objects.filter(is_active=True)
+        .exclude(trigger_type__in=[ChecklistTriggerType.BATCH, ChecklistTriggerType.MANUAL])
+        .select_related(
+            "organization",
+            "checklist_template",
+            "checklist_version",
+            "shift",
+        )
     )
     if organization_id is not None:
         qs = qs.filter(organization_id=organization_id)
@@ -577,9 +575,7 @@ def create_checklist_schedule(
     org = Organization.objects.filter(pk=organization_id).first()
     if org is None:
         raise ValidationError({"organization": "Organization not found."})
-    require_permission(
-        user, MANAGE_CHECKLIST_SCHEDULE, scope=Scope(organization_id=org.id)
-    )
+    require_permission(user, MANAGE_CHECKLIST_SCHEDULE, scope=Scope(organization_id=org.id))
     template = ChecklistTemplate.objects.filter(pk=checklist_template_id).first()
     if template is None:
         raise ValidationError({"checklist_template": "Checklist template not found."})
@@ -701,7 +697,5 @@ def create_manual_schedule_occurrence(
         due_at=as_of_a,
         status=ChecklistTaskStatus.PENDING,
     )
-    task, _created = upsert_occurrence_task(
-        actor=user, schedule=schedule, plan=plan, as_of=as_of_a
-    )
+    task, _created = upsert_occurrence_task(actor=user, schedule=schedule, plan=plan, as_of=as_of_a)
     return task

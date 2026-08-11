@@ -2,13 +2,20 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, Any
+
 from django.contrib import admin
+
+if TYPE_CHECKING:
+    _EvidenceAdminBase = admin.ModelAdmin[Any]
+else:
+    _EvidenceAdminBase = admin.ModelAdmin
 
 from apps.evidence.models import EvidenceAttachment
 
 
 @admin.register(EvidenceAttachment)
-class EvidenceAttachmentAdmin(admin.ModelAdmin):
+class EvidenceAttachmentAdmin(_EvidenceAdminBase):
     list_display = (
         "id",
         "organization",
@@ -47,11 +54,11 @@ class EvidenceAttachmentAdmin(admin.ModelAdmin):
         "caption",
     )
 
-    def has_add_permission(self, request) -> bool:
+    def has_add_permission(self, request: Any) -> bool:
         return False
 
-    def has_delete_permission(self, request, obj=None) -> bool:
+    def has_delete_permission(self, request: Any, obj: Any = None) -> bool:
         return False
 
-    def has_change_permission(self, request, obj=None) -> bool:
+    def has_change_permission(self, request: Any, obj: Any = None) -> bool:
         return False

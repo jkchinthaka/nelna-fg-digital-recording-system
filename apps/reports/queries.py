@@ -47,9 +47,7 @@ def _parse_dt(value: str | datetime | None) -> datetime | None:
 def assert_not_draft_source(qs_model: type) -> None:
     """Hard guard: historical answer reports must never bind ChecklistResponse."""
     if qs_model is ChecklistResponse:
-        raise RuntimeError(
-            "Historical reports must not read mutable ChecklistResponse drafts."
-        )
+        raise RuntimeError("Historical reports must not read mutable ChecklistResponse drafts.")
 
 
 class ReportFilters:
@@ -80,14 +78,18 @@ class ReportFilters:
             self.allowed_site_ids = [uuid.UUID(str(x)) for x in raw_allowed]
 
 
-def _apply_site_rbac(qs: QuerySet, *, site_field: str, filters: ReportFilters) -> QuerySet:
+def _apply_site_rbac(
+    qs: QuerySet[Any, Any], *, site_field: str, filters: ReportFilters
+) -> QuerySet[Any, Any]:
     """Constrain queryset to caller's accessible sites when not org-wide."""
     if filters.allowed_site_ids is None:
         return qs
     return qs.filter(**{f"{site_field}__in": filters.allowed_site_ids})
 
 
-def _apply_task_scope(qs: QuerySet[ChecklistTask], filters: ReportFilters) -> QuerySet[ChecklistTask]:
+def _apply_task_scope(
+    qs: QuerySet[ChecklistTask], filters: ReportFilters
+) -> QuerySet[ChecklistTask]:
     """ChecklistTask has no site FK — site filters via assigned department site."""
     qs = _apply_site_rbac(qs, site_field=_TASK_SITE, filters=filters)
     if filters.batch_reference:
@@ -307,9 +309,9 @@ def query_qa_dispositions(
 def query_corrections(
     *, organization_id: uuid.UUID, filters: ReportFilters
 ) -> tuple[list[str], list[dict[str, object]]]:
-    qs = ChecklistCorrection.objects.filter(
-        organization_id=organization_id
-    ).select_related("source_submission", "started_by")
+    qs = ChecklistCorrection.objects.filter(organization_id=organization_id).select_related(
+        "source_submission", "started_by"
+    )
     if filters.date_from:
         qs = qs.filter(started_at__gte=filters.date_from)
     if filters.date_to:

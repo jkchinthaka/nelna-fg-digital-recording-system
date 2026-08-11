@@ -301,16 +301,16 @@ class ControlPoint(models.Model):
 
     def clean(self) -> None:
         super().clean()
-        if self.process_step_id and self.plan_version_id:
-            if self.process_step.plan_version_id != self.plan_version_id:
+        process_step = self.process_step
+        if process_step is not None and self.plan_version_id:
+            if process_step.plan_version_id != self.plan_version_id:
                 raise ValidationError(
                     {"process_step": "Process step must belong to the same plan version."}
                 )
-        if self.hazard_id and self.process_step_id:
-            if self.hazard.process_step_id != self.process_step_id:
-                raise ValidationError(
-                    {"hazard": "Hazard must belong to the same process step."}
-                )
+        hazard = self.hazard
+        if hazard is not None and self.process_step_id:
+            if hazard.process_step_id != self.process_step_id:
+                raise ValidationError({"hazard": "Hazard must belong to the same process step."})
 
 
 class CriticalLimitReference(models.Model):
@@ -349,12 +349,8 @@ class CriticalLimitReference(models.Model):
         default=BoundarySemantics.INCLUSIVE,
     )
     # Placeholders only — must stay null unless loaded from approved evidence.
-    lower_bound = models.DecimalField(
-        max_digits=12, decimal_places=4, null=True, blank=True
-    )
-    upper_bound = models.DecimalField(
-        max_digits=12, decimal_places=4, null=True, blank=True
-    )
+    lower_bound = models.DecimalField(max_digits=12, decimal_places=4, null=True, blank=True)
+    upper_bound = models.DecimalField(max_digits=12, decimal_places=4, null=True, blank=True)
     source_reference = models.CharField(max_length=255, blank=True, default="")
     notes = models.TextField(blank=True, default="")
 
@@ -463,8 +459,9 @@ class ChecklistItemHaccpBinding(models.Model):
 
     def clean(self) -> None:
         super().clean()
-        if self.control_point_id and self.plan_version_id:
-            if self.control_point.plan_version_id != self.plan_version_id:
+        control_point = self.control_point
+        if control_point is not None and self.plan_version_id:
+            if control_point.plan_version_id != self.plan_version_id:
                 raise ValidationError(
                     {"control_point": "Control point must belong to the bound plan version."}
                 )

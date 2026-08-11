@@ -25,8 +25,8 @@ from apps.checklists.services import (
 )
 from apps.organizations.models import Organization
 from apps.scheduling.assignment import (
-    assignment_does_not_grant_permission,
     assign_checklist_task,
+    assignment_does_not_grant_permission,
     list_assignment_history,
     unassign_checklist_task,
 )
@@ -158,9 +158,9 @@ def test_assign_reassign_unassign_preserves_history() -> None:
     # History rows are immutable.
     with pytest.raises(ValidationError):
         history[0].reason = "tamper"
-        history[0].save()
+        history[0].save()  # type: ignore[no-untyped-call]
     with pytest.raises(ValidationError):
-        history[0].delete()
+        history[0].delete()  # type: ignore[no-untyped-call]
 
     assert SecurityAuditEvent.objects.filter(event_type="CHECKLIST_TASK_ASSIGNED").exists()
     assert SecurityAuditEvent.objects.filter(event_type="CHECKLIST_TASK_REASSIGNED").exists()
@@ -340,9 +340,7 @@ class ConcurrentReassignmentTests(TransactionTestCase):
         # seed ASSIGN + two concurrent REASSIGN events (serialized by select_for_update)
         assert len(history) == 3
         assert history[0].action == ChecklistTaskAssignmentAction.ASSIGN
-        assert {history[1].action, history[2].action} == {
-            ChecklistTaskAssignmentAction.REASSIGN
-        }
+        assert {history[1].action, history[2].action} == {ChecklistTaskAssignmentAction.REASSIGN}
         task.refresh_from_db()
         assert task.assignee_kind == "USER"
         assert task.assigned_user_id in {u1.id, u2.id}

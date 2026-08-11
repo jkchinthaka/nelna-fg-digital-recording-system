@@ -12,6 +12,7 @@ from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.test import override_settings
+from tests.factories import grant_role, make_org, make_role_with_permission, make_user
 
 from apps.accounts.models import User
 from apps.batch_genealogy.admin import SoftRetentionAdmin
@@ -21,13 +22,6 @@ from apps.batch_genealogy.models import (
     GenealogyNodeKind,
     GenealogyPolicy,
     GenealogyRelationKind,
-)
-from apps.batch_genealogy.selectors import (
-    edges_for_organization,
-    edges_from_node,
-    edges_to_node,
-    get_node_by_key,
-    nodes_for_organization,
 )
 from apps.batch_genealogy.mongo_graph import (
     InMemoryMongoGraphStore,
@@ -39,6 +33,13 @@ from apps.batch_genealogy.policy import (
     batch_genealogy_mongo_projection_approved,
     evaluate_genealogy_mongo_projection,
 )
+from apps.batch_genealogy.selectors import (
+    edges_for_organization,
+    edges_from_node,
+    edges_to_node,
+    get_node_by_key,
+    nodes_for_organization,
+)
 from apps.batch_genealogy.services import (
     ingest_erp_genealogy_link,
     project_flat_mongo_documents,
@@ -49,7 +50,6 @@ from apps.batch_genealogy.services import (
 )
 from apps.organizations.models import Organization
 from apps.security_audit.models import SecurityAuditEvent
-from tests.factories import grant_role, make_org, make_role_with_permission, make_user
 
 
 def _perm(model: type[Any], codename: str) -> Permission:
@@ -92,7 +92,7 @@ def _link(
     from_supplier: str = "",
     to_customer: str = "",
     mongo_store: InMemoryMongoGraphStore | None = None,
-):
+) -> Any:
     return ingest_erp_genealogy_link(
         actor=actor,
         organization=org,
@@ -257,9 +257,7 @@ def test_backward_forward_multiple_parents_rework_missing_cross_org() -> None:
     assert created1 is True
     assert created2 is False
     assert e2.id == e1.id
-    assert SecurityAuditEvent.objects.filter(
-        event_type="BATCH_GENEALOGY_EDGE_INGESTED"
-    ).exists()
+    assert SecurityAuditEvent.objects.filter(event_type="BATCH_GENEALOGY_EDGE_INGESTED").exists()
     assert from_keys  # used above for coverage of edge payloads
 
 
@@ -305,9 +303,7 @@ def test_cycle_prevention_partner_security_mongo_performance() -> None:
             to_key=a,
         )
     assert "Cycle" in str(cycle_exc.value)
-    assert SecurityAuditEvent.objects.filter(
-        event_type="BATCH_GENEALOGY_CYCLE_REJECTED"
-    ).exists()
+    assert SecurityAuditEvent.objects.filter(event_type="BATCH_GENEALOGY_CYCLE_REJECTED").exists()
 
     back = trace_backward(
         actor=actor,
@@ -406,9 +402,7 @@ def test_cycle_prevention_partner_security_mongo_performance() -> None:
 
     policy = GenealogyPolicy.objects.get(organization=org)
     assert "genealogy policy" in str(policy)
-    assert "FG_BATCH" in str(
-        GenealogyNode.objects.get(organization=org, external_key__iexact=c)
-    )
+    assert "FG_BATCH" in str(GenealogyNode.objects.get(organization=org, external_key__iexact=c))
     assert SoftRetentionAdmin(GenealogyEdge, admin.site).has_delete_permission(None) is False
 
     with pytest.raises(ValidationError):
@@ -459,12 +453,14 @@ def test_cycle_prevention_partner_security_mongo_performance() -> None:
     ).as_dict()
     assert edge_doc["embedded_graph_forbidden"] is True
     store2 = InMemoryMongoGraphStore()
-    store2.upsert_node(MongoNodeDocument(
-        organization_id=str(org.id),
-        node_id=str(uuid.uuid4()),
-        kind=GenealogyNodeKind.FG_BATCH,
-        external_key="DOC-2",
-    ))
+    store2.upsert_node(
+        MongoNodeDocument(
+            organization_id=str(org.id),
+            node_id=str(uuid.uuid4()),
+            kind=GenealogyNodeKind.FG_BATCH,
+            external_key="DOC-2",
+        )
+    )
     assert store2.edges_from(organization_id=str(org.id), node_id="x") == []
     assert store2.edges_to(organization_id=str(org.id), node_id="x") == []
     assert SoftRetentionAdmin(GenealogyPolicy, admin.site).has_delete_permission(None) is False

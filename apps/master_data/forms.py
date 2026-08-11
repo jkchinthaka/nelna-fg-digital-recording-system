@@ -171,7 +171,7 @@ class FGProductForm(forms.Form):
                     self.fields[name].initial = getattr(instance, name)
 
     def clean(self) -> dict[str, Any]:
-        cleaned = super().clean()
+        cleaned = super().clean() or {} or {}
         effective_from = cleaned.get("effective_from")
         effective_to = cleaned.get("effective_to")
         if effective_from and effective_to and effective_to < effective_from:

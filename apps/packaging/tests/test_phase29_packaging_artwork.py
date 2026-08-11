@@ -213,17 +213,13 @@ def test_checklist_binding_and_wrong_artwork() -> None:
         response_type=ChecklistResponseType.YES_NO,
         is_required=True,
     )
-    binding = bind_checklist_item_to_artwork(
-        actor=manager, checklist_item=item, artwork_version=v1
-    )
+    binding = bind_checklist_item_to_artwork(actor=manager, checklist_item=item, artwork_version=v1)
     snap = snapshot_for_checklist_item(item.id)
     assert snap is not None
     assert snap["artwork_version_id"] == str(v1.id)
     assert binding.frozen_artwork_context["product_code"] == product.code
 
-    wrong = assert_artwork_matches_expected(
-        expected_version=v1, observed_artwork_version_id=v2.id
-    )
+    wrong = assert_artwork_matches_expected(expected_version=v1, observed_artwork_version_id=v2.id)
     assert wrong.matched is False
     assert wrong.reason_code == "WRONG_ARTWORK_VERSION"
     record, decision = record_artwork_verification(

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import uuid
+from typing import Any
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -118,7 +119,7 @@ class QualityQuarantineRecord(models.Model):
     def __str__(self) -> str:
         return f"{self.code} ({self.status})"
 
-    def save(self, *args: object, **kwargs: object) -> None:
+    def save(self, *args: Any, **kwargs: Any) -> None:
         if self.pk:
             previous = type(self).objects.filter(pk=self.pk).first()
             if previous is not None and previous.status != QuarantineStatus.OPEN:
@@ -173,7 +174,7 @@ class QualityQuarantineRecord(models.Model):
             raise ValidationError(errors)
 
 
-class ImmutableEventQuerySet(models.QuerySet):
+class ImmutableEventQuerySet(models.QuerySet["QualityQuarantineEvent"]):
     def update(self, **kwargs: object) -> int:
         raise ValidationError("Quality quarantine events are append-only and cannot be updated.")
 
@@ -209,9 +210,11 @@ class QualityQuarantineEvent(models.Model):
     def __str__(self) -> str:
         return f"{self.event_type} for {self.quarantine_id}"
 
-    def save(self, *args: object, **kwargs: object) -> None:
+    def save(self, *args: Any, **kwargs: Any) -> None:
         if not self._state.adding:
-            raise ValidationError("Quality quarantine events are append-only and cannot be updated.")
+            raise ValidationError(
+                "Quality quarantine events are append-only and cannot be updated."
+            )
         super().save(*args, **kwargs)
 
     def delete(self, *args: object, **kwargs: object) -> tuple[int, dict[str, int]]:
@@ -228,7 +231,9 @@ class QualityQuarantinePolicy(models.Model):
     quantity_recording_enabled = models.BooleanField(default=False)
     erp_sync_enabled = models.BooleanField(
         default=False,
-        help_text="Organization gate only; settings approval and approved adapter evidence are required.",
+        help_text=(
+            "Organization gate only; settings approval and approved adapter evidence are required."
+        ),
     )
     procedure_reference = models.CharField(max_length=255, blank=True, default="")
     notes = models.TextField(blank=True, default="")

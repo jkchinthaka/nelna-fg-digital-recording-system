@@ -95,7 +95,7 @@ def _fg_product(org: Organization, actor: User | None = None) -> FGProduct:
     )
 
 
-def _published_item(*, actor: User, org: Organization):
+def _published_item(*, actor: User, org: Organization) -> Any:
     template = create_checklist_template(
         actor=actor,
         organization=org,
@@ -176,9 +176,7 @@ def test_checklist_binding_historical_reference_and_wrong_artwork() -> None:
     v1.refresh_from_db()
 
     item = _published_item(actor=master, org=org)
-    binding = bind_checklist_item_to_artwork(
-        actor=master, checklist_item=item, artwork_version=v1
-    )
+    binding = bind_checklist_item_to_artwork(actor=master, checklist_item=item, artwork_version=v1)
     snap = snapshot_for_checklist_item(item.id)
     assert snap is not None
     assert snap["artwork_version_id"] == str(v1.id)
@@ -303,9 +301,7 @@ def test_authorization_and_cross_org() -> None:
 
     item_b = _published_item(actor=master_b, org=org_b)
     with pytest.raises(PermissionDenied):
-        bind_checklist_item_to_artwork(
-            actor=master_b, checklist_item=item_b, artwork_version=v1
-        )
+        bind_checklist_item_to_artwork(actor=master_b, checklist_item=item_b, artwork_version=v1)
 
     # Product Master cannot approve; Document Control cannot create.
     with pytest.raises(PermissionDenied):

@@ -16,7 +16,9 @@
         </p>
       </div>
     </header>
-    <form class="mgmt-filters" method="get" action="{% url 'recording:task_list' %}">
+    <form class="mgmt-filters"
+          method="get"
+          action="{% url 'recording:task_list' %}">
       <div class="mgmt-filters__grid">
         <div class="form-field">
           <label for="id_workflow">Operational workflow</label>
@@ -30,7 +32,8 @@
       </div>
       <div class="mgmt-filters__actions">
         <button type="submit" class="btn btn--secondary btn--inline">Apply filters</button>
-        <a class="btn btn--ghost btn--inline" href="{% url 'recording:task_list' %}">Clear</a>
+        <a class="btn btn--ghost btn--inline"
+           href="{% url 'recording:task_list' %}">Clear</a>
       </div>
     </form>
     {% if not tasks %}
@@ -101,9 +104,13 @@
       </div>
       {% if page.has_other_pages %}
         <nav class="pagination" aria-label="Recording task pages">
-          {% if page.has_previous %}<a href="?page={{ page.previous_page_number }}&amp;workflow={{ workflow_state }}">Previous</a>{% endif %}
+          {% if page.has_previous %}
+            <a href="?page={{ page.previous_page_number }}&amp;workflow={{ workflow_state }}">Previous</a>
+          {% endif %}
           <span>Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
-          {% if page.has_next %}<a href="?page={{ page.next_page_number }}&amp;workflow={{ workflow_state }}">Next</a>{% endif %}
+          {% if page.has_next %}
+            <a href="?page={{ page.next_page_number }}&amp;workflow={{ workflow_state }}">Next</a>
+          {% endif %}
         </nav>
       {% endif %}
     {% endif %}

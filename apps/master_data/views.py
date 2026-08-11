@@ -171,8 +171,7 @@ def product_create(request: HttpRequest) -> HttpResponse:
                 barcode=form.cleaned_data.get("barcode") or "",
                 storage_category=form.cleaned_data.get("storage_category") or "",
                 shelf_life_reference=form.cleaned_data.get("shelf_life_reference") or "",
-                label_artwork_reference=form.cleaned_data.get("label_artwork_reference")
-                or "",
+                label_artwork_reference=form.cleaned_data.get("label_artwork_reference") or "",
                 effective_from=form.cleaned_data.get("effective_from"),
                 effective_to=form.cleaned_data.get("effective_to"),
                 is_active=bool(form.cleaned_data.get("is_active")),
@@ -237,8 +236,7 @@ def product_edit(request: HttpRequest, product_id: uuid.UUID) -> HttpResponse:
                 barcode=form.cleaned_data.get("barcode") or "",
                 storage_category=form.cleaned_data.get("storage_category") or "",
                 shelf_life_reference=form.cleaned_data.get("shelf_life_reference") or "",
-                label_artwork_reference=form.cleaned_data.get("label_artwork_reference")
-                or "",
+                label_artwork_reference=form.cleaned_data.get("label_artwork_reference") or "",
                 effective_from=form.cleaned_data.get("effective_from"),
                 effective_to=form.cleaned_data.get("effective_to"),
             )

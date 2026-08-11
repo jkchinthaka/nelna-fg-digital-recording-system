@@ -206,8 +206,7 @@ def test_management_command_dry_run_and_commit(tmp_path: Path) -> None:
     actor = make_user(employee_code="FG05C09", is_superuser=True)
     csv_path = tmp_path / "rows.csv"
     csv_path.write_text(
-        empty_product_import_template_csv()
-        + "ORG05CCMD,SYN05CCM,Cmd Product,,,,,,,,,,,\n",
+        empty_product_import_template_csv() + "ORG05CCMD,SYN05CCM,Cmd Product,,,,,,,,,,,\n",
         encoding="utf-8",
     )
     err = tmp_path / "err.csv"

@@ -25,7 +25,7 @@ from celery import shared_task
     max_retries=3,
     default_retry_delay=30,
 )  # type: ignore[untyped-decorator]
-def deliver_notification_email(self, delivery_attempt_id: str) -> dict[str, Any]:  # noqa: ANN001
+def deliver_notification_email(self: Any, delivery_attempt_id: str) -> dict[str, Any]:
     """
     Deliver one email attempt idempotently.
 

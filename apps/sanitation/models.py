@@ -237,16 +237,20 @@ class SanitationScope(models.Model):
         org_id = self.program_version.program.organization_id if self.program_version_id else None
         if org_id is None:
             return
-        if self.site_id and self.site.organization_id != org_id:
+        site = self.site
+
+        if self.site_id and site is not None and site.organization_id != org_id:
             raise ValidationError({"site": "Site must belong to the same organization."})
-        if self.department_id and self.department.organization_id != org_id:
+        department = self.department
+
+        if self.department_id and department is not None and department.organization_id != org_id:
             raise ValidationError(
                 {"department": "Department must belong to the same organization."}
             )
-        if self.equipment_id and self.equipment.organization_id != org_id:
-            raise ValidationError(
-                {"equipment": "Equipment must belong to the same organization."}
-            )
+        equipment = self.equipment
+
+        if self.equipment_id and equipment is not None and equipment.organization_id != org_id:
+            raise ValidationError({"equipment": "Equipment must belong to the same organization."})
 
 
 class SanitationScheduleLink(models.Model):
@@ -288,12 +292,15 @@ class SanitationScheduleLink(models.Model):
         if not self.checklist_schedule_id or not self.program_version_id:
             return
         prog_org = self.program_version.program.organization_id
-        if self.checklist_schedule.organization_id != prog_org:
+        checklist_schedule = self.checklist_schedule
+        if checklist_schedule is None:
+            return
+        if checklist_schedule.organization_id != prog_org:
             raise ValidationError(
                 {"checklist_schedule": "Schedule must belong to the same organization."}
             )
         tmpl = self.program_version.program.checklist_template_id
-        if self.checklist_schedule.checklist_template_id != tmpl:
+        if checklist_schedule.checklist_template_id != tmpl:
             raise ValidationError(
                 {
                     "checklist_schedule": (
@@ -382,9 +389,7 @@ class SanitationChemicalReference(models.Model):
         if not self.chemical_id or not self.program_version_id:
             return
         if self.chemical.organization_id != self.program_version.program.organization_id:
-            raise ValidationError(
-                {"chemical": "Chemical must belong to the same organization."}
-            )
+            raise ValidationError({"chemical": "Chemical must belong to the same organization."})
 
 
 class SanitationFailPolicy(models.Model):

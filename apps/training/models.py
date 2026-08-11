@@ -211,9 +211,7 @@ class TrainingRecord(models.Model):
                     "process_reference is required when competency_scope=PROCESS."
                 )
         elif (self.process_reference or "").strip():
-            errors["process_reference"] = (
-                "process_reference is only applicable for PROCESS scope."
-            )
+            errors["process_reference"] = "process_reference is only applicable for PROCESS scope."
 
         if self.competency_scope == CompetencyScopeKind.EQUIPMENT:
             if self.equipment_id is None:
@@ -227,17 +225,17 @@ class TrainingRecord(models.Model):
                     "business_role is required when competency_scope=BUSINESS_ROLE."
                 )
         elif self.business_role_id is not None:
-            errors["business_role"] = (
-                "business_role is only applicable for BUSINESS_ROLE scope."
-            )
+            errors["business_role"] = "business_role is only applicable for BUSINESS_ROLE scope."
 
-        if self.checklist_template_id and self.organization_id:
-            if self.checklist_template.organization_id != self.organization_id:
+        checklist_template = self.checklist_template
+        if checklist_template is not None and self.organization_id:
+            if checklist_template.organization_id != self.organization_id:
                 errors["checklist_template"] = (
                     "Checklist template must belong to the selected organization."
                 )
-        if self.equipment_id and self.organization_id:
-            if self.equipment.organization_id != self.organization_id:
+        equipment = self.equipment
+        if equipment is not None and self.organization_id:
+            if equipment.organization_id != self.organization_id:
                 errors["equipment"] = "Equipment must belong to the selected organization."
 
         if errors:

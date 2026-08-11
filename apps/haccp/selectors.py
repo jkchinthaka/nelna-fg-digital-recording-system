@@ -5,7 +5,7 @@ from __future__ import annotations
 import uuid
 from datetime import date
 
-from django.db.models import QuerySet
+from django.db.models import Q, QuerySet
 
 from apps.haccp.models import ControlPoint, HaccpPlan, HaccpPlanVersion, HaccpPlanVersionStatus
 
@@ -38,9 +38,7 @@ def approved_versions_effective_on(
     return qs.select_related("plan")
 
 
-def _effective_window_q(as_of: date):
-    from django.db.models import Q
-
+def _effective_window_q(as_of: date) -> Q:
     return (Q(effective_from__isnull=True) | Q(effective_from__lte=as_of)) & (
         Q(effective_to__isnull=True) | Q(effective_to__gte=as_of)
     )

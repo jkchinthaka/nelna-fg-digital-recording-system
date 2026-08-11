@@ -1,8 +1,9 @@
-﻿"""Transactional domain services for quality quarantine management."""
+"""Transactional domain services for quality quarantine management."""
 
 from __future__ import annotations
 
 import uuid
+from datetime import datetime
 
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
@@ -89,7 +90,7 @@ def open_quarantine_record(
     source: str,
     source_reference: str,
     reason_reference: str,
-    opened_at=None,
+    opened_at: datetime | None = None,
     sub_lot_reference: str = "",
     quantity_reference: str = "",
     uom_reference: str = "",
@@ -172,7 +173,9 @@ def update_quarantine_quantity(
     user = _require(actor, MANAGE, quarantine.organization_id)
     record = QualityQuarantineRecord.objects.select_for_update().get(pk=quarantine.pk)
     if record.status != QuarantineStatus.OPEN:
-        raise ValidationError({"status": "Only open quarantine records can change quantity references."})
+        raise ValidationError(
+            {"status": "Only open quarantine records can change quantity references."}
+        )
     policy = _policy(record.organization_id)
     if policy is None or not policy.quantity_recording_enabled:
         raise ValidationError(
@@ -230,7 +233,12 @@ def release_quarantine_record(
     decision = evaluate_quarantine_release(organization_id=record.organization_id)
     if not decision.allowed:
         raise ValidationError(
-            {"release": "Quality quarantine release approval is not enabled (APR-066 EVIDENCE REQUIRED)."}
+            {
+                "release": (
+                    "Quality quarantine release approval is not enabled "
+                    "(APR-066 EVIDENCE REQUIRED)."
+                )
+            }
         )
     record.status = QuarantineStatus.RELEASED
     record.resolution_reference = _clean(resolution_reference, max_length=255)

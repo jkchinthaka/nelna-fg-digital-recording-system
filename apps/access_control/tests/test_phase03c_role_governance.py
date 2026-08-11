@@ -33,9 +33,7 @@ def _perm(app_label: str, codename: str) -> Permission:
 
 
 def _real_perm_or_skip(app_label: str, codename: str) -> Permission:
-    perm = Permission.objects.filter(
-        content_type__app_label=app_label, codename=codename
-    ).first()
+    perm = Permission.objects.filter(content_type__app_label=app_label, codename=codename).first()
     if perm is None:
         pytest.skip(f"Permission {app_label}.{codename} not present in DB")
     return perm

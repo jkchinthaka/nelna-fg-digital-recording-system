@@ -115,9 +115,9 @@
                             {% evaluation_slot responses child sample_index as eval_meta %}
                             {% with evaluation_result=eval_meta.result evaluation_icon=eval_meta.icon evaluation_label=eval_meta.label %}
                               {% include "recording/_evaluation_indicator.html" %}
-                {% with control_point_class=child.control_point_class criticality=child.criticality control_point_label=child.control_point_class|control_point_label_for criticality_label=child.criticality|criticality_label_for %}
-                  {% include "recording/_control_point_marker.html" %}
-                {% endwith %}
+                              {% with control_point_class=child.control_point_class criticality=child.criticality control_point_label=child.control_point_class|control_point_label_for criticality_label=child.criticality|criticality_label_for %}
+                                {% include "recording/_control_point_marker.html" %}
+                              {% endwith %}
                             {% endwith %}
                           </div>
                         {% else %}
@@ -138,9 +138,9 @@
                               {% evaluation_slot responses child sample_index as eval_meta %}
                               {% with evaluation_result=eval_meta.result evaluation_icon=eval_meta.icon evaluation_label=eval_meta.label %}
                                 {% include "recording/_evaluation_indicator.html" %}
-                {% with control_point_class=child.control_point_class criticality=child.criticality control_point_label=child.control_point_class|control_point_label_for criticality_label=child.criticality|criticality_label_for %}
-                  {% include "recording/_control_point_marker.html" %}
-                {% endwith %}
+                                {% with control_point_class=child.control_point_class criticality=child.criticality control_point_label=child.control_point_class|control_point_label_for criticality_label=child.criticality|criticality_label_for %}
+                                  {% include "recording/_control_point_marker.html" %}
+                                {% endwith %}
                               {% endwith %}
                             </div>
                           {% endif %}
@@ -180,9 +180,9 @@
                 {% evaluation_slot responses item 1 as eval_meta %}
                 {% with evaluation_result=eval_meta.result evaluation_icon=eval_meta.icon evaluation_label=eval_meta.label %}
                   {% include "recording/_evaluation_indicator.html" %}
-                {% with control_point_class=item.control_point_class criticality=item.criticality control_point_label=item.control_point_class|control_point_label_for criticality_label=item.criticality|criticality_label_for %}
-                  {% include "recording/_control_point_marker.html" %}
-                {% endwith %}
+                  {% with control_point_class=item.control_point_class criticality=item.criticality control_point_label=item.control_point_class|control_point_label_for criticality_label=item.criticality|criticality_label_for %}
+                    {% include "recording/_control_point_marker.html" %}
+                  {% endwith %}
                 {% endwith %}
               </article>
             {% else %}
@@ -206,9 +206,9 @@
                   {% evaluation_slot responses item 1 as eval_meta %}
                   {% with evaluation_result=eval_meta.result evaluation_icon=eval_meta.icon evaluation_label=eval_meta.label %}
                     {% include "recording/_evaluation_indicator.html" %}
-                {% with control_point_class=item.control_point_class criticality=item.criticality control_point_label=item.control_point_class|control_point_label_for criticality_label=item.criticality|criticality_label_for %}
-                  {% include "recording/_control_point_marker.html" %}
-                {% endwith %}
+                    {% with control_point_class=item.control_point_class criticality=item.criticality control_point_label=item.control_point_class|control_point_label_for criticality_label=item.criticality|criticality_label_for %}
+                      {% include "recording/_control_point_marker.html" %}
+                    {% endwith %}
                   {% endwith %}
                 </article>
               {% endwith %}

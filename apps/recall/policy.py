@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from uuid import UUID
 
 from django.conf import settings
 
@@ -34,9 +35,7 @@ class RecallGateDecision:
         }
 
 
-def evaluate_recall_external_notification(
-    *, organization_id: object
-) -> RecallGateDecision:
+def evaluate_recall_external_notification(*, organization_id: UUID) -> RecallGateDecision:
     policy = RecallPolicy.objects.filter(organization_id=organization_id).first()
     if policy is None or not policy.external_notification_enabled:
         return RecallGateDecision(
@@ -57,9 +56,7 @@ def evaluate_recall_external_notification(
     )
 
 
-def evaluate_recall_erp_distribution_pull(
-    *, organization_id: object
-) -> RecallGateDecision:
+def evaluate_recall_erp_distribution_pull(*, organization_id: UUID) -> RecallGateDecision:
     policy = RecallPolicy.objects.filter(organization_id=organization_id).first()
     if policy is None or not policy.erp_distribution_pull_enabled:
         return RecallGateDecision(

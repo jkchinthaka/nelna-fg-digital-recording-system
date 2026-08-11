@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, Any
+
 from django.contrib import admin
 
 from apps.changeover.models import (
@@ -13,11 +15,16 @@ from apps.changeover.models import (
     ProductAllergenDeclaration,
 )
 
+if TYPE_CHECKING:
+    _SoftRetentionBase = admin.ModelAdmin[Any]
+else:
+    _SoftRetentionBase = admin.ModelAdmin
 
-class SoftRetentionAdmin(admin.ModelAdmin):
+
+class SoftRetentionAdmin(_SoftRetentionBase):
     """Operational history is retained — no hard delete from admin."""
 
-    def has_delete_permission(self, request, obj=None) -> bool:  # type: ignore[override]
+    def has_delete_permission(self, request: Any, obj: Any = None) -> bool:
         return False
 
 

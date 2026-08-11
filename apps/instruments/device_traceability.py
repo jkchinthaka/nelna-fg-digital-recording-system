@@ -159,9 +159,7 @@ def assess_device_eligibility(
             reason_code="WRONG_EQUIPMENT_TYPE",
             equipment=equipment,
             fitness=evaluate_calibration_fitness(equipment, as_of=as_of),
-            advisory=(
-                f"Item requires type {required}; device is {equipment.equipment_type}."
-            ),
+            advisory=(f"Item requires type {required}; device is {equipment.equipment_type}."),
         )
     record = latest_recorded_calibration(equipment)
     fitness = evaluate_calibration_fitness(equipment, as_of=as_of, latest_record=record)
@@ -218,9 +216,7 @@ def apply_calibration_policy(
             allowed=True,
             enforcement=enforcement,
             outcome="ALLOW",
-            reason_code=(
-                "POLICY_OFF_OR_FIT" if enforcement == ENFORCEMENT_OFF else "FIT_OK"
-            ),
+            reason_code=("POLICY_OFF_OR_FIT" if enforcement == ENFORCEMENT_OFF else "FIT_OK"),
             fitness=fitness,
         )
 
@@ -254,9 +250,7 @@ def apply_calibration_policy(
                 }
             )
         if actor is None or organization_id is None:
-            raise PermissionDenied(
-                "Override requires an authenticated actor and organization."
-            )
+            raise PermissionDenied("Override requires an authenticated actor and organization.")
         require_permission(
             actor,
             OVERRIDE_PERMISSION,
@@ -269,9 +263,7 @@ def apply_calibration_policy(
             actor=actor,
             metadata={
                 "organization_id": str(organization_id),
-                "equipment_id": (
-                    str(eligibility.equipment.id) if eligibility.equipment else None
-                ),
+                "equipment_id": (str(eligibility.equipment.id) if eligibility.equipment else None),
                 "fitness": fitness,
                 "reason_code": eligibility.reason_code,
                 "override_reason": (override_reason or "").strip()[:255],
@@ -314,9 +306,7 @@ def build_device_trace_snapshot(
         "operational_status": equipment.operational_status,
         "is_active": equipment.is_active,
         "site_id": str(equipment.site_id) if equipment.site_id else None,
-        "calibration_record_id": (
-            str(calibration_record.id) if calibration_record else None
-        ),
+        "calibration_record_id": (str(calibration_record.id) if calibration_record else None),
         "calibration_status": calibration_record.status if calibration_record else None,
         "calibrated_on": (
             calibration_record.calibrated_on.isoformat() if calibration_record else None

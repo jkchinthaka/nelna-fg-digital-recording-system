@@ -171,9 +171,7 @@ def create_monitoring_parameter(
             created_by=user,
         )
     except IntegrityError as exc:
-        raise ValidationError(
-            {"code": "Parameter code already exists in organization."}
-        ) from exc
+        raise ValidationError({"code": "Parameter code already exists in organization."}) from exc
     record_event(
         event_type="EM_PARAMETER_CREATED",
         actor=user,
@@ -399,9 +397,7 @@ def _resolve_approved_limit_rule(
     if spec_version is not None:
         # Always reload — callers may hold a stale in-memory draft instance.
         resolved = (
-            MonitoringSpecVersion.objects.select_related("spec")
-            .filter(pk=spec_version.pk)
-            .first()
+            MonitoringSpecVersion.objects.select_related("spec").filter(pk=spec_version.pk).first()
         )
         if resolved is None:
             raise ValidationError({"spec_version": "Spec version not found."})

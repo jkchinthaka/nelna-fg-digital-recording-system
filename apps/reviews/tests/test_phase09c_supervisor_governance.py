@@ -1,4 +1,4 @@
-﻿"""Phase 09C — Supervisor review governance hardening tests."""
+"""Phase 09C — Supervisor review governance hardening tests."""
 
 from __future__ import annotations
 
@@ -279,9 +279,7 @@ def test_queues_pending_overdue_resubmission() -> None:
         organization_id=org.id,
         review_sla_minutes=5,
     )
-    sub1 = _published_submission(
-        manager=manager, recorder=recorder, org=org, batch="BATCH-09C-4A"
-    )
+    sub1 = _published_submission(manager=manager, recorder=recorder, org=org, batch="BATCH-09C-4A")
     # Force submitted_at into the past for overdue.
     ChecklistSubmission.objects.filter(pk=sub1.id).update(
         submitted_at=timezone.now() - dt.timedelta(minutes=30)
@@ -304,10 +302,11 @@ def test_queues_pending_overdue_resubmission() -> None:
     from apps.recording.models import ChecklistRecord
 
     record = ChecklistRecord.objects.get(pk=sub1.checklist_record_id)
-    item = record.checklist_task.checklist_version.sections.first().items.first()
-    save_checklist_draft_responses(
-        actor=recorder, record_id=record.id, answers={item.id: "NO"}
-    )
+    section = record.checklist_task.checklist_version.sections.first()
+    assert section is not None
+    item = section.items.first()
+    assert item is not None
+    save_checklist_draft_responses(actor=recorder, record_id=record.id, answers={item.id: "NO"})
     sub2 = resubmit_checklist_correction(actor=recorder, correction_id=correction.id)
     assert sub2.submission_number == 2
     resub = list_supervisor_review_queue(reviewer, queue=QUEUE_RESUBMISSION)
@@ -369,10 +368,11 @@ def test_cross_org_and_latest_submission_only() -> None:
     )
     correction = start_checklist_correction(actor=recorder_a, source_submission_id=sub_a.id)
     record = sub_a.checklist_record
-    item = record.checklist_task.checklist_version.sections.first().items.first()
-    save_checklist_draft_responses(
-        actor=recorder_a, record_id=record.id, answers={item.id: "YES"}
-    )
+    section = record.checklist_task.checklist_version.sections.first()
+    assert section is not None
+    item = section.items.first()
+    assert item is not None
+    save_checklist_draft_responses(actor=recorder_a, record_id=record.id, answers={item.id: "YES"})
     sub2 = resubmit_checklist_correction(actor=recorder_a, correction_id=correction.id)
     with pytest.raises(ValidationError, match="latest"):
         create_supervisor_review(
@@ -411,8 +411,7 @@ def test_temporary_delegation_requires_valid_until_and_audits() -> None:
     assert assignment.is_active is True
     assert str(assignment.role.code).upper().startswith("TECH_REV_DELG_")
     assert not any(
-        token in assignment.role.code.upper()
-        for token in ("SUPERVISOR", "QA_MANAGER", "FOREMAN")
+        token in assignment.role.code.upper() for token in ("SUPERVISOR", "QA_MANAGER", "FOREMAN")
     )
     event = (
         SecurityAuditEvent.objects.filter(event_type="SUPERVISOR_REVIEW_DELEGATION_GRANTED")
@@ -437,9 +436,7 @@ def test_policy_set_audit_and_ui_queues() -> None:
         review_sla_minutes=60,
     )
     event = (
-        SecurityAuditEvent.objects.filter(
-            event_type="SUPERVISOR_REVIEW_GOVERNANCE_POLICY_SET"
-        )
+        SecurityAuditEvent.objects.filter(event_type="SUPERVISOR_REVIEW_GOVERNANCE_POLICY_SET")
         .order_by("-created_at")
         .first()
     )
@@ -447,9 +444,7 @@ def test_policy_set_audit_and_ui_queues() -> None:
     assert event.metadata.get("self_review_mode") == SelfReviewPolicyMode.ALLOW
     assert "review_note" not in (event.metadata or {})
 
-    _published_submission(
-        manager=manager, recorder=recorder, org=org, batch="BATCH-09C-7"
-    )
+    _published_submission(manager=manager, recorder=recorder, org=org, batch="BATCH-09C-7")
     client = Client()
     client.force_login(reviewer)
     resp = client.get(reverse("reviews:queue"), {"queue": QUEUE_PENDING})

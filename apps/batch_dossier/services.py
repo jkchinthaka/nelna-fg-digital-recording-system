@@ -396,16 +396,16 @@ def assemble_batch_quality_dossier(
             has_more=qa_more,
             notes="QA review references — dossier view is not a release action.",
         )
-        for r in qa_qs[:limit]:
+        for qa_review in qa_qs[:limit]:
             timeline.append(
                 {
-                    "at": _iso(r.reviewed_at),
+                    "at": _iso(qa_review.reviewed_at),
                     "kind": "QA_REVIEW",
-                    "ref_id": str(r.id),
+                    "ref_id": str(qa_review.id),
                     "summary": f"QA {r.decision}",
                 }
             )
-            fingerprint_parts.append(f"qa:{r.id}")
+            fingerprint_parts.append(f"qa:{qa_review.id}")
     else:
         qa_section = _denied("qa_reviews", limit=limit, offset=0)
 
@@ -442,20 +442,24 @@ def assemble_batch_quality_dossier(
             offset=0,
             has_more=ipqc_more,
         )
-        for c in ipqc_qs[:limit]:
-            if c.product_id and c.product.code not in product_codes:
-                product_codes.append(c.product.code)
-            if c.production_order_reference and c.production_order_reference not in production_order_refs:
-                production_order_refs.append(c.production_order_reference)
+        for ipqc_case in ipqc_qs[:limit]:
+            product = ipqc_case.product
+            if ipqc_case.product_id and product is not None and product.code not in product_codes:
+                product_codes.append(product.code)
+            if (
+                ipqc_case.production_order_reference
+                and ipqc_case.production_order_reference not in production_order_refs
+            ):
+                production_order_refs.append(ipqc_case.production_order_reference)
             timeline.append(
                 {
-                    "at": _iso(c.created_at),
+                    "at": _iso(ipqc_case.created_at),
                     "kind": "IPQC",
-                    "ref_id": str(c.id),
-                    "summary": f"IPQC {c.definition.code} ({c.workflow_status})",
+                    "ref_id": str(ipqc_case.id),
+                    "summary": f"IPQC {ipqc_case.definition.code} ({ipqc_case.workflow_status})",
                 }
             )
-            fingerprint_parts.append(f"ipqc:{c.id}")
+            fingerprint_parts.append(f"ipqc:{ipqc_case.id}")
     else:
         ipqc_section = _denied("ipqc", limit=limit, offset=0)
 
@@ -486,16 +490,16 @@ def assemble_batch_quality_dossier(
             has_more=lab_more,
             notes="Lab sample / result references — no invented disposition.",
         )
-        for s in lab_qs[:limit]:
+        for lab_sample in lab_qs[:limit]:
             timeline.append(
                 {
-                    "at": _iso(s.registered_at),
+                    "at": _iso(lab_sample.registered_at),
                     "kind": "LAB_SAMPLE",
-                    "ref_id": str(s.id),
-                    "summary": f"Lab sample {s.code}",
+                    "ref_id": str(lab_sample.id),
+                    "summary": f"Lab sample {lab_sample.code}",
                 }
             )
-            fingerprint_parts.append(f"lab:{s.id}")
+            fingerprint_parts.append(f"lab:{lab_sample.id}")
     else:
         lab_section = _denied("lab_results", limit=limit, offset=0)
 
@@ -503,9 +507,9 @@ def assemble_batch_quality_dossier(
     equipment_items: list[dict[str, Any]] = []
     if _can(user, PERM_EQUIPMENT, org_id) or _can(user, PERM_TASK, org_id):
         seen_eq: set[str] = set()
-        for sub in submissions_with_device_traces(
-            organization_id=org_id, batch_reference=ref
-        )[:limit]:
+        for sub in submissions_with_device_traces(organization_id=org_id, batch_reference=ref)[
+            :limit
+        ]:
             for resp in sub.responses.all():
                 if resp.equipment_id is None and not resp.device_trace_context:
                     continue
@@ -529,18 +533,26 @@ def assemble_batch_quality_dossier(
                 )
                 fingerprint_parts.append(f"eq:{key}")
         if _can(user, PERM_IPQC, org_id):
-            for c in ipqc_cases_for_batch(organization_id=org_id, batch_reference=ref)[:limit]:
-                if not c.equipment_id and not c.equipment_trace_snapshot:
+            for ipqc_equipment_case in ipqc_cases_for_batch(
+                organization_id=org_id, batch_reference=ref
+            )[:limit]:
+                if (
+                    not ipqc_equipment_case.equipment_id
+                    and not ipqc_equipment_case.equipment_trace_snapshot
+                ):
                     continue
-                key = f"ipqc-eq:{c.id}"
+                key = f"ipqc-eq:{ipqc_equipment_case.id}"
                 if key in seen_eq:
                     continue
                 seen_eq.add(key)
                 equipment_items.append(
                     {
-                        "equipment_id": str(c.equipment_id) if c.equipment_id else None,
-                        "ipqc_case_id": str(c.id),
-                        "equipment_trace_snapshot": c.equipment_trace_snapshot or {},
+                        "equipment_id": str(ipqc_equipment_case.equipment_id)
+                        if ipqc_equipment_case.equipment_id
+                        else None,
+                        "ipqc_case_id": str(ipqc_equipment_case.id),
+                        "equipment_trace_snapshot": ipqc_equipment_case.equipment_trace_snapshot
+                        or {},
                         "source": "ipqc.IpqcInspectionCase",
                         "immutable_snapshot": True,
                         "reference_only": True,
@@ -669,9 +681,7 @@ def assemble_batch_quality_dossier(
                 "id": str(c.id),
                 "code": c.code,
                 "status": c.status,
-                "nonconformance_id": str(c.nonconformance_id)
-                if c.nonconformance_id
-                else None,
+                "nonconformance_id": str(c.nonconformance_id) if c.nonconformance_id else None,
                 "created_at": _iso(c.created_at),
                 "source": "capa.CorrectiveAction",
                 "reference_only": True,
@@ -685,16 +695,16 @@ def assemble_batch_quality_dossier(
             offset=0,
             has_more=capa_more,
         )
-        for c in capa_qs[:limit]:
+        for capa_action in capa_qs[:limit]:
             timeline.append(
                 {
-                    "at": _iso(c.created_at),
+                    "at": _iso(capa_action.created_at),
                     "kind": "CAPA",
-                    "ref_id": str(c.id),
-                    "summary": f"CAPA {c.code}",
+                    "ref_id": str(capa_action.id),
+                    "summary": f"CAPA {capa_action.code}",
                 }
             )
-            fingerprint_parts.append(f"capa:{c.id}")
+            fingerprint_parts.append(f"capa:{capa_action.id}")
     else:
         capa_section = _denied("capa", limit=limit, offset=0)
 
@@ -738,9 +748,7 @@ def assemble_batch_quality_dossier(
 
     # --- Integration / production reference ---
     if _can(user, PERM_INTEGRATION, org_id) or _can(user, PERM_TASK, org_id):
-        evt_qs = external_batch_events_for_batch(
-            organization_id=org_id, batch_reference=ref
-        )
+        evt_qs = external_batch_events_for_batch(organization_id=org_id, batch_reference=ref)
         evt_items, evt_total, evt_more = page_values(
             evt_qs,
             limit=limit,
@@ -783,14 +791,16 @@ def assemble_batch_quality_dossier(
             for r in production_order_refs[:limit]
         )
         + tuple(
-            {
-                "kind": "EXTERNAL_BATCH_ID",
-                "reference": ref,
-                "event_count": integration_section.total_count
-                if integration_section.access != "DENIED"
-                else 0,
-                "reference_only": True,
-            },
+            [
+                {
+                    "kind": "EXTERNAL_BATCH_ID",
+                    "reference": ref,
+                    "event_count": integration_section.total_count
+                    if integration_section.access != "DENIED"
+                    else 0,
+                    "reference_only": True,
+                }
+            ],
         ),
         total=len(production_order_refs) + 1,
         limit=limit,
@@ -864,14 +874,10 @@ def assemble_batch_quality_dossier(
             )
             fingerprint_parts.append(f"ev:{a.id}")
     else:
-        evidence_section = _denied(
-            "evidence", limit=evidence_limit, offset=evidence_offset
-        )
+        evidence_section = _denied("evidence", limit=evidence_limit, offset=evidence_offset)
 
     # --- Audit references (paginated) ---
-    audit_qs = audit_events_for_batch(
-        batch_reference=ref, organization_id=org_id
-    )
+    audit_qs = audit_events_for_batch(batch_reference=ref, organization_id=org_id)
     a_limit = max(1, min(int(audit_limit), 200))
     a_offset = max(0, int(audit_offset))
     audit_items, audit_total, audit_more = page_values(
@@ -904,9 +910,9 @@ def assemble_batch_quality_dossier(
     )[:timeline_cap]
 
     export_decision = evaluate_batch_dossier_pdf_export(organization_id=org_id)
-    fingerprint = hashlib.sha256(
-        "|".join(sorted(fingerprint_parts)).encode("utf-8")
-    ).hexdigest()[:32]
+    fingerprint = hashlib.sha256("|".join(sorted(fingerprint_parts)).encode("utf-8")).hexdigest()[
+        :32
+    ]
 
     identity = {
         "organization_id": str(org_id),
@@ -1044,9 +1050,7 @@ def prepare_batch_dossier_pdf_export(
         dossier_fingerprint=fingerprint,
         metadata={
             "pdf_not_generated": True,
-            "section_counts": {
-                k: v.get("total_count") for k, v in dossier.sections.items()
-            },
+            "section_counts": {k: v.get("total_count") for k, v in dossier.sections.items()},
             "decision": decision.as_dict(),
         },
         requested_by=user,

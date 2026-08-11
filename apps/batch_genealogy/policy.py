@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from uuid import UUID
 
 from django.conf import settings
 
@@ -34,7 +35,7 @@ class GenealogyMongoProjectionDecision:
 
 
 def evaluate_genealogy_mongo_projection(
-    *, organization_id: object
+    *, organization_id: UUID
 ) -> GenealogyMongoProjectionDecision:
     policy = GenealogyPolicy.objects.filter(organization_id=organization_id).first()
     depth = policy.max_trace_depth if policy else DEFAULT_MAX_TRACE_DEPTH
@@ -61,7 +62,5 @@ def evaluate_genealogy_mongo_projection(
     )
 
 
-def resolve_max_trace_depth(*, organization_id: object) -> int:
-    return evaluate_genealogy_mongo_projection(
-        organization_id=organization_id
-    ).max_trace_depth
+def resolve_max_trace_depth(*, organization_id: UUID) -> int:
+    return evaluate_genealogy_mongo_projection(organization_id=organization_id).max_trace_depth

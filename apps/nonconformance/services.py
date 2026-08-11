@@ -323,9 +323,7 @@ def close_nonconformance(
     record.closed_by = user
     record.closed_at = timezone.now()
     record.full_clean()
-    record.save(
-        update_fields=["status", "closure_notes", "closed_by", "closed_at", "updated_at"]
-    )
+    record.save(update_fields=["status", "closure_notes", "closed_by", "closed_at", "updated_at"])
     _append_history(
         organization_id=record.organization_id,
         case_kind=QualityCaseHistoryKind.NONCONFORMANCE,

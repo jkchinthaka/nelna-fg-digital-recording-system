@@ -8,7 +8,9 @@ from typing import Any
 
 from django.conf import settings
 
+from apps.accounts.models import User
 from apps.foreign_body.models import MetalDetectorChallengeTest
+from apps.nonconformance.models import HoldCase
 from apps.organizations.models import Organization
 
 
@@ -26,9 +28,7 @@ class ContainmentInterval:
 
     def as_dict(self) -> dict[str, Any]:
         return {
-            "interval_start": (
-                self.interval_start.isoformat() if self.interval_start else None
-            ),
+            "interval_start": (self.interval_start.isoformat() if self.interval_start else None),
             "interval_end": self.interval_end.isoformat() if self.interval_end else None,
             "previous_pass_test_id": self.previous_pass_test_id,
             "affected_batch_references": list(self.affected_batch_references),
@@ -112,11 +112,11 @@ def compute_affected_interval(
 
 def maybe_create_hold_case(
     *,
-    actor,
+    actor: User | None,
     organization: Organization,
     failed_test: MetalDetectorChallengeTest,
     interval: ContainmentInterval,
-):
+) -> HoldCase | None:
     """
     Create HoldCase only when FOREIGN_BODY_AUTO_HOLD_APPROVED is true.
 

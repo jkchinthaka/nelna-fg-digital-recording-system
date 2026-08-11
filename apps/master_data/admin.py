@@ -1,4 +1,4 @@
-﻿"""Django admin for FG Product and product specifications."""
+"""Django admin for FG Product and product specifications."""
 
 from __future__ import annotations
 
@@ -116,7 +116,12 @@ class SpecificationVersionAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
     list_filter = ("status",)
     search_fields = ("specification__code", "approval_reference")
     readonly_fields = (
-        "id", "version_number", "approved_at", "approved_by", "created_at", "updated_at"
+        "id",
+        "version_number",
+        "approved_at",
+        "approved_by",
+        "created_at",
+        "updated_at",
     )
     autocomplete_fields = ("specification",)
     inlines = (SpecificationParameterInline,)

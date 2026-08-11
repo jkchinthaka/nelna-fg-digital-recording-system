@@ -178,8 +178,12 @@ class GenealogyEdge(models.Model):
         if not (self.source_system or "").strip() or not (self.source_event_id or "").strip():
             raise ValidationError(
                 {
-                    "source_system": "ERP/integration source_system and source_event_id are required.",
-                    "source_event_id": "ERP/integration source_system and source_event_id are required.",
+                    "source_system": (
+                        "ERP/integration source_system and source_event_id are required."
+                    ),
+                    "source_event_id": (
+                        "ERP/integration source_system and source_event_id are required."
+                    ),
                 }
             )
 

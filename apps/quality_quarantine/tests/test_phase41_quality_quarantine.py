@@ -1,4 +1,4 @@
-﻿"""Phase 41 — Quality quarantine management tests."""
+"""Phase 41 — Quality quarantine management tests."""
 
 from __future__ import annotations
 
@@ -10,6 +10,7 @@ from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.test import override_settings
+from tests.factories import grant_role, make_org, make_role_with_permission, make_user
 
 from apps.accounts.models import User
 from apps.integrations.errors import IntegrationError, IntegrationErrorClass
@@ -41,7 +42,6 @@ from apps.quality_quarantine.services import (
     upsert_quarantine_policy,
 )
 from apps.security_audit.models import SecurityAuditEvent
-from tests.factories import grant_role, make_org, make_role_with_permission, make_user
 
 
 def _perm(model: type[Any], codename: str) -> Permission:
@@ -135,11 +135,15 @@ def test_source_linkage_quantity_and_multiple_quarantines() -> None:
     )
     cases = list(list_quarantines_by_batch(organization_id=org.id, batch_reference="BATCH-SHARED"))
     assert {c.id for c in cases} == {hold.id, returned.id, ncr.id}
-    assert list_quarantines_by_source(
-        organization_id=org.id,
-        source=QuarantineSource.QA_HOLD,
-        source_reference="HOLD-CASE-1",
-    ).filter(pk=hold.id).exists()
+    assert (
+        list_quarantines_by_source(
+            organization_id=org.id,
+            source=QuarantineSource.QA_HOLD,
+            source_reference="HOLD-CASE-1",
+        )
+        .filter(pk=hold.id)
+        .exists()
+    )
 
     hold = update_quarantine_quantity(
         actor=actor, quarantine=hold, quantity_reference="12", uom_reference="CS"
@@ -269,9 +273,9 @@ def test_cross_org_isolation() -> None:
     )
     with pytest.raises(PermissionDenied):
         cancel_quarantine_record(actor=user_b, quarantine=record)
-    assert list_quarantines_by_batch(
-        organization_id=org_b.id, batch_reference="BATCH-X"
-    ).count() == 0
+    assert (
+        list_quarantines_by_batch(organization_id=org_b.id, batch_reference="BATCH-X").count() == 0
+    )
 
 
 @pytest.mark.django_db

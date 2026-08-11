@@ -205,7 +205,7 @@ def test_clone_copies_response_schema_and_independent_options() -> None:
         set(item.options.values_list("id", flat=True))
     )
     cloned_number = cloned.sections.get().items.get(code="TEMP")
-    assert cloned_number.unit == "°C"
+    assert cloned_number.unit == "C"
     assert cloned_number.id != number.id
     version.refresh_from_db()
     assert version.status == ChecklistVersionStatus.DRAFT

@@ -52,15 +52,14 @@ def validate_safe_notification_text(value: str, *, field: str, max_length: int) 
         raise ValidationError(
             {
                 field: (
-                    f"{field} must not include checklist answers or sensitive "
-                    "notes (privacy rule)."
+                    f"{field} must not include checklist answers or sensitive notes (privacy rule)."
                 )
             }
         )
     return text
 
 
-def assert_safe_metadata(metadata: dict | None) -> dict:
+def assert_safe_metadata(metadata: dict[str, object] | None) -> dict[str, object]:
     """Allow only opaque identifiers in metadata — reject sensitive keys."""
     meta = dict(metadata or {})
     for key in meta:
@@ -77,7 +76,5 @@ def assert_safe_metadata(metadata: dict | None) -> dict:
                 {"metadata": f"Metadata value for '{key}' looks sensitive and is blocked."}
             )
         if isinstance(val, (dict, list)):
-            raise ValidationError(
-                {"metadata": "Nested metadata structures are not allowed."}
-            )
+            raise ValidationError({"metadata": "Nested metadata structures are not allowed."})
     return meta

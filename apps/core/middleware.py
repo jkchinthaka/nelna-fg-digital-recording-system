@@ -148,4 +148,3 @@ class SecurityHeadersMiddleware:
         if referrer:
             response.setdefault("Referrer-Policy", str(referrer))
         return response
-

@@ -43,7 +43,6 @@ def equipment_authorization_scope(equipment: Equipment) -> Scope:
     return Scope(organization_id=equipment.organization_id)
 
 
-
 def _equipment_metadata(
     equipment: Equipment,
     *,
@@ -197,14 +196,10 @@ def update_equipment(
         ),
         "site": next_site,
         "serial_number": (
-            equipment.serial_number
-            if serial_number is _UNSET
-            else (serial_number or "").strip()
+            equipment.serial_number if serial_number is _UNSET else (serial_number or "").strip()
         ),
         "location_label": (
-            equipment.location_label
-            if location_label is _UNSET
-            else (location_label or "").strip()
+            equipment.location_label if location_label is _UNSET else (location_label or "").strip()
         ),
         "manufacturer": (
             equipment.manufacturer if manufacturer is _UNSET else (manufacturer or "").strip()
@@ -334,9 +329,7 @@ def create_calibration_record(
         raise ValidationError({"equipment": "Equipment not found."})
     require_permission(user, MANAGE_EQUIPMENT, scope=equipment_authorization_scope(equipment))
     if next_due_on is not None and next_due_on < calibrated_on:
-        raise ValidationError(
-            {"next_due_on": "next_due_on cannot be earlier than calibrated_on."}
-        )
+        raise ValidationError({"next_due_on": "next_due_on cannot be earlier than calibrated_on."})
 
     record = CalibrationRecord(
         equipment=equipment,

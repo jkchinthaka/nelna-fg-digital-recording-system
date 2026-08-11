@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from decimal import Decimal
 from types import SimpleNamespace
+from typing import Any, cast
 
 import pytest
 from django.core.exceptions import ValidationError
@@ -16,12 +17,14 @@ from apps.checklists.evaluation import (
 from apps.checklists.models import (
     ChecklistEvaluationResult,
     ChecklistEvaluationRuleKind,
+    ChecklistItem,
+    ChecklistItemEvaluationRule,
     ChecklistResponseType,
 )
 
 
-def _rule(**kwargs: object) -> SimpleNamespace:
-    defaults = {
+def _rule(**kwargs: Any) -> ChecklistItemEvaluationRule:
+    defaults: dict[str, Any] = {
         "id": "11111111-1111-1111-1111-111111111111",
         "rule_kind": ChecklistEvaluationRuleKind.NUMERIC_BOUNDS,
         "bound_min": None,
@@ -39,7 +42,16 @@ def _rule(**kwargs: object) -> SimpleNamespace:
         "specification_parameter_id": None,
     }
     defaults.update(kwargs)
-    return SimpleNamespace(**defaults)
+    return cast(ChecklistItemEvaluationRule, SimpleNamespace(**defaults))
+
+
+def _item(**kwargs: Any) -> ChecklistItem:
+    defaults: dict[str, Any] = {
+        "response_type": ChecklistResponseType.NUMBER,
+        "item_kind": "SIMPLE",
+    }
+    defaults.update(kwargs)
+    return cast(ChecklistItem, SimpleNamespace(**defaults))
 
 
 def test_numeric_pass_fail_warn_and_boundaries() -> None:
@@ -69,7 +81,7 @@ def test_numeric_pass_fail_warn_and_boundaries() -> None:
 
 
 def test_missing_rule_and_hidden_not_evaluated() -> None:
-    item = SimpleNamespace(response_type=ChecklistResponseType.NUMBER, item_kind="SIMPLE")
+    item = _item(response_type=ChecklistResponseType.NUMBER, item_kind="SIMPLE")
     result, ctx = evaluate_item_response(
         item=item, rule=None, visible=True, number_value=Decimal("1")
     )
@@ -93,7 +105,7 @@ def test_missing_rule_and_hidden_not_evaluated() -> None:
 
 
 def test_yes_no_na_and_select_evaluation() -> None:
-    yes_item = SimpleNamespace(response_type=ChecklistResponseType.YES_NO)
+    yes_item = _item(response_type=ChecklistResponseType.YES_NO)
     rule = _rule(
         rule_kind=ChecklistEvaluationRuleKind.EXPECTED_CHOICE,
         expected_choice="YES",
@@ -105,11 +117,11 @@ def test_yes_no_na_and_select_evaluation() -> None:
     )
     assert result_fail == "FAIL"
 
-    na_item = SimpleNamespace(response_type=ChecklistResponseType.YES_NO_NA)
+    na_item = _item(response_type=ChecklistResponseType.YES_NO_NA)
     result_na, _ = evaluate_item_response(item=na_item, rule=rule, visible=True, choice_value="NA")
     assert result_na == "NOT_EVALUATED"
 
-    select_item = SimpleNamespace(response_type=ChecklistResponseType.SELECT)
+    select_item = _item(response_type=ChecklistResponseType.SELECT)
     opt_rule = _rule(
         rule_kind=ChecklistEvaluationRuleKind.EXPECTED_OPTION,
         expected_option_id="aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
@@ -127,7 +139,7 @@ def test_client_spoofed_result_never_trusted_as_input_path() -> None:
     # evaluate_item_response has no parameter for client result — spoof impossible.
     with pytest.raises(TypeError):
         evaluate_item_response(  # type: ignore[call-arg]
-            item=SimpleNamespace(response_type="NUMBER"),
+            item=_item(response_type="NUMBER"),
             rule=None,
             visible=True,
             evaluation_result="PASS",
@@ -219,14 +231,14 @@ def test_assert_known_evaluation_result_and_unsupported_kind() -> None:
     assert assert_known_evaluation_result("pass") == "PASS"
     with pytest.raises(ValidationError):
         assert_known_evaluation_result("RELEASE")
-    item = SimpleNamespace(response_type=ChecklistResponseType.NUMBER)
+    item = _item(response_type=ChecklistResponseType.NUMBER)
     bad = _rule(rule_kind="FREE_FORM")
     with pytest.raises(ValidationError):
         evaluate_item_response(item=item, rule=bad, visible=True, number_value=Decimal("1"))
 
 
 def test_calculated_bounds_path() -> None:
-    item = SimpleNamespace(response_type="")
+    item = _item(response_type="")
     rule = _rule(
         rule_kind=ChecklistEvaluationRuleKind.CALCULATED_NUMERIC_BOUNDS,
         bound_min=Decimal("0"),

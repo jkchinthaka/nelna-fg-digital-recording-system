@@ -57,4 +57,4 @@ def content_disposition_attachment(filename: str) -> str:
     from urllib.parse import quote
 
     encoded = quote(safe, safe="")
-    return f'attachment; filename="{ascii_name}"; filename*=UTF-8\'\'{encoded}'
+    return f"attachment; filename=\"{ascii_name}\"; filename*=UTF-8''{encoded}"

@@ -402,15 +402,11 @@ def upsert_specification_parameter(
     if warn_min is None:
         param.warn_min_inclusive = None
     else:
-        param.warn_min_inclusive = (
-            True if warn_min_inclusive is None else bool(warn_min_inclusive)
-        )
+        param.warn_min_inclusive = True if warn_min_inclusive is None else bool(warn_min_inclusive)
     if warn_max is None:
         param.warn_max_inclusive = None
     else:
-        param.warn_max_inclusive = (
-            True if warn_max_inclusive is None else bool(warn_max_inclusive)
-        )
+        param.warn_max_inclusive = True if warn_max_inclusive is None else bool(warn_max_inclusive)
     param.test_method_reference = _normalize_optional_text(test_method_reference)
     param.notes = _normalize_optional_text(notes)
     param.full_clean()
@@ -552,9 +548,7 @@ def clone_specification_version_as_draft(
     """Clone parameters into a new DRAFT — historical source remains unchanged."""
     user = _require_authenticated_actor(actor)
     source = (
-        SpecificationVersion.objects.select_related(
-            "specification", "specification__organization"
-        )
+        SpecificationVersion.objects.select_related("specification", "specification__organization")
         .filter(pk=source_version_id)
         .first()
     )

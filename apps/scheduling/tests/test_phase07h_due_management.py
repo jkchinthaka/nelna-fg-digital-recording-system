@@ -1,4 +1,4 @@
-﻿"""Phase 07H — checklist due / overdue foundation tests."""
+"""Phase 07H — checklist due / overdue foundation tests."""
 
 from __future__ import annotations
 
@@ -87,7 +87,9 @@ def _published(*, actor: User, org: Organization) -> tuple[Any, Any]:
     return template, published
 
 
-def _task(*, actor: User, org: Organization, batch: str, template=None, version=None) -> ChecklistTask:
+def _task(
+    *, actor: User, org: Organization, batch: str, template: Any = None, version: Any = None
+) -> ChecklistTask:
     if template is None or version is None:
         template, version = _published(actor=actor, org=org)
     return create_batch_checklist_task(
@@ -106,9 +108,7 @@ def test_exact_boundaries_and_configured_due_soon() -> None:
     task = _task(actor=actor, org=org, batch="BATCH-07H-1")
     due_from = dt.datetime(2026, 8, 10, 10, 0, tzinfo=UTC)
     due_at = dt.datetime(2026, 8, 10, 12, 0, tzinfo=UTC)
-    set_checklist_task_due_window(
-        actor=actor, task_id=task.id, due_from=due_from, due_at=due_at
-    )
+    set_checklist_task_due_window(actor=actor, task_id=task.id, due_from=due_from, due_at=due_at)
     task.refresh_from_db()
 
     assert (
@@ -186,9 +186,7 @@ def test_overnight_shift_due_window() -> None:
     assert end_dt.hour == 6
 
     task = _task(actor=actor, org=org, batch="BATCH-07H-3")
-    set_checklist_task_due_window(
-        actor=actor, task_id=task.id, due_from=start_dt, due_at=end_dt
-    )
+    set_checklist_task_due_window(actor=actor, task_id=task.id, due_from=start_dt, due_at=end_dt)
     task.refresh_from_db()
     assert task.due_to == task.due_at
     assert derive_due_display_state(task, as_of=as_of) == ChecklistDueDisplayState.DUE
@@ -247,9 +245,11 @@ def test_due_filters_queue_ui_and_audit() -> None:
     overdue = list(list_overdue_checklist_tasks(actor, as_of=clock))
     assert {t.batch_reference for t in overdue} == {"BATCH-PAST"}
     assert list_checklist_tasks(actor, due_state="DUE", as_of=clock).filter(pk=future.id).exists()
-    assert list_checklist_tasks(
-        actor, due_state="DUE_SOON", as_of=clock + dt.timedelta(minutes=50)
-    ).filter(pk=future.id).exists()
+    assert (
+        list_checklist_tasks(actor, due_state="DUE_SOON", as_of=clock + dt.timedelta(minutes=50))
+        .filter(pk=future.id)
+        .exists()
+    )
 
     event = (
         SecurityAuditEvent.objects.filter(event_type="CHECKLIST_TASK_DUE_WINDOW_UPDATED")

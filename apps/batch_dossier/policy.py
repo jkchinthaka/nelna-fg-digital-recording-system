@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from uuid import UUID
 
 from django.conf import settings
 
@@ -29,7 +30,7 @@ class BatchDossierExportDecision:
         }
 
 
-def evaluate_batch_dossier_pdf_export(*, organization_id: object) -> BatchDossierExportDecision:
+def evaluate_batch_dossier_pdf_export(*, organization_id: UUID) -> BatchDossierExportDecision:
     policy = BatchDossierPolicy.objects.filter(organization_id=organization_id).first()
     if policy is None or not policy.pdf_export_enabled:
         return BatchDossierExportDecision(

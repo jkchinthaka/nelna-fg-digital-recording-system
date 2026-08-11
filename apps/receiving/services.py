@@ -101,9 +101,7 @@ def create_material_reference(
     require_permission(user, MANAGE_MATERIAL, scope=_org_scope(organization.id))
     erp_ref = (erp_material_reference or "").strip()
     if not erp_ref:
-        raise ValidationError(
-            {"erp_material_reference": "ERP material reference is required."}
-        )
+        raise ValidationError({"erp_material_reference": "ERP material reference is required."})
     try:
         material = MaterialReference.objects.create(
             organization=organization,
@@ -251,9 +249,7 @@ def create_receipt_quality_record(
     user = _require_actor(actor)
     require_permission(user, MANAGE_RECEIPT, scope=_org_scope(organization.id))
     if supplier_profile.organization_id != organization.id:
-        raise ValidationError(
-            {"supplier_profile": "Supplier must belong to the organization."}
-        )
+        raise ValidationError({"supplier_profile": "Supplier must belong to the organization."})
     if material.organization_id != organization.id:
         raise ValidationError({"material": "Material must belong to the organization."})
     if inspection_checklist_template is not None:
@@ -323,11 +319,7 @@ def create_receipt_quality_record(
         record.save()
     except IntegrityError as exc:
         raise ValidationError(
-            {
-                "erp_receipt_reference": (
-                    "Receipt/GRN + supplier lot + material already recorded."
-                )
-            }
+            {"erp_receipt_reference": ("Receipt/GRN + supplier lot + material already recorded.")}
         ) from exc
     record.frozen_receipt_context = build_frozen_receipt_context(record)
     record.save(update_fields=["frozen_receipt_context", "updated_at"])
@@ -366,9 +358,7 @@ def set_receipt_quality_disposition(
     Allowed: ACCEPTED / HOLD / REJECTED (from PENDING_INSPECTION or prior local state).
     """
     user = _require_actor(actor)
-    require_permission(
-        user, DISPOSITION, scope=_org_scope(receipt.organization_id)
-    )
+    require_permission(user, DISPOSITION, scope=_org_scope(receipt.organization_id))
     target = (quality_state or "").strip().upper()
     if target not in {
         ReceiptQualityState.ACCEPTED,
@@ -420,13 +410,9 @@ def link_lab_sample_to_receipt(
     notes: str = "",
 ) -> ReceiptLabSampleLink:
     user = _require_actor(actor)
-    require_permission(
-        user, MANAGE_RECEIPT, scope=_org_scope(receipt.organization_id)
-    )
+    require_permission(user, MANAGE_RECEIPT, scope=_org_scope(receipt.organization_id))
     if lab_sample.organization_id != receipt.organization_id:
-        raise ValidationError(
-            {"lab_sample": "Lab sample must belong to the same organization."}
-        )
+        raise ValidationError({"lab_sample": "Lab sample must belong to the same organization."})
     try:
         link = ReceiptLabSampleLink.objects.create(
             receipt=receipt,
@@ -435,9 +421,7 @@ def link_lab_sample_to_receipt(
             linked_by=user,
         )
     except IntegrityError as exc:
-        raise ValidationError(
-            {"lab_sample": "Lab sample already linked to this receipt."}
-        ) from exc
+        raise ValidationError({"lab_sample": "Lab sample already linked to this receipt."}) from exc
     record_event(
         event_type="RECEIVING_LAB_SAMPLE_LINKED",
         actor=user,
@@ -459,9 +443,7 @@ def register_incoming_lab_sample(
 ) -> tuple[LabSample, ReceiptLabSampleLink]:
     """Register a Phase 22 lab sample and link it to the receipt."""
     user = _require_actor(actor)
-    require_permission(
-        user, MANAGE_RECEIPT, scope=_org_scope(receipt.organization_id)
-    )
+    require_permission(user, MANAGE_RECEIPT, scope=_org_scope(receipt.organization_id))
     sample = register_lab_sample(
         actor=user,
         organization=receipt.organization,
@@ -473,9 +455,7 @@ def register_incoming_lab_sample(
             f"material={receipt.material.erp_material_reference}"
         ),
     )
-    link = link_lab_sample_to_receipt(
-        actor=user, receipt=receipt, lab_sample=sample, notes=notes
-    )
+    link = link_lab_sample_to_receipt(actor=user, receipt=receipt, lab_sample=sample, notes=notes)
     return sample, link
 
 

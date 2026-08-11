@@ -3,23 +3,24 @@
 from __future__ import annotations
 
 import uuid
+from typing import cast
 
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import render
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods, require_POST
 
+from apps.accounts.models import User
 from apps.organizations.models import Organization
-from apps.reports.models import ReportRun
+from apps.reports.selectors import get_report_run, list_recent_report_runs
 from apps.reports.services import (
     get_report_run_csv,
     list_report_catalogue,
     run_quality_report,
     unsupported_excel_or_pdf,
 )
-from apps.reports.selectors import get_report_run, list_recent_report_runs
 
 
 def _resolve_organization(request: HttpRequest) -> Organization:
@@ -37,7 +38,7 @@ def _resolve_organization(request: HttpRequest) -> Organization:
 def report_catalogue(request: HttpRequest) -> HttpResponse:
     try:
         organization = _resolve_organization(request)
-        catalogue = list_report_catalogue(actor=request.user, organization=organization)
+        catalogue = list_report_catalogue(actor=cast(User, request.user), organization=organization)
     except (PermissionDenied, ValidationError) as exc:
         raise PermissionDenied(str(exc)) from exc
     recent = list_recent_report_runs(organization_id=organization.id, limit=15)
@@ -89,7 +90,7 @@ def report_run_create(request: HttpRequest) -> HttpResponse:
         export = request.POST.get("export") == "1"
         force_async = request.POST.get("background") == "1"
         run = run_quality_report(
-            actor=request.user,
+            actor=cast(User, request.user),
             organization=organization,
             report_code=request.POST.get("report_code") or "",
             filters=filters,
@@ -113,7 +114,7 @@ def report_run_detail(request: HttpRequest, report_run_id: uuid.UUID) -> HttpRes
         if run is None:
             raise PermissionDenied("Report run not found in this organization.")
         # Catalogue permission gate for viewing run metadata
-        list_report_catalogue(actor=request.user, organization=organization)
+        list_report_catalogue(actor=cast(User, request.user), organization=organization)
     except (PermissionDenied, ValidationError) as exc:
         raise PermissionDenied(str(exc)) from exc
     return render(
@@ -127,7 +128,9 @@ def report_run_detail(request: HttpRequest, report_run_id: uuid.UUID) -> HttpRes
 @require_http_methods(["GET"])
 def report_run_export_csv(request: HttpRequest, report_run_id: uuid.UUID) -> HttpResponse:
     try:
-        run, csv_text = get_report_run_csv(actor=request.user, report_run_id=report_run_id)
+        run, csv_text = get_report_run_csv(
+            actor=cast(User, request.user), report_run_id=report_run_id
+        )
         org_id = request.GET.get("organization_id")
         if org_id and str(run.organization_id) != str(org_id):
             raise PermissionDenied("Cross-organization export denied.")

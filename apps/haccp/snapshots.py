@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from typing import Any
+from uuid import UUID
 
 from apps.haccp.models import ChecklistItemHaccpBinding, ControlPoint, HaccpPlanVersion
 
@@ -27,7 +28,7 @@ def build_haccp_context_snapshot(
     }
 
 
-def snapshot_for_checklist_item(checklist_item_id: object) -> dict[str, Any] | None:
+def snapshot_for_checklist_item(checklist_item_id: UUID) -> dict[str, Any] | None:
     binding = (
         ChecklistItemHaccpBinding.objects.select_related(
             "plan_version__plan", "control_point", "control_point__process_step"

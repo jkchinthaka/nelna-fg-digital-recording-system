@@ -75,7 +75,7 @@ def _return_manager(*, org: Organization) -> User:
     return user
 
 
-def _published_return_checklist(actor: User, org: Organization):
+def _published_return_checklist(actor: User, org: Organization) -> Any:
     template = create_checklist_template(
         actor=actor,
         organization=org,

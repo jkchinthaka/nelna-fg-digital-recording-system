@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import uuid
+from typing import cast
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -34,7 +35,7 @@ PAGE_SIZE = 25
 
 
 def _actor(request: HttpRequest) -> User:
-    return request.user  # type: ignore[return-value]
+    return cast(User, request.user)
 
 
 def _require_review_module(request: HttpRequest) -> None:
@@ -63,7 +64,7 @@ def review_queue(request: HttpRequest) -> HttpResponse:
         submissions = list(page.object_list)
         paginator_page = page
     else:
-        rows = list_supervisor_review_queue(_actor(request), queue=queue)  # type: ignore[arg-type]
+        rows = list_supervisor_review_queue(_actor(request), queue=queue)
         page = Paginator(rows, PAGE_SIZE).get_page(request.GET.get("page") or 1)
         submissions = list(page.object_list)
         paginator_page = page

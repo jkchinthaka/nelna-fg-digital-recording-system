@@ -80,7 +80,7 @@ def _manager(*, org: Organization) -> User:
     return user
 
 
-def _published_template_version(*, actor: User, org: Organization, code: str):
+def _published_template_version(*, actor: User, org: Organization, code: str) -> Any:
     template = create_checklist_template(
         actor=actor, organization=org, code=code, name=f"Template {code}"
     )
@@ -125,9 +125,7 @@ def test_single_match() -> None:
         checklist_version_id=version.id,
         product=product,
     )
-    result = resolve_checklist_applicability(
-        organization_id=org.id, product_id=product.id
-    )
+    result = resolve_checklist_applicability(organization_id=org.id, product_id=product.id)
     assert result.outcome == ApplicabilityMatchOutcome.ONE_MATCH
     assert result.matched_rule is not None
     assert result.matched_rule.id == rule.id
@@ -154,9 +152,7 @@ def test_no_match() -> None:
         checklist_version_id=version.id,
         product=product,
     )
-    result = resolve_checklist_applicability(
-        organization_id=org.id, product_id=other.id
-    )
+    result = resolve_checklist_applicability(organization_id=org.id, product_id=other.id)
     assert result.outcome == ApplicabilityMatchOutcome.NO_MATCH
     assert result.matched_rule is None
 
@@ -186,9 +182,7 @@ def test_conflict_multiple_matches_never_picks_first() -> None:
         checklist_version_id=v2.id,
         product=product,
     )
-    result = resolve_checklist_applicability(
-        organization_id=org.id, product_id=product.id
-    )
+    result = resolve_checklist_applicability(organization_id=org.id, product_id=product.id)
     assert result.outcome == ApplicabilityMatchOutcome.MULTIPLE_MATCHES
     assert result.matched_rule is None
     assert len(result.matched_rules) == 2
@@ -212,9 +206,7 @@ def test_inactive_reference_outcome() -> None:
     )
     version.status = ChecklistVersionStatus.RETIRED
     version.save(update_fields=["status", "updated_at"])
-    result = resolve_checklist_applicability(
-        organization_id=org.id, product_id=product.id
-    )
+    result = resolve_checklist_applicability(organization_id=org.id, product_id=product.id)
     assert result.outcome == ApplicabilityMatchOutcome.INVALID_INACTIVE_REFERENCE
     assert rule.id in {r.id for r in result.invalid_rules}
 
@@ -291,9 +283,7 @@ def test_cross_org_isolation_and_authorization() -> None:
             checklist_version_id=v_b.id,
             product=product_b,
         )
-    cross = resolve_checklist_applicability(
-        organization_id=org_a.id, product_id=product_b.id
-    )
+    cross = resolve_checklist_applicability(organization_id=org_a.id, product_id=product_b.id)
     assert cross.outcome == ApplicabilityMatchOutcome.INVALID_INACTIVE_REFERENCE
     assert "product_cross_org" in cross.reasons
     result = resolve_checklist_applicability(organization_id=org_b.id)
@@ -396,9 +386,7 @@ def test_lookup_performance_indexed_path() -> None:
     target = products[-1]
     start = time.perf_counter()
     for _ in range(25):
-        result = resolve_checklist_applicability(
-            organization_id=org.id, product_id=target.id
-        )
+        result = resolve_checklist_applicability(organization_id=org.id, product_id=target.id)
         assert result.outcome == ApplicabilityMatchOutcome.ONE_MATCH
     elapsed = time.perf_counter() - start
     assert elapsed < 2.0
@@ -460,15 +448,11 @@ def test_invalid_context_and_preview_dict() -> None:
     actor = _manager(org=org)
     actor_b = _manager(org=org_b)
     product_b = create_fg_product(actor=actor_b, organization=org_b, code="PX", name="PX")
-    bad = resolve_checklist_applicability(
-        organization_id=org.id, product_id=product_b.id
-    )
+    bad = resolve_checklist_applicability(organization_id=org.id, product_id=product_b.id)
     assert bad.outcome == ApplicabilityMatchOutcome.INVALID_INACTIVE_REFERENCE
     assert "product_cross_org" in bad.reasons
 
-    missing = resolve_checklist_applicability(
-        organization_id=org.id, product_id=uuid.uuid4()
-    )
+    missing = resolve_checklist_applicability(organization_id=org.id, product_id=uuid.uuid4())
     assert missing.outcome == ApplicabilityMatchOutcome.INVALID_INACTIVE_REFERENCE
 
     template, version = _published_template_version(actor=actor, org=org, code="TX")
@@ -578,7 +562,6 @@ def test_inactive_dimension_targets_and_update_fields() -> None:
     rule2.refresh_from_db()
     assert rule2.code == "RULE-Z2B"
     assert rule2.checklist_template_id == template.id
-
 
 
 @pytest.mark.django_db
@@ -722,7 +705,6 @@ def test_department_and_model_str_clean() -> None:
         update_checklist_applicability_rule(actor=actor, rule_id=uuid.uuid4(), name="x")
 
 
-
 @pytest.mark.django_db
 def test_auth_and_lookup_error_paths() -> None:
     org = make_org(code=f"O07CE{uuid.uuid4().hex[:4].upper()}")
@@ -828,7 +810,7 @@ def test_inactive_template_and_cross_org_site_shift() -> None:
     org_a = make_org(code=f"O07CEA{uuid.uuid4().hex[:4].upper()}")
     org_b = make_org(code=f"O07CEB{uuid.uuid4().hex[:4].upper()}")
     actor_a = _manager(org=org_a)
-    actor_b = _manager(org=org_b)
+    _actor_b = _manager(org=org_b)
     site_b = make_site(org_b, code="SB")
     shift_b = _make_shift(org_b, code="SHB")
     t_a, v_a = _published_template_version(actor=actor_a, org=org_a, code="TEA")
@@ -848,22 +830,14 @@ def test_inactive_template_and_cross_org_site_shift() -> None:
     assert rule.id in {r.id for r in bad.invalid_rules}
 
     # cross-org site/shift in context
-    cross_site = resolve_checklist_applicability(
-        organization_id=org_a.id, site_id=site_b.id
-    )
+    cross_site = resolve_checklist_applicability(organization_id=org_a.id, site_id=site_b.id)
     assert cross_site.outcome == ApplicabilityMatchOutcome.INVALID_INACTIVE_REFERENCE
     assert "site_cross_org" in cross_site.reasons
-    cross_shift = resolve_checklist_applicability(
-        organization_id=org_a.id, shift_id=shift_b.id
-    )
+    cross_shift = resolve_checklist_applicability(organization_id=org_a.id, shift_id=shift_b.id)
     assert "shift_cross_org" in cross_shift.reasons
-    missing_site = resolve_checklist_applicability(
-        organization_id=org_a.id, site_id=uuid.uuid4()
-    )
+    missing_site = resolve_checklist_applicability(organization_id=org_a.id, site_id=uuid.uuid4())
     assert "site_not_found" in missing_site.reasons
-    missing_shift = resolve_checklist_applicability(
-        organization_id=org_a.id, shift_id=uuid.uuid4()
-    )
+    missing_shift = resolve_checklist_applicability(organization_id=org_a.id, shift_id=uuid.uuid4())
     assert "shift_not_found" in missing_shift.reasons
     missing_dept = resolve_checklist_applicability(
         organization_id=org_a.id, department_id=uuid.uuid4()

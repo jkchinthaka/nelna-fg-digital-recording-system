@@ -124,9 +124,7 @@ def test_version_immutability_after_approve() -> None:
     assert approved.is_immutable
     assert approved.approved_by_id == user.id
     with pytest.raises(ValidationError):
-        add_process_step(
-            actor=user, plan_version_id=version.id, code="STEP-X", title="blocked"
-        )
+        add_process_step(actor=user, plan_version_id=version.id, code="STEP-X", title="blocked")
     assert SecurityAuditEvent.objects.filter(event_type="HACCP_PLAN_VERSION_APPROVED").exists()
 
 
@@ -154,12 +152,16 @@ def test_effective_dates_and_retire() -> None:
             effective_to=start,
         )
     approve_plan_version(actor=user, plan_version_id=version.id)
-    assert approved_versions_effective_on(organization_id=org.id, as_of=start).filter(
-        id=version.id
-    ).exists()
-    assert not approved_versions_effective_on(
-        organization_id=org.id, as_of=end + timedelta(days=1)
-    ).filter(id=version.id).exists()
+    assert (
+        approved_versions_effective_on(organization_id=org.id, as_of=start)
+        .filter(id=version.id)
+        .exists()
+    )
+    assert (
+        not approved_versions_effective_on(organization_id=org.id, as_of=end + timedelta(days=1))
+        .filter(id=version.id)
+        .exists()
+    )
     retired = retire_plan_version(actor=user, plan_version_id=version.id)
     assert retired.status == HaccpPlanVersionStatus.RETIRED
 
@@ -229,13 +231,9 @@ def test_authorization_and_cross_org() -> None:
     _grant(manager, org_a, HaccpPlan, "manage_haccpplan")
     _grant(approver, org_a, HaccpPlan, "approve_haccpplan")
     with pytest.raises(PermissionDenied):
-        create_haccp_plan(
-            actor=stranger, organization=org_a, code="X", title="denied"
-        )
+        create_haccp_plan(actor=stranger, organization=org_a, code="X", title="denied")
     with pytest.raises(PermissionDenied):
-        create_haccp_plan(
-            actor=manager, organization=org_b, code="X", title="cross"
-        )
+        create_haccp_plan(actor=manager, organization=org_b, code="X", title="cross")
     plan = create_haccp_plan(
         actor=manager, organization=org_a, code=f"HP-{uuid.uuid4().hex[:6].upper()}", title="A"
     )
@@ -282,9 +280,7 @@ def test_staff_superuser_not_food_safety_authority() -> None:
         is_superuser=True,
     )
     with pytest.raises(PermissionDenied):
-        create_haccp_plan(
-            actor=staff, organization=org, code="X", title="no FS authority"
-        )
+        create_haccp_plan(actor=staff, organization=org, code="X", title="no FS authority")
 
 
 @pytest.mark.django_db

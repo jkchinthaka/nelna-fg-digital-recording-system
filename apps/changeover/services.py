@@ -168,9 +168,7 @@ def approve_product_allergen_declaration(
     declaration: ProductAllergenDeclaration,
 ) -> ProductAllergenDeclaration:
     user = _require_actor(actor)
-    require_permission(
-        user, VERIFY_CHANGEOVER, scope=_org_scope(declaration.organization_id)
-    )
+    require_permission(user, VERIFY_CHANGEOVER, scope=_org_scope(declaration.organization_id))
     if declaration.status != DeclarationStatus.DRAFT:
         raise ValidationError({"status": "Only draft declarations can be approved."})
     declaration.status = DeclarationStatus.APPROVED
@@ -217,9 +215,7 @@ def record_changeover(
             {"previous_product": "Previous product must belong to the organization."}
         )
     if next_product.organization_id != organization.id:
-        raise ValidationError(
-            {"next_product": "Next product must belong to the organization."}
-        )
+        raise ValidationError({"next_product": "Next product must belong to the organization."})
     if cleaning_checklist_template is not None:
         if cleaning_checklist_template.organization_id != organization.id:
             raise ValidationError(
@@ -232,11 +228,7 @@ def record_changeover(
     if cleaning_checklist_version is not None:
         if cleaning_checklist_template is None:
             raise ValidationError(
-                {
-                    "cleaning_checklist_version": (
-                        "Checklist version requires a checklist template."
-                    )
-                }
+                {"cleaning_checklist_version": ("Checklist version requires a checklist template.")}
             )
         if cleaning_checklist_version.template_id != cleaning_checklist_template.id:
             raise ValidationError(
@@ -260,9 +252,7 @@ def record_changeover(
         if decl.organization_id != organization.id:
             raise ValidationError({field: "Declaration must match organization."})
         if decl.status != DeclarationStatus.APPROVED:
-            raise ValidationError(
-                {field: "Only APPROVED allergen declarations may be referenced."}
-            )
+            raise ValidationError({field: "Only APPROVED allergen declarations may be referenced."})
 
     record = ChangeoverRecord(
         organization=organization,
@@ -323,9 +313,7 @@ def verify_changeover(
     notes: str = "",
 ) -> ChangeoverRecord:
     user = _require_actor(actor)
-    require_permission(
-        user, VERIFY_CHANGEOVER, scope=_org_scope(changeover.organization_id)
-    )
+    require_permission(user, VERIFY_CHANGEOVER, scope=_org_scope(changeover.organization_id))
     if changeover.status == ChangeoverStatus.VOIDED:
         raise ValidationError({"status": "Voided changeovers cannot be verified."})
     if changeover.status == ChangeoverStatus.VERIFIED:
@@ -375,17 +363,11 @@ def record_line_clearance(
     user = _require_actor(actor)
     require_permission(user, MANAGE_CHANGEOVER, scope=_org_scope(organization.id))
     if checklist_template.organization_id != organization.id:
-        raise ValidationError(
-            {"checklist_template": "Checklist template must match organization."}
-        )
+        raise ValidationError({"checklist_template": "Checklist template must match organization."})
     if checklist_version is not None:
         if checklist_version.template_id != checklist_template.id:
             raise ValidationError(
-                {
-                    "checklist_version": (
-                        "Checklist version must belong to the selected template."
-                    )
-                }
+                {"checklist_version": ("Checklist version must belong to the selected template.")}
             )
     if changeover is not None and changeover.organization_id != organization.id:
         raise ValidationError({"changeover": "Changeover must match organization."})
@@ -401,9 +383,7 @@ def record_line_clearance(
             None,
         )
         if submission_org is not None and submission_org != organization.id:
-            raise ValidationError(
-                {"checklist_submission": "Submission must match organization."}
-            )
+            raise ValidationError({"checklist_submission": "Submission must match organization."})
 
     record = LineClearanceRecord(
         organization=organization,
@@ -438,9 +418,7 @@ def record_line_clearance(
             "line_clearance_id": str(record.id),
             "changeover_id": str(changeover.id) if changeover else None,
             "checklist_template_id": str(checklist_template.id),
-            "checklist_version_id": (
-                str(checklist_version.id) if checklist_version else None
-            ),
+            "checklist_version_id": (str(checklist_version.id) if checklist_version else None),
             "line_code": record.line_code,
             "batch_dossier_ready": True,
         },

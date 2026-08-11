@@ -313,9 +313,7 @@ def create_site(
     user: User | None = None
     if actor is not None:
         user = _require_authenticated_actor(actor)
-        require_permission(
-            user, MANAGE_SITE, scope=Scope(organization_id=organization.id)
-        )
+        require_permission(user, MANAGE_SITE, scope=Scope(organization_id=organization.id))
 
     site = Site(
         organization=organization,

@@ -9,6 +9,7 @@ import pytest
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied, ValidationError
+from tests.factories import grant_role, make_org, make_role_with_permission, make_user
 
 from apps.accounts.models import User
 from apps.batch_genealogy.models import GenealogyNode, GenealogyNodeKind, GenealogyRelationKind
@@ -16,18 +17,6 @@ from apps.batch_genealogy.services import ingest_erp_genealogy_link
 from apps.capa.models import CorrectiveAction
 from apps.nonconformance.models import NonConformanceRecord
 from apps.organizations.models import Organization
-from apps.recall.models import (
-    MOCK_RECALL_BANNER,
-    MOCK_RECALL_CODE_PREFIX,
-    MockCompletenessMark,
-    MockExerciseMetrics,
-    MockFindingLinkKind,
-    MockImprovementAction,
-    MockRecallFinding,
-    RecallCase,
-    RecallCaseMode,
-    RecallCaseStatus,
-)
 from apps.recall.mock_services import (
     attempt_mock_side_effects,
     complete_mock_exercise,
@@ -39,9 +28,19 @@ from apps.recall.mock_services import (
     mock_blocks_dispatch,
     mock_side_effect_guard,
     run_mock_genealogy_exercise,
-    serialize_mock_metrics,
     start_mock_exercise,
     update_mock_exercise_metrics,
+)
+from apps.recall.models import (
+    MOCK_RECALL_BANNER,
+    MOCK_RECALL_CODE_PREFIX,
+    MockCompletenessMark,
+    MockExerciseMetrics,
+    MockFindingLinkKind,
+    MockImprovementAction,
+    RecallCase,
+    RecallCaseMode,
+    RecallCaseStatus,
 )
 from apps.recall.services import (
     attempt_erp_distribution_pull,
@@ -51,7 +50,6 @@ from apps.recall.services import (
     serialize_recall_case,
 )
 from apps.security_audit.models import SecurityAuditEvent
-from tests.factories import grant_role, make_org, make_role_with_permission, make_user
 
 
 def _perm(model: type[Any], codename: str) -> Permission:
@@ -205,9 +203,7 @@ def test_mock_no_erp_side_effect_and_no_dispatch_block() -> None:
     assert guard["blocks_dispatch"] is False
     assert mock_blocks_dispatch(case=case) is False
 
-    notify = attempt_external_notification(
-        actor=actor, organization=org, case_id=case.id
-    )
+    notify = attempt_external_notification(actor=actor, organization=org, case_id=case.id)
     assert notify["allowed"] is False
     assert notify["reason_code"] in {
         "MOCK_CASE_NO_SIDE_EFFECTS",
@@ -215,23 +211,17 @@ def test_mock_no_erp_side_effect_and_no_dispatch_block() -> None:
     }
     assert notify["message_not_sent"] is True
 
-    erp = attempt_erp_distribution_pull(
-        actor=actor, organization=org, case_id=case.id
-    )
+    erp = attempt_erp_distribution_pull(actor=actor, organization=org, case_id=case.id)
     assert erp["allowed"] is False
     assert erp["live_pull_not_executed"] is True
     assert erp.get("erp_stock_changed") is False
 
-    blocked = attempt_mock_side_effects(
-        actor=actor, organization=org, case_id=case.id
-    )
+    blocked = attempt_mock_side_effects(actor=actor, organization=org, case_id=case.id)
     assert blocked["erp_stock_change_applied"] is False
     assert blocked["customer_notification_sent"] is False
     assert blocked["regulatory_notification_created"] is False
     assert blocked["dispatch_blocked"] is False
-    assert SecurityAuditEvent.objects.filter(
-        event_type="MOCK_RECALL_SIDE_EFFECT_BLOCKED"
-    ).exists()
+    assert SecurityAuditEvent.objects.filter(event_type="MOCK_RECALL_SIDE_EFFECT_BLOCKED").exists()
 
 
 @pytest.mark.django_db
@@ -353,9 +343,7 @@ def test_mock_cannot_use_real_initiate() -> None:
 def test_findings_permission_required() -> None:
     org = make_org(code=f"MF{uuid.uuid4().hex[:4].upper()}")
     actor = _mock_user(org=org, findings=False)
-    case = create_mock_recall_exercise(
-        actor=actor, organization=org, code="FIND", reason="authz"
-    )
+    case = create_mock_recall_exercise(actor=actor, organization=org, code="FIND", reason="authz")
     with pytest.raises(PermissionDenied):
         create_mock_finding(
             actor=actor,

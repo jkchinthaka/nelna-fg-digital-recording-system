@@ -218,7 +218,7 @@ def test_authorization_and_cross_org_denied() -> None:
 
 
 @pytest.mark.django_db
-def test_external_lab_certificate_and_positive_release_default_off(settings) -> None:
+def test_external_lab_certificate_and_positive_release_default_off(settings: Any) -> None:
     settings.LAB_POSITIVE_RELEASE_BLOCKING_APPROVED = False
     org = make_org(code=f"L{uuid.uuid4().hex[:6].upper()}")
     user = make_user(employee_code=f"U{uuid.uuid4().hex[:6].upper()}")
@@ -503,18 +503,14 @@ def test_sample_cancel_and_invalid_transition() -> None:
         actor=user, organization=org, code=f"S-{uuid.uuid4().hex[:6].upper()}"
     )
     with pytest.raises(ValidationError):
-        transition_lab_sample(
-            actor=user, sample_id=sample.id, to_status=LabSampleStatus.COMPLETED
-        )
+        transition_lab_sample(actor=user, sample_id=sample.id, to_status=LabSampleStatus.COMPLETED)
     cancelled = transition_lab_sample(
         actor=user, sample_id=sample.id, to_status=LabSampleStatus.CANCELLED
     )
     assert cancelled.status == LabSampleStatus.CANCELLED
     assert cancelled.cancelled_at is not None
     with pytest.raises(ValidationError):
-        transition_lab_sample(
-            actor=user, sample_id=sample.id, to_status=LabSampleStatus.RECEIVED
-        )
+        transition_lab_sample(actor=user, sample_id=sample.id, to_status=LabSampleStatus.RECEIVED)
 
 
 @pytest.mark.django_db
@@ -563,9 +559,7 @@ def test_parameter_bound_validation_and_method_create() -> None:
     org = make_org(code=f"L{uuid.uuid4().hex[:6].upper()}")
     user = make_user(employee_code=f"U{uuid.uuid4().hex[:6].upper()}")
     _grant(user, org, LabTestParameter, "manage_laboratory")
-    method = create_test_method_reference(
-        actor=user, organization=org, code="M-2", title="Opaque"
-    )
+    method = create_test_method_reference(actor=user, organization=org, code="M-2", title="Opaque")
     assert method.is_active is True
     with pytest.raises(ValidationError):
         create_lab_test_parameter(

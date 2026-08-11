@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Any
+from uuid import UUID
 
 from django.conf import settings
 
@@ -37,7 +38,7 @@ def environmental_auto_hold_approved() -> bool:
 
 def evaluate_excursion_hold_policy(
     *,
-    organization_id: object,
+    organization_id: UUID,
     evaluation_outcome: str,
 ) -> ExcursionHoldDecision:
     """
@@ -55,9 +56,7 @@ def evaluate_excursion_hold_policy(
             reason_code="NOT_EXCURSION",
             advisory_only=True,
         )
-    policy = EnvironmentalExcursionPolicy.objects.filter(
-        organization_id=organization_id
-    ).first()
+    policy = EnvironmentalExcursionPolicy.objects.filter(organization_id=organization_id).first()
     if policy is None or not policy.auto_hold_enabled:
         return ExcursionHoldDecision(
             create_hold=False,

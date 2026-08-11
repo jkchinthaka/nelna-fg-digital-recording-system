@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import uuid
+from datetime import date, datetime
 
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -58,9 +59,7 @@ class FGProduct(models.Model):
         max_length=128,
         blank=True,
         default="",
-        help_text=(
-            "Optional storage-category label only. Not a CCP/temperature class approval."
-        ),
+        help_text=("Optional storage-category label only. Not a CCP/temperature class approval."),
     )
     shelf_life_reference = models.CharField(
         max_length=255,
@@ -314,7 +313,7 @@ class SpecificationVersion(models.Model):
             SpecificationVersionStatus.RETIRED,
         }
 
-    def is_effective_on(self, as_of) -> bool:
+    def is_effective_on(self, as_of: datetime | date) -> bool:
         """Return True when as_of falls within optional effective window."""
         if self.effective_from is not None and as_of < self.effective_from:
             return False
@@ -411,13 +410,8 @@ class SpecificationParameter(models.Model):
                 "max_inclusive is required when bound_max is set (True/False)."
             )
         if self.warn_min is not None and self.warn_min_inclusive is None:
-            errors["warn_min_inclusive"] = (
-                "warn_min_inclusive is required when warn_min is set."
-            )
+            errors["warn_min_inclusive"] = "warn_min_inclusive is required when warn_min is set."
         if self.warn_max is not None and self.warn_max_inclusive is None:
-            errors["warn_max_inclusive"] = (
-                "warn_max_inclusive is required when warn_max is set."
-            )
+            errors["warn_max_inclusive"] = "warn_max_inclusive is required when warn_max is set."
         if errors:
             raise ValidationError(errors)
-

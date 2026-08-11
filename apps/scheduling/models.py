@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import uuid
+from datetime import datetime
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -67,7 +68,6 @@ class ApplicabilityMatchOutcome(models.TextChoices):
     ONE_MATCH = "ONE_MATCH", "One match"
     MULTIPLE_MATCHES = "MULTIPLE_MATCHES", "Multiple matches (conflict)"
     INVALID_INACTIVE_REFERENCE = "INVALID_INACTIVE_REFERENCE", "Invalid or inactive reference"
-
 
 
 class ChecklistTaskAssigneeKind(models.TextChoices):
@@ -151,7 +151,9 @@ class ChecklistTask(models.Model):
         null=True,
         blank=True,
         related_name="checklist_tasks",
-        help_text="Configured Shift for SHIFT_* triggers. Null for BATCH/SCHEDULED/MANUAL as applicable.",
+        help_text=(
+            "Configured Shift for SHIFT_* triggers. Null for BATCH/SCHEDULED/MANUAL as applicable."
+        ),
     )
     window_start_at = models.DateTimeField(null=True, blank=True)
     window_end_at = models.DateTimeField(null=True, blank=True)
@@ -221,7 +223,9 @@ class ChecklistTask(models.Model):
         null=True,
         blank=True,
         related_name="assigned_checklist_tasks_ownership",
-        help_text="Ownership assignee Shift (distinct from generation trigger shift when both set).",
+        help_text=(
+            "Ownership assignee Shift (distinct from generation trigger shift when both set)."
+        ),
     )
     assigned_team_code = models.CharField(
         max_length=64,
@@ -318,7 +322,9 @@ class ChecklistTask(models.Model):
         self.occurrence_key = occ
         if self.trigger_type == ChecklistTriggerType.BATCH:
             if not ref:
-                raise ValidationError({"batch_reference": "Batch reference cannot be blank for BATCH tasks."})
+                raise ValidationError(
+                    {"batch_reference": "Batch reference cannot be blank for BATCH tasks."}
+                )
         if len(ref) > BATCH_REFERENCE_MAX_LENGTH:
             raise ValidationError(
                 {
@@ -329,8 +335,9 @@ class ChecklistTask(models.Model):
             )
         self.batch_reference = ref
 
-        if self.checklist_template_id and self.organization_id:
-            if self.checklist_template.organization_id != self.organization_id:
+        checklist_template = self.checklist_template
+        if checklist_template is not None and self.organization_id:
+            if checklist_template.organization_id != self.organization_id:
                 raise ValidationError(
                     {
                         "checklist_template": (
@@ -339,8 +346,9 @@ class ChecklistTask(models.Model):
                     }
                 )
 
-        if self.checklist_version_id and self.checklist_template_id:
-            if self.checklist_version.template_id != self.checklist_template_id:
+        checklist_version = self.checklist_version
+        if checklist_version is not None and self.checklist_template_id:
+            if checklist_version.template_id != self.checklist_template_id:
                 raise ValidationError(
                     {
                         "checklist_version": (
@@ -374,7 +382,7 @@ class ChecklistTask(models.Model):
         return self.status == ChecklistTaskStatus.CANCELLED
 
     @property
-    def due_to(self):
+    def due_to(self) -> datetime | None:
         """Alias for due_at — due window end / deadline."""
         return self.due_at
 
@@ -548,13 +556,15 @@ class ChecklistApplicabilityRule(models.Model):
         ):
             errors["effective_to"] = "effective_to cannot be earlier than effective_from."
 
-        if self.checklist_template_id and self.organization_id:
-            if self.checklist_template.organization_id != self.organization_id:
+        checklist_template = self.checklist_template
+        if checklist_template is not None and self.organization_id:
+            if checklist_template.organization_id != self.organization_id:
                 errors["checklist_template"] = (
                     "Checklist template must belong to the same organization."
                 )
-        if self.checklist_version_id and self.checklist_template_id:
-            if self.checklist_version.template_id != self.checklist_template_id:
+        checklist_version = self.checklist_version
+        if checklist_version is not None and self.checklist_template_id:
+            if checklist_version.template_id != self.checklist_template_id:
                 errors["checklist_version"] = (
                     "Checklist version must belong to the selected checklist template."
                 )
@@ -563,27 +573,28 @@ class ChecklistApplicabilityRule(models.Model):
                     "Applicability rules may pin only PUBLISHED checklist versions."
                 )
 
-        if self.product_id and self.organization_id:
-            if self.product.organization_id != self.organization_id:
+        product = self.product
+        if product is not None and self.organization_id:
+            if product.organization_id != self.organization_id:
                 errors["product"] = "Product must belong to the same organization."
-        if self.site_id and self.organization_id:
-            if self.site.organization_id != self.organization_id:
+        site = self.site
+        if site is not None and self.organization_id:
+            if site.organization_id != self.organization_id:
                 errors["site"] = "Site must belong to the same organization."
-        if self.department_id and self.organization_id:
-            if self.department.organization_id != self.organization_id:
+        department = self.department
+        if department is not None and self.organization_id:
+            if department.organization_id != self.organization_id:
                 errors["department"] = "Department must belong to the same organization."
-            elif (
-                self.site_id
-                and self.department.site_id
-                and self.department.site_id != self.site_id
-            ):
+            elif self.site_id and department.site_id and department.site_id != self.site_id:
                 errors["department"] = "Department site must match the rule site when both set."
-        if self.shift_id and self.organization_id:
-            if self.shift.organization_id != self.organization_id:
+        shift = self.shift
+        if shift is not None and self.organization_id:
+            if shift.organization_id != self.organization_id:
                 errors["shift"] = "Shift must belong to the same organization."
 
         if errors:
             raise ValidationError(errors)
+
 
 class ChecklistSchedule(models.Model):
     """
@@ -627,12 +638,16 @@ class ChecklistSchedule(models.Model):
     timezone_name = models.CharField(
         max_length=64,
         default="UTC",
-        help_text="IANA timezone for window/shift interpretation. Default UTC until org policy evidenced.",
+        help_text=(
+            "IANA timezone for window/shift interpretation. Default UTC until org policy evidenced."
+        ),
     )
     window_start_time = models.TimeField(
         null=True,
         blank=True,
-        help_text="Optional daily window start for SCHEDULED triggers. Not a seeded Nelna frequency.",
+        help_text=(
+            "Optional daily window start for SCHEDULED triggers. Not a seeded Nelna frequency."
+        ),
     )
     window_end_time = models.TimeField(
         null=True,
@@ -642,18 +657,25 @@ class ChecklistSchedule(models.Model):
     interval_minutes = models.PositiveIntegerField(
         null=True,
         blank=True,
-        help_text="Optional interval in minutes for SCHEDULED triggers. Blank = not interval-based. Do not invent production values.",
+        help_text=(
+            "Optional interval in minutes for SCHEDULED triggers. Blank = not "
+            "interval-based. Do not invent production values."
+        ),
     )
     due_grace_minutes = models.PositiveIntegerField(
         null=True,
         blank=True,
-        help_text="Optional grace after window end before OVERDUE. Production SLAs EVIDENCE REQUIRED.",
+        help_text=(
+            "Optional grace after window end before OVERDUE. Production SLAs EVIDENCE REQUIRED."
+        ),
     )
     missed_policy = models.CharField(
         max_length=16,
         choices=ChecklistMissedPolicy.choices,
         default=ChecklistMissedPolicy.MARK_MISSED,
-        help_text="Missed-window handling. Never auto-creates NCR. Business choice DECISION REQUIRED.",
+        help_text=(
+            "Missed-window handling. Never auto-creates NCR. Business choice DECISION REQUIRED."
+        ),
     )
     is_active = models.BooleanField(default=True)
     notes = models.TextField(blank=True, default="")
@@ -673,9 +695,7 @@ class ChecklistSchedule(models.Model):
                 name="sched_schedule_org_code_uniq",
             ),
             models.CheckConstraint(
-                condition=(
-                    Q(interval_minutes__isnull=True) | Q(interval_minutes__gte=1)
-                ),
+                condition=(Q(interval_minutes__isnull=True) | Q(interval_minutes__gte=1)),
                 name="sched_schedule_interval_positive",
             ),
         ]
@@ -712,28 +732,29 @@ class ChecklistSchedule(models.Model):
         except Exception:  # noqa: BLE001
             errors["timezone_name"] = f"Unknown timezone: {self.timezone_name}"
 
-        if self.checklist_template_id and self.organization_id:
-            if self.checklist_template.organization_id != self.organization_id:
+        checklist_template = self.checklist_template
+        if checklist_template is not None and self.organization_id:
+            if checklist_template.organization_id != self.organization_id:
                 errors["checklist_template"] = (
                     "Checklist template must belong to the same organization."
                 )
-        if self.checklist_version_id and self.checklist_template_id:
-            if self.checklist_version.template_id != self.checklist_template_id:
+        checklist_version = self.checklist_version
+        if checklist_version is not None and self.checklist_template_id:
+            if checklist_version.template_id != self.checklist_template_id:
                 errors["checklist_version"] = (
                     "Checklist version must belong to the selected checklist template."
                 )
-            elif self.checklist_version.status != ChecklistVersionStatus.PUBLISHED:
-                errors["checklist_version"] = (
-                    "Schedule may pin only PUBLISHED checklist versions."
-                )
+            elif checklist_version.status != ChecklistVersionStatus.PUBLISHED:
+                errors["checklist_version"] = "Schedule may pin only PUBLISHED checklist versions."
         if self.trigger_type in {
             ChecklistTriggerType.SHIFT_START,
             ChecklistTriggerType.SHIFT_END,
         }:
             if not self.shift_id:
                 errors["shift"] = "Shift is required for SHIFT_START / SHIFT_END schedules."
-        if self.shift_id and self.organization_id:
-            if self.shift.organization_id != self.organization_id:
+        shift = self.shift
+        if shift is not None and self.organization_id:
+            if shift.organization_id != self.organization_id:
                 errors["shift"] = "Shift must belong to the same organization."
         if self.trigger_type == ChecklistTriggerType.BATCH:
             errors["trigger_type"] = (
@@ -751,7 +772,6 @@ class ChecklistSchedule(models.Model):
             )
         if errors:
             raise ValidationError(errors)
-
 
 
 class ExternalBatchEventStatus(models.TextChoices):
@@ -872,19 +892,22 @@ class ExternalBatchMapping(models.Model):
                     "ORGANIZATION mappings must not set product/site/shift targets."
                 )
         elif self.mapping_kind == ExternalBatchMappingKind.PRODUCT:
+            product = self.product
             if self.product_id is None:
                 errors["product"] = "PRODUCT mapping requires product."
-            elif self.product.organization_id != self.organization_id:
+            elif product is not None and product.organization_id != self.organization_id:
                 errors["product"] = "Product must belong to mapping organization."
         elif self.mapping_kind == ExternalBatchMappingKind.SITE:
+            site = self.site
             if self.site_id is None:
                 errors["site"] = "SITE mapping requires site."
-            elif self.site.organization_id != self.organization_id:
+            elif site is not None and site.organization_id != self.organization_id:
                 errors["site"] = "Site must belong to mapping organization."
         elif self.mapping_kind == ExternalBatchMappingKind.SHIFT:
+            shift = self.shift
             if self.shift_id is None:
                 errors["shift"] = "SHIFT mapping requires shift."
-            elif self.shift.organization_id != self.organization_id:
+            elif shift is not None and shift.organization_id != self.organization_id:
                 errors["shift"] = "Shift must belong to mapping organization."
         if errors:
             raise ValidationError(errors)
@@ -996,9 +1019,7 @@ class ExternalBatchEvent(models.Model):
         if not self.external_batch_id:
             errors["external_batch_id"] = "external_batch_id cannot be blank."
         if not self.external_organization_key:
-            errors["external_organization_key"] = (
-                "external_organization_key cannot be blank."
-            )
+            errors["external_organization_key"] = "external_organization_key cannot be blank."
         if errors:
             raise ValidationError(errors)
 
@@ -1121,4 +1142,3 @@ class ChecklistTaskAssignmentEvent(models.Model):
         raise ValidationError(
             "ChecklistTaskAssignmentEvent rows are immutable — never delete history."
         )
-

@@ -5,10 +5,9 @@ from __future__ import annotations
 import uuid
 from typing import Any
 
-from celery import shared_task
-
 from apps.reports.services import execute_report_run_by_id
 from apps.security_audit.services import record_event
+from celery import shared_task
 
 
 @shared_task(
@@ -17,7 +16,7 @@ from apps.security_audit.services import record_event
     max_retries=2,
     default_retry_delay=30,
 )  # type: ignore[untyped-decorator]
-def generate_report_run(self, report_run_id: str) -> dict[str, Any]:  # noqa: ANN001
+def generate_report_run(self: Any, report_run_id: str) -> dict[str, Any]:
     """Generate CSV for a ReportRun (idempotent when already COMPLETED)."""
     try:
         run = execute_report_run_by_id(uuid.UUID(report_run_id))

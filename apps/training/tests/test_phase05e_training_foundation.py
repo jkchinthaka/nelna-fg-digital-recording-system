@@ -113,12 +113,15 @@ def test_expired_and_future_training() -> None:
     as_of = datetime.date(2026, 8, 1)
     assert evaluate_training_currency(expired, as_of=as_of) == TrainingCurrency.EXPIRED
     assert evaluate_training_currency(future, as_of=as_of) == TrainingCurrency.FUTURE
-    assert subject_has_valid_general_training(
-        organization=org,
-        subject_user=subject,
-        course_code="COURSE-EXP",
-        as_of=as_of,
-    ) is False
+    assert (
+        subject_has_valid_general_training(
+            organization=org,
+            subject_user=subject,
+            course_code="COURSE-EXP",
+            as_of=as_of,
+        )
+        is False
+    )
 
 
 @pytest.mark.django_db
@@ -329,9 +332,7 @@ def test_update_and_gate_policy_recommendations() -> None:
         == RecordingGateRecommendation.WARN
     )
     assert (
-        recommend_recording_gate_action(
-            currency=expired_currency, gate_mode=TrainingGateMode.BLOCK
-        )
+        recommend_recording_gate_action(currency=expired_currency, gate_mode=TrainingGateMode.BLOCK)
         == RecordingGateRecommendation.BLOCK
     )
     assert (
@@ -418,9 +419,7 @@ def test_selectors_and_coverage_edges() -> None:
     assert list_training_records(None).count() == 0
     assert list_training_records(viewer, organization=org_a).count() == 1
     assert list_training_records(viewer, organization=org_b).count() == 0
-    valid = list_valid_training_for_subject(
-        viewer, organization=org_a, subject_user=subject
-    )
+    valid = list_valid_training_for_subject(viewer, organization=org_a, subject_user=subject)
     assert len(valid) == 1
 
     other = create_training_record(
@@ -435,17 +434,13 @@ def test_selectors_and_coverage_edges() -> None:
     with pytest.raises(PermissionDenied):
         get_training_enforcement_policy(viewer, org_b)
 
-    set_training_enforcement_policy(
-        actor=actor, organization=org_a, gate_mode=TrainingGateMode.OFF
-    )
+    set_training_enforcement_policy(actor=actor, organization=org_a, gate_mode=TrainingGateMode.OFF)
     set_training_enforcement_policy(
         actor=actor, organization=org_a, gate_mode=TrainingGateMode.BLOCK, notes="stored only"
     )
     assert get_training_enforcement_policy(viewer, org_a) is not None
     with pytest.raises(ValidationError):
-        set_training_enforcement_policy(
-            actor=actor, organization=org_a, gate_mode="NOPE"
-        )
+        set_training_enforcement_policy(actor=actor, organization=org_a, gate_mode="NOPE")
 
     with pytest.raises(ValidationError):
         TrainingRecord(
@@ -468,9 +463,12 @@ def test_admin_blocks_hard_delete() -> None:
         },
     )()
     assert TrainingRecordAdmin(TrainingRecord, admin_site).has_delete_permission(request) is False
-    assert TrainingEnforcementPolicyAdmin(
-        TrainingEnforcementPolicy, admin_site
-    ).has_delete_permission(request) is False
+    assert (
+        TrainingEnforcementPolicyAdmin(TrainingEnforcementPolicy, admin_site).has_delete_permission(
+            request
+        )
+        is False
+    )
     assert "delete_selected" not in TrainingRecordAdmin(TrainingRecord, admin_site).get_actions(
         request
     )

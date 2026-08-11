@@ -9,12 +9,10 @@
         <strong>Control point:</strong> {{ control_point_label }}
       {% endif %}
       {% if criticality %}
-        {% if control_point_class and control_point_class != "NONE" %} · {% endif %}
+        {% if control_point_class and control_point_class != "NONE" %}·{% endif %}
         <strong>Criticality:</strong> {{ criticality_label }}
       {% endif %}
-      <span class="recording-control-point__note">
-        (metadata only — not HOLD/REJECT/RELEASE)
-      </span>
+      <span class="recording-control-point__note">(metadata only — not HOLD/REJECT/RELEASE)</span>
     </span>
   </p>
 {% endif %}

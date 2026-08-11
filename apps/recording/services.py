@@ -535,11 +535,11 @@ def validate_record_ready_for_submission(
 def _apply_equipment_refs(
     *,
     record: ChecklistRecord,
-    items: dict,
-    existing: dict,
-    equipment_refs: dict,
+    items: dict[Any, Any],
+    existing: dict[Any, Any],
+    equipment_refs: dict[Any, Any],
     actor: User | None = None,
-    calibration_overrides: dict | None = None,
+    calibration_overrides: dict[Any, Any] | None = None,
 ) -> None:
     """Attach measuring device + frozen calibration snapshot; respect policy settings."""
     if not equipment_refs:
@@ -613,13 +613,10 @@ def _apply_equipment_refs(
         )
         if not policy.allowed:
             raise ValidationError(
-                {
-                    str(key[0]): [
-                        f"Device not permitted ({policy.reason_code} / {policy.fitness})."
-                    ]
-                }
+                {str(key[0]): [f"Device not permitted ({policy.reason_code} / {policy.fitness})."]}
             )
-        assert eligibility.equipment is not None
+        if eligibility.equipment is None:
+            raise ValidationError({str(key[0]): ["Device not permitted (missing equipment)."]})
         measured_at = timezone.now()
         snap = build_device_trace_snapshot(
             equipment=eligibility.equipment,
@@ -637,9 +634,7 @@ def _apply_equipment_refs(
             "equipment_id": str(eligibility.equipment.id),
             "equipment_code": eligibility.equipment.code,
             "calibration_record_id": (
-                str(eligibility.calibration_record.id)
-                if eligibility.calibration_record
-                else None
+                str(eligibility.calibration_record.id) if eligibility.calibration_record else None
             ),
             "fitness": eligibility.fitness,
             "policy_outcome": policy.outcome,
@@ -656,6 +651,7 @@ def _apply_equipment_refs(
                 "updated_at",
             ]
         )
+
 
 def save_checklist_draft_responses(
     *,
@@ -861,7 +857,7 @@ def save_checklist_draft_responses(
 
 def _measurement_context_for_response(
     response: ChecklistResponse, item: ChecklistItem
-) -> dict | None:
+) -> dict[str, object] | None:
     """Prefer draft measurement_context; rebuild from value+definition if needed."""
     ctx = getattr(response, "measurement_context", None)
     if isinstance(ctx, dict) and ctx.get("captured_value") is not None:
@@ -888,7 +884,7 @@ def _measurement_context_for_response(
     )
 
 
-def _control_point_context_for_item(item: ChecklistItem) -> dict:
+def _control_point_context_for_item(item: ChecklistItem) -> dict[str, object]:
     """Frozen definition metadata (06L + optional HACCP/sampling contexts)."""
     from apps.checklists.control_point import build_control_point_snapshot
 

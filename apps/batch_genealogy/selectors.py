@@ -29,25 +29,17 @@ def get_node_by_key(
     ).first()
 
 
-def edges_from_node(
-    *, organization_id: uuid.UUID, node_id: uuid.UUID
-) -> QuerySet[GenealogyEdge]:
+def edges_from_node(*, organization_id: uuid.UUID, node_id: uuid.UUID) -> QuerySet[GenealogyEdge]:
     return (
-        GenealogyEdge.objects.filter(
-            organization_id=organization_id, from_node_id=node_id
-        )
+        GenealogyEdge.objects.filter(organization_id=organization_id, from_node_id=node_id)
         .select_related("from_node", "to_node")
         .order_by("created_at")
     )
 
 
-def edges_to_node(
-    *, organization_id: uuid.UUID, node_id: uuid.UUID
-) -> QuerySet[GenealogyEdge]:
+def edges_to_node(*, organization_id: uuid.UUID, node_id: uuid.UUID) -> QuerySet[GenealogyEdge]:
     return (
-        GenealogyEdge.objects.filter(
-            organization_id=organization_id, to_node_id=node_id
-        )
+        GenealogyEdge.objects.filter(organization_id=organization_id, to_node_id=node_id)
         .select_related("from_node", "to_node")
         .order_by("created_at")
     )

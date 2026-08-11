@@ -199,4 +199,3 @@ class SupervisorReviewGovernancePolicy(models.Model):
             errors["review_sla_minutes"] = "review_sla_minutes must be >= 1 when configured."
         if errors:
             raise ValidationError(errors)
-

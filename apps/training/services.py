@@ -156,9 +156,7 @@ def _validate_scope_associations(
                 {"equipment": "Equipment must belong to the selected organization."}
             )
     elif equipment is not None:
-        raise ValidationError(
-            {"equipment": "equipment is only applicable for EQUIPMENT scope."}
-        )
+        raise ValidationError({"equipment": "equipment is only applicable for EQUIPMENT scope."})
 
     if competency_scope == CompetencyScopeKind.BUSINESS_ROLE:
         if business_role is None:
@@ -207,9 +205,7 @@ def create_training_record(
     if status not in TrainingRecordStatus.values:
         raise ValidationError({"status": "Unknown training record status."})
     if expires_on is not None and expires_on < trained_on:
-        raise ValidationError(
-            {"expires_on": "expires_on cannot be earlier than trained_on."}
-        )
+        raise ValidationError({"expires_on": "expires_on cannot be earlier than trained_on."})
     process_ref = (process_reference or "").strip()
     _validate_scope_associations(
         organization=organization,
@@ -284,9 +280,7 @@ def update_training_record(
     next_trained = trained_on if trained_on is not None else record.trained_on
     next_expires = record.expires_on if expires_on is _UNSET else expires_on
     if next_expires is not None and next_expires < next_trained:
-        raise ValidationError(
-            {"expires_on": "expires_on cannot be earlier than trained_on."}
-        )
+        raise ValidationError({"expires_on": "expires_on cannot be earlier than trained_on."})
 
     field_map: dict[str, Any] = {
         "course_code": (
@@ -403,10 +397,7 @@ def set_training_enforcement_policy(
         created = True
     else:
         before_mode = policy.gate_mode
-        if (
-            policy.gate_mode == gate_mode
-            and policy.notes == (notes or "").strip()
-        ):
+        if policy.gate_mode == gate_mode and policy.notes == (notes or "").strip():
             return policy
         policy.gate_mode = gate_mode
         policy.notes = (notes or "").strip()

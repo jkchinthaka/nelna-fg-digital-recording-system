@@ -30,8 +30,20 @@
               <a href="{% url 'master_data:product_detail' product.id %}">{{ product.code }}</a>
             </td>
             <td>{{ product.name }}</td>
-            <td>{% if product.erp_item_code %}{{ product.erp_item_code }}{% else %}—{% endif %}</td>
-            <td>{% if product.category %}{{ product.category }}{% else %}—{% endif %}</td>
+            <td>
+              {% if product.erp_item_code %}
+                {{ product.erp_item_code }}
+              {% else %}
+                —
+              {% endif %}
+            </td>
+            <td>
+              {% if product.category %}
+                {{ product.category }}
+              {% else %}
+                —
+              {% endif %}
+            </td>
             <td>{{ product.organization.code }} — {{ product.organization.name }}</td>
             <td>
               {% if product.is_active %}

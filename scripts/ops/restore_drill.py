@@ -181,8 +181,8 @@ def main() -> int:
             # Dump to stdout inside container, capture on host.
             dump_cmd = pg("pg_dump", *common, "-Fc", source_db)
             print("+", " ".join(_redact_cmd(dump_cmd)), ">", str(dump))
-            with dump.open("wb") as handle:
-                subprocess.check_call(dump_cmd, env=env, stdout=handle)
+            with dump.open("wb") as dump_writer:
+                subprocess.check_call(dump_cmd, env=env, stdout=dump_writer)
             # Stream restore via stdin into scratch DB.
             restore_cmd = pg(
                 "pg_restore",
@@ -193,8 +193,8 @@ def main() -> int:
                 "--if-exists",
             )
             print("+", " ".join(_redact_cmd(restore_cmd)), "<", str(dump))
-            with dump.open("rb") as handle:
-                subprocess.check_call(restore_cmd, env=env, stdin=handle)
+            with dump.open("rb") as dump_reader:
+                subprocess.check_call(restore_cmd, env=env, stdin=dump_reader)
         else:
             run(
                 pg("pg_dump", *common, "-Fc", "-f", str(dump), source_db),

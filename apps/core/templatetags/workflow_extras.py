@@ -7,9 +7,9 @@ from typing import Any
 from django import template
 
 from apps.core.checklist_workflow import (
-    ChecklistOperationalWorkflowState,
     QA_TERMINAL_SEMANTICS_NOTE,
     STATE_LABELS,
+    ChecklistOperationalWorkflowState,
     derive_checklist_workflow,
     workflow_badge_class,
 )

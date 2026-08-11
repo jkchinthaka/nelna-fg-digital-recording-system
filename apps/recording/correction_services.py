@@ -365,7 +365,9 @@ def assert_record_editable_for_actor(record: ChecklistRecord) -> ChecklistCorrec
     return correction
 
 
-def _measurement_context_for_response(response, item: ChecklistItem):
+def _measurement_context_for_response(
+    response: ChecklistResponse, item: ChecklistItem
+) -> dict[str, object] | None:
     ctx = getattr(response, "measurement_context", None)
     if isinstance(ctx, dict):
         return ctx
@@ -386,7 +388,7 @@ def _measurement_context_for_response(response, item: ChecklistItem):
     )
 
 
-def _control_point_context_for_item(item: ChecklistItem) -> dict:
+def _control_point_context_for_item(item: ChecklistItem) -> dict[str, object]:
     """Frozen definition metadata (06L + optional HACCP/sampling contexts)."""
     from apps.checklists.control_point import build_control_point_snapshot
 

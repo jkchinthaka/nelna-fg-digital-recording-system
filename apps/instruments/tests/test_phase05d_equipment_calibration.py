@@ -327,7 +327,6 @@ def test_site_only_cannot_create_org_wide_equipment() -> None:
         )
 
 
-
 @pytest.mark.django_db
 def test_authorization_and_validation_coverage_edges() -> None:
     import uuid
@@ -369,9 +368,7 @@ def test_authorization_and_validation_coverage_edges() -> None:
         create_equipment(
             actor=actor, organization=org_a, code="BADT", name="Bad", equipment_type="NOPE"
         )
-    equipment = create_equipment(
-        actor=actor, organization=org_a, code="EQCV1", name="Cover"
-    )
+    equipment = create_equipment(actor=actor, organization=org_a, code="EQCV1", name="Cover")
     with pytest.raises(IntegrityError), transaction.atomic():
         Equipment.objects.create(organization=org_a, code="EQCV1", name="DupDB")
 
@@ -457,9 +454,10 @@ def test_admin_blocks_hard_delete() -> None:
         },
     )()
     assert EquipmentAdmin(Equipment, admin_site).has_delete_permission(request) is False
-    assert CalibrationRecordAdmin(CalibrationRecord, admin_site).has_delete_permission(
-        request
-    ) is False
+    assert (
+        CalibrationRecordAdmin(CalibrationRecord, admin_site).has_delete_permission(request)
+        is False
+    )
     assert "delete_selected" not in EquipmentAdmin(Equipment, admin_site).get_actions(request)
 
 

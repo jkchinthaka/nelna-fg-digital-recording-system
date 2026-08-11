@@ -45,9 +45,7 @@ class RecallCaseStatus(models.TextChoices):
 
 
 RECALL_STATUS_TRANSITIONS: dict[str, frozenset[str]] = {
-    RecallCaseStatus.DRAFT: frozenset(
-        {RecallCaseStatus.OPEN, RecallCaseStatus.CANCELLED}
-    ),
+    RecallCaseStatus.DRAFT: frozenset({RecallCaseStatus.OPEN, RecallCaseStatus.CANCELLED}),
     RecallCaseStatus.OPEN: frozenset(
         {
             RecallCaseStatus.IN_PROGRESS,
@@ -221,9 +219,7 @@ class RecallCase(models.Model):
 
         mock_mode = self.mode == RecallCaseMode.MOCK_EXERCISE
         if self.is_mock != mock_mode:
-            raise ValidationError(
-                {"is_mock": "is_mock must match mode=MOCK_EXERCISE."}
-            )
+            raise ValidationError({"is_mock": "is_mock must match mode=MOCK_EXERCISE."})
         if self.is_mock:
             if not code.upper().startswith(MOCK_RECALL_CODE_PREFIX):
                 raise ValidationError(
@@ -557,14 +553,8 @@ class MockExerciseMetrics(models.Model):
             raise ValidationError(
                 {"recall_case": "Mock metrics require a MOCK_EXERCISE recall case."}
             )
-        if (
-            self.completed_at
-            and self.started_at
-            and self.completed_at < self.started_at
-        ):
-            raise ValidationError(
-                {"completed_at": "completed_at cannot be before started_at."}
-            )
+        if self.completed_at and self.started_at and self.completed_at < self.started_at:
+            raise ValidationError({"completed_at": "completed_at cannot be before started_at."})
 
 
 class MockRecallFinding(models.Model):

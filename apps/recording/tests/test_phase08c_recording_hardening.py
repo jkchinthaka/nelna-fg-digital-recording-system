@@ -1,4 +1,4 @@
-﻿"""Phase 08C — shop-floor checklist recording hardening tests."""
+"""Phase 08C — shop-floor checklist recording hardening tests."""
 
 from __future__ import annotations
 
@@ -10,9 +10,9 @@ import pytest
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
+from django.db import connection
 from django.test import Client
 from django.test.utils import CaptureQueriesContext
-from django.db import connection
 from django.urls import reverse
 from tests.factories import grant_role, make_org, make_role_with_permission, make_user
 
@@ -20,7 +20,6 @@ from apps.accounts.models import User
 from apps.checklists.models import ChecklistResponseType, ChecklistTemplate
 from apps.checklists.services import (
     add_checklist_item,
-    add_checklist_item_option,
     add_checklist_section,
     create_checklist_template,
     create_checklist_version,
@@ -139,7 +138,9 @@ def _published(*, actor: User, org: Organization, code: str = "CHK08C") -> dict[
     }
 
 
-def _start_record(*, org: Organization, batch: str) -> tuple[User, User, dict[str, Any], ChecklistRecord]:
+def _start_record(
+    *, org: Organization, batch: str
+) -> tuple[User, User, dict[str, Any], ChecklistRecord]:
     manager = _task_manager(org=org)
     recorder = _recorder(org=org)
     published = _published(actor=manager, org=org, code=f"C{batch[-4:]}")
@@ -282,10 +283,9 @@ def test_equipment_hook_and_cross_org_no_leakage() -> None:
         expected_draft_version=1,
         equipment_refs={(published["number"].id, 1): str(equipment.id)},
     )
-    row = ChecklistResponse.objects.get(
-        checklist_record=record, checklist_item=published["number"]
-    )
+    row = ChecklistResponse.objects.get(checklist_record=record, checklist_item=published["number"])
     assert row.equipment_id == equipment.id
+    assert row.evidence_hook is not None
     assert row.evidence_hook["attachment_module"].startswith("Phase 11")
 
     with pytest.raises(ValidationError):
@@ -320,6 +320,7 @@ def test_mobile_viewport_markup_and_query_bounds() -> None:
     # Editor should stay within a bounded query budget (prefetch sections/items).
     assert len(ctx) < 60
 
+
 @pytest.mark.django_db
 def test_session_expiry_redirects_and_resume_after_login() -> None:
     """Online recovery: expired session -> login -> safe resume to draft editor."""
@@ -347,8 +348,9 @@ def test_session_expiry_redirects_and_resume_after_login() -> None:
     session.save()
     client2.force_login(recorder)
     # Mimic post-login redirect path used by accounts login helper.
-    from apps.accounts.views import _safe_post_login_redirect
     from django.test import RequestFactory
+
+    from apps.accounts.views import _safe_post_login_redirect
 
     req = RequestFactory().get("/accounts/login/")
     req.session = client2.session
@@ -361,4 +363,3 @@ def test_session_expiry_redirects_and_resume_after_login() -> None:
     assert bounce.status_code == 302
     assert reverse("accounts:login") in bounce["Location"]
     assert "next=" in bounce["Location"]
-

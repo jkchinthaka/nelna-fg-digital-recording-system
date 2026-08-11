@@ -6,7 +6,6 @@ import csv
 import io
 from collections.abc import Iterable, Mapping, Sequence
 
-
 _FORMULA_PREFIXES = ("=", "+", "-", "@", "\t", "\r")
 
 

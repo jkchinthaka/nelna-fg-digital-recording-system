@@ -51,9 +51,7 @@ ENTITY_ORGANIZATION = "organization"
 ENTITY_SITE = "site"
 ENTITY_DEPARTMENT = "department"
 ENTITY_SHIFT = "shift"
-VALID_ENTITY_TYPES = frozenset(
-    {ENTITY_ORGANIZATION, ENTITY_SITE, ENTITY_DEPARTMENT, ENTITY_SHIFT}
-)
+VALID_ENTITY_TYPES = frozenset({ENTITY_ORGANIZATION, ENTITY_SITE, ENTITY_DEPARTMENT, ENTITY_SHIFT})
 
 
 @dataclass(frozen=True)
@@ -303,9 +301,10 @@ def _validate_rows(rows: list[_ParsedRow]) -> tuple[list[ImportRowError], list[s
             continue
 
         if row.entity_type == ENTITY_SITE:
-            if org is not None and Site.objects.filter(
-                organization=org, code__iexact=row.code
-            ).exists():
+            if (
+                org is not None
+                and Site.objects.filter(organization=org, code__iexact=row.code).exists()
+            ):
                 duplicates.append(key)
                 _append_error(
                     errors,
@@ -320,9 +319,7 @@ def _validate_rows(rows: list[_ParsedRow]) -> tuple[list[ImportRowError], list[s
         if row.site_code:
             site_key = f"{row.organization_code}:{row.site_code}"
             if org is not None:
-                site = Site.objects.filter(
-                    organization=org, code__iexact=row.site_code
-                ).first()
+                site = Site.objects.filter(organization=org, code__iexact=row.site_code).first()
             site_known = site is not None or site_key in pending_sites
             if not site_known:
                 _append_error(
@@ -541,7 +538,7 @@ def import_organization_hierarchy(
             }
             dept_by_key: dict[str, Department] = {}
             for d in Department.objects.select_related("organization", "site"):
-                site_part = normalize_code(d.site.code) if d.site_id else ""
+                site_part = normalize_code(d.site.code) if d.site is not None else ""
                 dept_by_key[
                     f"{normalize_code(d.organization.code)}:{site_part}:{normalize_code(d.code)}"
                 ] = d
@@ -559,9 +556,7 @@ def import_organization_hierarchy(
                     created["organizations"].append(str(org.id))
                 elif row.entity_type == ENTITY_SITE:
                     org = org_by_code[normalize_code(row.organization_code)]
-                    require_permission(
-                        actor, MANAGE_SITE, scope=Scope(organization_id=org.id)
-                    )
+                    require_permission(actor, MANAGE_SITE, scope=Scope(organization_id=org.id))
                     site = create_site(
                         actor=actor,
                         organization=org,
@@ -569,13 +564,11 @@ def import_organization_hierarchy(
                         name=row.name,
                         is_active=row.is_active,
                     )
-                    site_by_key[
-                        f"{normalize_code(org.code)}:{normalize_code(site.code)}"
-                    ] = site
+                    site_by_key[f"{normalize_code(org.code)}:{normalize_code(site.code)}"] = site
                     created["sites"].append(str(site.id))
                 elif row.entity_type == ENTITY_DEPARTMENT:
                     org = org_by_code[normalize_code(row.organization_code)]
-                    site = (
+                    dept_site: Site | None = (
                         site_by_key.get(
                             f"{normalize_code(org.code)}:{normalize_code(row.site_code)}"
                         )
@@ -587,7 +580,7 @@ def import_organization_hierarchy(
                         MANAGE_DEPARTMENT,
                         scope=Scope(
                             organization_id=org.id,
-                            site_id=site.id if site is not None else None,
+                            site_id=dept_site.id if dept_site is not None else None,
                         ),
                     )
                     dept = create_department(
@@ -595,17 +588,17 @@ def import_organization_hierarchy(
                         organization=org,
                         code=row.code,
                         name=row.name,
-                        site=site,
+                        site=dept_site,
                         is_active=row.is_active,
                     )
-                    site_part = normalize_code(site.code) if site is not None else ""
+                    site_part = normalize_code(dept_site.code) if dept_site is not None else ""
                     dept_by_key[
                         f"{normalize_code(org.code)}:{site_part}:{normalize_code(dept.code)}"
                     ] = dept
                     created["departments"].append(str(dept.id))
                 else:
                     org = org_by_code[normalize_code(row.organization_code)]
-                    site = (
+                    lookup_site: Site | None = (
                         site_by_key.get(
                             f"{normalize_code(org.code)}:{normalize_code(row.site_code)}"
                         )
@@ -619,8 +612,12 @@ def import_organization_hierarchy(
                             f"{normalize_code(row.site_code)}:"
                             f"{normalize_code(row.department_code)}"
                         )
-                    assert row.start_time is not None and row.end_time is not None
-                    assert row.effective_from is not None
+                    if row.start_time is None or row.end_time is None:
+                        raise ValidationError(
+                            {"shift": "Shift start_time and end_time are required."}
+                        )
+                    if row.effective_from is None:
+                        raise ValidationError({"shift": "Shift effective_from is required."})
                     shift = create_shift(
                         actor=actor,
                         organization=org,
@@ -630,15 +627,13 @@ def import_organization_hierarchy(
                         end_time=row.end_time,
                         effective_from=row.effective_from,
                         effective_to=row.effective_to,
-                        site=site,
+                        site=lookup_site,
                         department=dept,
                         is_active=row.is_active,
                     )
                     created["shifts"].append(str(shift.id))
     except (ValidationError, PermissionDenied) as exc:
-        preview.errors.append(
-            ImportRowError(row_number=0, field="import", message=str(exc))
-        )
+        preview.errors.append(ImportRowError(row_number=0, field="import", message=str(exc)))
         preview.message = "Atomic write aborted."
         record_event(
             event_type="ORGANIZATION_HIERARCHY_IMPORT_FAILED",

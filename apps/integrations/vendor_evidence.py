@@ -91,11 +91,7 @@ def evidence_is_complete() -> bool:
 
 
 def missing_evidence_codes() -> list[str]:
-    return [
-        item.code
-        for item in VENDOR_EVIDENCE_REGISTER
-        if item.status != EvidenceStatus.PRESENT
-    ]
+    return [item.code for item in VENDOR_EVIDENCE_REGISTER if item.status != EvidenceStatus.PRESENT]
 
 
 def assert_live_calls_allowed() -> None:

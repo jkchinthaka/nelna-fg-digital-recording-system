@@ -64,9 +64,7 @@ def _can_view_partner(user: User, organization_id: uuid.UUID) -> bool:
     return user_has_permission(user, VIEW_PARTNER, scope=_org_scope(organization_id))
 
 
-def _serialize_node(
-    node: GenealogyNode, *, include_partner: bool
-) -> dict[str, Any]:
+def _serialize_node(node: GenealogyNode, *, include_partner: bool) -> dict[str, Any]:
     payload: dict[str, Any] = {
         "id": str(node.id),
         "kind": node.kind,
@@ -199,9 +197,7 @@ def upsert_genealogy_node(
     if not key:
         raise ValidationError({"external_key": "External key is required."})
 
-    existing = get_node_by_key(
-        organization_id=organization.id, kind=kind, external_key=key
-    )
+    existing = get_node_by_key(organization_id=organization.id, kind=kind, external_key=key)
     if existing is not None:
         existing.display_label = (display_label or existing.display_label or "").strip()[:255]
         existing.supplier_reference = (supplier_reference or existing.supplier_reference).strip()[
@@ -628,9 +624,7 @@ def trace_backward(
     """FG/production batch → component/material lots → supplier/receipt refs."""
     user = _require_actor(actor)
     require_permission(user, VIEW, scope=_org_scope(organization.id))
-    root = get_node_by_key(
-        organization_id=organization.id, kind=kind, external_key=external_key
-    )
+    root = get_node_by_key(organization_id=organization.id, kind=kind, external_key=external_key)
     if root is None:
         raise ValidationError({"external_key": "Genealogy node not found for organization."})
     return _trace(
@@ -653,9 +647,7 @@ def trace_forward(
     """Source material lot → produced batches → shipments/customer destinations."""
     user = _require_actor(actor)
     require_permission(user, VIEW, scope=_org_scope(organization.id))
-    root = get_node_by_key(
-        organization_id=organization.id, kind=kind, external_key=external_key
-    )
+    root = get_node_by_key(organization_id=organization.id, kind=kind, external_key=external_key)
     if root is None:
         raise ValidationError({"external_key": "Genealogy node not found for organization."})
     return _trace(
@@ -682,9 +674,7 @@ def project_flat_mongo_documents(
     """
     user = _require_actor(actor)
     require_permission(user, VIEW, scope=_org_scope(organization.id))
-    root = get_node_by_key(
-        organization_id=organization.id, kind=kind, external_key=external_key
-    )
+    root = get_node_by_key(organization_id=organization.id, kind=kind, external_key=external_key)
     if root is None:
         raise ValidationError({"external_key": "Genealogy node not found for organization."})
     include_partner = False  # Mongo projection keeps partner fields redacted by default

@@ -10,6 +10,7 @@ from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.core import mail
 from django.core.exceptions import PermissionDenied, ValidationError
+from django.core.mail import EmailMultiAlternatives
 from tests.factories import grant_role, make_org, make_role_with_permission, make_user
 
 from apps.accounts.models import User
@@ -174,7 +175,7 @@ def test_template_escaping_and_sms_blocked() -> None:
 
 
 @pytest.mark.django_db
-def test_email_retry_idempotent(settings) -> None:
+def test_email_retry_idempotent(settings: Any) -> None:
     settings.EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
     settings.EMAIL_HOST = "localhost"
     org = make_org(code=f"N{uuid.uuid4().hex[:6].upper()}")
@@ -207,8 +208,9 @@ def test_email_retry_idempotent(settings) -> None:
     assert attempt.status == NotificationDeliveryStatus.DELIVERED
     assert len(mail.outbox) >= 1
     html = ""
-    if mail.outbox[-1].alternatives:
-        html = mail.outbox[-1].alternatives[0][0]
+    last_message = mail.outbox[-1]
+    if isinstance(last_message, EmailMultiAlternatives) and last_message.alternatives:
+        html = str(last_message.alternatives[0][0])
     assert "no checklist answers" in html.lower() or "review notes" in html.lower()
     assert "<script>" not in html
     assert "YES" not in mail.outbox[-1].body  # no sample answer values

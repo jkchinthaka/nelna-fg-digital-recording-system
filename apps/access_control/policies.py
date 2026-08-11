@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from uuid import UUID
+
 from apps.access_control.services import (
     Scope,
     get_accessible_departments,
@@ -18,14 +20,14 @@ def can_access(
     user: User | None,
     permission: str,
     *,
-    organization_id: object | None = None,
-    site_id: object | None = None,
-    department_id: object | None = None,
+    organization_id: UUID | None = None,
+    site_id: UUID | None = None,
+    department_id: UUID | None = None,
 ) -> bool:
     scope = Scope(
-        organization_id=organization_id,  # type: ignore[arg-type]
-        site_id=site_id,  # type: ignore[arg-type]
-        department_id=department_id,  # type: ignore[arg-type]
+        organization_id=organization_id,
+        site_id=site_id,
+        department_id=department_id,
     )
     return user_has_permission(user, permission, scope=scope)
 
@@ -34,14 +36,14 @@ def assert_can_access(
     user: User | None,
     permission: str,
     *,
-    organization_id: object | None = None,
-    site_id: object | None = None,
-    department_id: object | None = None,
+    organization_id: UUID | None = None,
+    site_id: UUID | None = None,
+    department_id: UUID | None = None,
 ) -> None:
     scope = Scope(
-        organization_id=organization_id,  # type: ignore[arg-type]
-        site_id=site_id,  # type: ignore[arg-type]
-        department_id=department_id,  # type: ignore[arg-type]
+        organization_id=organization_id,
+        site_id=site_id,
+        department_id=department_id,
     )
     require_permission(user, permission, scope=scope)
 

@@ -117,15 +117,9 @@ def _version_metadata(
         "organization_id": str(version.template.organization_id),
         "version_number": version.version_number,
         "status": version.status,
-        "effective_from": (
-            version.effective_from.isoformat() if version.effective_from else None
-        ),
-        "effective_to": (
-            version.effective_to.isoformat() if version.effective_to else None
-        ),
-        "published_at": (
-            version.published_at.isoformat() if version.published_at else None
-        ),
+        "effective_from": (version.effective_from.isoformat() if version.effective_from else None),
+        "effective_to": (version.effective_to.isoformat() if version.effective_to else None),
+        "published_at": (version.published_at.isoformat() if version.published_at else None),
     }
     if extra:
         meta.update(extra)
@@ -2050,11 +2044,11 @@ def _validate_publish_structure(version: ChecklistVersion) -> None:
     # Evaluation rules (Phase 06K) — structural validity only; no invented limits.
     for item in items_by_id.values():
         try:
-            rule = item.evaluation_rule
+            eval_rule = item.evaluation_rule
         except ChecklistItemEvaluationRule.DoesNotExist:
             continue
         try:
-            rule.full_clean()
+            eval_rule.full_clean()
         except ValidationError as exc:
             detail = "; ".join(
                 str(m)

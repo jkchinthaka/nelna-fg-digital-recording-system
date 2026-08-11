@@ -310,7 +310,9 @@ class ComplianceControlMapping(models.Model):
     def clean(self) -> None:
         super().clean()
         if not (self.clause_reference or "").strip():
-            raise ValidationError({"clause_reference": "Clause / requirement reference is required."})
+            raise ValidationError(
+                {"clause_reference": "Clause / requirement reference is required."}
+            )
         self.clause_reference = (self.clause_reference or "").strip()
         if not (self.system_control_reference or "").strip():
             raise ValidationError(

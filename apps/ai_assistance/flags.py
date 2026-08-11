@@ -1,4 +1,4 @@
-﻿"""Feature flag helpers — AI assistance is optional and off by default.
+"""Feature flag helpers — AI assistance is optional and off by default.
 
 Canonical enablement checks for orchestration also live in ``policy``;
 this module exposes shared env accessors for providers and retention.

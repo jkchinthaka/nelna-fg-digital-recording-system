@@ -3,9 +3,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from uuid import UUID
 
 from django.conf import settings
 
+from apps.accounts.models import User
+from apps.organizations.models import Organization
 from apps.rework.models import ReworkPolicyStub
 
 
@@ -22,7 +25,7 @@ class ReworkErpDecision:
         return {"allowed": self.allowed, "reason_code": self.reason_code}
 
 
-def evaluate_rework_erp_stock_movement(*, organization_id) -> ReworkErpDecision:
+def evaluate_rework_erp_stock_movement(*, organization_id: UUID) -> ReworkErpDecision:
     if not rework_erp_stock_movement_approved():
         return ReworkErpDecision(allowed=False, reason_code="SETTINGS_APPROVAL_MISSING")
     stub = (
@@ -38,7 +41,7 @@ def evaluate_rework_erp_stock_movement(*, organization_id) -> ReworkErpDecision:
     return ReworkErpDecision(allowed=True, reason_code="APPROVED")
 
 
-def get_policy_value(*, organization_id, policy_key: str) -> str | None:
+def get_policy_value(*, organization_id: UUID, policy_key: str) -> str | None:
     return (
         ReworkPolicyStub.objects.filter(
             organization_id=organization_id,
@@ -50,7 +53,11 @@ def get_policy_value(*, organization_id, policy_key: str) -> str | None:
 
 
 def upsert_policy_stub(
-    *, organization, policy_key: str, policy_value_reference: str, actor
+    *,
+    organization: Organization,
+    policy_key: str,
+    policy_value_reference: str,
+    actor: User,
 ) -> ReworkPolicyStub:
     stub, _created = ReworkPolicyStub.objects.update_or_create(
         organization=organization,

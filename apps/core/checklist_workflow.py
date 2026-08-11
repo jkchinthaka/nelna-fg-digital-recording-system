@@ -7,8 +7,8 @@ coherent operator-facing lifecycle label from those owners.
 from __future__ import annotations
 
 import uuid
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Iterable
 
 from django.db.models import Prefetch, QuerySet
 
@@ -105,7 +105,9 @@ def workflow_badge_class(state: str | None) -> str:
         ChecklistOperationalWorkflowState.PENDING: "status-pill status-pill--neutral",
         ChecklistOperationalWorkflowState.IN_RECORDING: "status-pill status-pill--info",
         ChecklistOperationalWorkflowState.AWAITING_SUPERVISOR: "status-pill status-pill--warning",
-        ChecklistOperationalWorkflowState.RETURNED_FOR_CORRECTION: "status-pill status-pill--warning",
+        ChecklistOperationalWorkflowState.RETURNED_FOR_CORRECTION: (
+            "status-pill status-pill--warning"
+        ),
         ChecklistOperationalWorkflowState.CORRECTION_DRAFT: "status-pill status-pill--info",
         ChecklistOperationalWorkflowState.AWAITING_SUPERVISOR_RESUBMISSION: (
             "status-pill status-pill--warning"
@@ -171,16 +173,15 @@ def detect_workflow_inconsistencies(
             issues.append("CANCELLED_TASK_WITH_DRAFT_RECORD")
     if record is not None and record.status == ChecklistRecordStatus.DRAFT and latest is not None:
         issues.append("DRAFT_RECORD_WITH_SUBMISSION")
-    if (
-        record is not None
-        and record.status == ChecklistRecordStatus.SUBMITTED
-        and latest is None
-    ):
+    if record is not None and record.status == ChecklistRecordStatus.SUBMITTED and latest is None:
         issues.append("SUBMITTED_RECORD_WITHOUT_SUBMISSION")
     if correction_draft is not None:
         if record is None or record.status != ChecklistRecordStatus.SUBMITTED:
             issues.append("CORRECTION_DRAFT_WITHOUT_SUBMITTED_RECORD")
-        if supervisor is None or supervisor.decision != SupervisorReviewDecision.RETURNED_FOR_CORRECTION:
+        if (
+            supervisor is None
+            or supervisor.decision != SupervisorReviewDecision.RETURNED_FOR_CORRECTION
+        ):
             # Correction must start from RETURNED on its source; if latest already moved on,
             # draft correction on non-latest source is still possible historically — flag when
             # latest supervisor is APPROVED while a draft correction exists.
@@ -359,35 +360,31 @@ def workflow_prefilter_queryset(
     Narrow candidates before exact derive. Never invents a stored workflow column.
     """
     state = (workflow_state or "").strip().upper()
-    S = ChecklistOperationalWorkflowState
-    if state not in S.ALL:
+    workflow_states = ChecklistOperationalWorkflowState
+    if state not in workflow_states.ALL:
         return qs.none()
-    if state == S.CANCELLED:
-        return qs.filter(
-            status__in=[ChecklistTaskStatus.CANCELLED, ChecklistTaskStatus.MISSED]
-        )
-    qs = qs.exclude(
-        status__in=[ChecklistTaskStatus.CANCELLED, ChecklistTaskStatus.MISSED]
-    )
-    if state == S.PENDING:
+    if state == workflow_states.CANCELLED:
+        return qs.filter(status__in=[ChecklistTaskStatus.CANCELLED, ChecklistTaskStatus.MISSED])
+    qs = qs.exclude(status__in=[ChecklistTaskStatus.CANCELLED, ChecklistTaskStatus.MISSED])
+    if state == workflow_states.PENDING:
         return qs.filter(checklist_record__isnull=True)
-    if state == S.IN_RECORDING:
+    if state == workflow_states.IN_RECORDING:
         return qs.filter(checklist_record__status=ChecklistRecordStatus.DRAFT)
     # Remaining states require SUBMITTED record.
     qs = qs.filter(checklist_record__status=ChecklistRecordStatus.SUBMITTED)
-    if state == S.CORRECTION_DRAFT:
+    if state == workflow_states.CORRECTION_DRAFT:
         return qs.filter(
             checklist_record__corrections__status=ChecklistCorrectionStatus.DRAFT
         ).distinct()
-    if state in S.QA_TERMINAL or state == S.AWAITING_QA:
+    if state in workflow_states.QA_TERMINAL or state == workflow_states.AWAITING_QA:
         # Broad: has APPROVED supervisor on some submission; exact derive finalizes.
         return qs.filter(
             checklist_record__submissions__supervisor_review__decision=SupervisorReviewDecision.APPROVED
         ).distinct()
     if state in {
-        S.AWAITING_SUPERVISOR,
-        S.AWAITING_SUPERVISOR_RESUBMISSION,
-        S.RETURNED_FOR_CORRECTION,
+        workflow_states.AWAITING_SUPERVISOR,
+        workflow_states.AWAITING_SUPERVISOR_RESUBMISSION,
+        workflow_states.RETURNED_FOR_CORRECTION,
     }:
         return qs
     return qs
@@ -414,7 +411,7 @@ def workflow_prefetch_queryset(qs: QuerySet[ChecklistTask]) -> QuerySet[Checklis
     return prefetch_workflow_graph(qs)
 
 
-def workflow_context_for_task(task: ChecklistTask) -> dict:
+def workflow_context_for_task(task: ChecklistTask) -> dict[str, object]:
     snap = derive_checklist_workflow(task)
     return {
         "workflow": snap,
@@ -424,4 +421,3 @@ def workflow_context_for_task(task: ChecklistTask) -> dict:
         "qa_terminal_note": QA_TERMINAL_SEMANTICS_NOTE if snap.is_qa_terminal else "",
         "state_ownership": STATE_OWNERSHIP,
     }
-

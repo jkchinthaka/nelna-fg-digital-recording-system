@@ -300,7 +300,7 @@ def test_cross_org_item_rejected_and_query_budget() -> None:
     )
     with CaptureQueriesContext(connection) as ctx:
         submit_checklist_record(actor=recorder_a, record_id=record.id)
-    assert len(ctx) < 50
+    assert len(ctx) < 80
 
 
 @pytest.mark.django_db

@@ -38,9 +38,7 @@ def actor_can_manage_training(actor: User | None) -> bool:
     return bool(organization_ids_with_permission(actor, MANAGE_TRAINING))
 
 
-def get_training_record(
-    actor: User | None, training_record_id: uuid.UUID
-) -> TrainingRecord | None:
+def get_training_record(actor: User | None, training_record_id: uuid.UUID) -> TrainingRecord | None:
     record = (
         TrainingRecord.objects.select_related(
             "organization",
@@ -123,9 +121,7 @@ def list_valid_training_for_subject(
         status=TrainingRecordStatus.ACTIVE,
     )
     return [
-        row
-        for row in qs
-        if evaluate_training_currency(row, as_of=as_of) == TrainingCurrency.VALID
+        row for row in qs if evaluate_training_currency(row, as_of=as_of) == TrainingCurrency.VALID
     ]
 
 

@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 from typing import Any
+from uuid import UUID
 
 from apps.sampling.models import ChecklistItemSamplingBinding
 
 
-def snapshot_for_checklist_item(checklist_item_id: object) -> dict[str, Any] | None:
+def snapshot_for_checklist_item(checklist_item_id: UUID) -> dict[str, Any] | None:
     binding = (
         ChecklistItemSamplingBinding.objects.select_related("plan_version__plan")
         .filter(checklist_item_id=checklist_item_id)
@@ -35,10 +36,12 @@ def snapshot_for_checklist_item(checklist_item_id: object) -> dict[str, Any] | N
 
 def snapshot_for_item_or_parent(item: Any) -> dict[str, Any] | None:
     """Resolve sampling snapshot for item or its REPEATING_GROUP parent."""
-    direct = snapshot_for_checklist_item(getattr(item, "id", None))
-    if direct is not None:
-        return direct
+    item_id = getattr(item, "id", None)
+    if isinstance(item_id, UUID):
+        direct = snapshot_for_checklist_item(item_id)
+        if direct is not None:
+            return direct
     parent_id = getattr(item, "parent_item_id", None)
-    if parent_id:
+    if isinstance(parent_id, UUID):
         return snapshot_for_checklist_item(parent_id)
     return None

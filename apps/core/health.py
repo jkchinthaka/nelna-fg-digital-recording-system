@@ -85,9 +85,9 @@ def check_mongodb_optional() -> dict[str, Any]:
     if not bool(getattr(settings, "HEALTHCHECK_MONGODB_ENABLED", False)):
         return {"name": "mongodb", "status": "skipped", "detail": "probe_disabled"}
     try:
-        from pymongo import MongoClient  # type: ignore[import-untyped]
+        from pymongo import MongoClient
 
-        client = MongoClient(uri, serverSelectionTimeoutMS=2000)
+        client: Any = MongoClient(uri, serverSelectionTimeoutMS=2000)
         client.admin.command("ping")
         client.close()
         return {"name": "mongodb", "status": "ok"}

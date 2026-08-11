@@ -177,9 +177,7 @@ def recordable_task_list(request: HttpRequest) -> HttpResponse:
     _require_recording_module(request)
     workflow_raw = (request.GET.get("workflow") or "all").strip().upper()
     workflow_state = (
-        workflow_raw
-        if workflow_raw in ChecklistOperationalWorkflowState.ALL
-        else "all"
+        workflow_raw if workflow_raw in ChecklistOperationalWorkflowState.ALL else "all"
     )
     tasks = list(list_recordable_checklist_tasks(_actor(request))[:500])
     ordered = attach_workflow_snapshots(tasks)
@@ -220,15 +218,14 @@ def start_recording(request: HttpRequest, task_id: uuid.UUID) -> HttpResponse:
     return redirect("recording:record_detail", record_id=record.id)
 
 
-
-
 def _equipment_choices_for_org(organization_id: uuid.UUID) -> list[tuple[str, str]]:
     from apps.instruments.device_traceability import equipment_choice_label
     from apps.instruments.models import Equipment
 
     rows = list(
-        Equipment.objects.filter(organization_id=organization_id, is_active=True)
-        .order_by("code")[:500]
+        Equipment.objects.filter(organization_id=organization_id, is_active=True).order_by("code")[
+            :500
+        ]
     )
     return [("", "— Select device —")] + [
         (str(row.id), equipment_choice_label(row)) for row in rows
@@ -277,7 +274,6 @@ def _section_progress(sections: list[Any], completeness: dict[str, Any]) -> list
             }
         )
     return progress
-
 
 
 @login_required
@@ -709,8 +705,7 @@ def correction_detail(request: HttpRequest, correction_id: uuid.UUID) -> HttpRes
                     record_id=record.id,
                     answers=form.answers_by_item_id(),
                     expected_draft_version=int(
-                        form.cleaned_data.get("expected_draft_version")
-                        or record.draft_version
+                        form.cleaned_data.get("expected_draft_version") or record.draft_version
                     ),
                     save_mode=SAVE_MODE_MANUAL,
                     equipment_refs=form.equipment_refs_by_key(),

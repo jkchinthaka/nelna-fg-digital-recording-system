@@ -11,6 +11,7 @@ from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.test import override_settings
+from tests.factories import grant_role, make_org, make_role_with_permission, make_user
 
 from apps.accounts.models import User
 from apps.batch_genealogy.models import GenealogyNode, GenealogyNodeKind, GenealogyRelationKind
@@ -52,7 +53,6 @@ from apps.recall.services import (
     user_has_explicit_scoped_permission,
 )
 from apps.security_audit.models import SecurityAuditEvent
-from tests.factories import grant_role, make_org, make_role_with_permission, make_user
 
 
 def _perm(model: type[Any], codename: str) -> Permission:
@@ -103,7 +103,7 @@ def _link(
     to_kind: str,
     to_key: str,
     relation: str = GenealogyRelationKind.CONSUMED_INTO,
-):
+) -> Any:
     return ingest_erp_genealogy_link(
         actor=actor,
         organization=org,
@@ -266,9 +266,7 @@ def test_genealogy_expansion_and_missing_erp_links() -> None:
         b.batch_reference for b in batches_for_case(case_id=case.id)
     }
 
-    blocked = attempt_erp_distribution_pull(
-        actor=actor, organization=org, case_id=case.id
-    )
+    blocked = attempt_erp_distribution_pull(actor=actor, organization=org, case_id=case.id)
     assert blocked["allowed"] is False
     assert "ERP_DISTRIBUTION_PULL_GATE" in blocked["missing_erp_links"]
     assert blocked["live_pull_not_executed"] is True
@@ -280,9 +278,7 @@ def test_genealogy_expansion_and_missing_erp_links() -> None:
         procedure_reference="PROC-TBC",
     )
     with override_settings(RECALL_ERP_DISTRIBUTION_PULL_APPROVED=True):
-        prepared = attempt_erp_distribution_pull(
-            actor=actor, organization=org, case_id=case.id
-        )
+        prepared = attempt_erp_distribution_pull(actor=actor, organization=org, case_id=case.id)
     assert prepared["allowed"] is True
     assert "LIVE_ERP_ADAPTER_NOT_APPROVED" in prepared["missing_erp_links"]
     assert ship in prepared["shipment_refs"]
@@ -326,9 +322,7 @@ def test_authorization_superuser_and_staff_denied_initiate() -> None:
         initiate_recall_case(actor=staff_admin, organization=org, case_id=case.id)
 
     initiator = _recall_user(org=org, initiate=True)
-    opened = initiate_recall_case(
-        actor=initiator, organization=org, case_id=case.id
-    )
+    opened = initiate_recall_case(actor=initiator, organization=org, case_id=case.id)
     assert opened.status == RecallCaseStatus.OPEN
 
 
@@ -414,9 +408,7 @@ def test_quantity_reconciliation_and_communication_no_auto_send() -> None:
     )
     assert comm.reference == "COMM-REF-001"
 
-    blocked = attempt_external_notification(
-        actor=actor, organization=org, case_id=case.id
-    )
+    blocked = attempt_external_notification(actor=actor, organization=org, case_id=case.id)
     assert blocked["allowed"] is False
     assert blocked["message_not_sent"] is True
     assert blocked["no_auto_authority_contact"] is True
@@ -433,9 +425,7 @@ def test_quantity_reconciliation_and_communication_no_auto_send() -> None:
     assert decision.reason_code == "SETTINGS_APPROVAL_MISSING"
 
     with override_settings(RECALL_EXTERNAL_NOTIFICATION_APPROVED=True):
-        prepared = attempt_external_notification(
-            actor=actor, organization=org, case_id=case.id
-        )
+        prepared = attempt_external_notification(actor=actor, organization=org, case_id=case.id)
     assert prepared["allowed"] is True
     assert prepared["message_not_sent"] is True
 

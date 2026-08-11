@@ -1,8 +1,9 @@
-﻿"""Bounded read selectors for electronic batch quality dossier — Phase 35."""
+"""Bounded read selectors for electronic batch quality dossier — Phase 35."""
 
 from __future__ import annotations
 
 import uuid
+from collections.abc import Callable
 from typing import Any
 
 from django.db.models import Prefetch, Q, QuerySet
@@ -37,9 +38,7 @@ def clamp_offset(offset: int | None) -> int:
     return max(0, int(offset or 0))
 
 
-def tasks_for_batch(
-    *, organization_id: uuid.UUID, batch_reference: str
-) -> QuerySet[ChecklistTask]:
+def tasks_for_batch(*, organization_id: uuid.UUID, batch_reference: str) -> QuerySet[ChecklistTask]:
     ref = normalize_batch_reference(batch_reference)
     return (
         ChecklistTask.objects.filter(
@@ -112,9 +111,7 @@ def supervisor_reviews_for_batch(
     )
 
 
-def qa_reviews_for_batch(
-    *, organization_id: uuid.UUID, batch_reference: str
-) -> QuerySet[QAReview]:
+def qa_reviews_for_batch(*, organization_id: uuid.UUID, batch_reference: str) -> QuerySet[QAReview]:
     ref = normalize_batch_reference(batch_reference)
     return (
         QAReview.objects.filter(
@@ -187,9 +184,7 @@ def ncrs_for_batch(
     ).order_by("created_at")
 
 
-def holds_for_batch(
-    *, organization_id: uuid.UUID, batch_reference: str
-) -> QuerySet[HoldCase]:
+def holds_for_batch(*, organization_id: uuid.UUID, batch_reference: str) -> QuerySet[HoldCase]:
     ref = normalize_batch_reference(batch_reference)
     return (
         HoldCase.objects.filter(
@@ -244,14 +239,12 @@ def external_batch_events_for_batch(
     )
 
 
-def integration_attempts_for_events(
-    *, event_ids: list[uuid.UUID]
-) -> QuerySet[IntegrationAttempt]:
+def integration_attempts_for_events(*, event_ids: list[uuid.UUID]) -> QuerySet[IntegrationAttempt]:
     if not event_ids:
         return IntegrationAttempt.objects.none()
-    return IntegrationAttempt.objects.filter(
-        external_batch_event_id__in=event_ids
-    ).order_by("created_at")
+    return IntegrationAttempt.objects.filter(external_batch_event_id__in=event_ids).order_by(
+        "created_at"
+    )
 
 
 def evidence_for_linked_targets(
@@ -289,7 +282,7 @@ def page_values(
     *,
     limit: int,
     offset: int,
-    serializer,
+    serializer: Callable[[Any], dict[str, Any]],
 ) -> tuple[tuple[dict[str, Any], ...], int, bool]:
     safe_limit = clamp_limit(limit)
     safe_offset = clamp_offset(offset)

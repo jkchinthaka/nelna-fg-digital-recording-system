@@ -2,9 +2,13 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from django import forms
 
 from apps.access_control.services import organization_ids_with_permission
+from apps.accounts.models import User
+from apps.core.type_guards import require_model_choice_field
 from apps.master_data.models import FGProduct
 from apps.organizations.models import Department, Organization, Shift, Site
 from apps.scheduling.applicability import VIEW_APPLICABILITY
@@ -19,32 +23,41 @@ class ApplicabilityPreviewForm(forms.Form):
     process_reference = forms.CharField(required=False, max_length=128)
     as_of = forms.DateField(required=False, input_formats=["%Y-%m-%d"])
 
-    def __init__(self, *args, actor=None, **kwargs):  # type: ignore[no-untyped-def]
+    def __init__(
+        self,
+        *args: Any,
+        actor: User | None = None,
+        **kwargs: Any,
+    ) -> None:
         super().__init__(*args, **kwargs)
-        allowed = (
-            organization_ids_with_permission(actor, VIEW_APPLICABILITY) if actor else []
+        organization_field = require_model_choice_field(
+            self.fields["organization"], name="organization"
         )
-        self.fields["organization"].queryset = Organization.objects.filter(
-            pk__in=allowed
-        ).order_by("code")
+        allowed = organization_ids_with_permission(actor, VIEW_APPLICABILITY) if actor else []
+        organization_field.queryset = Organization.objects.filter(pk__in=allowed).order_by("code")
         org = None
         if self.is_bound:
             org_id = self.data.get("organization")
-            org = self.fields["organization"].queryset.filter(pk=org_id).first()
+            if org_id:
+                org = organization_field.queryset.filter(pk=str(org_id)).first()
         elif self.initial.get("organization"):
-            org = self.fields["organization"].queryset.filter(
-                pk=self.initial["organization"]
-            ).first()
+            org = organization_field.queryset.filter(pk=self.initial["organization"]).first()
         if org is not None:
-            self.fields["product"].queryset = FGProduct.objects.filter(
+            product_field = require_model_choice_field(self.fields["product"], name="product")
+            site_field = require_model_choice_field(self.fields["site"], name="site")
+            department_field = require_model_choice_field(
+                self.fields["department"], name="department"
+            )
+            shift_field = require_model_choice_field(self.fields["shift"], name="shift")
+            product_field.queryset = FGProduct.objects.filter(
                 organization=org, is_active=True
             ).order_by("code")
-            self.fields["site"].queryset = Site.objects.filter(
+            site_field.queryset = Site.objects.filter(organization=org, is_active=True).order_by(
+                "code"
+            )
+            department_field.queryset = Department.objects.filter(
                 organization=org, is_active=True
             ).order_by("code")
-            self.fields["department"].queryset = Department.objects.filter(
-                organization=org, is_active=True
-            ).order_by("code")
-            self.fields["shift"].queryset = Shift.objects.filter(
-                organization=org, is_active=True
-            ).order_by("code")
+            shift_field.queryset = Shift.objects.filter(organization=org, is_active=True).order_by(
+                "code"
+            )

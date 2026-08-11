@@ -7,17 +7,25 @@ import uuid
 from typing import Any
 
 import pytest
+from django.contrib import admin
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.test import override_settings
+from tests.factories import grant_role, make_org, make_role_with_permission, make_user
 
 from apps.accounts.models import User
+from apps.batch_dossier.admin import SoftRetentionAdmin
 from apps.batch_dossier.models import (
     BatchDossierExportStatus,
     BatchDossierPolicy,
 )
 from apps.batch_dossier.policy import evaluate_batch_dossier_pdf_export
+from apps.batch_dossier.selectors import (
+    evidence_for_linked_targets,
+    normalize_batch_reference,
+    page_values,
+)
 from apps.batch_dossier.services import (
     assemble_batch_quality_dossier,
     prepare_batch_dossier_pdf_export,
@@ -33,6 +41,10 @@ from apps.checklists.services import (
     create_checklist_version,
     publish_checklist_version,
 )
+from apps.dispatch.models import DispatchQualityRecord
+from apps.dispatch.services import create_dispatch_quality_record
+from apps.evidence.models import EvidenceAttachment, EvidenceLinkedKind
+from apps.evidence.services import upload_evidence_attachment
 from apps.instruments.models import Equipment
 from apps.integrations.models import IntegrationAttempt
 from apps.ipqc.models import IpqcProcessCheckDefinition, IpqcTriggerKind
@@ -46,6 +58,8 @@ from apps.laboratory.services import register_lab_sample
 from apps.nonconformance.models import HoldCase, NonConformanceRecord
 from apps.nonconformance.services import create_hold_case, create_nonconformance
 from apps.organizations.models import Organization
+from apps.quality.models import QAReview, QAReviewDecision
+from apps.quality.services import create_qa_review
 from apps.recording.correction_services import start_checklist_correction
 from apps.recording.models import ChecklistCorrectionStatus
 from apps.recording.services import (
@@ -58,16 +72,6 @@ from apps.reviews.services import create_supervisor_review
 from apps.scheduling.models import ChecklistTask
 from apps.scheduling.services import create_batch_checklist_task
 from apps.security_audit.models import SecurityAuditEvent
-from apps.quality.models import QAReview, QAReviewDecision
-from apps.quality.services import create_qa_review
-from apps.dispatch.models import DispatchQualityRecord
-from apps.dispatch.services import create_dispatch_quality_record
-from apps.evidence.models import EvidenceAttachment, EvidenceLinkedKind
-from apps.evidence.services import upload_evidence_attachment
-from django.contrib import admin
-from apps.batch_dossier.admin import SoftRetentionAdmin
-from apps.batch_dossier.selectors import (evidence_for_linked_targets, page_values, normalize_batch_reference)
-from tests.factories import grant_role, make_org, make_role_with_permission, make_user
 
 
 def _perm(model: type[Any], codename: str) -> Permission:
@@ -127,7 +131,7 @@ def _dossier_user(*, org: Organization) -> User:
     return user
 
 
-def _published_fg_checklist(actor: User, org: Organization):
+def _published_fg_checklist(actor: User, org: Organization) -> Any:
     template = create_checklist_template(
         actor=actor,
         organization=org,
@@ -148,11 +152,9 @@ def _published_fg_checklist(actor: User, org: Organization):
     return template, published, item
 
 
-def _submit_task(actor: User, task: ChecklistTask, item_id: uuid.UUID):
+def _submit_task(actor: User, task: ChecklistTask, item_id: uuid.UUID) -> Any:
     record = start_checklist_recording(actor=actor, task_id=task.id)
-    save_checklist_draft_responses(
-        actor=actor, record_id=record.id, answers={(item_id, 1): "YES"}
-    )
+    save_checklist_draft_responses(actor=actor, record_id=record.id, answers={(item_id, 1): "YES"})
     return submit_checklist_record(actor=actor, record_id=record.id)
 
 
@@ -252,9 +254,7 @@ def test_complete_batch_partial_no_lab_hold_capa_export_cross_org() -> None:
         batch_reference=batch,
         checklist_submission=submission,
     )
-    dossier = assemble_batch_quality_dossier(
-        actor=actor, organization=org, batch_reference=batch
-    )
+    dossier = assemble_batch_quality_dossier(actor=actor, organization=org, batch_reference=batch)
     payload = dossier.as_dict()
     assert payload["mutable_records_not_duplicated"] is True
     assert payload["identity"]["batch_reference"] == batch
@@ -281,17 +281,13 @@ def test_complete_batch_partial_no_lab_hold_capa_export_cross_org() -> None:
         checklist_version_id=version.id,
         batch_reference=batch2,
     )
-    partial = assemble_batch_quality_dossier(
-        actor=actor, organization=org, batch_reference=batch2
-    )
+    partial = assemble_batch_quality_dossier(actor=actor, organization=org, batch_reference=batch2)
     assert partial.sections["lab_results"]["access"] in {"ALLOWED", "EMPTY"}
     assert partial.sections["lab_results"]["total_count"] == 0
     assert partial.sections["fg_checklist_tasks"]["total_count"] >= 1
 
     with pytest.raises(PermissionDenied):
-        assemble_batch_quality_dossier(
-            actor=outsider, organization=org, batch_reference=batch
-        )
+        assemble_batch_quality_dossier(actor=outsider, organization=org, batch_reference=batch)
 
     export_req = prepare_batch_dossier_pdf_export(
         actor=actor, organization=org, batch_reference=batch
@@ -319,9 +315,7 @@ def test_complete_batch_partial_no_lab_hold_capa_export_cross_org() -> None:
         assert prepared.metadata.get("pdf_not_generated") is True
 
     with pytest.raises(ValidationError):
-        assemble_batch_quality_dossier(
-            actor=actor, organization=org, batch_reference="  "
-        )
+        assemble_batch_quality_dossier(actor=actor, organization=org, batch_reference="  ")
 
     assert sample.batch_reference == batch
 
@@ -368,9 +362,7 @@ def test_multiple_corrections_and_query_performance() -> None:
     corr2 = start_checklist_correction(actor=actor, source_submission_id=sub2.id)
     assert corr2.id != corr1.id
 
-    dossier = assemble_batch_quality_dossier(
-        actor=actor, organization=org, batch_reference=batch
-    )
+    dossier = assemble_batch_quality_dossier(actor=actor, organization=org, batch_reference=batch)
     assert dossier.sections["corrections"]["total_count"] >= 2
     assert dossier.sections["submissions"]["total_count"] >= 2
 
@@ -420,9 +412,7 @@ def test_section_authz_denied_and_helpers() -> None:
         checklist_version_id=version.id,
         batch_reference=batch,
     )
-    dossier = assemble_batch_quality_dossier(
-        actor=viewer, organization=org, batch_reference=batch
-    )
+    dossier = assemble_batch_quality_dossier(actor=viewer, organization=org, batch_reference=batch)
     assert dossier.sections["fg_checklist_tasks"]["access"] in {"ALLOWED", "EMPTY"}
     assert dossier.sections["lab_results"]["access"] == "DENIED"
     assert dossier.sections["ncr"]["access"] == "DENIED"
@@ -440,12 +430,11 @@ def test_section_authz_denied_and_helpers() -> None:
 
     policy = BatchDossierPolicy(organization=org, updated_by=actor)
     assert "batch dossier policy" in str(policy)
-    req = prepare_batch_dossier_pdf_export(
-        actor=actor, organization=org, batch_reference=batch
-    )
+    req = prepare_batch_dossier_pdf_export(actor=actor, organization=org, batch_reference=batch)
     assert "EBR-EXPORT" in str(req) or req.batch_reference == batch
     assert SoftRetentionAdmin(BatchDossierPolicy, admin.site).has_delete_permission(None) is False
     from apps.batch_dossier.assembly import DossierSectionPage
+
     page = DossierSectionPage(
         key="demo", access="EMPTY", items=(), total_count=0, limit=10, offset=0, has_more=False
     )
@@ -453,5 +442,3 @@ def test_section_authz_denied_and_helpers() -> None:
     upsert_batch_dossier_policy(actor=actor, organization=org, pdf_export_enabled=True)
     with override_settings(BATCH_DOSSIER_PDF_EXPORT_APPROVED=True):
         assert evaluate_batch_dossier_pdf_export(organization_id=org.id).allowed is True
-
-

@@ -1,10 +1,11 @@
-﻿"""Phase 34 — In-Process Quality Control (IPQC) workflow tests."""
+"""Phase 34 — In-Process Quality Control (IPQC) workflow tests."""
 
 from __future__ import annotations
 
 import time
 import uuid
-from datetime import date, time as dt_time, timedelta
+from datetime import date, timedelta
+from datetime import time as dt_time
 from decimal import Decimal
 from typing import Any
 
@@ -14,6 +15,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.test import override_settings
 from django.utils import timezone
+from tests.factories import grant_role, make_org, make_role_with_permission, make_user
 
 from apps.accounts.models import User
 from apps.checklists.models import ChecklistResponseType, ChecklistTemplate
@@ -71,7 +73,6 @@ from apps.organizations.models import Organization, Shift
 from apps.organizations.services import create_shift
 from apps.scheduling.models import ChecklistTask
 from apps.security_audit.models import SecurityAuditEvent
-from tests.factories import grant_role, make_org, make_role_with_permission, make_user
 
 
 def _perm(model: type[Any], codename: str) -> Permission:
@@ -113,7 +114,7 @@ def _ipqc_manager(*, org: Organization) -> User:
     return user
 
 
-def _published_ipqc_checklist(actor: User, org: Organization):
+def _published_ipqc_checklist(actor: User, org: Organization) -> Any:
     template = create_checklist_template(
         actor=actor,
         organization=org,
@@ -212,9 +213,7 @@ def test_scheduled_generation_process_scope_measurement_equipment_failure_ncr() 
         min_inclusive=True,
         max_inclusive=True,
     )
-    approve_specification_version(
-        actor=actor, version_id=spec_version.id, approval_reference="SYN"
-    )
+    approve_specification_version(actor=actor, version_id=spec_version.id, approval_reference="SYN")
     param = SpecificationParameter.objects.get(version=spec_version, code="TEMP")
     measurement = record_ipqc_measurement(
         actor=actor, case=case, parameter=param, value=Decimal("9.0")
@@ -241,9 +240,7 @@ def test_scheduled_generation_process_scope_measurement_equipment_failure_ncr() 
     )
     assert case.haccp_metadata_snapshot["company_ccp_classification"] == "EVIDENCE_REQUIRED"
 
-    decision = evaluate_ipqc_fail_stop_policy(
-        organization_id=org.id, failure_detected=True
-    )
+    decision = evaluate_ipqc_fail_stop_policy(organization_id=org.id, failure_detected=True)
     assert decision.stop_production is False
     assert decision.reason_code == "POLICY_DISABLED"
 
@@ -271,9 +268,7 @@ def test_scheduled_generation_process_scope_measurement_equipment_failure_ncr() 
     assert case.workflow_status == IpqcWorkflowStatus.COMPLETED
     assert case.frozen_process_context.get("not_fg_release") is True
 
-    target = resolve_linked_target(
-        kind=EvidenceLinkedKind.IPQC_INSPECTION_CASE, object_id=case.id
-    )
+    target = resolve_linked_target(kind=EvidenceLinkedKind.IPQC_INSPECTION_CASE, object_id=case.id)
     assert target.organization_id == org.id
     assert target.linkage_immutable is True
 
@@ -337,9 +332,7 @@ def test_batch_trigger_dashboard_cross_org_and_stop_gate() -> None:
         procedure_reference="PROC-TBC",
     )
     with override_settings(IPQC_STOP_PRODUCTION_ON_FAIL_APPROVED=False):
-        decision = evaluate_ipqc_fail_stop_policy(
-            organization_id=org_a.id, failure_detected=True
-        )
+        decision = evaluate_ipqc_fail_stop_policy(organization_id=org_a.id, failure_detected=True)
         assert decision.stop_production is False
         assert decision.reason_code == "SETTINGS_APPROVAL_MISSING"
 
@@ -381,7 +374,7 @@ def test_shift_and_production_order_triggers() -> None:
         end_time=dt_time(14, 0),
         effective_from=date.today(),
     )
-    shift_def = create_ipqc_process_check_definition(
+    _shift_def = create_ipqc_process_check_definition(
         actor=actor,
         organization=org,
         code=f"SH-{uuid.uuid4().hex[:5].upper()}",

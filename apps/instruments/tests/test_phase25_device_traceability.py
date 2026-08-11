@@ -173,6 +173,7 @@ def test_valid_device_snapshot_and_historical_freeze() -> None:
     )
     assert response.equipment_id == equipment.id
     assert response.calibration_record_id == calib.id
+    assert response.device_trace_context is not None
     assert response.device_trace_context["fitness_at_measurement"] == CalibrationFitness.VALID
     assert response.device_trace_context["certificate_reference"] == "CERT-OPAQUE-1"
     assert response.device_trace_context["not_qa_disposition"] is True
@@ -188,6 +189,7 @@ def test_valid_device_snapshot_and_historical_freeze() -> None:
     snap = ChecklistSubmissionResponse.objects.get(checklist_item=item, sample_index=1)
     assert snap.equipment_id == equipment.id
     assert snap.calibration_record_id == calib.id
+    assert snap.device_trace_context is not None
     assert snap.device_trace_context["equipment_name"] == "Probe A"
     assert snap.device_trace_context["calibration_record_id"] == str(calib.id)
 
@@ -366,11 +368,10 @@ def test_override_when_approved() -> None:
         record_id=record.id,
         answers={(item.id, 1): Decimal("3")},
         equipment_refs={(item.id, 1): str(equipment.id)},
-        calibration_overrides={
-            (item.id, 1): {"override": True, "reason": "Emergency line check"}
-        },
+        calibration_overrides={(item.id, 1): {"override": True, "reason": "Emergency line check"}},
     )
     response = ChecklistResponse.objects.get(checklist_record=record, checklist_item=item)
+    assert response.device_trace_context is not None
     assert response.device_trace_context["policy"]["outcome"] == "OVERRIDE"
     assert SecurityAuditEvent.objects.filter(event_type="DEVICE_CALIBRATION_OVERRIDE").exists()
 

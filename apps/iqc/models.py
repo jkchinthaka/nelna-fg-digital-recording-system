@@ -84,6 +84,7 @@ class IncomingReceiptEvent(models.Model):
 
     class Meta:
         ordering = ("-created_at",)
+
         permissions = [
             ("manage_iqc", "Can manage IQC workflow / ingest receipt events"),
             ("disposition_iqc", "Can complete IQC local disposition"),
@@ -185,9 +186,7 @@ class IqcInspectionCase(models.Model):
         super().clean()
         if self.receipt_id and self.organization_id:
             if self.receipt.organization_id != self.organization_id:
-                raise ValidationError(
-                    {"receipt": "Receipt must belong to the organization."}
-                )
+                raise ValidationError({"receipt": "Receipt must belong to the organization."})
 
 
 class IqcWorkflowPolicy(models.Model):
@@ -252,3 +251,6 @@ class IqcHistoryEntry(models.Model):
 
     class Meta:
         ordering = ("-created_at",)
+
+    def __str__(self) -> str:
+        return f"{self.event_type}:{self.inspection_case_id}"

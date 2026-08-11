@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import date
 from typing import Any
+from uuid import UUID
 
 from apps.packaging.models import ArtworkVersion, ArtworkVersionStatus, ChecklistItemArtworkBinding
 
@@ -20,9 +21,7 @@ def build_frozen_artwork_context(version: ArtworkVersion) -> dict[str, Any]:
         "artwork_version_id": str(version.id),
         "version_number": version.version_number,
         "status": version.status,
-        "effective_from": (
-            version.effective_from.isoformat() if version.effective_from else None
-        ),
+        "effective_from": (version.effective_from.isoformat() if version.effective_from else None),
         "effective_to": version.effective_to.isoformat() if version.effective_to else None,
         "approval_reference": version.approval_reference or "",
         "date_code_format_reference": version.date_code_format_reference or "",
@@ -35,11 +34,9 @@ def build_frozen_artwork_context(version: ArtworkVersion) -> dict[str, Any]:
     }
 
 
-def snapshot_for_checklist_item(checklist_item_id: object) -> dict[str, Any] | None:
+def snapshot_for_checklist_item(checklist_item_id: UUID) -> dict[str, Any] | None:
     binding = (
-        ChecklistItemArtworkBinding.objects.select_related(
-            "artwork_version__artwork__product"
-        )
+        ChecklistItemArtworkBinding.objects.select_related("artwork_version__artwork__product")
         .filter(checklist_item_id=checklist_item_id)
         .first()
     )

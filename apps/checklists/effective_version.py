@@ -235,13 +235,15 @@ def assert_exactly_one_effective_version(
     """
     resolution = resolve_effective_checklist_version(template_id=template_id, as_of=as_of)
     if resolution.outcome == EffectiveVersionOutcome.ONE_ELIGIBLE_VERSION:
-        assert resolution.selected_version is not None
+        if resolution.selected_version is None:
+            raise ValidationError(
+                {"checklist_version": "ONE_ELIGIBLE_VERSION without a selected version."}
+            )
         return resolution.selected_version
     raise ValidationError(
         {
             "checklist_version": (
-                f"{resolution.outcome}: {resolution.message} "
-                f"(as_of={resolution.as_of.isoformat()})"
+                f"{resolution.outcome}: {resolution.message} (as_of={resolution.as_of.isoformat()})"
             ),
             "effective_version_outcome": resolution.outcome,
             "blocked": True,

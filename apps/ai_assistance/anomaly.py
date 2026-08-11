@@ -12,7 +12,9 @@ class AdvisoryAnomaly:
     severity: str = "INFO"  # INFO | ADVISORY only — not a misconduct finding
 
 
-def evaluate_advisory_anomalies(*, counts: dict[str, object] | None = None) -> list[AdvisoryAnomaly]:
+def evaluate_advisory_anomalies(
+    *, counts: dict[str, object] | None = None
+) -> list[AdvisoryAnomaly]:
     """
     Simple threshold hints from caller-supplied counts.
 
@@ -22,7 +24,7 @@ def evaluate_advisory_anomalies(*, counts: dict[str, object] | None = None) -> l
     findings: list[AdvisoryAnomaly] = []
     overdue = data.get("overdue_tasks")
     try:
-        overdue_n = int(overdue) if overdue is not None else 0
+        overdue_n = int(str(overdue)) if overdue is not None else 0
     except (TypeError, ValueError):
         overdue_n = 0
     if overdue_n >= 5:
@@ -38,7 +40,7 @@ def evaluate_advisory_anomalies(*, counts: dict[str, object] | None = None) -> l
         )
     mapping_failed = data.get("mapping_failed_events")
     try:
-        map_n = int(mapping_failed) if mapping_failed is not None else 0
+        map_n = int(str(mapping_failed)) if mapping_failed is not None else 0
     except (TypeError, ValueError):
         map_n = 0
     if map_n >= 1:
@@ -46,8 +48,9 @@ def evaluate_advisory_anomalies(*, counts: dict[str, object] | None = None) -> l
             AdvisoryAnomaly(
                 code="MAPPING_FAILURES_PRESENT",
                 message=(
-                    "Advisory: mapping-failed integration events are present in the supplied counts. "
-                    "Reconcile external codes; no user accusation is implied."
+                    "Advisory: mapping-failed integration events are present in the "
+                    "supplied counts. Reconcile external codes; no user accusation is "
+                    "implied."
                 ),
                 severity="ADVISORY",
             )

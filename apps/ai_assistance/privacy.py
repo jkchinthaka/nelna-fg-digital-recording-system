@@ -29,7 +29,9 @@ _ALLOWED_CONTEXT_KEYS = frozenset(
 )
 
 
-def minimize_context(raw: dict[str, Any] | None, *, max_chars: int = MAX_CONTEXT_CHARS) -> dict[str, Any]:
+def minimize_context(
+    raw: dict[str, Any] | None, *, max_chars: int = MAX_CONTEXT_CHARS
+) -> dict[str, Any]:
     """Keep only allow-listed keys, redact secrets, and bound payload size."""
     cleaned = redact_mapping(raw or {})
     out: dict[str, Any] = {}
@@ -40,5 +42,9 @@ def minimize_context(raw: dict[str, Any] | None, *, max_chars: int = MAX_CONTEXT
     # Soft size bound on serialized representation
     encoded = str(out)
     if len(encoded) > max_chars:
-        out = {"truncated": True, "note": "Context truncated for minimization.", **{k: out[k] for k in list(out)[:5]}}
+        out = {
+            "truncated": True,
+            "note": "Context truncated for minimization.",
+            **{k: out[k] for k in list(out)[:5]},
+        }
     return out

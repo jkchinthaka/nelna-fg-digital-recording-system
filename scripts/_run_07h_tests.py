@@ -1,4 +1,4 @@
-﻿"""Run Phase 07H tests on an isolated test database name."""
+"""Run Phase 07H tests on an isolated test database name."""
 
 from __future__ import annotations
 

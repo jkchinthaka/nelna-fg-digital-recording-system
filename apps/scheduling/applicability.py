@@ -342,9 +342,7 @@ def resolve_checklist_applicability(
             rule_value_id=rule.department_id, context_value_id=context.department_id
         ):
             continue
-        if not _dimension_matches(
-            rule_value_id=rule.shift_id, context_value_id=context.shift_id
-        ):
+        if not _dimension_matches(rule_value_id=rule.shift_id, context_value_id=context.shift_id):
             continue
         if not _process_matches(
             rule_value=rule.process_reference, context_value=context.process_reference
@@ -649,9 +647,7 @@ def preview_checklist_applicability(
     as_of: datetime.date | None = None,
 ) -> ApplicabilityResolution:
     user = _require_authenticated_actor(actor)
-    require_permission(
-        user, VIEW_APPLICABILITY, scope=Scope(organization_id=organization_id)
-    )
+    require_permission(user, VIEW_APPLICABILITY, scope=Scope(organization_id=organization_id))
     resolution = resolve_checklist_applicability(
         organization_id=organization_id,
         product_id=product_id,

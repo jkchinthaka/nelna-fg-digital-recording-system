@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import uuid
+from datetime import date, datetime
 from decimal import Decimal
 
 from django.core.exceptions import ValidationError
@@ -304,7 +305,7 @@ class ChecklistVersion(models.Model):
             ChecklistVersionStatus.RETIRED,
         }
 
-    def is_effective_at(self, as_of) -> bool:
+    def is_effective_at(self, as_of: datetime | date) -> bool:
         """True when as_of falls within the inclusive technical effectivity window."""
         if self.effective_from is not None and as_of < self.effective_from:
             return False

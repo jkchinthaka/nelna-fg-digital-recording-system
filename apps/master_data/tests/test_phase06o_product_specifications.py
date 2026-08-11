@@ -171,9 +171,7 @@ def test_boundary_semantics_and_pending_bounds() -> None:
         code="PENDING",
         name="Pending evidence",
     )
-    result, label, extra = evaluate_specification_parameter(
-        value=Decimal("1.5"), parameter=pending
-    )
+    result, label, extra = evaluate_specification_parameter(value=Decimal("1.5"), parameter=pending)
     assert result == ChecklistEvaluationResult.NOT_EVALUATED
     assert label == "NOT_EVALUATED"
     assert extra["not_qa_disposition"] is True

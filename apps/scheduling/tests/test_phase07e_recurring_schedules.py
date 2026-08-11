@@ -80,7 +80,7 @@ def _manager(*, org: Organization) -> User:
     return user
 
 
-def _published(*, actor: User, org: Organization, code: str):
+def _published(*, actor: User, org: Organization, code: str) -> Any:
     template = create_checklist_template(
         actor=actor, organization=org, code=code, name=f"Template {code}"
     )
@@ -171,9 +171,7 @@ def test_overnight_shift_and_timezone() -> None:
     )
     # 2026-03-11 05:00 is still within overnight instance that started 03-10 22:00
     as_of = dt.datetime(2026, 3, 11, 6, 30, tzinfo=UTC)  # after end
-    start_dt, end_dt, op_date = shift_instance_window(
-        night, as_of=as_of, tz=UTC
-    )
+    start_dt, end_dt, op_date = shift_instance_window(night, as_of=as_of, tz=UTC)
     assert op_date == dt.date(2026, 3, 10)
     assert end_dt.hour == 6
     result = generate_for_schedule(
@@ -223,9 +221,7 @@ def test_missed_scheduler_run_catchup_and_missed_policy() -> None:
         schedule=schedule, as_of=late, lookback=dt.timedelta(days=2), actor=actor
     )
     assert len(again.created) == 0
-    assert SecurityAuditEvent.objects.filter(
-        event_type="CHECKLIST_SCHEDULE_CREATED"
-    ).exists()
+    assert SecurityAuditEvent.objects.filter(event_type="CHECKLIST_SCHEDULE_CREATED").exists()
 
 
 @pytest.mark.django_db
@@ -398,6 +394,7 @@ def test_celery_task_and_interval_schedule_and_deactivate() -> None:
     )
     assert payload2["created_count"] + payload2["existing_count"] >= 1
     from apps.scheduling.generation import deactivate_checklist_schedule
+
     deactivated = deactivate_checklist_schedule(actor=actor, schedule_id=schedule.id)
     assert deactivated.is_active is False
     again = deactivate_checklist_schedule(actor=actor, schedule_id=schedule.id)
@@ -478,7 +475,8 @@ def test_edge_paths_timezone_interval_only_overnight_window_and_inactive() -> No
     skipped = generate_for_schedule(schedule=manual, as_of=noon, actor=actor)
     assert "manual_trigger_requires_explicit_token" in skipped.skipped
 
-    from apps.scheduling.generation import deactivate_checklist_schedule, manual_occurrence_key
+    from apps.scheduling.generation import deactivate_checklist_schedule
+
     with pytest.raises(ValidationError):
         manual_occurrence_key(schedule_id=manual.id, token=" ")
     deactivate_checklist_schedule(actor=actor, schedule_id=interval_only.id)
@@ -541,10 +539,15 @@ def test_shift_missed_and_skip_policies_and_integrity_race() -> None:
 
     # IntegrityError race: second insert for same occurrence_key returns existing.
     from unittest.mock import patch
+
     from django.db import IntegrityError
-    from apps.scheduling.generation import upsert_occurrence_task, OccurrencePlan
+
+    from apps.scheduling.generation import OccurrencePlan, upsert_occurrence_task
 
     existing = r.created[0]
+    assert existing.window_start_at is not None
+    assert existing.window_end_at is not None
+    assert existing.due_at is not None
     plan = OccurrencePlan(
         occurrence_key=existing.occurrence_key,
         trigger_type=ChecklistTriggerType.SHIFT_START,
@@ -561,8 +564,9 @@ def test_shift_missed_and_skip_policies_and_integrity_race() -> None:
         filter_qs = objs.select_related.return_value.filter.return_value
         filter_qs.first.side_effect = [None, existing]
         objs.filter.return_value.first.return_value = existing
-        with patch.object(ChecklistTask, "full_clean", return_value=None), patch.object(
-            ChecklistTask, "save", side_effect=IntegrityError("dup")
+        with (
+            patch.object(ChecklistTask, "full_clean", return_value=None),
+            patch.object(ChecklistTask, "save", side_effect=IntegrityError("dup")),
         ):
             task, created = upsert_occurrence_task(
                 actor=actor, schedule=missed_sched, plan=plan, as_of=late

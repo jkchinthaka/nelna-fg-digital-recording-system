@@ -63,7 +63,12 @@ class MockBileetaAdapter:
                 # Non-sleeping backoff for tests: compute delay only
                 _ = self.retry_policy.delay_for_attempt(attempt)
                 time.sleep(0)  # yield; avoid real waits in unit tests
-        assert last_error is not None
+        if last_error is None:
+            raise IntegrationError(
+                "Mock adapter exhausted retries without a recorded error.",
+                error_class=IntegrationErrorClass.TIMEOUT,
+                retryable=False,
+            )
         raise last_error
 
 

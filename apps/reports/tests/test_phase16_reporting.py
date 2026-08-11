@@ -99,9 +99,7 @@ def _published_task(*, org: Organization, batch: str) -> ChecklistTask:
 
     manager = _checklist_manager(org)
     code = f"T{uuid.uuid4().hex[:6].upper()}"
-    tmpl = create_checklist_template(
-        actor=manager, organization=org, code=code, name="Report tmpl"
-    )
+    tmpl = create_checklist_template(actor=manager, organization=org, code=code, name="Report tmpl")
     version = create_checklist_version(actor=manager, template_id=tmpl.id)
     section = add_checklist_section(actor=manager, version_id=version.id, title="Section A")
     add_checklist_item(
@@ -131,7 +129,7 @@ def test_csv_formula_injection_sanitized() -> None:
     assert sanitize_csv_cell("safe") == "safe"
     csv_text = render_csv(
         headers=["batch", "note"],
-        rows=[{"batch": "B1", "note": "=HYPERLINK(\"http://evil\")"}],
+        rows=[{"batch": "B1", "note": '=HYPERLINK("http://evil")'}],
     )
     assert "'=HYPERLINK" in csv_text
     assert csv_text.splitlines()[1].startswith("B1,")
@@ -277,7 +275,7 @@ def test_export_audited_and_csv_safe_content() -> None:
 
 
 @pytest.mark.django_db
-def test_large_report_enqueues_background(settings) -> None:
+def test_large_report_enqueues_background(settings: Any) -> None:
     settings.CELERY_TASK_ALWAYS_EAGER = True
     org = make_org(code=f"L{uuid.uuid4().hex[:6].upper()}")
     user = make_user(employee_code=f"U{uuid.uuid4().hex[:6].upper()}", is_staff=True)
@@ -307,8 +305,6 @@ def test_large_report_enqueues_background(settings) -> None:
     )
     # Create an overdue task
     task = _published_task(org=org, batch=f"OV-{uuid.uuid4().hex[:6]}")
-    ChecklistTask.objects.filter(pk=task.id).update(
-        due_at=timezone.now() - timedelta(hours=1)
-    )
+    ChecklistTask.objects.filter(pk=task.id).update(due_at=timezone.now() - timedelta(hours=1))
     completed = execute_report_run_by_id(pending.id)
     assert completed.status == ReportRunStatus.COMPLETED

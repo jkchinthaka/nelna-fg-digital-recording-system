@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from uuid import UUID
 
 from django.conf import settings
 
@@ -35,7 +36,7 @@ def allergen_block_approved() -> bool:
 
 def evaluate_allergen_changeover_block(
     *,
-    organization_id: object,
+    organization_id: UUID,
     matrix_conflict_asserted: bool,
 ) -> AllergenBlockDecision:
     """

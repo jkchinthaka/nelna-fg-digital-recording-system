@@ -1,8 +1,9 @@
-﻿"""Dual-gate decisions for quality quarantine release and ERP sync."""
+"""Dual-gate decisions for quality quarantine release and ERP sync."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
+from uuid import UUID
 
 from django.conf import settings
 
@@ -33,7 +34,7 @@ class QuarantineGateDecision:
         }
 
 
-def evaluate_quarantine_release(*, organization_id: object) -> QuarantineGateDecision:
+def evaluate_quarantine_release(*, organization_id: UUID) -> QuarantineGateDecision:
     policy = QualityQuarantinePolicy.objects.filter(organization_id=organization_id).first()
     procedure_reference = policy.procedure_reference if policy else ""
     if not quality_quarantine_release_approved():
@@ -41,7 +42,7 @@ def evaluate_quarantine_release(*, organization_id: object) -> QuarantineGateDec
     return QuarantineGateDecision(True, "SETTINGS_APPROVED", procedure_reference)
 
 
-def evaluate_quarantine_erp_sync(*, organization_id: object) -> QuarantineGateDecision:
+def evaluate_quarantine_erp_sync(*, organization_id: UUID) -> QuarantineGateDecision:
     policy = QualityQuarantinePolicy.objects.filter(organization_id=organization_id).first()
     if policy is None or not policy.erp_sync_enabled:
         return QuarantineGateDecision(
@@ -50,7 +51,9 @@ def evaluate_quarantine_erp_sync(*, organization_id: object) -> QuarantineGateDe
             policy.procedure_reference if policy else "",
         )
     if not quality_quarantine_erp_sync_approved():
-        return QuarantineGateDecision(False, "SETTINGS_APPROVAL_MISSING", policy.procedure_reference)
+        return QuarantineGateDecision(
+            False, "SETTINGS_APPROVAL_MISSING", policy.procedure_reference
+        )
     return QuarantineGateDecision(
         True,
         "DUAL_GATE_APPROVED_ADAPTER_REQUIRED",

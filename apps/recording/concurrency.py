@@ -1,4 +1,4 @@
-﻿"""Phase 08C — draft concurrency and save-mode helpers.
+"""Phase 08C — draft concurrency and save-mode helpers.
 
 Optimistic concurrency: clients send expected draft_version.
 Mismatches raise DraftConcurrencyConflict — never silent last-write-wins.

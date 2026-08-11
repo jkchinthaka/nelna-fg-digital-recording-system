@@ -1,4 +1,4 @@
-﻿"""Phase 07H — checklist due / overdue foundation (derived display; no invented SLAs).
+"""Phase 07H — checklist due / overdue foundation (derived display; no invented SLAs).
 
 Configured windows on ChecklistTask:
   due_from           — optional start of due window
@@ -52,7 +52,7 @@ _INACTIVE_STATUSES = frozenset(
 
 def _aware(value: dt.datetime) -> dt.datetime:
     if timezone.is_naive(value):
-        return timezone.make_aware(value, timezone=dt.timezone.utc)
+        return timezone.make_aware(value, timezone=dt.UTC)
     return value
 
 
@@ -203,11 +203,11 @@ def attach_due_display(
     materialised = list(tasks)
     for task in materialised:
         state = derive_due_display_state(task, as_of=moment)
-        task.due_display_state = state  # type: ignore[attr-defined]
-        task.due_display_label = due_display_label(state)  # type: ignore[attr-defined]
-        task.due_badge_class = due_badge_css_class(state)  # type: ignore[attr-defined]
+        task.due_display_state = state
+        task.due_display_label = due_display_label(state)
+        task.due_badge_class = due_badge_css_class(state)
         window = resolve_due_window(task)
-        task.resolved_overdue_at = window.overdue_at  # type: ignore[attr-defined]
+        task.resolved_overdue_at = window.overdue_at
     return materialised
 
 
@@ -284,5 +284,6 @@ def set_checklist_task_due_window(
         },
     )
     return task
+
 
 annotate_due_display = attach_due_display

@@ -83,9 +83,7 @@ def list_equipment(
         term = search.strip()
         if term:
             qs = qs.filter(
-                Q(code__icontains=term)
-                | Q(name__icontains=term)
-                | Q(serial_number__icontains=term)
+                Q(code__icontains=term) | Q(name__icontains=term) | Q(serial_number__icontains=term)
             )
     return qs.order_by("organization__code", "code")
 

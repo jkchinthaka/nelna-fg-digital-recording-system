@@ -3,7 +3,8 @@
 {% block title %}Draft Recording - Nelna FG Digital Recording System{% endblock %}
 {% block body_class %}mgmt-shell recording-shell{% endblock %}
 {% block content %}
-  <section class="mgmt-page recording-page" aria-labelledby="recording-editor-heading">
+  <section class="mgmt-page recording-page"
+           aria-labelledby="recording-editor-heading">
     <header class="mgmt-page__header">
       <div>
         <h1 id="recording-editor-heading">Draft Checklist Recording</h1>
@@ -16,27 +17,36 @@
       <a class="btn btn--ghost btn--inline btn--touch"
          href="{% url 'recording:task_list' %}">Back to recordable tasks</a>
     </header>
-
     <dl class="mgmt-meta" aria-label="Recording context">
       <div>
         <dt>Template</dt>
-        <dd>{{ task.checklist_template.code }} - {{ task.checklist_template.name }}</dd>
+        <dd>
+          {{ task.checklist_template.code }} - {{ task.checklist_template.name }}
+        </dd>
       </div>
       <div>
         <dt>Version</dt>
-        <dd>v{{ task.checklist_version.version_number }} ({{ task.checklist_version.status }})</dd>
+        <dd>
+          v{{ task.checklist_version.version_number }} ({{ task.checklist_version.status }})
+        </dd>
       </div>
       <div>
         <dt>Batch reference</dt>
-        <dd>{{ task.batch_reference }}</dd>
+        <dd>
+          {{ task.batch_reference }}
+        </dd>
       </div>
       <div>
         <dt>Organization</dt>
-        <dd>{{ task.organization.code }} - {{ task.organization.name }}</dd>
+        <dd>
+          {{ task.organization.code }} - {{ task.organization.name }}
+        </dd>
       </div>
       <div>
         <dt>Recording state</dt>
-        <dd>DRAFT - concurrency token {{ record.draft_version }}</dd>
+        <dd>
+          DRAFT - concurrency token {{ record.draft_version }}
+        </dd>
       </div>
       <div>
         <dt>Required progress</dt>
@@ -47,7 +57,6 @@
         </dd>
       </div>
     </dl>
-
     {% if section_progress %}
       <nav class="recording-section-progress" aria-label="Section progress">
         <ul>
@@ -62,19 +71,20 @@
         </ul>
       </nav>
     {% endif %}
-
     {% if draft_conflict %}
       <div class="alert alert-error" role="alert" id="recording-conflict-banner">
         <p>
           This draft was updated elsewhere. Reload the page and re-apply your changes.
           No silent last-write-wins.
         </p>
-        <a class="btn btn--secondary btn--touch" href="{% url 'recording:record_detail' record_id=record.id %}">Reload draft</a>
+        <a class="btn btn--secondary btn--touch"
+           href="{% url 'recording:record_detail' record_id=record.id %}">Reload draft</a>
       </div>
     {% endif %}
-
     {% if completeness.missing_required_items %}
-      <div class="alert alert-info recording-validation-summary" role="status" id="recording-validation-summary">
+      <div class="alert alert-info recording-validation-summary"
+           role="status"
+           id="recording-validation-summary">
         <p>Required items still unanswered (Save Draft is allowed; Submit is not):</p>
         <ul>
           {% for item in completeness.missing_required_items %}
@@ -85,7 +95,6 @@
         </ul>
       </div>
     {% endif %}
-
     <div id="recording-autosave-status"
          class="recording-autosave-status"
          role="status"
@@ -96,7 +105,6 @@
          class="alert alert-warning"
          role="alert"
          hidden></div>
-
     <form method="post"
           action="{% url 'recording:record_detail' record_id=record.id %}"
           class="recording-editor"
@@ -110,30 +118,39 @@
           novalidate>
       {% csrf_token %}
       {{ form.expected_draft_version }}
-
       {% if form.non_field_errors %}
         <div class="alert alert-error" role="alert" id="recording-form-errors">
           {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
         </div>
       {% endif %}
-
       {% for section in sections %}
-        <section class="recording-section" aria-labelledby="section-{{ section.id }}" id="section-{{ section.id }}">
+        <section class="recording-section"
+                 aria-labelledby="section-{{ section.id }}"
+                 id="section-{{ section.id }}">
           <h2 id="section-{{ section.id }}-title">{{ section.title }}</h2>
           {% if section.description %}<p class="recording-section__description">{{ section.description }}</p>{% endif %}
           {% for item in section.items.all %}
             {% if item.parent_item_id %}
             {% elif item.item_kind == "REPEATING_GROUP" %}
               {% with indexes=sample_indexes_by_group|dict_get:item.id children=children_by_parent|dict_get:item.id %}
-                <fieldset class="recording-item recording-item--repeating" id="item-{{ item.id }}">
+                <fieldset class="recording-item recording-item--repeating"
+                          id="item-{{ item.id }}">
                   <legend>{{ item.code }} — {{ item.label }}</legend>
                   {% if item.help_text %}<p class="form-help">{{ item.help_text }}</p>{% endif %}
                   {% if item.repeat_min is not None or item.repeat_max is not None %}
                     <p class="form-help">
                       Configured sample bounds:
-                      {% if item.repeat_min is not None %}min {{ item.repeat_min }}{% else %}min —{% endif %}
+                      {% if item.repeat_min is not None %}
+                        min {{ item.repeat_min }}
+                      {% else %}
+                        min —
+                      {% endif %}
                       /
-                      {% if item.repeat_max is not None %}max {{ item.repeat_max }}{% else %}max —{% endif %}
+                      {% if item.repeat_max is not None %}
+                        max {{ item.repeat_max }}
+                      {% else %}
+                        max —
+                      {% endif %}
                       (evidence-defined when set; not invented)
                     </p>
                   {% endif %}
@@ -165,10 +182,13 @@
                             {% condition_slot condition_flags child sample_index as cmeta %}
                             {% response_bound_field_at form child sample_index as field %}
                             {% if field %}
-                              <div class="form-field{% if field.errors %} form-field--error{% endif %}"{% if not cmeta.visible %} hidden{% endif %}>
+                              <div class="form-field{% if field.errors %} form-field--error{% endif %}"
+                                   {% if not cmeta.visible %}hidden{% endif %}>
                                 <label for="{{ field.id_for_label }}">
                                   {{ child.code }} — {{ child.label }}
-                                  {% if cmeta.required %}<span class="recording-item__required" aria-hidden="true">*</span> <span class="visually-hidden">required</span>{% endif %}
+                                  {% if cmeta.required %}
+                                    <span class="recording-item__required" aria-hidden="true">*</span> <span class="visually-hidden">required</span>
+                                  {% endif %}
                                 </label>
                                 {{ field }}
                                 {% if field.errors %}
@@ -229,7 +249,9 @@
                   Save Draft to refresh preview.
                 </p>
                 {% calculated_preview responses item 1 as preview %}
-                <p><strong>Preview:</strong> {{ preview }}</p>
+                <p>
+                  <strong>Preview:</strong> {{ preview }}
+                </p>
                 {% evaluation_slot responses item 1 as eval_meta %}
                 {% with evaluation_result=eval_meta.result evaluation_icon=eval_meta.icon evaluation_label=eval_meta.label %}
                   {% include "recording/_evaluation_indicator.html" %}
@@ -241,10 +263,14 @@
             {% else %}
               {% condition_slot condition_flags item 1 as cmeta %}
               {% with field=form|response_bound_field:item %}
-                <fieldset class="recording-item" id="item-{{ item.id }}"{% if not cmeta.visible %} hidden{% endif %}>
+                <fieldset class="recording-item"
+                          id="item-{{ item.id }}"
+                          {% if not cmeta.visible %}hidden{% endif %}>
                   <legend>
                     {{ item.code }} — {{ item.label }}
-                    {% if cmeta.required %}<span class="recording-item__required" aria-hidden="true">*</span> <span class="visually-hidden">required</span>{% endif %}
+                    {% if cmeta.required %}
+                      <span class="recording-item__required" aria-hidden="true">*</span> <span class="visually-hidden">required</span>
+                    {% endif %}
                   </legend>
                   {% if item.help_text %}<p class="form-help">{{ item.help_text }}</p>{% endif %}
                   {% if item.response_type == "NUMBER" %}
@@ -252,9 +278,17 @@
                     {% if item.minimum_value is not None or item.maximum_value is not None %}
                       <p class="form-help">
                         Configured range:
-                        {% if item.minimum_value is not None %}{{ item.minimum_value }}{% else %}—{% endif %}
+                        {% if item.minimum_value is not None %}
+                          {{ item.minimum_value }}
+                        {% else %}
+                          —
+                        {% endif %}
                         –
-                        {% if item.maximum_value is not None %}{{ item.maximum_value }}{% else %}—{% endif %}
+                        {% if item.maximum_value is not None %}
+                          {{ item.maximum_value }}
+                        {% else %}
+                          —
+                        {% endif %}
                         {% if item.unit %}{{ item.unit }}{% endif %}
                         (informational only — not evaluation authority)
                       </p>
@@ -271,13 +305,13 @@
                     </div>
                   {% endif %}
                   {% equipment_bound_field_at form item 1 as eq_field %}
-                                {% if eq_field %}
-                                  <div class="recording-equipment-hook">
-                                    <label for="{{ eq_field.id_for_label }}">{{ eq_field.label }}</label>
-                                    {{ eq_field }}
-                                    <p class="form-help">{{ eq_field.help_text }}</p>
-                                  </div>
-                                {% endif %}
+                  {% if eq_field %}
+                    <div class="recording-equipment-hook">
+                      <label for="{{ eq_field.id_for_label }}">{{ eq_field.label }}</label>
+                      {{ eq_field }}
+                      <p class="form-help">{{ eq_field.help_text }}</p>
+                    </div>
+                  {% endif %}
                   {% evaluation_slot responses item 1 as eval_meta %}
                   {% with evaluation_result=eval_meta.result evaluation_icon=eval_meta.icon evaluation_label=eval_meta.label %}
                     {% include "recording/_evaluation_indicator.html" %}
@@ -291,9 +325,12 @@
           {% endfor %}
         </section>
       {% endfor %}
-
-      <div class="recording-sticky-actions" role="region" aria-label="Save actions">
-        <button type="submit" class="btn btn--primary btn--touch" data-manual-save="1">Save Draft</button>
+      <div class="recording-sticky-actions"
+           role="region"
+           aria-label="Save actions">
+        <button type="submit"
+                class="btn btn--primary btn--touch"
+                data-manual-save="1">Save Draft</button>
         <a class="btn btn--secondary btn--touch"
            href="{% url 'recording:submit_confirm' record_id=record.id %}">Submit Checklist</a>
         <span class="recording-sticky-actions__hint">Autosave uses the same concurrency token.</span>

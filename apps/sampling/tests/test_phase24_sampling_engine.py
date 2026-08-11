@@ -463,13 +463,19 @@ def test_dimension_filters_and_snapshot_helpers() -> None:
     binding = bind_checklist_item_to_sampling_plan(
         actor=user, checklist_item_id=group.id, plan_version_id=version.id
     )
-    assert snapshot_for_checklist_item(group.id)["plan_version_id"] == str(version.id)
-    assert snapshot_for_item_or_parent(child)["plan_version_id"] == str(version.id)
+    group_snapshot = snapshot_for_checklist_item(group.id)
+    assert group_snapshot is not None
+    assert group_snapshot["plan_version_id"] == str(version.id)
+    child_snapshot = snapshot_for_item_or_parent(child)
+    assert child_snapshot is not None
+    assert child_snapshot["plan_version_id"] == str(version.id)
     assert snapshot_for_checklist_item(uuid.uuid4()) is None
     # Clear frozen to exercise fallback path
     binding.frozen_sampling_context = {}
     binding.save(update_fields=["frozen_sampling_context"])
-    assert snapshot_for_checklist_item(group.id)["version_number"] == version.version_number
+    group_snapshot_after = snapshot_for_checklist_item(group.id)
+    assert group_snapshot_after is not None
+    assert group_snapshot_after["version_number"] == version.version_number
 
     between = evaluate_sampling_acceptance(
         defective_count=1, accept_threshold=0, reject_threshold=3

@@ -346,9 +346,7 @@ def approve_program_version(
     version.status = SanitationProgramVersionStatus.APPROVED
     version.approved_by = user
     version.approved_at = timezone.now()
-    version.save(
-        update_fields=["status", "approved_by", "approved_at", "updated_at"]
-    )
+    version.save(update_fields=["status", "approved_by", "approved_at", "updated_at"])
     _history(
         organization_id=version.program.organization_id,
         actor=user,

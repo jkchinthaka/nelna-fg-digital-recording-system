@@ -1,4 +1,4 @@
-﻿"""Phase 26 — foreign-body / metal-detector challenge foundation tests."""
+"""Phase 26 — foreign-body / metal-detector challenge foundation tests."""
 
 from __future__ import annotations
 
@@ -12,6 +12,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.test import override_settings
 from django.utils import timezone
+from tests.factories import grant_role, make_org, make_role_with_permission, make_site, make_user
 
 from apps.accounts.models import User
 from apps.foreign_body.evaluation import assess_challenge_device, evaluate_challenge_result
@@ -23,9 +24,15 @@ from apps.foreign_body.models import (
     ContainmentAssessment,
     ForeignBodyHistoryEntry,
     MetalDetectorChallengeTest,
+)
+from apps.foreign_body.models import (
     TestPiece as FbTestPiece,
 )
-from apps.foreign_body.policy import auto_hold_approved, compute_affected_interval, maybe_create_hold_case
+from apps.foreign_body.policy import (
+    auto_hold_approved,
+    compute_affected_interval,
+    maybe_create_hold_case,
+)
 from apps.foreign_body.selectors import (
     challenge_tests_for_organization,
     list_test_pieces_for_organization,
@@ -52,7 +59,6 @@ from apps.instruments.services import (
 from apps.nonconformance.models import HoldCase
 from apps.organizations.models import Organization
 from apps.security_audit.models import SecurityAuditEvent
-from tests.factories import grant_role, make_org, make_role_with_permission, make_site, make_user
 
 
 def _perm(model: type[Any], codename: str) -> Permission:
@@ -173,9 +179,7 @@ def test_pass_fail_and_historical_record() -> None:
     assert failed.frozen_test_piece_context["title"] == "Configured piece"
     assert challenge_tests_for_organization(org.id).count() == 2
     assert ForeignBodyHistoryEntry.objects.filter(event_type="CHALLENGE_RECORDED").exists()
-    assert SecurityAuditEvent.objects.filter(
-        event_type="FOREIGN_BODY_CHALLENGE_RECORDED"
-    ).exists()
+    assert SecurityAuditEvent.objects.filter(event_type="FOREIGN_BODY_CHALLENGE_RECORDED").exists()
     assert str(piece)
     assert str(failed)
     assert str(assessment)
@@ -232,10 +236,7 @@ def test_device_invalid_and_calibration_invalid() -> None:
         test_piece_id=piece.id,
         observed_detected=True,
     )
-    assert (
-        row.frozen_device_context["eligibility"]["reason_code"]
-        == "CALIBRATION_INVALID_ADVISORY"
-    )
+    assert row.frozen_device_context["eligibility"]["reason_code"] == "CALIBRATION_INVALID_ADVISORY"
 
     inactive = create_equipment(
         actor=admin,
@@ -328,12 +329,15 @@ def test_policy_disabled_hold_and_interval_architecture() -> None:
     assert interval.interval_end == fail.performed_at
     assert interval.hold_will_create is False
     assert interval.auto_hold_approved is False
-    assert maybe_create_hold_case(
-        actor=recorder,
-        organization=org,
-        failed_test=fail,
-        interval=interval,
-    ) is None
+    assert (
+        maybe_create_hold_case(
+            actor=recorder,
+            organization=org,
+            failed_test=fail,
+            interval=interval,
+        )
+        is None
+    )
     assessment = ContainmentAssessment.objects.get(failed_test=fail)
     assert assessment.hold_case_id is None
     assert assessment.hold_created is False
@@ -420,9 +424,7 @@ def test_authorization_schedule_and_void() -> None:
     assert voided.status == ChallengeTestStatus.VOID
     assert voided.is_immutable is True
     assert MetalDetectorChallengeTest.objects.filter(pk=row.id).exists()
-    again = void_challenge_test(
-        actor=verifier, challenge_test_id=row.id, reason="idempotent"
-    )
+    again = void_challenge_test(actor=verifier, challenge_test_id=row.id, reason="idempotent")
     assert again.status == ChallengeTestStatus.VOID
     fresh = record_challenge_test(
         actor=recorder,

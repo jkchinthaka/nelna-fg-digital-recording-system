@@ -6,8 +6,8 @@ from django.conf import settings
 from django.core.exceptions import PermissionDenied, ValidationError
 
 from apps.ai_assistance.catalogue import (
-    AllowedUseCase,
     PROHIBITED_PHRASE_HINTS,
+    AllowedUseCase,
     ProhibitedAction,
 )
 

@@ -13,8 +13,9 @@
       </div>
       <a class="btn btn--ghost btn--inline" href="{% url 'reviews:queue' %}">Back to queue</a>
     </header>
-
-    <aside class="alert alert-info" role="status" aria-label="Supervisor governance">
+    <aside class="alert alert-info"
+           role="status"
+           aria-label="Supervisor governance">
       <p>
         <strong>Self-review policy:</strong>
         {{ governance.self_review.status_label }}
@@ -25,7 +26,8 @@
         Technical permission: {{ governance.uses_phase_03c_permission }}.
         {% if governance.review_due.due_at %}
           Configured review due: {{ governance.review_due.due_at }}
-          {% if governance.review_due.is_overdue %}(OVERDUE){% endif %}.
+          {% if governance.review_due.is_overdue %}(OVERDUE){% endif %}
+          .
         {% else %}
           Review SLA: not configured (no invented timing).
         {% endif %}
@@ -37,7 +39,6 @@
         </p>
       {% endif %}
     </aside>
-
     <dl class="mgmt-meta" aria-label="Submission context">
       <div>
         <dt>Submission number</dt>

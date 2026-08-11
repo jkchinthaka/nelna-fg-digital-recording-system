@@ -5,6 +5,7 @@ from __future__ import annotations
 import datetime
 from io import StringIO
 from pathlib import Path
+from typing import Any
 
 import pytest
 from django.contrib.auth.models import Permission
@@ -42,7 +43,7 @@ def _perm(app_label: str, codename: str) -> Permission:
     return Permission.objects.get(content_type__app_label=app_label, codename=codename)
 
 
-def _manager_with(perms: list[tuple[str, str]], *, organization=None):
+def _manager_with(perms: list[tuple[str, str]], *, organization: Any = None) -> Any:
     global _mgr_seq
     _mgr_seq += 1
     user = make_user(employee_code=f"MGR04C{_mgr_seq:02d}", is_staff=True)
@@ -177,9 +178,7 @@ def test_import_dry_run_and_commit_and_failure() -> None:
         "shift,SYN04CIMP,SYN04CS1,SYN04CD1,SYN04CSFT,Synthetic Import Shift,"
         "true,08:00,16:00,2026-01-01,\n"
     )
-    preview = import_organization_hierarchy(
-        actor=actor, source=StringIO(csv_ok), dry_run=True
-    )
+    preview = import_organization_hierarchy(actor=actor, source=StringIO(csv_ok), dry_run=True)
     assert preview.ok
     assert preview.organizations_to_create == 1
     assert Organization.objects.filter(code="SYN04CIMP").count() == 0
@@ -187,9 +186,7 @@ def test_import_dry_run_and_commit_and_failure() -> None:
         event_type="ORGANIZATION_HIERARCHY_IMPORT_PREVIEWED"
     ).exists()
 
-    committed = import_organization_hierarchy(
-        actor=actor, source=StringIO(csv_ok), dry_run=False
-    )
+    committed = import_organization_hierarchy(actor=actor, source=StringIO(csv_ok), dry_run=False)
     assert committed.ok
     assert Organization.objects.filter(code="SYN04CIMP").exists()
     assert Site.objects.filter(code="SYN04CS1").exists()
@@ -199,9 +196,7 @@ def test_import_dry_run_and_commit_and_failure() -> None:
         event_type="ORGANIZATION_HIERARCHY_IMPORT_COMPLETED"
     ).exists()
 
-    failed = import_organization_hierarchy(
-        actor=actor, source=StringIO(csv_ok), dry_run=False
-    )
+    failed = import_organization_hierarchy(actor=actor, source=StringIO(csv_ok), dry_run=False)
     assert not failed.ok
     assert failed.duplicate_codes
     report = format_error_report(failed)
@@ -276,8 +271,7 @@ def test_management_command_template_and_dry_run(tmp_path: Path) -> None:
     actor = make_user(employee_code="CMD04C01", is_superuser=True)
     csv_path = tmp_path / "rows.csv"
     csv_path.write_text(
-        empty_template_csv()
-        + "organization,,,,SYN04CCMD,Synthetic Cmd Org,true,,,,\n",
+        empty_template_csv() + "organization,,,,SYN04CCMD,Synthetic Cmd Org,true,,,,\n",
         encoding="utf-8",
     )
     err_path = tmp_path / "errors.csv"

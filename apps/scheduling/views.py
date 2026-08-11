@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import uuid
-from typing import Any
+from typing import Any, cast
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -15,6 +15,14 @@ from django.views.decorators.http import require_GET, require_http_methods, requ
 
 from apps.accounts.models import User
 from apps.checklists.models import ChecklistTemplate, ChecklistVersion
+from apps.core.checklist_workflow import (
+    ChecklistOperationalWorkflowState,
+    attach_workflow_snapshots,
+    derive_checklist_workflow,
+    filter_tasks_by_workflow_state,
+    prefetch_workflow_graph,
+    workflow_prefilter_queryset,
+)
 from apps.scheduling.applicability import preview_checklist_applicability
 from apps.scheduling.applicability_forms import ApplicabilityPreviewForm
 from apps.scheduling.due import (
@@ -38,14 +46,6 @@ from apps.scheduling.selectors import (
     organizations_for_task_view,
     published_versions_for_template,
     templates_for_task_manage,
-)
-from apps.core.checklist_workflow import (
-    ChecklistOperationalWorkflowState,
-    attach_workflow_snapshots,
-    filter_tasks_by_workflow_state,
-    prefetch_workflow_graph,
-    workflow_prefilter_queryset,
-    derive_checklist_workflow,
 )
 from apps.scheduling.services import cancel_checklist_task, create_batch_checklist_task
 
@@ -146,18 +146,17 @@ def task_list(request: HttpRequest) -> HttpResponse:
         else "all"  # type: ignore[assignment]
     )
     due_raw = (request.GET.get("due") or "all").strip()
-    due_state: DueStateFilter = (
-        due_raw
-        if due_raw
-        in {
-            "all",
-            ChecklistDueDisplayState.NOT_DUE,
-            ChecklistDueDisplayState.DUE,
-            ChecklistDueDisplayState.DUE_SOON,
-            ChecklistDueDisplayState.OVERDUE,
-        }
-        else "all"
-    )
+    due_state: DueStateFilter
+    if due_raw in {
+        "all",
+        ChecklistDueDisplayState.NOT_DUE,
+        ChecklistDueDisplayState.DUE,
+        ChecklistDueDisplayState.DUE_SOON,
+        ChecklistDueDisplayState.OVERDUE,
+    }:
+        due_state = cast(DueStateFilter, due_raw)
+    else:
+        due_state = "all"
     org_id = _parse_uuid(request.GET.get("organization"))
     template_id = _parse_uuid(request.GET.get("template"))
     organizations = organizations_for_task_view(_actor(request))
@@ -172,9 +171,7 @@ def task_list(request: HttpRequest) -> HttpResponse:
 
     workflow_raw = (request.GET.get("workflow") or "all").strip().upper()
     workflow_state = (
-        workflow_raw
-        if workflow_raw in ChecklistOperationalWorkflowState.ALL
-        else "all"
+        workflow_raw if workflow_raw in ChecklistOperationalWorkflowState.ALL else "all"
     )
 
     tasks = list_checklist_tasks(
@@ -189,9 +186,7 @@ def task_list(request: HttpRequest) -> HttpResponse:
 
     if workflow_state != "all":
         # Prefilter then exact derive — no duplicated workflow status column.
-        candidates = list(
-            workflow_prefilter_queryset(tasks, workflow_state=workflow_state)[:500]
-        )
+        candidates = list(workflow_prefilter_queryset(tasks, workflow_state=workflow_state)[:500])
         matched = filter_tasks_by_workflow_state(candidates, workflow_state=workflow_state)
         paginator = Paginator(matched, PAGE_SIZE)
         page_obj = paginator.get_page(request.GET.get("page"))
@@ -199,14 +194,10 @@ def task_list(request: HttpRequest) -> HttpResponse:
     else:
         paginator = Paginator(tasks, PAGE_SIZE)
         page_obj = paginator.get_page(request.GET.get("page"))
-        annotated = attach_workflow_snapshots(
-            annotate_due_display(list(page_obj.object_list))
-        )
+        annotated = attach_workflow_snapshots(annotate_due_display(list(page_obj.object_list)))
 
     manage_org_ids = manageable_organization_ids(_actor(request))
-    overdue_count = list_overdue_checklist_tasks(
-        _actor(request), organization=organization
-    ).count()
+    overdue_count = list_overdue_checklist_tasks(_actor(request), organization=organization).count()
     context = {
         "page_obj": page_obj,
         "tasks": annotated,
@@ -372,9 +363,7 @@ def task_detail(request: HttpRequest, task_id: uuid.UUID) -> HttpResponse:
     from apps.scheduling.due import due_badge_css_class, due_display_label
 
     due_state = derive_due_display_state(task)
-    task = prefetch_workflow_graph(
-        ChecklistTask.objects.filter(pk=task.id)
-    ).get()
+    task = prefetch_workflow_graph(ChecklistTask.objects.filter(pk=task.id)).get()
     workflow = derive_checklist_workflow(task)
     return render(
         request,
@@ -386,8 +375,7 @@ def task_detail(request: HttpRequest, task_id: uuid.UUID) -> HttpResponse:
             "due_badge_class": due_badge_css_class(due_state),
             "workflow": workflow,
             "can_cancel": actor_can_manage_task(_actor(request), task)
-            and task.status
-            in {ChecklistTaskStatus.PENDING, ChecklistTaskStatus.OVERDUE},
+            and task.status in {ChecklistTaskStatus.PENDING, ChecklistTaskStatus.OVERDUE},
         },
     )
 
@@ -440,4 +428,3 @@ def applicability_preview(request: HttpRequest) -> HttpResponse:
         "scheduling/applicability/preview.html",
         {"form": form, "resolution": resolution},
     )
-

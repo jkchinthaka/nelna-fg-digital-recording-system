@@ -12,9 +12,7 @@ from apps.receiving.models import MaterialReference, ReceiptQualityRecord
 def materials_for_organization(
     organization_id: uuid.UUID,
 ) -> QuerySet[MaterialReference]:
-    return MaterialReference.objects.filter(
-        organization_id=organization_id, is_active=True
-    )
+    return MaterialReference.objects.filter(organization_id=organization_id, is_active=True)
 
 
 def receipts_for_organization(

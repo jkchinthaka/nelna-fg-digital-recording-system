@@ -1,4 +1,4 @@
-﻿"""Fail-closed ERP boundary for quality quarantine state."""
+"""Fail-closed ERP boundary for quality quarantine state."""
 
 from __future__ import annotations
 

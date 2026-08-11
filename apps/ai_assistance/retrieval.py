@@ -43,7 +43,7 @@ def build_authorized_context(
     """
     data = dict(params or {})
     org_id = organization.id
-    base = {
+    base: dict[str, Any] = {
         "organization_id": str(org_id),
         "organization_code": organization.code,
         "source_ids": [],
@@ -93,7 +93,7 @@ def build_authorized_context(
                 or user_has_permission(actor, MANAGE_NCR, scope=scope)
                 or actor.is_superuser
             ):
-                raise PermissionDenied('NCR permission required for AI context.')
+                raise PermissionDenied("NCR permission required for AI context.")
             ncr = NonConformanceRecord.objects.filter(pk=ncr_id).first()
             if ncr is None or ncr.organization_id != org_id:
                 raise PermissionDenied("NCR not found in the active organization.")
@@ -107,7 +107,7 @@ def build_authorized_context(
                 or user_has_permission(actor, MANAGE_CAPA, scope=scope)
                 or actor.is_superuser
             ):
-                raise PermissionDenied('CAPA permission required for AI context.')
+                raise PermissionDenied("CAPA permission required for AI context.")
             capa = CorrectiveAction.objects.filter(pk=capa_id).first()
             if capa is None or capa.organization_id != org_id:
                 raise PermissionDenied("CAPA not found in the active organization.")
@@ -138,9 +138,9 @@ def build_authorized_context(
             ).order_by("-created_at")[:10]
         )
         capas = list(
-            CorrectiveAction.objects.filter(
-                organization_id=org_id, code__icontains=query
-            ).order_by("-created_at")[:10]
+            CorrectiveAction.objects.filter(organization_id=org_id, code__icontains=query).order_by(
+                "-created_at"
+            )[:10]
         )
         base["codes"] = [n.code for n in ncrs] + [c.code for c in capas]
         base["source_ids"] = [str(n.id) for n in ncrs] + [str(c.id) for c in capas]
@@ -150,7 +150,9 @@ def build_authorized_context(
     if use_case == AllowedUseCase.TREND_NARRATION:
         counts = data.get("counts") or {}
         if not isinstance(counts, dict) or not counts:
-            raise ValidationError({"counts": "Caller-supplied counts are required for trend narration."})
+            raise ValidationError(
+                {"counts": "Caller-supplied counts are required for trend narration."}
+            )
         base["counts"] = {str(k)[:64]: counts[k] for k in list(counts)[:30]}
         base["metric_labels"] = [str(k)[:80] for k in list(counts)[:30]]
         base["source_ids"] = [str(x) for x in (data.get("source_ids") or [])][:50]
@@ -159,6 +161,8 @@ def build_authorized_context(
     raise ValidationError({"use_case": f"Unsupported use case: {use_case}"})
 
 
-def assert_organization_match(*, organization: Organization, foreign_org_id: uuid.UUID | None) -> None:
+def assert_organization_match(
+    *, organization: Organization, foreign_org_id: uuid.UUID | None
+) -> None:
     if foreign_org_id is not None and foreign_org_id != organization.id:
         raise PermissionDenied("Cross-organization AI context retrieval is denied.")

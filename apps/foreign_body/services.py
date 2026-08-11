@@ -13,6 +13,7 @@ from django.utils import timezone
 from apps.access_control.services import Scope, require_permission
 from apps.accounts.models import User
 from apps.foreign_body.evaluation import (
+    ChallengeDeviceDecision,
     assess_challenge_device,
     evaluate_challenge_result,
 )
@@ -71,7 +72,7 @@ def _history(
     )
 
 
-def _device_snapshot(equipment: Equipment, decision) -> dict[str, Any]:
+def _device_snapshot(equipment: Equipment, decision: ChallengeDeviceDecision) -> dict[str, Any]:
     return {
         "equipment_id": str(equipment.id),
         "equipment_code": equipment.code,
@@ -125,9 +126,7 @@ def create_test_piece(
             created_by=user,
         )
     except IntegrityError as exc:
-        raise ValidationError(
-            {"code": "Test piece code already exists in organization."}
-        ) from exc
+        raise ValidationError({"code": "Test piece code already exists in organization."}) from exc
     record_event(
         event_type="FOREIGN_BODY_TEST_PIECE_CREATED",
         actor=user,
@@ -223,7 +222,8 @@ def record_challenge_test(
     )
     if not decision.eligible:
         raise ValidationError({"equipment": f"Device invalid ({decision.reason_code})."})
-    assert equipment is not None
+    if equipment is None:
+        raise ValidationError({"equipment": "Device invalid (missing equipment)."})
     piece = TestPiece.objects.filter(pk=test_piece_id, organization=organization).first()
     if piece is None or not piece.is_active:
         raise ValidationError({"test_piece": "Active test piece not found in organization."})
@@ -345,9 +345,7 @@ def void_challenge_test(
 ) -> MetalDetectorChallengeTest:
     user = _require_actor(actor)
     test = (
-        MetalDetectorChallengeTest.objects.select_for_update()
-        .filter(pk=challenge_test_id)
-        .first()
+        MetalDetectorChallengeTest.objects.select_for_update().filter(pk=challenge_test_id).first()
     )
     if test is None:
         raise ValidationError({"challenge_test": "Challenge test not found."})

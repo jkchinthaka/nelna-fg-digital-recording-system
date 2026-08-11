@@ -239,9 +239,7 @@ def test_release_policy_disabled_and_enabled_block() -> None:
     with pytest.raises(ValidationError) as exc:
         complete_dispatch_quality_record(actor=actor, dispatch_record_id=record.id)
     assert "release_gate" in exc.value.message_dict
-    assert SecurityAuditEvent.objects.filter(
-        event_type="DISPATCH_RELEASE_GATE_BLOCKED"
-    ).exists()
+    assert SecurityAuditEvent.objects.filter(event_type="DISPATCH_RELEASE_GATE_BLOCKED").exists()
 
     # AI must never appear as gate authority
     gate_src = inspect.getsource(evaluate_release_gate)

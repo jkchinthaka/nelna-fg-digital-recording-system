@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from uuid import UUID
 
 from django.conf import settings
 
@@ -34,7 +35,7 @@ def sanitation_fail_stop_approved() -> bool:
 
 def evaluate_sanitation_fail_policy(
     *,
-    organization_id: object,
+    organization_id: UUID,
     checklist_evaluation_failed: bool,
 ) -> SanitationFailDecision:
     """
@@ -52,9 +53,7 @@ def evaluate_sanitation_fail_policy(
             reason_code="NO_FAIL",
             advisory_only=True,
         )
-    policy = (
-        SanitationFailPolicy.objects.filter(organization_id=organization_id).first()
-    )
+    policy = SanitationFailPolicy.objects.filter(organization_id=organization_id).first()
     if policy is None or not policy.policy_enabled:
         return SanitationFailDecision(
             stop_production=False,

@@ -1,4 +1,4 @@
-﻿"""Phase 19 — browser-equivalent critical workflow smoke via Django test client."""
+"""Phase 19 — browser-equivalent critical workflow smoke via Django test client."""
 
 from __future__ import annotations
 

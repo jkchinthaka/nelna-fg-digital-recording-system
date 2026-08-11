@@ -5,11 +5,11 @@ from __future__ import annotations
 import datetime as dt
 from typing import Any
 
-from celery import shared_task
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 
 from apps.scheduling.generation import DEFAULT_CATCHUP_LOOKBACK, run_active_schedule_generation
+from celery import shared_task
 
 
 @shared_task(name="apps.scheduling.tasks.generate_due_checklist_tasks")  # type: ignore[untyped-decorator]

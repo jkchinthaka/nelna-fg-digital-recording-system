@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, Any
+
 from django.contrib import admin
 
 from apps.customer_complaints.models import (
@@ -15,9 +17,14 @@ from apps.customer_complaints.models import (
     CustomerComplaintTimelineEntry,
 )
 
+if TYPE_CHECKING:
+    _SoftRetentionBase = admin.ModelAdmin[Any]
+else:
+    _SoftRetentionBase = admin.ModelAdmin
 
-class SoftRetentionAdmin(admin.ModelAdmin):
-    def has_delete_permission(self, request, obj=None) -> bool:  # type: ignore[override]
+
+class SoftRetentionAdmin(_SoftRetentionBase):
+    def has_delete_permission(self, request: Any, obj: Any = None) -> bool:
         return False
 
 

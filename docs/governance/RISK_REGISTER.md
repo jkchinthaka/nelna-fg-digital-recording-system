@@ -42,6 +42,7 @@
 | RSK-G-022 | Post-QA RELEASE/HOLD/REJECT labels misunderstood as ERP actions | Process / Safety | 4 | 5 | 20 | QA / Warehouse / Dispatch (TBC) | ADR-017; post-QA gate; training | Warehouse acts on label without SOP | Open |
 | RSK-G-023 | Secret sprawl / vault ownership gap | Security | 3 | 5 | 15 | IT / System Administrator (TBC) | No secrets in git; APR-026; env strategy | Production secrets in chat/repo | Open |
 | RSK-G-024 | Repository / IP ownership ambiguity | Legal / Continuity | 3 | 4 | 12 | Management Sponsor (TBC) | Written company clarification; continuity plan — no legal conclusion here | Handover without ownership clarity | Open |
+| RSK-G-025 | Compliance mapping treated as certification or legal compliance | Compliance / QA / Legal | 3 | 5 | 15 | QMS / Food Safety / Governance (TBC) | ADR-057; no COMPLIANT status; APR-071; no seeded ISO/FSSC/HACCP/SLS applicability | Marketing or audit pack claims certified because mappings exist | Open |
 
 ---
 

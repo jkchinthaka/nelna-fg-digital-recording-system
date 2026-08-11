@@ -16,7 +16,6 @@
         </p>
       </div>
     </header>
-
     <nav class="recording-section-progress" aria-label="Review queues">
       <ul>
         <li class="{% if queue == QUEUE_PENDING %}is-complete{% endif %}">
@@ -30,14 +29,12 @@
         </li>
       </ul>
     </nav>
-
     {% if queue == QUEUE_OVERDUE and overdue_count == 0 %}
       <p class="mgmt-page__lead" role="status">
         No overdue reviews in scope. Overdue appears only when an organization has
         configured <code>review_sla_minutes</code> — no invented SLA defaults.
       </p>
     {% endif %}
-
     {% if submissions %}
       <div class="table-wrap" role="region" aria-label="Reviewable submissions">
         <table class="data-table">
@@ -66,9 +63,7 @@
                 <td>v{{ submission.checklist_record.checklist_task.checklist_version.version_number }}</td>
                 <td>
                   #{{ submission.submission_number }}
-                  {% if submission.submission_number > 1 %}
-                    <span class="status-pill status-pill--warning">Resubmission</span>
-                  {% endif %}
+                  {% if submission.submission_number > 1 %}<span class="status-pill status-pill--warning">Resubmission</span>{% endif %}
                 </td>
                 <td>{{ submission.submitted_by.employee_code }}</td>
                 <td>{{ submission.submitted_at }}</td>
@@ -94,7 +89,9 @@
       </div>
       {% if page.has_other_pages %}
         <nav class="pagination" aria-label="Supervisor review pages">
-          {% if page.has_previous %}<a href="?queue={{ queue }}&amp;page={{ page.previous_page_number }}">Previous</a>{% endif %}
+          {% if page.has_previous %}
+            <a href="?queue={{ queue }}&amp;page={{ page.previous_page_number }}">Previous</a>
+          {% endif %}
           <span>Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
           {% if page.has_next %}<a href="?queue={{ queue }}&amp;page={{ page.next_page_number }}">Next</a>{% endif %}
         </nav>

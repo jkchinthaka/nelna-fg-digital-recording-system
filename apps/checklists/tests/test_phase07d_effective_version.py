@@ -66,7 +66,7 @@ def _manager(*, org: Organization) -> User:
     return user
 
 
-def _published(*, actor: User, org: Organization, code: str):
+def _published(*, actor: User, org: Organization, code: str) -> Any:
     template = create_checklist_template(
         actor=actor, organization=org, code=code, name=f"Template {code}"
     )
@@ -173,7 +173,7 @@ def test_overlapping_eligible_versions_never_arbitrary() -> None:
     assert result.blocked is True
     with pytest.raises(ValidationError) as exc:
         assert_exactly_one_effective_version(template_id=template.id)
-    assert exc.value.message_dict.get("blocked") is True or "BLOCKED" in str(exc.value)
+    assert "blocked" in exc.value.message_dict or "BLOCKED" in str(exc.value)
 
     # Service rejects reintroducing overlap on a PUBLISHED version.
     ChecklistVersion.objects.filter(pk=v1.id).update(
@@ -303,9 +303,7 @@ def test_cross_org_and_task_create_blocked_paths() -> None:
         as_of=timezone.now(),
     )
     assert task.checklist_version_id == v2.id
-    payload = resolve_effective_checklist_version(
-        template_id=t2.id, as_of=timezone.now()
-    ).to_dict()
+    payload = resolve_effective_checklist_version(template_id=t2.id, as_of=timezone.now()).to_dict()
     assert payload["never_arbitrary_selection"] is True
     assert "APR-015" in payload["apr_015_note"]
 
@@ -314,9 +312,7 @@ def test_cross_org_and_task_create_blocked_paths() -> None:
 def test_publish_audits_effectivity_fields_and_invalid_window() -> None:
     org = make_org(code=f"O07D5{uuid.uuid4().hex[:4].upper()}")
     actor = _manager(org=org)
-    template = create_checklist_template(
-        actor=actor, organization=org, code="T5", name="T5"
-    )
+    template = create_checklist_template(actor=actor, organization=org, code="T5", name="T5")
     version = create_checklist_version(actor=actor, template_id=template.id)
     section = add_checklist_section(actor=actor, version_id=version.id, title="S")
     add_checklist_item(
@@ -348,9 +344,7 @@ def test_publish_audits_effectivity_fields_and_invalid_window() -> None:
             effective_to=datetime(2026, 1, 1, tzinfo=UTC),
         )
 
-    inactive = resolve_effective_checklist_version(
-        template_id=uuid.uuid4(), as_of=timezone.now()
-    )
+    inactive = resolve_effective_checklist_version(template_id=uuid.uuid4(), as_of=timezone.now())
     assert inactive.outcome == EffectiveVersionOutcome.INVALID_TEMPLATE
 
 

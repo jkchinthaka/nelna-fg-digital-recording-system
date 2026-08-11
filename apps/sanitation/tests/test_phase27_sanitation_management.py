@@ -33,6 +33,12 @@ from apps.evidence.models import EvidenceLinkedKind
 from apps.instruments.models import Equipment
 from apps.instruments.services import create_equipment
 from apps.organizations.models import Organization
+from apps.recording.models import ChecklistSubmissionResponse
+from apps.recording.services import (
+    save_checklist_draft_responses,
+    start_checklist_recording,
+    submit_checklist_record,
+)
 from apps.sanitation.models import (
     SanitationHistoryEntry,
     SanitationProgram,
@@ -58,14 +64,8 @@ from apps.sanitation.services import (
 from apps.sanitation.snapshots import snapshot_for_checklist_template
 from apps.scheduling.generation import create_checklist_schedule, create_manual_schedule_occurrence
 from apps.scheduling.models import ChecklistSchedule, ChecklistTask, ChecklistTriggerType
-from apps.security_audit.models import SecurityAuditEvent
-from apps.recording.models import ChecklistSubmissionResponse
-from apps.recording.services import (
-    save_checklist_draft_responses,
-    start_checklist_recording,
-    submit_checklist_record,
-)
 from apps.scheduling.services import create_batch_checklist_task
+from apps.security_audit.models import SecurityAuditEvent
 
 
 def _perm(model: type[Any], codename: str) -> Permission:
@@ -191,9 +191,7 @@ def test_program_scope_schedule_history_and_binding() -> None:
         name="Generic detergent shell",
         # blank concentration — do not invent ppm
     )
-    link_chemical_to_version(
-        actor=manager, program_version_id=version.id, chemical_id=chemical.id
-    )
+    link_chemical_to_version(actor=manager, program_version_id=version.id, chemical_id=chemical.id)
 
     approve_program_version(actor=manager, program_version_id=version.id)
     binding = bind_checklist_template_to_sanitation_program(
@@ -267,9 +265,7 @@ def test_fail_policy_enabled_when_approved() -> None:
     )
     assert decision.stop_production is True
     assert decision.reason_code == "STOP_PRODUCTION_ENABLED"
-    ok = evaluate_sanitation_fail_policy(
-        organization_id=org.id, checklist_evaluation_failed=False
-    )
+    ok = evaluate_sanitation_fail_policy(organization_id=org.id, checklist_evaluation_failed=False)
     assert ok.stop_production is False
 
 
@@ -335,9 +331,7 @@ def test_verification_modes_and_immutable_approved() -> None:
     assert version.verification_mode == SanitationVerificationMode.QA
     approve_program_version(actor=manager, program_version_id=version.id)
     with pytest.raises(ValidationError):
-        add_sanitation_scope(
-            actor=manager, program_version_id=version.id, code="TOO-LATE"
-        )
+        add_sanitation_scope(actor=manager, program_version_id=version.id, code="TOO-LATE")
     retire_program_version(actor=manager, program_version_id=version.id)
     version.refresh_from_db()
     assert version.status == SanitationProgramVersionStatus.RETIRED
@@ -355,9 +349,7 @@ def test_evidence_link_to_sanitation_program() -> None:
         code=f"EV-{uuid.uuid4().hex[:5].upper()}",
         title="Evidence target",
     )
-    target = resolve_linked_target(
-        kind=EvidenceLinkedKind.SANITATION_PROGRAM, object_id=program.id
-    )
+    target = resolve_linked_target(kind=EvidenceLinkedKind.SANITATION_PROGRAM, object_id=program.id)
     assert target.organization_id == org.id
     assert target.linkage_immutable is True
 
@@ -460,12 +452,13 @@ def test_submission_freezes_sanitation_context() -> None:
         verification_mode=SanitationVerificationMode.SELF_CHECK,
     )
     approve_program_version(actor=manager, program_version_id=version.id)
-    bind_checklist_template_to_sanitation_program(
-        actor=manager, program_version_id=version.id
-    )
+    bind_checklist_template_to_sanitation_program(actor=manager, program_version_id=version.id)
     published = template.versions.filter(status="PUBLISHED").first()
     assert published is not None
-    item = published.sections.first().items.first()
+    section = published.sections.first()
+    assert section is not None
+    item = section.items.first()
+    assert item is not None
     task = create_batch_checklist_task(
         actor=manager,
         organization_id=org.id,
@@ -481,6 +474,7 @@ def test_submission_freezes_sanitation_context() -> None:
     )
     submit_checklist_record(actor=recorder, record_id=record.id)
     snap_row = ChecklistSubmissionResponse.objects.get(checklist_item=item)
-    assert "sanitation_context" in (snap_row.control_point_context or {})
+    assert snap_row.control_point_context is not None
+    assert "sanitation_context" in snap_row.control_point_context
     assert snap_row.control_point_context["sanitation_context"]["program_code"] == program.code
     assert snap_row.control_point_context["sanitation_context"]["reuses_checklist_engine"] is True

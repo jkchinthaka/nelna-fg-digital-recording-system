@@ -22,9 +22,7 @@ def build_frozen_iqc_traceability(case: IqcInspectionCase) -> dict[str, Any]:
         "quantity": str(receipt.quantity) if receipt.quantity is not None else None,
         "uom": receipt.uom or "",
         "receipt_quality_state": receipt.quality_state,
-        "checklist_task_id": (
-            str(case.checklist_task_id) if case.checklist_task_id else None
-        ),
+        "checklist_task_id": (str(case.checklist_task_id) if case.checklist_task_id else None),
         "checklist_template_id": (
             str(receipt.inspection_checklist_template_id)
             if receipt.inspection_checklist_template_id
@@ -42,9 +40,7 @@ def build_frozen_iqc_traceability(case: IqcInspectionCase) -> dict[str, Any]:
             str(case.supervisor_review_id) if case.supervisor_review_id else None
         ),
         "sampling_plan_version_id": (
-            str(case.sampling_plan_version_id)
-            if case.sampling_plan_version_id
-            else None
+            str(case.sampling_plan_version_id) if case.sampling_plan_version_id else None
         ),
         "sampling_snapshot": dict(case.sampling_snapshot or {}),
         "erp_inventory_not_updated": True,

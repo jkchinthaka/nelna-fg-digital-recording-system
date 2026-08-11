@@ -307,4 +307,3 @@ class ChecklistTaskAssignmentEventAdmin(admin.ModelAdmin):  # type: ignore[type-
         self, request: HttpRequest, obj: ChecklistTaskAssignmentEvent | None = None
     ) -> bool:
         return False
-

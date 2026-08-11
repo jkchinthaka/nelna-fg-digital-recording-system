@@ -3,15 +3,14 @@
 from __future__ import annotations
 
 from typing import Any
+from uuid import UUID
 
 from apps.sanitation.models import ChecklistTemplateSanitationBinding
 
 
-def snapshot_for_checklist_template(checklist_template_id: object) -> dict[str, Any] | None:
+def snapshot_for_checklist_template(checklist_template_id: UUID) -> dict[str, Any] | None:
     binding = (
-        ChecklistTemplateSanitationBinding.objects.select_related(
-            "program_version__program"
-        )
+        ChecklistTemplateSanitationBinding.objects.select_related("program_version__program")
         .filter(checklist_template_id=checklist_template_id)
         .first()
     )

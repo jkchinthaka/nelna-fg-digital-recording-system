@@ -148,9 +148,7 @@ def create_in_app_notification(
     if not recipient.is_active:
         raise ValidationError({"recipient": "Recipient must be an active user."})
 
-    safe_title = validate_safe_notification_text(
-        strip_tags(title), field="title", max_length=120
-    )
+    safe_title = validate_safe_notification_text(strip_tags(title), field="title", max_length=120)
     safe_body = validate_safe_notification_text(
         strip_tags(safe_message), field="safe_message", max_length=280
     )
@@ -239,13 +237,9 @@ def queue_sms_notification(**_kwargs: Any) -> None:
 
 
 @transaction.atomic
-def mark_notification_read(
-    *, actor: User | None, notification_id: uuid.UUID
-) -> Notification:
+def mark_notification_read(*, actor: User | None, notification_id: uuid.UUID) -> Notification:
     user = _require_authenticated_actor(actor)
-    notification = (
-        Notification.objects.select_for_update().filter(pk=notification_id).first()
-    )
+    notification = Notification.objects.select_for_update().filter(pk=notification_id).first()
     if notification is None:
         raise ValidationError({"notification": "Notification not found."})
     if notification.recipient_id != user.id:

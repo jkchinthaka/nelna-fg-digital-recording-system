@@ -84,16 +84,16 @@ def _filters_with_site_rbac(
 
     require_permission(user, RUN_REPORT, scope=scope)
 
-    org_site_count = Site.objects.filter(
-        organization_id=organization.id, is_active=True
-    ).count()
+    org_site_count = Site.objects.filter(organization_id=organization.id, is_active=True).count()
     # Site-scoped roles see only accessible sites; org-wide see all.
     if len(accessible_set) < org_site_count:
         raw["allowed_site_ids"] = [str(x) for x in accessible]
     return raw, ReportFilters(raw)
 
 
-def list_report_catalogue(*, actor: User | None, organization: Organization) -> list[dict[str, object]]:
+def list_report_catalogue(
+    *, actor: User | None, organization: Organization
+) -> list[dict[str, object]]:
     user = _require_authenticated_actor(actor)
     scope = Scope(organization_id=organization.id)
     if not (
@@ -129,7 +129,9 @@ def _execute_query(
     raise ValidationError({"report_code": f"Unsupported report code: {report_code}"})
 
 
-def _complete_run(run: ReportRun, *, headers: list[str], rows: list[dict[str, object]]) -> ReportRun:
+def _complete_run(
+    run: ReportRun, *, headers: list[str], rows: list[dict[str, object]]
+) -> ReportRun:
     csv_text = render_csv(headers=headers, rows=rows)
     run.result_csv = csv_text
     run.row_count = len(rows)
@@ -169,9 +171,7 @@ def run_quality_report(
     except KeyError as exc:
         raise ValidationError({"report_code": "Unknown report code."}) from exc
     if export:
-        require_permission(
-            user, EXPORT_REPORT, scope=Scope(organization_id=organization.id)
-        )
+        require_permission(user, EXPORT_REPORT, scope=Scope(organization_id=organization.id))
     if export and "CSV" not in definition.export_formats:
         raise ValidationError({"export_format": "CSV is the only supported export format."})
 
@@ -240,17 +240,13 @@ def run_quality_report(
     return run
 
 
-def get_report_run_csv(
-    *, actor: User | None, report_run_id: uuid.UUID
-) -> tuple[ReportRun, str]:
+def get_report_run_csv(*, actor: User | None, report_run_id: uuid.UUID) -> tuple[ReportRun, str]:
     """Return CSV for a completed run — export permission + same-org recipient."""
     user = _require_authenticated_actor(actor)
     run = ReportRun.objects.filter(pk=report_run_id).first()
     if run is None:
         raise ValidationError({"report_run": "Report run not found."})
-    require_permission(
-        user, EXPORT_REPORT, scope=Scope(organization_id=run.organization_id)
-    )
+    require_permission(user, EXPORT_REPORT, scope=Scope(organization_id=run.organization_id))
     if run.status != ReportRunStatus.COMPLETED:
         raise ValidationError({"status": f"Report run is {run.status}, not COMPLETED."})
     record_event(

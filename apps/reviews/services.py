@@ -108,7 +108,6 @@ def create_supervisor_review(
                 scope=submission_authorization_scope(submission),
             )
 
-
             self_review_eval = assert_self_review_allowed(actor=user, submission=submission)
 
             if record.status != ChecklistRecordStatus.SUBMITTED:

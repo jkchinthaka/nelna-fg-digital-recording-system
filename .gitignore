@@ -79,3 +79,6 @@ coverage.xml
 # Phase 11 private evidence blobs (never public MEDIA)
 media/evidence_private/
 
+
+.local-wip-preserve/
+

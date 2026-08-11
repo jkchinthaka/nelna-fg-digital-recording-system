@@ -319,14 +319,10 @@ def test_audit_events_audit_complaint_and_capa_cross_org() -> None:
     profile = create_supplier_quality_profile(
         actor=qa_a, organization=org_a, erp_supplier_reference="ERP-AUD"
     )
-    assert SecurityAuditEvent.objects.filter(
-        event_type="SUPPLIER_QUALITY_PROFILE_CREATED"
-    ).exists()
+    assert SecurityAuditEvent.objects.filter(event_type="SUPPLIER_QUALITY_PROFILE_CREATED").exists()
 
     with pytest.raises(ValidationError):
-        create_supplier_quality_profile(
-            actor=qa_a, organization=org_a, erp_supplier_reference="  "
-        )
+        create_supplier_quality_profile(actor=qa_a, organization=org_a, erp_supplier_reference="  ")
     with pytest.raises(ValidationError):
         record_supplier_quality_event(
             actor=qa_a,
@@ -358,9 +354,9 @@ def test_audit_events_audit_complaint_and_capa_cross_org() -> None:
         occurred_at=timezone.now(),
         summary="Complaint shell",
     )
-    assert SecurityAuditEvent.objects.filter(
-        event_type="SUPPLIER_QUALITY_EVENT_RECORDED"
-    ).count() >= 2
+    assert (
+        SecurityAuditEvent.objects.filter(event_type="SUPPLIER_QUALITY_EVENT_RECORDED").count() >= 2
+    )
 
     capa_b = create_corrective_action(
         actor=qa_b,
@@ -383,12 +379,8 @@ def test_audit_events_audit_complaint_and_capa_cross_org() -> None:
         profile_id=profile.id,
         certificate_type="TYPE-AUD",
     )
-    assert SecurityAuditEvent.objects.filter(
-        event_type="SUPPLIER_CERTIFICATE_RECORDED"
-    ).exists()
+    assert SecurityAuditEvent.objects.filter(event_type="SUPPLIER_CERTIFICATE_RECORDED").exists()
     verify_supplier_certificate(actor=qa_a, certificate_id=cert.id)
-    assert SecurityAuditEvent.objects.filter(
-        event_type="SUPPLIER_CERTIFICATE_VERIFIED"
-    ).exists()
+    assert SecurityAuditEvent.objects.filter(event_type="SUPPLIER_CERTIFICATE_VERIFIED").exists()
     assert certificate_is_expired(cert) is False
     assert str(profile)

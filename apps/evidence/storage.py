@@ -12,10 +12,10 @@ from __future__ import annotations
 
 import uuid
 from pathlib import Path
-from typing import BinaryIO, Protocol
+from typing import BinaryIO, Protocol, cast
 
 from django.conf import settings
-from django.core.files.base import ContentFile, File
+from django.core.files.base import ContentFile
 from django.core.files.storage import FileSystemStorage, Storage
 
 
@@ -45,7 +45,7 @@ class PrivateFileSystemEvidenceStore:
         return name
 
     def open_read(self, relative_key: str) -> BinaryIO:
-        return self._storage.open(relative_key, mode="rb")
+        return cast(BinaryIO, self._storage.open(relative_key, mode="rb"))
 
     def exists(self, relative_key: str) -> bool:
         return self._storage.exists(relative_key)
@@ -67,10 +67,8 @@ class PrivateEvidenceStorage(FileSystemStorage):
         # base_url must stay None so Django never builds /media/... links.
         super().__init__(location=root, base_url=None)
 
-    def url(self, name: str) -> str:
-        raise RuntimeError(
-            "Evidence files have no public URL. Use the authorized download view."
-        )
+    def url(self, name: str | None) -> str:
+        raise RuntimeError("Evidence files have no public URL. Use the authorized download view.")
 
 
 def build_randomized_storage_key(*, organization_id: uuid.UUID, extension: str) -> str:

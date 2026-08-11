@@ -13,7 +13,9 @@ from apps.access_control.services import Scope, require_permission, user_has_per
 from apps.accounts.models import User
 from apps.batch_genealogy.models import GenealogyNodeKind, GenealogyRelationKind
 from apps.batch_genealogy.services import ingest_erp_genealogy_edge, upsert_genealogy_node
+from apps.nonconformance.models import HoldCase, NonConformanceRecord
 from apps.organizations.models import Organization
+from apps.quality.models import QAReview
 from apps.rework.erp_boundary import (
     prepare_rework_erp_stock_movement,
     send_rework_erp_stock_movement,
@@ -109,6 +111,8 @@ def assert_quantity_conservation(
                 {"quantity": ("Resulting and remaining source quantity references are required.")}
             )
         return
+    if source is None or result is None or remaining is None:
+        raise ValidationError({"quantity": "Quantity references could not be parsed."})
     if result < 0 or remaining < 0:
         raise ValidationError({"quantity": "Rework quantities cannot be negative."})
     if result + remaining != source:
@@ -140,9 +144,9 @@ def create_rework_case(
     reason_reference: str,
     source_sublot_reference: str = "",
     instruction_reference: str = "",
-    source_qa_review=None,
-    source_hold_case=None,
-    source_ncr=None,
+    source_qa_review: QAReview | None = None,
+    source_hold_case: HoldCase | None = None,
+    source_ncr: NonConformanceRecord | None = None,
 ) -> ReworkCase:
     user = _require(actor, CREATE, organization.id)
     key = _clean(execution_key, max_length=128)
@@ -438,8 +442,7 @@ def open_rework_reinspection(
         raise ValidationError(
             {
                 "inspection_task": (
-                    "Rework reinspection must target the resulting batch, "
-                    "not the source RELEASE."
+                    "Rework reinspection must target the resulting batch, not the source RELEASE."
                 )
             }
         )

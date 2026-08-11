@@ -22,7 +22,8 @@ class MockLLMProvider(LLMProvider):
         context: dict[str, object],
         timeout_seconds: float,
     ) -> ProviderResult:
-        source_ids = tuple(str(x) for x in (context.get("source_ids") or []))
+        raw_ids = context.get("source_ids")
+        source_ids = tuple(str(x) for x in raw_ids) if isinstance(raw_ids, (list, tuple)) else ()
         if self.fail_mode == "timeout":
             # Simulate timeout without sleeping the full timeout in unit tests.
             _ = timeout_seconds

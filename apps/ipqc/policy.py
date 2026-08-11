@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from uuid import UUID
 
 from django.conf import settings
 
@@ -41,7 +42,7 @@ class IpqcFailStopDecision:
 
 def evaluate_ipqc_fail_stop_policy(
     *,
-    organization_id: object,
+    organization_id: UUID,
     failure_detected: bool,
 ) -> IpqcFailStopDecision:
     """

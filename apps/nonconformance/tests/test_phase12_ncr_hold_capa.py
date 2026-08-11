@@ -68,7 +68,7 @@ def _grant(user: User, org: Organization, model: type[Any], *codenames: str) -> 
 
 
 @pytest.mark.django_db
-def test_ncr_lifecycle_and_history():
+def test_ncr_lifecycle_and_history() -> None:
     org = make_org(code=f"N{uuid.uuid4().hex[:6].upper()}")
     actor = make_user(employee_code=f"A{uuid.uuid4().hex[:6].upper()}", is_staff=True)
     _grant(
@@ -118,9 +118,7 @@ def test_ncr_lifecycle_and_history():
     )
     assert len(history) >= 4
     with pytest.raises(ValidationError):
-        update_nonconformance_case_fields(
-            actor=actor, nonconformance_id=ncr.id, description="nope"
-        )
+        update_nonconformance_case_fields(actor=actor, nonconformance_id=ncr.id, description="nope")
     with pytest.raises(ValidationError):
         transition_nonconformance_status(
             actor=actor,
@@ -132,7 +130,7 @@ def test_ncr_lifecycle_and_history():
 
 
 @pytest.mark.django_db
-def test_ncr_invalid_transition_and_duplicate_code():
+def test_ncr_invalid_transition_and_duplicate_code() -> None:
     org = make_org(code=f"N{uuid.uuid4().hex[:6].upper()}")
     actor = make_user(employee_code=f"A{uuid.uuid4().hex[:6].upper()}", is_staff=True)
     _grant(
@@ -160,7 +158,7 @@ def test_ncr_invalid_transition_and_duplicate_code():
 
 
 @pytest.mark.django_db
-def test_ncr_authorization_and_cross_org():
+def test_ncr_authorization_and_cross_org() -> None:
     org_a = make_org(code=f"A{uuid.uuid4().hex[:6].upper()}")
     org_b = make_org(code=f"B{uuid.uuid4().hex[:6].upper()}")
     actor_a = make_user(employee_code=f"AA{uuid.uuid4().hex[:6].upper()}", is_staff=True)
@@ -184,7 +182,7 @@ def test_ncr_authorization_and_cross_org():
 
 
 @pytest.mark.django_db
-def test_hold_case_lifecycle_and_free_text_resolution():
+def test_hold_case_lifecycle_and_free_text_resolution() -> None:
     org = make_org(code=f"H{uuid.uuid4().hex[:6].upper()}")
     actor = make_user(employee_code=f"A{uuid.uuid4().hex[:6].upper()}", is_staff=True)
     _grant(
@@ -227,7 +225,7 @@ def test_hold_case_lifecycle_and_free_text_resolution():
 
 
 @pytest.mark.django_db
-def test_capa_actions_verification_effectiveness_closure():
+def test_capa_actions_verification_effectiveness_closure() -> None:
     org = make_org(code=f"C{uuid.uuid4().hex[:6].upper()}")
     actor = make_user(employee_code=f"A{uuid.uuid4().hex[:6].upper()}", is_staff=True)
     _grant(
@@ -273,9 +271,7 @@ def test_capa_actions_verification_effectiveness_closure():
         actor=actor, capa_id=capa.id, notes="Effective enough for close"
     )
     assert capa.status == CorrectiveActionStatus.EFFECTIVENESS_REVIEW
-    capa = close_corrective_action(
-        actor=actor, capa_id=capa.id, closure_notes="Human closure"
-    )
+    capa = close_corrective_action(actor=actor, capa_id=capa.id, closure_notes="Human closure")
     assert capa.status == CorrectiveActionStatus.CLOSED
     assert capa.closed_by_id == actor.id
     with pytest.raises(ValidationError):
@@ -284,7 +280,7 @@ def test_capa_actions_verification_effectiveness_closure():
 
 
 @pytest.mark.django_db
-def test_capa_cross_org_link_integrity():
+def test_capa_cross_org_link_integrity() -> None:
     org_a = make_org(code=f"A{uuid.uuid4().hex[:6].upper()}")
     org_b = make_org(code=f"B{uuid.uuid4().hex[:6].upper()}")
     actor_a = make_user(employee_code=f"AA{uuid.uuid4().hex[:6].upper()}", is_staff=True)
@@ -306,7 +302,7 @@ def test_capa_cross_org_link_integrity():
 
 
 @pytest.mark.django_db
-def test_checklist_correction_not_ncr_and_no_auto_raise_hook():
+def test_checklist_correction_not_ncr_and_no_auto_raise_hook() -> None:
     field_names = {f.name for f in ChecklistCorrection._meta.get_fields()}
     assert "nonconformance" not in field_names
 
@@ -322,7 +318,7 @@ def test_checklist_correction_not_ncr_and_no_auto_raise_hook():
 
 
 @pytest.mark.django_db
-def test_separate_close_permission_for_ncr():
+def test_separate_close_permission_for_ncr() -> None:
     org = make_org(code=f"P{uuid.uuid4().hex[:6].upper()}")
     creator = make_user(employee_code=f"C{uuid.uuid4().hex[:6].upper()}", is_staff=True)
     closer = make_user(employee_code=f"K{uuid.uuid4().hex[:6].upper()}", is_staff=True)
@@ -342,7 +338,7 @@ def test_separate_close_permission_for_ncr():
 
 
 @pytest.mark.django_db
-def test_capa_invalid_transition():
+def test_capa_invalid_transition() -> None:
     org = make_org(code=f"T{uuid.uuid4().hex[:6].upper()}")
     actor = make_user(employee_code=f"A{uuid.uuid4().hex[:6].upper()}", is_staff=True)
     _grant(actor, org, CorrectiveAction, "create_capa", "manage_capa", "close_capa")
@@ -356,7 +352,7 @@ def test_capa_invalid_transition():
 
 
 @pytest.mark.django_db
-def test_selectors_list_cases():
+def test_selectors_list_cases() -> None:
     from apps.capa.selectors import list_capa_history, list_corrective_actions_for_org
     from apps.nonconformance.selectors import (
         list_case_history,
@@ -386,13 +382,17 @@ def test_selectors_list_cases():
     ncr = create_nonconformance(
         actor=actor, organization=org, code="NC-L", title="L", description="d"
     )
-    hold = create_hold_case(
-        actor=actor, organization=org, code="H-L", reason_reference="r"
-    )
+    hold = create_hold_case(actor=actor, organization=org, code="H-L", reason_reference="r")
     capa = create_corrective_action(actor=actor, organization=org, code="CA-L", title="L")
-    assert list_nonconformances_for_org(actor=actor, organization_id=org.id).filter(pk=ncr.id).exists()
+    assert (
+        list_nonconformances_for_org(actor=actor, organization_id=org.id).filter(pk=ncr.id).exists()
+    )
     assert list_hold_cases_for_org(actor=actor, organization_id=org.id).filter(pk=hold.id).exists()
-    assert list_corrective_actions_for_org(actor=actor, organization_id=org.id).filter(pk=capa.id).exists()
+    assert (
+        list_corrective_actions_for_org(actor=actor, organization_id=org.id)
+        .filter(pk=capa.id)
+        .exists()
+    )
     assert list_case_history(
         organization_id=org.id,
         case_kind=QualityCaseHistoryKind.NONCONFORMANCE,

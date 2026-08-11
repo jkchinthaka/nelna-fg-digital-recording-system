@@ -24,9 +24,9 @@ from apps.batch_genealogy.models import GenealogyNodeKind
 from apps.batch_genealogy.services import trace_backward, trace_forward
 from apps.organizations.models import Organization
 from apps.recall.models import (
-    RECALL_STATUS_TRANSITIONS,
     MOCK_RECALL_BANNER,
     MOCK_RECALL_CODE_PREFIX,
+    RECALL_STATUS_TRANSITIONS,
     RecallAffectedBatch,
     RecallAffectedProduct,
     RecallCase,
@@ -82,9 +82,7 @@ def user_has_explicit_scoped_permission(
         return False
     now = timezone.now()
     assignments = (
-        ScopedRoleAssignment.objects.filter(
-            user=user, is_active=True, role__is_active=True
-        )
+        ScopedRoleAssignment.objects.filter(user=user, is_active=True, role__is_active=True)
         .filter(Q(valid_from__isnull=True) | Q(valid_from__lte=now))
         .filter(Q(valid_until__isnull=True) | Q(valid_until__gt=now))
         .select_related("role")
@@ -105,13 +103,9 @@ def user_has_explicit_scoped_permission(
     return False
 
 
-def require_explicit_initiate_recall(
-    user: User | None, *, organization_id: uuid.UUID
-) -> User:
+def require_explicit_initiate_recall(user: User | None, *, organization_id: uuid.UUID) -> User:
     actor = _require_actor(user)
-    if not user_has_explicit_scoped_permission(
-        actor, INITIATE, organization_id=organization_id
-    ):
+    if not user_has_explicit_scoped_permission(actor, INITIATE, organization_id=organization_id):
         raise PermissionDenied(
             "initiate_recall requires an explicit scoped Role grant "
             "(not System Admin / is_staff / is_superuser by default)."
@@ -140,11 +134,7 @@ def _transition(case: RecallCase, new_status: str) -> None:
     allowed = RECALL_STATUS_TRANSITIONS.get(case.status, frozenset())
     if new_status not in allowed:
         raise ValidationError(
-            {
-                "status": (
-                    f"Cannot transition from {case.status} to {new_status}."
-                )
-            }
+            {"status": (f"Cannot transition from {case.status} to {new_status}.")}
         )
     case.status = new_status
 
@@ -956,9 +946,7 @@ def serialize_recall_case(case: RecallCase) -> dict[str, Any]:
             {
                 "id": str(b.id),
                 "batch_reference": b.batch_reference,
-                "genealogy_node_id": str(b.genealogy_node_id)
-                if b.genealogy_node_id
-                else None,
+                "genealogy_node_id": str(b.genealogy_node_id) if b.genealogy_node_id else None,
                 "genealogy_node_kind": b.genealogy_node_kind,
                 "selected_via": b.selected_via,
             }

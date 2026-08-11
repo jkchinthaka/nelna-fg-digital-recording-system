@@ -6,7 +6,7 @@ from apps.access_control.models import Role
 from apps.access_control.services import assign_role, create_role
 from apps.accounts.models import User
 from apps.accounts.validators import normalize_employee_code
-from apps.organizations.models import Department, Organization, Site, Shift
+from apps.organizations.models import Department, Organization, Shift, Site
 from apps.organizations.services import (
     create_department,
     create_organization,

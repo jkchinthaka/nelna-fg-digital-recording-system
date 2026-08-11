@@ -120,9 +120,13 @@ def build_ipqc_dashboard(
 ) -> IpqcDashboardSnapshot:
     """Current IPQC due / overdue / failure visibility (read model only)."""
     instant = as_of or timezone.now()
-    due = list(cases_due(organization_id=organization_id, as_of=instant).values_list("id", flat=True)[:200])
+    due = list(
+        cases_due(organization_id=organization_id, as_of=instant).values_list("id", flat=True)[:200]
+    )
     overdue = list(
-        cases_overdue(organization_id=organization_id, as_of=instant).values_list("id", flat=True)[:200]
+        cases_overdue(organization_id=organization_id, as_of=instant).values_list("id", flat=True)[
+            :200
+        ]
     )
     failures = list(
         cases_with_failure(organization_id=organization_id).values_list("id", flat=True)[:200]

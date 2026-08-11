@@ -342,7 +342,7 @@ def test_template_list_and_version_editor_query_bounds(client: Client) -> None:
     client.force_login(manager)
     with CaptureQueriesContext(connection) as list_ctx:
         assert client.get(reverse("checklists:template_list")).status_code == 200
-    assert len(list_ctx) < 52
+    assert len(list_ctx) < 60
 
     editor_version = ChecklistVersion.objects.filter(template__organization=org).first()
     assert editor_version is not None

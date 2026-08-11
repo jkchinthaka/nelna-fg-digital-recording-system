@@ -11,6 +11,7 @@ from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.test import override_settings
+from tests.factories import grant_role, make_org, make_role_with_permission, make_user
 
 from apps.accounts.models import User
 from apps.checklists.models import ChecklistResponseType, ChecklistTemplate
@@ -24,7 +25,7 @@ from apps.checklists.services import (
 from apps.evidence.linking import resolve_linked_target
 from apps.evidence.models import EvidenceLinkedKind
 from apps.integrations.errors import IntegrationError
-from apps.iqc.models import IncomingReceiptEvent, IqcInspectionCase, IqcWorkflowStatus
+from apps.iqc.models import IncomingReceiptEvent, IqcWorkflowStatus
 from apps.iqc.policy import evaluate_iqc_erp_outbound
 from apps.iqc.selectors import cases_for_supplier_lot
 from apps.iqc.services import (
@@ -53,7 +54,6 @@ from apps.scheduling.models import ChecklistTask
 from apps.security_audit.models import SecurityAuditEvent
 from apps.supplier_quality.models import SupplierQualityProfile
 from apps.supplier_quality.services import create_supplier_quality_profile
-from tests.factories import grant_role, make_org, make_role_with_permission, make_user
 
 
 def _perm(model: type[Any], codename: str) -> Permission:
@@ -107,7 +107,7 @@ def _supervisor(*, org: Organization) -> User:
     return user
 
 
-def _published_iqc_checklist(actor: User, org: Organization):
+def _published_iqc_checklist(actor: User, org: Organization) -> Any:
     template = create_checklist_template(
         actor=actor,
         organization=org,
@@ -200,12 +200,12 @@ def test_receipt_mapping_task_sampling_lab_review_disposition() -> None:
     frozen = case.frozen_traceability_context
     assert frozen["supplier_lot"] == "LOT-IQC-001"
     assert frozen["erp_inventory_not_updated"] is True
-    assert cases_for_supplier_lot(
-        organization_id=org.id, supplier_lot="LOT-IQC-001"
-    ).filter(pk=case.id).exists()
-    target = resolve_linked_target(
-        kind=EvidenceLinkedKind.IQC_INSPECTION_CASE, object_id=case.id
+    assert (
+        cases_for_supplier_lot(organization_id=org.id, supplier_lot="LOT-IQC-001")
+        .filter(pk=case.id)
+        .exists()
     )
+    target = resolve_linked_target(kind=EvidenceLinkedKind.IQC_INSPECTION_CASE, object_id=case.id)
     assert target.organization_id == org.id
 
     # Separate receipt: disposition blocked without review when required
@@ -264,9 +264,7 @@ def test_duplicate_receipt_event_and_cross_org() -> None:
     assert dup2 is True
     assert event2.id == event1.id
     assert case2 is not None and case2.id == case1.id
-    assert SecurityAuditEvent.objects.filter(
-        event_type="IQC_RECEIPT_EVENT_DUPLICATE"
-    ).exists()
+    assert SecurityAuditEvent.objects.filter(event_type="IQC_RECEIPT_EVENT_DUPLICATE").exists()
 
     with pytest.raises(PermissionDenied):
         ingest_incoming_receipt_event(
@@ -324,9 +322,7 @@ def test_erp_outbound_blocked_and_authorization() -> None:
     case = complete_iqc_disposition(actor=manager, case=case, quality_state="HOLD")
     with pytest.raises(IntegrationError):
         attempt_case_erp_outbound(actor=manager, case=case)
-    assert SecurityAuditEvent.objects.filter(
-        event_type="IQC_ERP_OUTBOUND_BLOCKED"
-    ).exists()
+    assert SecurityAuditEvent.objects.filter(event_type="IQC_ERP_OUTBOUND_BLOCKED").exists()
 
     outsider = make_user(employee_code=f"XX{uuid.uuid4().hex[:6].upper()}")
     with pytest.raises(PermissionDenied):

@@ -69,10 +69,22 @@ PROHIBITED_PHRASE_HINTS: Final[dict[ProhibitedAction, tuple[str, ...]]] = {
     ProhibitedAction.RELEASE: ("release the batch", "set disposition to release", "auto release"),
     ProhibitedAction.HOLD: ("place on hold", "set disposition to hold", "auto hold"),
     ProhibitedAction.REJECT: ("reject the batch", "set disposition to reject", "auto reject"),
-    ProhibitedAction.PUBLISH_CHECKLIST: ("publish checklist", "publish the template", "publish version"),
-    ProhibitedAction.CHANGE_SPECIFICATION: ("change specification", "update spec limits", "edit specification"),
+    ProhibitedAction.PUBLISH_CHECKLIST: (
+        "publish checklist",
+        "publish the template",
+        "publish version",
+    ),
+    ProhibitedAction.CHANGE_SPECIFICATION: (
+        "change specification",
+        "update spec limits",
+        "edit specification",
+    ),
     ProhibitedAction.CHANGE_ROLES: ("change roles", "assign role", "grant permission"),
-    ProhibitedAction.EXECUTE_ERP_DISPOSITION: ("send to erp", "post disposition to bileeta", "erp disposition"),
+    ProhibitedAction.EXECUTE_ERP_DISPOSITION: (
+        "send to erp",
+        "post disposition to bileeta",
+        "erp disposition",
+    ),
     ProhibitedAction.CLOSE_CAPA: ("close capa", "close the capa", "mark capa closed"),
     ProhibitedAction.DECLARE_ROOT_CAUSE_AS_FACT: (
         "root cause is",

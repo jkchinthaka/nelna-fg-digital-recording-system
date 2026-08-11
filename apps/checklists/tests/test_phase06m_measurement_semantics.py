@@ -521,6 +521,7 @@ def test_zero_negative_large_without_rounding() -> None:
             checklist_record_id=record.id, checklist_item_id=item.id
         )
         assert draft.number_value == expected
+        assert draft.measurement_context is not None
         assert draft.measurement_context["rounding_applied"] is False
         # Precision alone does not round
         assert draft.measurement_context.get("decimal_precision") in (None, item.decimal_precision)
@@ -558,6 +559,7 @@ def test_measurement_helper_edge_coverage() -> None:
     with pytest.raises(ValidationError):
         normalize_decimal_precision(99)
     assert parse_decimal_strict(7) == Decimal("7")
+
     class _Bad:
         def __str__(self) -> str:
             raise TypeError("nope")
@@ -566,28 +568,34 @@ def test_measurement_helper_edge_coverage() -> None:
         parse_decimal_strict(_Bad())
     rounded, applied = apply_configured_rounding(Decimal("1.25"), 1, "HALF_UP")
     assert applied and rounded == Decimal("1.3")
-    assert format_decimal_for_display("1.2500") == "1.25"
+    assert format_decimal_for_display(Decimal("1.2500")) == "1.25"
     assert format_decimal_for_display(Decimal("2"), precision=2) in {"2.00", "2"}
-    assert value_within_informational_bounds(
-        Decimal("10"), Decimal("10"), None, min_inclusive=False, max_inclusive=True
-    ) is False
-    assert value_within_informational_bounds(
-        Decimal("20"), None, Decimal("20"), min_inclusive=True, max_inclusive=False
-    ) is False
-    ctx = build_measurement_context(value="3.5", unit="g")
+    assert (
+        value_within_informational_bounds(
+            Decimal("10"), Decimal("10"), None, min_inclusive=False, max_inclusive=True
+        )
+        is False
+    )
+    assert (
+        value_within_informational_bounds(
+            Decimal("20"), None, Decimal("20"), min_inclusive=True, max_inclusive=False
+        )
+        is False
+    )
+    ctx = build_measurement_context(value=Decimal("3.5"), unit="g")
     assert ctx["captured_value"] == "3.5"
     assert decimal_to_mongo_safe(None) is None
     assert decimal_to_mongo_safe(Decimal("1")) == "1"
     assert mongo_safe_to_decimal(None) is None
     assert mongo_safe_to_decimal("") is None
     assert mongo_safe_to_decimal("9.1") == Decimal("9.1")
-    assert apply_measurement_decimal(
-        1.5, decimal_precision=None, rounding_mode=""
-    ) == Decimal("1.5")
+    assert apply_measurement_decimal(1.5, decimal_precision=None, rounding_mode="") == Decimal(
+        "1.5"
+    )
     assert quantize_for_precision(
         Decimal("1.26"), decimal_precision=1, rounding_mode="HALF_UP"
     ) == Decimal("1.3")
-    assert assert_precision_rounding_pair(
-        decimal_precision=2, rounding_mode="FLOOR"
-    ) == (2, "FLOOR")
-
+    assert assert_precision_rounding_pair(decimal_precision=2, rounding_mode="FLOOR") == (
+        2,
+        "FLOOR",
+    )

@@ -22,7 +22,7 @@ from apps.accounts.models import User
 from apps.integrations.bileeta.client import LiveBileetaClient, live_client_is_callable
 from apps.integrations.bileeta.mock import MockBileetaAdapter
 from apps.integrations.contracts import InboundBatchEventContract
-from apps.integrations.errors import IntegrationError, IntegrationErrorClass
+from apps.integrations.errors import IntegrationErrorClass
 from apps.integrations.models import (
     IntegrationAttempt,
     IntegrationAttemptStatus,
@@ -101,9 +101,7 @@ def ingest_inbound_batch_event(
     """
     user = _require_authenticated_actor(actor)
     if organization is not None:
-        require_permission(
-            user, MANAGE_BOUNDARY, scope=Scope(organization_id=organization.id)
-        )
+        require_permission(user, MANAGE_BOUNDARY, scope=Scope(organization_id=organization.id))
     elif not user_has_permission_any_scope(user, MANAGE_BOUNDARY):
         raise PermissionDenied("Permission denied.")
 
@@ -116,9 +114,7 @@ def ingest_inbound_batch_event(
     if existing is not None:
         event = None
         if existing.external_batch_event_id:
-            event = ExternalBatchEvent.objects.filter(
-                pk=existing.external_batch_event_id
-            ).first()
+            event = ExternalBatchEvent.objects.filter(pk=existing.external_batch_event_id).first()
         record_event(
             event_type="INTEGRATION_INBOUND_DUPLICATE",
             actor=user,
@@ -256,18 +252,14 @@ def pull_mock_and_ingest(
     """Contract-test path: mock pull (with retries) then ingest each event."""
     user = _require_authenticated_actor(actor)
     if organization is not None:
-        require_permission(
-            user, MANAGE_BOUNDARY, scope=Scope(organization_id=organization.id)
-        )
+        require_permission(user, MANAGE_BOUNDARY, scope=Scope(organization_id=organization.id))
     elif not user_has_permission_any_scope(user, MANAGE_BOUNDARY):
         raise PermissionDenied("Permission denied.")
     events = adapter.pull_with_retries()
     results: list[tuple[IntegrationAttempt, ExternalBatchEvent | None]] = []
     for contract in events:
         results.append(
-            ingest_inbound_batch_event(
-                actor=user, contract=contract, organization=organization
-            )
+            ingest_inbound_batch_event(actor=user, contract=contract, organization=organization)
         )
     return results
 
@@ -307,11 +299,7 @@ def mark_attempt_dead_letter(
     attempt = IntegrationAttempt.objects.select_for_update().filter(pk=attempt_id).first()
     if attempt is None:
         raise ValidationError({"attempt": "Integration attempt not found."})
-    scope = (
-        Scope(organization_id=attempt.organization_id)
-        if attempt.organization_id
-        else Scope()
-    )
+    scope = Scope(organization_id=attempt.organization_id) if attempt.organization_id else Scope()
     require_permission(user, MANAGE_BOUNDARY, scope=scope)
     attempt.status = IntegrationAttemptStatus.DEAD_LETTER
     attempt.error_summary = (reason or "dead_letter")[:255]

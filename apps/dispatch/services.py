@@ -7,8 +7,9 @@ AI suggestions never block or release loading.
 from __future__ import annotations
 
 import uuid
+from datetime import datetime
 from decimal import Decimal, InvalidOperation
-from typing import Any
+from typing import Any, cast
 
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import IntegrityError, transaction
@@ -124,13 +125,14 @@ def evaluate_release_gate(
     }
     if not enabled:
         return result
-    if record.qa_review_id is None:
+    qa_review = record.qa_review
+    if qa_review is None:
         result["allowed"] = False
         result["reason"] = (
             "QA RELEASE gate enabled: link a QAReview with decision RELEASE before completing."
         )
         return result
-    decision = record.qa_review.decision
+    decision = qa_review.decision
     result["qa_decision"] = decision
     if decision != QAReviewDecision.RELEASE:
         result["allowed"] = False
@@ -152,8 +154,8 @@ def create_dispatch_quality_record(
     vehicle_reference: str = "",
     driver_reference: str = "",
     loading_bay: str = "",
-    started_at=None,
-    ended_at=None,
+    started_at: datetime | None = None,
+    ended_at: datetime | None = None,
     seal_number: str = "",
     quantity: Decimal | str | int | float | None = None,
     quantity_uom: str = "",
@@ -232,8 +234,8 @@ def update_dispatch_quality_record(
     vehicle_reference: str | None = None,
     driver_reference: str | None = None,
     loading_bay: str | None = None,
-    started_at=...,
-    ended_at=...,
+    started_at: datetime | None | object = ...,
+    ended_at: datetime | None | object = ...,
     seal_number: str | None = None,
     quantity: Decimal | str | int | float | None | object = ...,
     quantity_uom: str | None = None,
@@ -243,14 +245,10 @@ def update_dispatch_quality_record(
     notes: str | None = None,
 ) -> DispatchQualityRecord:
     user = _require_authenticated_actor(actor)
-    record = (
-        DispatchQualityRecord.objects.select_for_update().filter(pk=dispatch_record_id).first()
-    )
+    record = DispatchQualityRecord.objects.select_for_update().filter(pk=dispatch_record_id).first()
     if record is None:
         raise ValidationError({"dispatch_record": "Dispatch quality record not found."})
-    require_permission(
-        user, MANAGE_DISPATCH, scope=Scope(organization_id=record.organization_id)
-    )
+    require_permission(user, MANAGE_DISPATCH, scope=Scope(organization_id=record.organization_id))
     if record.status != DispatchRecordStatus.OPEN:
         raise ValidationError({"status": "Only OPEN dispatch records can be updated."})
     changed: list[str] = []
@@ -267,10 +265,10 @@ def update_dispatch_quality_record(
         record.loading_bay = loading_bay.strip()
         changed.append("loading_bay")
     if started_at is not ...:
-        record.started_at = started_at
+        record.started_at = cast(datetime | None, started_at)
         changed.append("started_at")
     if ended_at is not ...:
-        record.ended_at = ended_at
+        record.ended_at = cast(datetime | None, ended_at)
         changed.append("ended_at")
     if seal_number is not None:
         record.seal_number = seal_number.strip()
@@ -329,14 +327,10 @@ def link_vehicle_inspection(
 ) -> DispatchQualityRecord:
     """Link dynamic checklist definition/submission — no hardcoded inspection questions."""
     user = _require_authenticated_actor(actor)
-    record = (
-        DispatchQualityRecord.objects.select_for_update().filter(pk=dispatch_record_id).first()
-    )
+    record = DispatchQualityRecord.objects.select_for_update().filter(pk=dispatch_record_id).first()
     if record is None:
         raise ValidationError({"dispatch_record": "Dispatch quality record not found."})
-    require_permission(
-        user, MANAGE_DISPATCH, scope=Scope(organization_id=record.organization_id)
-    )
+    require_permission(user, MANAGE_DISPATCH, scope=Scope(organization_id=record.organization_id))
     if record.status != DispatchRecordStatus.OPEN:
         raise ValidationError({"status": "Only OPEN dispatch records can be updated."})
     if checklist_version_id is not None:
@@ -380,14 +374,10 @@ def link_qa_review(
     qa_review_id: uuid.UUID,
 ) -> DispatchQualityRecord:
     user = _require_authenticated_actor(actor)
-    record = (
-        DispatchQualityRecord.objects.select_for_update().filter(pk=dispatch_record_id).first()
-    )
+    record = DispatchQualityRecord.objects.select_for_update().filter(pk=dispatch_record_id).first()
     if record is None:
         raise ValidationError({"dispatch_record": "Dispatch quality record not found."})
-    require_permission(
-        user, MANAGE_DISPATCH, scope=Scope(organization_id=record.organization_id)
-    )
+    require_permission(user, MANAGE_DISPATCH, scope=Scope(organization_id=record.organization_id))
     if record.status != DispatchRecordStatus.OPEN:
         raise ValidationError({"status": "Only OPEN dispatch records can be updated."})
     qa = QAReview.objects.filter(pk=qa_review_id, organization_id=record.organization_id).first()
@@ -422,7 +412,7 @@ def record_cold_chain_temperature(
     *,
     actor: User | None,
     dispatch_record_id: uuid.UUID,
-    reading_at,
+    reading_at: datetime,
     temperature_celsius: Decimal | str | int | float,
     device_reference: str = "",
     equipment_id: uuid.UUID | None = None,
@@ -430,14 +420,10 @@ def record_cold_chain_temperature(
 ) -> ColdChainTemperatureReading:
     """Record temperature as Decimal — no allowable range evaluation."""
     user = _require_authenticated_actor(actor)
-    record = (
-        DispatchQualityRecord.objects.select_for_update().filter(pk=dispatch_record_id).first()
-    )
+    record = DispatchQualityRecord.objects.select_for_update().filter(pk=dispatch_record_id).first()
     if record is None:
         raise ValidationError({"dispatch_record": "Dispatch quality record not found."})
-    require_permission(
-        user, MANAGE_DISPATCH, scope=Scope(organization_id=record.organization_id)
-    )
+    require_permission(user, MANAGE_DISPATCH, scope=Scope(organization_id=record.organization_id))
     if record.status == DispatchRecordStatus.CANCELLED:
         raise ValidationError({"status": "Cannot record temperatures on a cancelled record."})
     temp = _to_decimal(temperature_celsius, "temperature_celsius")
@@ -498,14 +484,10 @@ def set_dispatch_quantity_line(
 ) -> DispatchQuantityLine:
     """Set released/loaded quantities; derive remaining. Not an ERP ledger."""
     user = _require_authenticated_actor(actor)
-    record = (
-        DispatchQualityRecord.objects.select_for_update().filter(pk=dispatch_record_id).first()
-    )
+    record = DispatchQualityRecord.objects.select_for_update().filter(pk=dispatch_record_id).first()
     if record is None:
         raise ValidationError({"dispatch_record": "Dispatch quality record not found."})
-    require_permission(
-        user, MANAGE_DISPATCH, scope=Scope(organization_id=record.organization_id)
-    )
+    require_permission(user, MANAGE_DISPATCH, scope=Scope(organization_id=record.organization_id))
     if record.status != DispatchRecordStatus.OPEN:
         raise ValidationError({"status": "Only OPEN dispatch records accept quantity lines."})
     released = _to_decimal(released_quantity, "released_quantity")
@@ -594,9 +576,7 @@ def set_dispatch_release_policy(
 ) -> DispatchReleasePolicy:
     """Configure QA RELEASE gate. Default/disabled until owner evidence enables it."""
     user = _require_authenticated_actor(actor)
-    require_permission(
-        user, MANAGE_RELEASE_POLICY, scope=Scope(organization_id=organization.id)
-    )
+    require_permission(user, MANAGE_RELEASE_POLICY, scope=Scope(organization_id=organization.id))
     policy = get_or_create_release_policy(organization=organization, actor=user)
     policy.require_qa_release_before_loading = bool(require_qa_release_before_loading)
     if notes is not None:
@@ -647,9 +627,7 @@ def complete_dispatch_quality_record(
             if record.status == DispatchRecordStatus.COMPLETED:
                 return record
             if record.status != DispatchRecordStatus.OPEN:
-                raise ValidationError(
-                    {"status": f"Cannot complete from status {record.status}."}
-                )
+                raise ValidationError({"status": f"Cannot complete from status {record.status}."})
             policy = get_or_create_release_policy(organization=record.organization, actor=user)
             gate = evaluate_release_gate(record=record, policy=policy)
             _append_history(
@@ -703,10 +681,10 @@ def complete_dispatch_quality_record(
         if "release_gate" in getattr(exc, "message_dict", {}):
             record = DispatchQualityRecord.objects.filter(pk=dispatch_record_id).first()
             if record is not None:
-                policy = DispatchReleasePolicy.objects.filter(
+                release_policy: DispatchReleasePolicy | None = DispatchReleasePolicy.objects.filter(
                     organization_id=record.organization_id
                 ).first()
-                gate = evaluate_release_gate(record=record, policy=policy)
+                gate = evaluate_release_gate(record=record, policy=release_policy)
                 record_event(
                     event_type="DISPATCH_RELEASE_GATE_BLOCKED",
                     actor=user,
@@ -728,14 +706,10 @@ def cancel_dispatch_quality_record(
     note: str = "",
 ) -> DispatchQualityRecord:
     user = _require_authenticated_actor(actor)
-    record = (
-        DispatchQualityRecord.objects.select_for_update().filter(pk=dispatch_record_id).first()
-    )
+    record = DispatchQualityRecord.objects.select_for_update().filter(pk=dispatch_record_id).first()
     if record is None:
         raise ValidationError({"dispatch_record": "Dispatch quality record not found."})
-    require_permission(
-        user, MANAGE_DISPATCH, scope=Scope(organization_id=record.organization_id)
-    )
+    require_permission(user, MANAGE_DISPATCH, scope=Scope(organization_id=record.organization_id))
     if record.status == DispatchRecordStatus.CANCELLED:
         return record
     if record.status == DispatchRecordStatus.COMPLETED:

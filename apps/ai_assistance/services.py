@@ -41,7 +41,9 @@ def _require_actor(actor: User | None) -> User:
     return actor
 
 
-def list_allowed_use_cases(*, actor: User | None, organization: Organization) -> list[dict[str, str]]:
+def list_allowed_use_cases(
+    *, actor: User | None, organization: Organization
+) -> list[dict[str, str]]:
     user = _require_actor(actor)
     require_permission(user, USE_AI, scope=Scope(organization_id=organization.id))
     # Catalogue is visible even when disabled so operators know capability is optional.

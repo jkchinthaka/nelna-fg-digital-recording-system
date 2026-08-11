@@ -77,9 +77,7 @@ class ChecklistDraftForm(forms.Form):
 
         for item in top_simple:
             self._add_item_field(item, sample_index=1, initial_responses=initial_responses)
-            self._add_equipment_field(
-                item, sample_index=1, initial_equipment=initial_equipment
-            )
+            self._add_equipment_field(item, sample_index=1, initial_equipment=initial_equipment)
 
         for group in groups:
             children = children_by_parent.get(group.id, [])
@@ -149,7 +147,9 @@ class ChecklistDraftForm(forms.Form):
                 required=False,
                 max_digits=14,
                 decimal_places=4,
-                widget=forms.NumberInput(attrs={"class": "form-input", "step": "any", **aria_attrs}),
+                widget=forms.NumberInput(
+                    attrs={"class": "form-input", "step": "any", **aria_attrs}
+                ),
                 initial=initial,
             )
         elif item.response_type == ChecklistResponseType.TEXT:
@@ -230,9 +230,7 @@ class ChecklistDraftForm(forms.Form):
     def equipment_refs_by_key(self) -> dict[ResponseKey, Any]:
         """Return optional equipment UUIDs for items that require a reference."""
         refs: dict[ResponseKey, Any] = {}
-        candidates: list[tuple[ChecklistItem, int]] = [
-            (item, 1) for item in self.top_simple
-        ]
+        candidates: list[tuple[ChecklistItem, int]] = [(item, 1) for item in self.top_simple]
         for group in self.groups:
             indexes = self.sample_indexes_by_group.get(group.id) or []
             for sample_index in indexes:

@@ -53,7 +53,7 @@ default-groups = ["development", "testing", "security"]
 target-version = "py313"
 line-length = 100
 src = ["apps", "config", "scripts", "tests"]
-extend-exclude = ["**/migrations/**", "static/dist/**", "design/generated/**", "node_modules/**"]
+extend-exclude = ["**/migrations/**", "static/dist/**", "design/generated/**", "node_modules/**", ".local-wip-preserve/**"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "N", "S", "DJ"]
@@ -66,6 +66,9 @@ ignore = ["S101"]
 "apps/accounts/middleware.py" = ["S110"]
 "config/settings/**" = ["S105"]
 "scripts/build_design_tokens.py" = ["S105"]
+"scripts/_run_07h_tests.py" = ["E402", "E501"]
+"scripts/_run_09c_tests.py" = ["E402", "E501"]
+"apps/recording/concurrency.py" = ["N818"]
 "scripts/ops/restore_drill.py" = ["S603", "S608"]
 "apps/mongo_poc/models.py" = ["DJ008"]
 "apps/mongo_poc/admin.py" = ["DJ008"]
@@ -89,6 +92,10 @@ exclude = [
     "design/generated/",
     "apps/mongo_poc/",
 ]
+
+[[tool.mypy.overrides]]
+module = ["config.secrets.*"]
+ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = ["celery.*", "django_htmx.*", "environ.*", "django_mongodb_backend.*"]
@@ -125,8 +132,6 @@ omit = [
     "manage.py",
     "apps/mongo_poc/*",
     "config/settings/mongo_poc.py",
-    "apps/analytics/*",
-    "apps/feature_flags/*",
     "config/asgi.py",
     "config/wsgi.py",
     "config/settings/production.py",

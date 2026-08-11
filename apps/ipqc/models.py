@@ -142,13 +142,13 @@ class IpqcProcessCheckDefinition(models.Model):
 
     def clean(self) -> None:
         super().clean()
-        if self.product_id and self.organization_id:
-            if self.product.organization_id != self.organization_id:
-                raise ValidationError(
-                    {"product": "Product must belong to the organization."}
-                )
-        if self.shift_id and self.organization_id:
-            if self.shift.organization_id != self.organization_id:
+        product = self.product
+        if product is not None and self.organization_id:
+            if product.organization_id != self.organization_id:
+                raise ValidationError({"product": "Product must belong to the organization."})
+        shift = self.shift
+        if shift is not None and self.organization_id:
+            if shift.organization_id != self.organization_id:
                 raise ValidationError({"shift": "Shift must belong to the organization."})
         if (
             self.trigger_kind == IpqcTriggerKind.TIME_INTERVAL
@@ -286,6 +286,7 @@ class IpqcInspectionCase(models.Model):
 
     class Meta:
         ordering = ("-created_at",)
+
         constraints = [
             models.UniqueConstraint(
                 fields=["organization", "occurrence_key"],
@@ -305,11 +306,10 @@ class IpqcInspectionCase(models.Model):
 
     def clean(self) -> None:
         super().clean()
-        if self.definition_id and self.organization_id:
-            if self.definition.organization_id != self.organization_id:
-                raise ValidationError(
-                    {"definition": "Definition must belong to the organization."}
-                )
+        definition = self.definition
+        if definition is not None and self.organization_id:
+            if definition.organization_id != self.organization_id:
+                raise ValidationError({"definition": "Definition must belong to the organization."})
 
 
 class IpqcWorkflowPolicy(models.Model):
@@ -374,3 +374,6 @@ class IpqcHistoryEntry(models.Model):
 
     class Meta:
         ordering = ("-created_at",)
+
+    def __str__(self) -> str:
+        return f"{self.event_type}:{self.inspection_case_id}"

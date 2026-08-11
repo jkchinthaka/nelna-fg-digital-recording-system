@@ -578,13 +578,8 @@ def record_ipqc_measurement(
         raise ValidationError(
             {"parameter": "Specification parameter must belong to the organization."}
         )
-    if (
-        case.product_id
-        and parameter.version.specification.product_id != case.product_id
-    ):
-        raise ValidationError(
-            {"parameter": "Parameter product does not match IPQC case product."}
-        )
+    if case.product_id and parameter.version.specification.product_id != case.product_id:
+        raise ValidationError({"parameter": "Parameter product does not match IPQC case product."})
 
     result, label, extra = evaluate_specification_parameter(value=value, parameter=parameter)
     measurement = {
@@ -653,9 +648,7 @@ def resolve_ipqc_sampling(
     case.sampling_snapshot = snapshot
     if resolution.plan_version_id:
         case.sampling_plan_version_id = uuid.UUID(resolution.plan_version_id)
-    case.save(
-        update_fields=["sampling_snapshot", "sampling_plan_version", "updated_at"]
-    )
+    case.save(update_fields=["sampling_snapshot", "sampling_plan_version", "updated_at"])
     _refresh_context(case)
     record_event(
         event_type="IPQC_SAMPLING_RESOLVED",
@@ -745,9 +738,7 @@ def mark_ipqc_failure(
         metadata=decision.as_dict(),
     )
     event_type = (
-        "IPQC_STOP_PRODUCTION_SIGNALLED"
-        if decision.stop_production
-        else "IPQC_FAILURE_RECORDED"
+        "IPQC_STOP_PRODUCTION_SIGNALLED" if decision.stop_production else "IPQC_FAILURE_RECORDED"
     )
     record_event(
         event_type=event_type,
@@ -776,9 +767,7 @@ def escalate_ipqc_to_ncr(
     if case.nonconformance_id is not None:
         return case
     if not case.failure_detected:
-        raise ValidationError(
-            {"failure": "NCR escalation requires a recorded IPQC failure."}
-        )
+        raise ValidationError({"failure": "NCR escalation requires a recorded IPQC failure."})
 
     ncr = create_nonconformance(
         actor=user,
@@ -823,9 +812,7 @@ def escalate_ipqc_to_hold(
     if case.hold_case_id is not None:
         return case
     if not case.failure_detected:
-        raise ValidationError(
-            {"failure": "HOLD escalation requires a recorded IPQC failure."}
-        )
+        raise ValidationError({"failure": "HOLD escalation requires a recorded IPQC failure."})
 
     hold = create_hold_case(
         actor=user,
@@ -861,7 +848,7 @@ def attach_ipqc_submission(
     user = _require_actor(actor)
     require_permission(user, MANAGE, scope=_org_scope(case.organization_id))
     _assert_not_terminal(case)
-    if checklist_submission.organization_id != case.organization_id:
+    if checklist_submission.checklist_record.organization_id != case.organization_id:
         raise ValidationError(
             {"checklist_submission": "Submission must belong to the organization."}
         )

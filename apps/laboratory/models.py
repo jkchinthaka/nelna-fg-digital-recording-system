@@ -174,11 +174,13 @@ class LabTestParameter(models.Model):
         ):
             errors["bound_max"] = "bound_max cannot be less than bound_min."
         if self.specification_parameter_id and self.organization_id:
-            spec_org = self.specification_parameter.version.product_specification.organization_id
-            if spec_org != self.organization_id:
-                errors["specification_parameter"] = (
-                    "Specification parameter must belong to the same organization."
-                )
+            specification_parameter = self.specification_parameter
+            if specification_parameter is not None:
+                spec_org = specification_parameter.version.specification.organization_id
+                if spec_org != self.organization_id:
+                    errors["specification_parameter"] = (
+                        "Specification parameter must belong to the same organization."
+                    )
         if errors:
             raise ValidationError(errors)
 

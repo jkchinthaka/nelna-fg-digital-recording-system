@@ -1,4 +1,4 @@
-﻿"""Read selectors for organization-scoped quality quarantine state."""
+"""Read selectors for organization-scoped quality quarantine state."""
 
 from __future__ import annotations
 

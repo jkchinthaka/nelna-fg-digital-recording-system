@@ -38,9 +38,7 @@ TEAM_CODE_MAX_LENGTH = 64
 def _norm_reason(reason: str | None) -> str:
     text = (reason or "").strip()
     if len(text) > REASON_MAX_LENGTH:
-        raise ValidationError(
-            {"reason": f"reason must be at most {REASON_MAX_LENGTH} characters."}
-        )
+        raise ValidationError({"reason": f"reason must be at most {REASON_MAX_LENGTH} characters."})
     return text
 
 
@@ -154,9 +152,7 @@ def _resolve_targets(
         if shift is None or not shift.is_active:
             raise ValidationError({"assigned_shift": "Assigned shift not found or inactive."})
         if shift.organization_id != organization_id:
-            raise ValidationError(
-                {"assigned_shift": "Shift must belong to the task organization."}
-            )
+            raise ValidationError({"assigned_shift": "Shift must belong to the task organization."})
         if assigned_user_id or assigned_role_id or assigned_department_id or team_code:
             raise ValidationError(
                 {"assignee_kind": "SHIFT assignment must not set user/role/department/team."}
@@ -208,7 +204,9 @@ def _clear_current_assignment(task: ChecklistTask) -> None:
     task.assignment_reason = ""
 
 
-def _apply_targets(task: ChecklistTask, targets: dict[str, Any], *, actor: User, reason: str) -> None:
+def _apply_targets(
+    task: ChecklistTask, targets: dict[str, Any], *, actor: User, reason: str
+) -> None:
     task.assignee_kind = targets["assignee_kind"]
     task.assigned_user = targets["assigned_user"]
     task.assigned_role = targets["assigned_role"]
@@ -228,7 +226,8 @@ def _write_history(
     reason: str,
     previous: dict[str, Any],
 ) -> ChecklistTaskAssignmentEvent:
-    assert task.assigned_at is not None or action == ChecklistTaskAssignmentAction.UNASSIGN
+    if task.assigned_at is None and action != ChecklistTaskAssignmentAction.UNASSIGN:
+        raise ValidationError({"assigned_at": "Assignment timestamp is required."})
     assigned_at = task.assigned_at or timezone.now()
     event = ChecklistTaskAssignmentEvent(
         checklist_task=task,
@@ -250,7 +249,7 @@ def _write_history(
         reason=reason,
     )
     event.full_clean()
-    event.save()
+    event.save()  # type: ignore[no-untyped-call]
     return event
 
 
@@ -330,16 +329,14 @@ def assign_checklist_task(
         actor=user,
         metadata=_assignment_audit_metadata(task, event),
     )
-    return (
-        ChecklistTask.objects.select_related(
-            "organization",
-            "assigned_user",
-            "assigned_role",
-            "assigned_department",
-            "assigned_shift",
-            "assigned_by",
-        ).get(pk=task.id)
-    )
+    return ChecklistTask.objects.select_related(
+        "organization",
+        "assigned_user",
+        "assigned_role",
+        "assigned_department",
+        "assigned_shift",
+        "assigned_by",
+    ).get(pk=task.id)
 
 
 @transaction.atomic
@@ -399,16 +396,14 @@ def unassign_checklist_task(
         actor=user,
         metadata=_assignment_audit_metadata(task, event),
     )
-    return (
-        ChecklistTask.objects.select_related(
-            "organization",
-            "assigned_user",
-            "assigned_role",
-            "assigned_department",
-            "assigned_shift",
-            "assigned_by",
-        ).get(pk=task.id)
-    )
+    return ChecklistTask.objects.select_related(
+        "organization",
+        "assigned_user",
+        "assigned_role",
+        "assigned_department",
+        "assigned_shift",
+        "assigned_by",
+    ).get(pk=task.id)
 
 
 def assignment_does_not_grant_permission(
@@ -424,9 +419,7 @@ def assignment_does_not_grant_permission(
     """
     if assignee is None:
         return True
-    return not user_has_permission(
-        assignee, permission, scope=task_authorization_scope(task)
-    )
+    return not user_has_permission(assignee, permission, scope=task_authorization_scope(task))
 
 
 def list_assignment_history(

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import uuid
+from typing import cast
 
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
@@ -11,6 +12,7 @@ from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods, require_POST
 
+from apps.accounts.models import User
 from apps.notifications.models import Notification
 from apps.notifications.selectors import notifications_for_recipient
 from apps.notifications.services import mark_notification_read
@@ -20,12 +22,10 @@ from apps.notifications.services import mark_notification_read
 @require_http_methods(["GET"])
 def notification_list(request: HttpRequest) -> HttpResponse:
     """List the current user's in-app notifications (privacy: own only)."""
-    user = request.user
+    user = cast(User, request.user)
     # Allow authenticated recipients to see own inbox; VIEW_OWN grants org-scoped visibility intent.
     unread_only = request.GET.get("unread") == "1"
-    notifications = list(
-        notifications_for_recipient(recipient=user, unread_only=unread_only)[:100]
-    )
+    notifications = list(notifications_for_recipient(recipient=user, unread_only=unread_only)[:100])
     return render(
         request,
         "notifications/list.html",

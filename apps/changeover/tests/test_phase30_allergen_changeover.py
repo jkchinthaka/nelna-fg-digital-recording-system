@@ -1,4 +1,4 @@
-﻿"""Phase 30 — allergen / changeover / line-clearance foundation tests."""
+"""Phase 30 — allergen / changeover / line-clearance foundation tests."""
 
 from __future__ import annotations
 
@@ -10,6 +10,7 @@ from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.test import override_settings
+from tests.factories import grant_role, make_org, make_role_with_permission, make_user
 
 from apps.accounts.models import User
 from apps.changeover.models import (
@@ -52,7 +53,6 @@ from apps.master_data.models import FGProduct
 from apps.master_data.services import create_fg_product
 from apps.organizations.models import Organization
 from apps.security_audit.models import SecurityAuditEvent
-from tests.factories import grant_role, make_org, make_role_with_permission, make_user
 
 
 def _perm(model: type[Any], codename: str) -> Permission:
@@ -117,7 +117,7 @@ def _product(manager: User, org: Organization) -> FGProduct:
     )
 
 
-def _published_template_version(*, actor: User, org: Organization):
+def _published_template_version(*, actor: User, org: Organization) -> Any:
     template = create_checklist_template(
         actor=actor,
         organization=org,
@@ -125,9 +125,7 @@ def _published_template_version(*, actor: User, org: Organization):
         name="Line clearance checklist shell",
     )
     version = create_checklist_version(actor=actor, template_id=template.id)
-    section = add_checklist_section(
-        actor=actor, version_id=version.id, title="Clearance"
-    )
+    section = add_checklist_section(actor=actor, version_id=version.id, title="Clearance")
     add_checklist_item(
         actor=actor,
         section_id=section.id,
@@ -217,16 +215,18 @@ def test_changeover_line_scope_checklist_version_and_dossier_hooks() -> None:
     )
     assert decision["block_production"] is False
     assert record.status == ChangeoverStatus.RECORDED
-    assert record.frozen_changeover_context["cleaning_checklist_version_id"] == str(
-        version.id
-    )
+    assert record.frozen_changeover_context["cleaning_checklist_version_id"] == str(version.id)
     assert record.frozen_changeover_context["batch_dossier_ready"] is True
-    assert changeovers_for_line(
-        organization_id=org.id, line_code="LINE-A"
-    ).filter(pk=record.id).exists()
-    assert changeovers_for_batch(
-        organization_id=org.id, batch_reference="BATCH-DOSSIER-1"
-    ).filter(pk=record.id).exists()
+    assert (
+        changeovers_for_line(organization_id=org.id, line_code="LINE-A")
+        .filter(pk=record.id)
+        .exists()
+    )
+    assert (
+        changeovers_for_batch(organization_id=org.id, batch_reference="BATCH-DOSSIER-1")
+        .filter(pk=record.id)
+        .exists()
+    )
     assert changeovers_for_organization(org.id).filter(pk=record.id).exists()
 
     clearance = record_line_clearance(
@@ -264,9 +264,7 @@ def test_changeover_line_scope_checklist_version_and_dossier_hooks() -> None:
     )
     assert target2.organization_id == org.id
     assert SecurityAuditEvent.objects.filter(event_type="CHANGEOVER_RECORDED").exists()
-    assert SecurityAuditEvent.objects.filter(
-        event_type="LINE_CLEARANCE_RECORDED"
-    ).exists()
+    assert SecurityAuditEvent.objects.filter(event_type="LINE_CLEARANCE_RECORDED").exists()
 
 
 @pytest.mark.django_db
@@ -344,9 +342,10 @@ def test_policy_disabled_never_blocks() -> None:
         matrix_conflict_asserted=True,
     )
     assert gate["block_production"] is False
-    assert record.frozen_changeover_context["allergen_block_decision"][
-        "reason_code"
-    ] == "SETTINGS_APPROVAL_MISSING"
+    assert (
+        record.frozen_changeover_context["allergen_block_decision"]["reason_code"]
+        == "SETTINGS_APPROVAL_MISSING"
+    )
 
 
 @pytest.mark.django_db
@@ -408,9 +407,7 @@ def test_historical_record_preserves_checklist_pin() -> None:
     ] == str(pinned)
 
     with pytest.raises(ValidationError):
-        create_allergen_reference(
-            actor=manager, organization=org, code="", name=""
-        )
+        create_allergen_reference(actor=manager, organization=org, code="", name="")
     with pytest.raises(ValidationError):
         _template2, version2 = _published_template_version(actor=manager, org=org)
         record_changeover(
@@ -423,9 +420,10 @@ def test_historical_record_preserves_checklist_pin() -> None:
         )
     assert LineClearanceRecord.objects.count() >= 0
     from django.contrib.admin.sites import AdminSite
+
     from apps.changeover.admin import SoftRetentionAdmin
 
     admin = SoftRetentionAdmin(AllergenReference, AdminSite())
-    assert admin.has_delete_permission(request=None) is False  # type: ignore[arg-type]
+    assert admin.has_delete_permission(request=None) is False
     assert str(record)
     assert AllergenRiskPolicy.objects.count() >= 0

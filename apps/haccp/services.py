@@ -104,9 +104,7 @@ def _history(
 
 def _assert_draft(version: HaccpPlanVersion) -> None:
     if version.is_immutable:
-        raise ValidationError(
-            {"status": "Approved or retired HACCP plan versions are immutable."}
-        )
+        raise ValidationError({"status": "Approved or retired HACCP plan versions are immutable."})
 
 
 def _freeze_binding_context(
@@ -178,11 +176,7 @@ def create_draft_plan_version(
     if plan is None:
         raise ValidationError({"plan": "HACCP plan not found."})
     _require_haccp_permission(user, MANAGE, plan.organization_id)
-    if (
-        effective_from is not None
-        and effective_to is not None
-        and effective_to < effective_from
-    ):
+    if effective_from is not None and effective_to is not None and effective_to < effective_from:
         raise ValidationError({"effective_to": "effective_to cannot be before effective_from."})
     next_number = (
         HaccpPlanVersion.objects.filter(plan_id=plan.id)
@@ -643,12 +637,16 @@ def bind_checklist_item_to_control_point(
     Frozen context preserves historical identity even if future versions change.
     """
     user = _require_actor(actor)
-    item = ChecklistItem.objects.select_related(
-        "section",
-        "section__version",
-        "section__version__template",
-        "section__version__template__organization",
-    ).filter(pk=checklist_item_id).first()
+    item = (
+        ChecklistItem.objects.select_related(
+            "section",
+            "section__version",
+            "section__version__template",
+            "section__version__template__organization",
+        )
+        .filter(pk=checklist_item_id)
+        .first()
+    )
     if item is None:
         raise ValidationError({"checklist_item": "Checklist item not found."})
     org_id = item.section.version.template.organization_id
@@ -667,9 +665,11 @@ def bind_checklist_item_to_control_point(
                 )
             }
         )
-    cp = ControlPoint.objects.select_related("process_step").filter(
-        pk=control_point_id, plan_version=version
-    ).first()
+    cp = (
+        ControlPoint.objects.select_related("process_step")
+        .filter(pk=control_point_id, plan_version=version)
+        .first()
+    )
     if cp is None:
         raise ValidationError({"control_point": "Control point not found on plan version."})
     frozen = _freeze_binding_context(plan_version=version, control_point=cp)

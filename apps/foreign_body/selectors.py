@@ -20,9 +20,7 @@ def list_test_pieces_for_organization(organization_id: uuid.UUID) -> QuerySet[Te
 def schedule_rules_for_organization(
     organization_id: uuid.UUID,
 ) -> QuerySet[ChallengeScheduleRule]:
-    return ChallengeScheduleRule.objects.filter(
-        organization_id=organization_id, is_active=True
-    )
+    return ChallengeScheduleRule.objects.filter(organization_id=organization_id, is_active=True)
 
 
 def challenge_tests_for_organization(

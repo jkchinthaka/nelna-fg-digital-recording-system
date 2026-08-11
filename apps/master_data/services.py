@@ -245,18 +245,14 @@ def update_fg_product(
             product.storage_category if storage_category is _UNSET else storage_category
         ),
         shelf_life_reference=(
-            product.shelf_life_reference
-            if shelf_life_reference is _UNSET
-            else shelf_life_reference
+            product.shelf_life_reference if shelf_life_reference is _UNSET else shelf_life_reference
         ),
         label_artwork_reference=(
             product.label_artwork_reference
             if label_artwork_reference is _UNSET
             else label_artwork_reference
         ),
-        effective_from=(
-            product.effective_from if effective_from is _UNSET else effective_from
-        ),
+        effective_from=(product.effective_from if effective_from is _UNSET else effective_from),
         effective_to=product.effective_to if effective_to is _UNSET else effective_to,
     )
 

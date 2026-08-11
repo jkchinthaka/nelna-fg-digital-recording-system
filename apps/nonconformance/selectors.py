@@ -12,7 +12,6 @@ from apps.nonconformance.models import (
     HoldCase,
     NonConformanceRecord,
     QualityCaseHistoryEntry,
-    QualityCaseHistoryKind,
 )
 from apps.nonconformance.services import MANAGE_HOLD, MANAGE_NCR, VIEW_NONCONFORMANCE
 
@@ -33,9 +32,7 @@ def list_nonconformances_for_org(
     )
 
 
-def list_hold_cases_for_org(
-    *, actor: User, organization_id: uuid.UUID
-) -> QuerySet[HoldCase]:
+def list_hold_cases_for_org(*, actor: User, organization_id: uuid.UUID) -> QuerySet[HoldCase]:
     scope = Scope(organization_id=organization_id)
     if not (
         user_has_permission(actor, MANAGE_HOLD, scope=scope)

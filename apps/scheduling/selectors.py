@@ -24,7 +24,6 @@ from apps.scheduling.applicability import (
 )
 from apps.scheduling.due import (
     ChecklistDueDisplayState,
-    ChecklistTaskDueDisplayState,
     derive_due_display_state,
     normalize_as_of,
 )
@@ -231,9 +230,7 @@ def _apply_due_state_filter(
         base = base.filter(Q(due_at__lte=instant) | Q(window_end_at__lte=instant))
     candidates = list(base)
     ids = [
-        task.id
-        for task in candidates
-        if derive_due_display_state(task, as_of=instant) == due_state
+        task.id for task in candidates if derive_due_display_state(task, as_of=instant) == due_state
     ]
     return qs.filter(pk__in=ids)
 
@@ -387,4 +384,3 @@ def list_checklist_applicability_rules(
     if active_only:
         qs = qs.filter(is_active=True)
     return qs.order_by("organization__code", "code")
-

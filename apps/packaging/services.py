@@ -71,9 +71,7 @@ def _history(
 
 def _assert_draft(version: ArtworkVersion) -> None:
     if version.is_immutable:
-        raise ValidationError(
-            {"status": "Approved or retired artwork versions are immutable."}
-        )
+        raise ValidationError({"status": "Approved or retired artwork versions are immutable."})
 
 
 @transaction.atomic
@@ -328,9 +326,7 @@ def bind_checklist_item_to_artwork(
     if version.artwork.organization_id != org_id:
         raise PermissionDenied("Cross-organization artwork binding is denied.")
     if version.status != ArtworkVersionStatus.APPROVED:
-        raise ValidationError(
-            {"artwork_version": "Only APPROVED artwork versions may be bound."}
-        )
+        raise ValidationError({"artwork_version": "Only APPROVED artwork versions may be bound."})
     frozen = build_frozen_artwork_context(version)
     frozen["checklist_item_id"] = str(checklist_item.id)
     binding, _ = ChecklistItemArtworkBinding.objects.update_or_create(
@@ -374,25 +370,15 @@ def create_line_clearance_hook(
     """Prepared future changeover/line-clearance link — not a clearance workflow."""
     user = _require_actor(actor)
     require_permission(user, MANAGE, scope=_org_scope(organization.id))
-    version = (
-        ArtworkVersion.objects.select_related("artwork")
-        .filter(pk=artwork_version.pk)
-        .first()
-    )
+    version = ArtworkVersion.objects.select_related("artwork").filter(pk=artwork_version.pk).first()
     if version is None:
         raise ValidationError({"artwork_version": "Artwork version not found."})
     if version.artwork.organization_id != organization.id:
-        raise ValidationError(
-            {"artwork_version": "Artwork must belong to the organization."}
-        )
+        raise ValidationError({"artwork_version": "Artwork must belong to the organization."})
     if version.status != ArtworkVersionStatus.APPROVED:
-        raise ValidationError(
-            {"artwork_version": "Only APPROVED artwork versions may be hooked."}
-        )
+        raise ValidationError({"artwork_version": "Only APPROVED artwork versions may be hooked."})
     if checklist_template is not None and checklist_template.organization_id != organization.id:
-        raise ValidationError(
-            {"checklist_template": "Template must belong to the organization."}
-        )
+        raise ValidationError({"checklist_template": "Template must belong to the organization."})
     normalized = normalize_code(code)
     if not normalized:
         raise ValidationError({"code": "Hook code is required."})

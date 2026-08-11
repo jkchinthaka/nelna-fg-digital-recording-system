@@ -62,6 +62,8 @@ def get_evidence_attachment(
     )
     if attachment is None:
         return None
+    if actor is None:
+        return None
     target = resolve_linked_target(
         kind=attachment.linked_kind,
         object_id=attachment.linked_object_id,

@@ -204,11 +204,13 @@ class SamplingRule(models.Model):
             raise ValidationError(
                 {"lot_size_max": "lot_size_max cannot be less than lot_size_min."}
             )
-        if self.product_id and self.plan_version_id:
-            if self.product.organization_id != self.plan_version.plan.organization_id:
+        product = self.product
+        if product is not None and self.plan_version_id:
+            if product.organization_id != self.plan_version.plan.organization_id:
                 raise ValidationError({"product": "Product must belong to the same organization."})
-        if self.site_id and self.plan_version_id:
-            if self.site.organization_id != self.plan_version.plan.organization_id:
+        site = self.site
+        if site is not None and self.plan_version_id:
+            if site.organization_id != self.plan_version.plan.organization_id:
                 raise ValidationError({"site": "Site must belong to the same organization."})
 
 

@@ -1,4 +1,4 @@
-﻿"""LLM provider package — domain must not import a specific vendor SDK."""
+"""LLM provider package — domain must not import a specific vendor SDK."""
 
 from __future__ import annotations
 

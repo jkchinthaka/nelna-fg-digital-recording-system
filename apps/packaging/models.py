@@ -85,11 +85,10 @@ class PackagingArtwork(models.Model):
 
     def clean(self) -> None:
         super().clean()
-        if self.product_id and self.organization_id:
-            if self.product.organization_id != self.organization_id:
-                raise ValidationError(
-                    {"product": "Product must belong to the same organization."}
-                )
+        product = self.product
+        if product is not None and self.organization_id:
+            if product.organization_id != self.organization_id:
+                raise ValidationError({"product": "Product must belong to the same organization."})
 
 
 class ArtworkVersion(models.Model):
@@ -182,9 +181,7 @@ class ArtworkVersion(models.Model):
             and self.effective_to is not None
             and self.effective_from > self.effective_to
         ):
-            raise ValidationError(
-                {"effective_to": "effective_to cannot be before effective_from."}
-            )
+            raise ValidationError({"effective_to": "effective_to cannot be before effective_from."})
 
 
 class ChecklistItemArtworkBinding(models.Model):
@@ -285,8 +282,9 @@ class LineClearanceArtworkHook(models.Model):
                 raise ValidationError(
                     {"artwork_version": "Artwork must belong to the same organization."}
                 )
-        if self.checklist_template_id and self.organization_id:
-            if self.checklist_template.organization_id != self.organization_id:
+        checklist_template = self.checklist_template
+        if checklist_template is not None and self.organization_id:
+            if checklist_template.organization_id != self.organization_id:
                 raise ValidationError(
                     {
                         "checklist_template": (

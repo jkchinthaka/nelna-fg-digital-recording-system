@@ -237,9 +237,11 @@ def _validate_rows(rows: list[_ParsedRow]) -> tuple[list[ImportRowError], list[s
                 )
             else:
                 seen_erp.add(erp_key)
-            if FGProduct.objects.filter(
-                organization=org, erp_item_code__iexact=row.erp_item_code
-            ).exclude(erp_item_code="").exists():
+            if (
+                FGProduct.objects.filter(organization=org, erp_item_code__iexact=row.erp_item_code)
+                .exclude(erp_item_code="")
+                .exists()
+            ):
                 dup_erp.append(erp_key)
                 errors.append(
                     ImportRowError(
@@ -319,14 +321,10 @@ def import_fg_products(
     created: list[str] = []
     try:
         with transaction.atomic():
-            org_by_code = {
-                normalize_code(o.code): o for o in Organization.objects.all()
-            }
+            org_by_code = {normalize_code(o.code): o for o in Organization.objects.all()}
             for row in rows:
                 org = org_by_code[normalize_code(row.organization_code)]
-                require_permission(
-                    actor, MANAGE_FG_PRODUCT, scope=Scope(organization_id=org.id)
-                )
+                require_permission(actor, MANAGE_FG_PRODUCT, scope=Scope(organization_id=org.id))
                 product = create_fg_product(
                     actor=actor,
                     organization=org,

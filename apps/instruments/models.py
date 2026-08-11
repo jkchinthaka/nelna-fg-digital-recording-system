@@ -151,8 +151,9 @@ class Equipment(models.Model):
             errors["code"] = "Equipment code is required."
         if not (self.name or "").strip():
             errors["name"] = "Equipment name is required."
-        if self.site_id and self.organization_id:
-            if self.site.organization_id != self.organization_id:
+        site = self.site
+        if site is not None and self.organization_id:
+            if site.organization_id != self.organization_id:
                 errors["site"] = "Site must belong to the selected organization."
         if errors:
             raise ValidationError(errors)
@@ -208,8 +209,7 @@ class CalibrationRecord(models.Model):
         constraints = [
             models.CheckConstraint(
                 condition=(
-                    Q(next_due_on__isnull=True)
-                    | Q(next_due_on__gte=models.F("calibrated_on"))
+                    Q(next_due_on__isnull=True) | Q(next_due_on__gte=models.F("calibrated_on"))
                 ),
                 name="inst_calib_next_due_gte_calibrated",
             ),

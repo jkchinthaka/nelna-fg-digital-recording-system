@@ -123,11 +123,13 @@ class MonitoringPoint(models.Model):
 
     def clean(self) -> None:
         super().clean()
-        if self.site_id and self.organization_id:
-            if self.site.organization_id != self.organization_id:
+        site = self.site
+        if site is not None and self.organization_id:
+            if site.organization_id != self.organization_id:
                 raise ValidationError({"site": "Site must belong to the same organization."})
-        if self.department_id and self.organization_id:
-            if self.department.organization_id != self.organization_id:
+        department = self.department
+        if department is not None and self.organization_id:
+            if department.organization_id != self.organization_id:
                 raise ValidationError(
                     {"department": "Department must belong to the same organization."}
                 )
@@ -319,14 +321,20 @@ class MonitoringLimitRule(models.Model):
         org_id = self.spec_version.spec.organization_id if self.spec_version_id else None
         if org_id is None:
             return
-        if self.monitoring_point_id and self.monitoring_point.organization_id != org_id:
+        monitoring_point = self.monitoring_point
+
+        if (
+            self.monitoring_point_id
+            and monitoring_point is not None
+            and monitoring_point.organization_id != org_id
+        ):
             raise ValidationError(
                 {"monitoring_point": "Point must belong to the same organization."}
             )
-        if self.parameter_id and self.parameter.organization_id != org_id:
-            raise ValidationError(
-                {"parameter": "Parameter must belong to the same organization."}
-            )
+        parameter = self.parameter
+
+        if self.parameter_id and parameter is not None and parameter.organization_id != org_id:
+            raise ValidationError({"parameter": "Parameter must belong to the same organization."})
         if (
             self.bound_min is not None
             and self.bound_max is not None
@@ -375,13 +383,15 @@ class MonitoringScheduleLink(models.Model):
 
     def clean(self) -> None:
         super().clean()
-        if self.checklist_schedule_id and self.organization_id:
-            if self.checklist_schedule.organization_id != self.organization_id:
+        checklist_schedule = self.checklist_schedule
+        if checklist_schedule is not None and self.organization_id:
+            if checklist_schedule.organization_id != self.organization_id:
                 raise ValidationError(
                     {"checklist_schedule": "Schedule must belong to the same organization."}
                 )
-        if self.monitoring_point_id and self.organization_id:
-            if self.monitoring_point.organization_id != self.organization_id:
+        monitoring_point = self.monitoring_point
+        if monitoring_point is not None and self.organization_id:
+            if monitoring_point.organization_id != self.organization_id:
                 raise ValidationError(
                     {"monitoring_point": "Point must belong to the same organization."}
                 )

@@ -37,9 +37,7 @@ def reconcile_external_batch_events(
     qs = ExternalBatchEvent.objects.select_related("checklist_task").order_by("-created_at")
     if organization_id is not None:
         if include_unmapped:
-            qs = qs.filter(
-                Q(organization_id=organization_id) | Q(organization_id__isnull=True)
-            )
+            qs = qs.filter(Q(organization_id=organization_id) | Q(organization_id__isnull=True))
         else:
             qs = qs.filter(organization_id=organization_id)
     if source_system:

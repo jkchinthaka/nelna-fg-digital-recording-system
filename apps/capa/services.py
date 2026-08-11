@@ -210,11 +210,7 @@ def record_capa_verification(
         allowed = CAPA_STATUS_TRANSITIONS.get(action.status, frozenset())
         if CorrectiveActionStatus.VERIFICATION not in allowed:
             raise ValidationError(
-                {
-                    "status": (
-                        f"Cannot move to VERIFICATION from status {action.status}."
-                    )
-                }
+                {"status": (f"Cannot move to VERIFICATION from status {action.status}.")}
             )
         action.status = CorrectiveActionStatus.VERIFICATION
     action.verification_notes = text
@@ -275,11 +271,7 @@ def record_capa_effectiveness_review(
         allowed = CAPA_STATUS_TRANSITIONS.get(action.status, frozenset())
         if CorrectiveActionStatus.EFFECTIVENESS_REVIEW not in allowed:
             raise ValidationError(
-                {
-                    "status": (
-                        f"Cannot move to EFFECTIVENESS_REVIEW from status {action.status}."
-                    )
-                }
+                {"status": (f"Cannot move to EFFECTIVENESS_REVIEW from status {action.status}.")}
             )
         action.status = CorrectiveActionStatus.EFFECTIVENESS_REVIEW
     action.effectiveness_notes = text
@@ -382,9 +374,7 @@ def complete_capa_action_item(
     )
     if item is None:
         raise ValidationError({"action_item": "CAPA action item not found."})
-    require_permission(
-        user, MANAGE_CAPA, scope=Scope(organization_id=item.capa.organization_id)
-    )
+    require_permission(user, MANAGE_CAPA, scope=Scope(organization_id=item.capa.organization_id))
     if item.capa.status == CorrectiveActionStatus.CLOSED:
         raise ValidationError({"status": "Cannot complete actions on a closed CAPA."})
     if item.status == CapaActionItemStatus.DONE:
@@ -431,9 +421,7 @@ def close_corrective_action(
     action.closed_by = user
     action.closed_at = timezone.now()
     action.full_clean()
-    action.save(
-        update_fields=["status", "closure_notes", "closed_by", "closed_at", "updated_at"]
-    )
+    action.save(update_fields=["status", "closure_notes", "closed_by", "closed_at", "updated_at"])
     _append_history(
         capa=action,
         event_type="CLOSED",

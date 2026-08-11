@@ -78,6 +78,10 @@ class EvidenceLinkedKind(models.TextChoices):
         "QUALITY_AUDIT_FINDING",
         "QMS quality audit finding evidence",
     )
+    COMPLIANCE_CONTROL_MAPPING = (
+        "COMPLIANCE_CONTROL_MAPPING",
+        "Compliance control-mapping evidence",
+    )
 
 
 class EvidenceLifecycleStatus(models.TextChoices):

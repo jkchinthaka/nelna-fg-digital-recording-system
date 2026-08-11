@@ -74,10 +74,7 @@ def test_vendor_evidence_gate_blocks_live() -> None:
 
 
 def test_contract_field_evidence_catalogue() -> None:
-    assert (
-        INBOUND_FIELD_EVIDENCE["source_event_id"]
-        == InboundFieldEvidence.MAPPED_INTERNAL
-    )
+    assert INBOUND_FIELD_EVIDENCE["source_event_id"] == InboundFieldEvidence.MAPPED_INTERNAL
     assert INBOUND_FIELD_EVIDENCE["quantity"] == InboundFieldEvidence.EVIDENCE_REQUIRED
     assert INBOUND_FIELD_EVIDENCE["uom"] == InboundFieldEvidence.EVIDENCE_REQUIRED
 
@@ -124,6 +121,7 @@ def test_mock_timeout_auth_rate_limit() -> None:
     assert r.value.retryable is True
 
 
+@pytest.mark.django_db
 def test_outbound_disposition_not_sent() -> None:
     cmd = prepare_disposition_command(
         organization_id=str(uuid.uuid4()),
@@ -177,9 +175,7 @@ def test_bad_mapping_dead_letter_and_reconciliation() -> None:
         external_batch_id="BATCH-MAP-FAIL",
         external_organization_key="NO-SUCH-ORG-KEY",
     )
-    attempt, batch_event = ingest_inbound_batch_event(
-        actor=user, organization=org, contract=event
-    )
+    attempt, batch_event = ingest_inbound_batch_event(actor=user, organization=org, contract=event)
     assert attempt.status == IntegrationAttemptStatus.FAILED
     assert attempt.error_class == IntegrationErrorClass.BAD_MAPPING.value
     assert batch_event is not None

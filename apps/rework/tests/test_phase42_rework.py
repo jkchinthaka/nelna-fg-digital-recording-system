@@ -1,4 +1,4 @@
-﻿"""Phase 42 — controlled rework management tests."""
+"""Phase 42 — controlled rework management tests."""
 
 from __future__ import annotations
 
@@ -30,7 +30,6 @@ from apps.checklists.services import (
 from apps.integrations.errors import IntegrationError, IntegrationErrorClass
 from apps.nonconformance.models import HoldCase, NonConformanceRecord
 from apps.organizations.models import Organization
-from apps.quality.models import QAReview
 from apps.rework.models import ReworkCase, ReworkCaseEvent, ReworkPolicyStub
 from apps.rework.policy import (
     evaluate_rework_erp_stock_movement,
@@ -102,7 +101,7 @@ def _rework_user(
     return user
 
 
-def _published_rework_checklist(actor: User, org: Organization):
+def _published_rework_checklist(actor: User, org: Organization) -> Any:
     template = create_checklist_template(
         actor=actor,
         organization=org,
@@ -122,7 +121,7 @@ def _published_rework_checklist(actor: User, org: Organization):
     return template, publish_checklist_version(actor=actor, version_id=version.id)
 
 
-def _seed_original_quality(org: Organization, actor: User, batch_ref: str):
+def _seed_original_quality(org: Organization, actor: User, batch_ref: str) -> Any:
     ncr = NonConformanceRecord.objects.create(
         organization=org,
         code=f"NCR-{uuid.uuid4().hex[:6].upper()}",
@@ -142,8 +141,8 @@ def _seed_original_quality(org: Organization, actor: User, batch_ref: str):
     return ncr, hold
 
 
-def _run_to_authorized(actor: User, org: Organization, **kwargs) -> ReworkCase:
-    defaults = {
+def _run_to_authorized(actor: User, org: Organization, **kwargs: Any) -> ReworkCase:
+    defaults: dict[str, Any] = {
         "execution_key": f"RW-EX-{uuid.uuid4().hex[:8].upper()}",
         "source_batch_reference": "BATCH-SRC",
         "source_quantity_reference": "10",
@@ -284,6 +283,7 @@ def test_new_inspection_does_not_reuse_source_release() -> None:
         checklist_version_id=version.id,
     )
     assert case.inspection_task_id is not None
+    assert case.inspection_task is not None
     assert case.inspection_task.batch_reference == "BATCH-REL-RW"
     assert case.inspection_task.batch_reference != case.source_batch_reference
     again = open_rework_reinspection(
@@ -549,3 +549,48 @@ def test_lifecycle_guards_and_selectors() -> None:
             source_uom_reference="CS",
             reason_reference="REASON",
         )
+
+
+@pytest.mark.django_db
+def test_policy_stub_helper_and_execute_denied() -> None:
+    from apps.rework.policy import upsert_policy_stub
+
+    org = make_org(code=f"H{uuid.uuid4().hex[:6].upper()}")
+    actor = _rework_user(org=org)
+    viewer = _rework_user(org=org, create=False, authorize=False, execute=False, policy=False)
+    stub = upsert_policy_stub(
+        organization=org,
+        policy_key="helper",
+        policy_value_reference="VAL",
+        actor=actor,
+    )
+    assert stub.policy_value_reference == "VAL"
+    assert str(stub)
+    case = create_rework_case(
+        actor=actor,
+        organization=org,
+        execution_key="DENY-1",
+        source_batch_reference="BATCH-H",
+        source_quantity_reference="1",
+        source_uom_reference="CS",
+        reason_reference="REASON",
+    )
+    assert str(case)
+    with pytest.raises(PermissionDenied):
+        attempt_rework_erp_stock_movement(actor=viewer, case=case)
+    started = start_rework_case(actor=actor, case=authorize_rework_case(actor=actor, case=case))
+    with pytest.raises(ValidationError):
+        complete_rework_case(
+            actor=actor,
+            case=started,
+            resulting_batch_reference="",
+            resulting_quantity_reference="1",
+            remaining_source_quantity_reference="0",
+        )
+    assert_quantity_conservation(
+        source_quantity_reference="not-a-decimal-qty",
+        resulting_quantity_reference="also-opaque",
+        remaining_source_quantity_reference="still-opaque",
+    )
+    decision = evaluate_rework_erp_stock_movement(organization_id=org.id)
+    assert decision.as_dict()["allowed"] is False

@@ -158,9 +158,7 @@ def upsert_external_batch_mapping(
     source_system = _norm(source_system)
     external_key = _norm(external_key)
     if not source_system or not external_key:
-        raise ValidationError(
-            {"source_system": "Source system and external key are required."}
-        )
+        raise ValidationError({"source_system": "Source system and external key are required."})
 
     lookup: dict[str, Any] = {
         "source_system": source_system,
@@ -415,17 +413,22 @@ def process_external_batch_event(
                 audit_event="EXTERNAL_BATCH_EVENT_MAPPING_FAILED",
             )
         locked.organization = org_map.organization
+        event_organization_id = locked.organization_id
+        if event_organization_id is None:
+            raise ValidationError(
+                {"organization": "Organization mapping did not set organization."}
+            )
         require_permission(
             user,
             MANAGE_CHECKLIST_TASK,
-            scope=Scope(organization_id=locked.organization_id),
+            scope=Scope(organization_id=event_organization_id),
         )
 
         if payload.external_product_key:
             product_map = _resolve_scoped_mapping(
                 source_system=payload.source_system,
                 mapping_kind=ExternalBatchMappingKind.PRODUCT,
-                organization_id=locked.organization_id,
+                organization_id=event_organization_id,
                 external_key=payload.external_product_key,
             )
             if product_map is None or product_map.product_id is None:
@@ -445,7 +448,7 @@ def process_external_batch_event(
             site_map = _resolve_scoped_mapping(
                 source_system=payload.source_system,
                 mapping_kind=ExternalBatchMappingKind.SITE,
-                organization_id=locked.organization_id,
+                organization_id=event_organization_id,
                 external_key=payload.external_site_key,
             )
             if site_map is None or site_map.site_id is None:
@@ -465,7 +468,7 @@ def process_external_batch_event(
             shift_map = _resolve_scoped_mapping(
                 source_system=payload.source_system,
                 mapping_kind=ExternalBatchMappingKind.SHIFT,
-                organization_id=locked.organization_id,
+                organization_id=event_organization_id,
                 external_key=payload.external_shift_key,
             )
             if shift_map is None or shift_map.shift_id is None:
@@ -481,12 +484,10 @@ def process_external_batch_event(
                 )
             locked.shift = shift_map.shift
 
-        locked.save(
-            update_fields=["organization", "product", "site", "shift", "updated_at"]
-        )
+        locked.save(update_fields=["organization", "product", "site", "shift", "updated_at"])
 
         resolution = resolve_checklist_applicability(
-            organization_id=locked.organization_id,
+            organization_id=event_organization_id,
             product_id=locked.product_id,
             site_id=locked.site_id,
             shift_id=locked.shift_id,
@@ -503,7 +504,10 @@ def process_external_batch_event(
                 ),
                 audit_event="EXTERNAL_BATCH_EVENT_APPLICABILITY_FAILED",
             )
-        assert resolution.selected_rule is not None
+        if resolution.selected_rule is None:
+            raise ValidationError(
+                {"applicability": "Applicability resolved without a selected rule."}
+            )
         template_id = resolution.selected_rule.checklist_template_id
 
         version_resolution = resolve_effective_checklist_version(
@@ -521,12 +525,15 @@ def process_external_batch_event(
                 ),
                 audit_event="EXTERNAL_BATCH_EVENT_VERSION_FAILED",
             )
-        assert version_resolution.selected_version is not None
+        if version_resolution.selected_version is None:
+            raise ValidationError(
+                {"checklist_version": "Effective version resolution missing selected version."}
+            )
 
         try:
             task = create_batch_checklist_task(
                 actor=user,
-                organization_id=locked.organization_id,
+                organization_id=event_organization_id,
                 checklist_template_id=template_id,
                 checklist_version_id=version_resolution.selected_version.id,
                 batch_reference=payload.external_batch_id,

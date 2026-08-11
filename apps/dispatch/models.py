@@ -186,10 +186,12 @@ class DispatchQualityRecord(models.Model):
             raise ValidationError({"ended_at": "ended_at must not be before started_at."})
         if self.quantity is not None and self.quantity < Decimal("0"):
             raise ValidationError({"quantity": "quantity must not be negative."})
+        vehicle_inspection_checklist_version = self.vehicle_inspection_checklist_version
         if (
             self.vehicle_inspection_checklist_version_id
             and self.organization_id
-            and self.vehicle_inspection_checklist_version.template.organization_id
+            and vehicle_inspection_checklist_version is not None
+            and vehicle_inspection_checklist_version.template.organization_id
             != self.organization_id
         ):
             raise ValidationError(
@@ -199,10 +201,12 @@ class DispatchQualityRecord(models.Model):
                     )
                 }
             )
+        vehicle_inspection_submission = self.vehicle_inspection_submission
         if (
             self.vehicle_inspection_submission_id
             and self.organization_id
-            and self.vehicle_inspection_submission.checklist_record.organization_id
+            and vehicle_inspection_submission is not None
+            and vehicle_inspection_submission.checklist_record.organization_id
             != self.organization_id
         ):
             raise ValidationError(
@@ -212,14 +216,14 @@ class DispatchQualityRecord(models.Model):
                     )
                 }
             )
+        qa_review = self.qa_review
         if (
             self.qa_review_id
             and self.organization_id
-            and self.qa_review.organization_id != self.organization_id
+            and qa_review is not None
+            and qa_review.organization_id != self.organization_id
         ):
-            raise ValidationError(
-                {"qa_review": "QA review must belong to the same organization."}
-            )
+            raise ValidationError({"qa_review": "QA review must belong to the same organization."})
 
 
 class DispatchReleasePolicy(models.Model):
@@ -341,14 +345,12 @@ class ColdChainTemperatureReading(models.Model):
             raise ValidationError(
                 {"organization": "Organization must match the dispatch record organization."}
             )
-        if (
-            self.equipment_id
-            and self.organization_id
-            and self.equipment.organization_id != self.organization_id
-        ):
-            raise ValidationError(
-                {"equipment": "Equipment must belong to the same organization."}
-            )
+        if self.equipment_id and self.organization_id:
+            equipment = self.equipment
+            if equipment is not None and equipment.organization_id != self.organization_id:
+                raise ValidationError(
+                    {"equipment": "Equipment must belong to the same organization."}
+                )
 
 
 class DispatchQuantityLine(models.Model):

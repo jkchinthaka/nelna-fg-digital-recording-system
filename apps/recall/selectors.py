@@ -13,9 +13,7 @@ from apps.recall.models import (
 )
 
 
-def get_recall_case(
-    *, organization_id: uuid.UUID, case_id: uuid.UUID
-) -> RecallCase | None:
+def get_recall_case(*, organization_id: uuid.UUID, case_id: uuid.UUID) -> RecallCase | None:
     return (
         RecallCase.objects.filter(pk=case_id, organization_id=organization_id)
         .select_related("initiated_by", "owner", "closed_by")
@@ -23,21 +21,15 @@ def get_recall_case(
     )
 
 
-def get_recall_case_by_code(
-    *, organization_id: uuid.UUID, code: str
-) -> RecallCase | None:
+def get_recall_case_by_code(*, organization_id: uuid.UUID, code: str) -> RecallCase | None:
     key = (code or "").strip()
     if not key:
         return None
-    return RecallCase.objects.filter(
-        organization_id=organization_id, code__iexact=key
-    ).first()
+    return RecallCase.objects.filter(organization_id=organization_id, code__iexact=key).first()
 
 
 def batches_for_case(*, case_id: uuid.UUID) -> QuerySet[RecallAffectedBatch]:
-    return RecallAffectedBatch.objects.filter(recall_case_id=case_id).order_by(
-        "created_at"
-    )
+    return RecallAffectedBatch.objects.filter(recall_case_id=case_id).order_by("created_at")
 
 
 def timeline_for_case(*, case_id: uuid.UUID) -> QuerySet[RecallTimelineEntry]:

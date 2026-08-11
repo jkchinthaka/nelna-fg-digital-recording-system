@@ -5,6 +5,7 @@ from __future__ import annotations
 import csv
 import uuid
 from pathlib import Path
+from typing import Any
 
 import pytest
 from django.contrib.auth.models import Permission
@@ -66,7 +67,7 @@ REQUIRED_MATRIX_COLUMNS = {
 }
 
 
-def _perm(model, codename: str) -> Permission:
+def _perm(model: Any, codename: str) -> Permission:
     ct = ContentType.objects.get_for_model(model)
     permission, _ = Permission.objects.get_or_create(
         content_type=ct,
@@ -76,7 +77,7 @@ def _perm(model, codename: str) -> Permission:
     return permission
 
 
-def _manager(*, org: Organization):
+def _manager(*, org: Organization) -> Any:
     suffix = uuid.uuid4().hex[:6].upper()
     user = make_user(employee_code=f"N06N{suffix}", is_staff=True)
     role = make_role_with_permission(

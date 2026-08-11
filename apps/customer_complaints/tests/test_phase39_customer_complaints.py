@@ -1,4 +1,4 @@
-﻿"""Phase 39 — Customer quality complaint management tests."""
+"""Phase 39 — Customer quality complaint management tests."""
 
 from __future__ import annotations
 
@@ -432,9 +432,7 @@ def test_draft_open_close_timeline_and_serialize_coverage() -> None:
         close_complaint_case(
             actor=actor, organization=org, case_id=draft.id, closure_notes="too early"
         )
-    opened = open_complaint_case(
-        actor=actor, organization=org, case_id=draft.id
-    )
+    opened = open_complaint_case(actor=actor, organization=org, case_id=draft.id)
     assert opened.status == ComplaintCaseStatus.OPEN
 
     inv = record_investigation_link(
@@ -490,9 +488,7 @@ def test_draft_open_close_timeline_and_serialize_coverage() -> None:
     assert payload["investigation_links"]
     assert payload["communications"]
     assert payload["evidence_links"]
-    assert get_complaint_timeline(
-        actor=actor, organization=org, case_id=opened.id
-    )
+    assert get_complaint_timeline(actor=actor, organization=org, case_id=opened.id)
     assert can_view_customer_sensitive(None, organization_id=org.id) is False
     assert get_complaint_by_code(organization_id=org.id, code="") is None
 
@@ -557,9 +553,7 @@ def test_not_found_and_unauthenticated_guards() -> None:
             actor=actor, organization=org, case_id=missing, reference="C"
         )
     with pytest.raises(ValidationError):
-        attempt_customer_response_send(
-            actor=actor, organization=org, case_id=missing
-        )
+        attempt_customer_response_send(actor=actor, organization=org, case_id=missing)
     with pytest.raises(ValidationError):
         close_complaint_case(actor=actor, organization=org, case_id=missing)
 

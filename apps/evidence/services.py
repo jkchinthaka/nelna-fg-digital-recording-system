@@ -24,7 +24,6 @@ from apps.evidence.models import (
     EvidenceAttachment,
     EvidenceLifecycleStatus,
     EvidenceLinkedKind,
-    EvidenceMalwareScanStatus,
 )
 from apps.evidence.policies import validate_upload_candidate
 from apps.evidence.scanning import get_malware_scanner
@@ -91,10 +90,7 @@ def upload_evidence_attachment(
     target = resolve_linked_target(kind=linked_kind, object_id=linked_object_id)
     assert_can_upload_to_target(actor=user, target=target)
 
-    if (
-        linked_kind == EvidenceLinkedKind.CHECKLIST_RESPONSE
-        and target.linkage_immutable
-    ):
+    if linked_kind == EvidenceLinkedKind.CHECKLIST_RESPONSE and target.linkage_immutable:
         raise ValidationError(
             {
                 "linked_object_id": (
@@ -263,9 +259,7 @@ def retire_evidence_attachment(
     if not reason_clean:
         raise ValidationError({"reason": "A retirement reason is required."})
 
-    attachment = (
-        EvidenceAttachment.objects.select_for_update().filter(pk=attachment_id).first()
-    )
+    attachment = EvidenceAttachment.objects.select_for_update().filter(pk=attachment_id).first()
     if attachment is None:
         raise ValidationError({"attachment": "Evidence attachment not found."})
 
@@ -313,9 +307,7 @@ def mark_draft_response_evidence_immutable_for_record(*, record_id: uuid.UUID) -
     from apps.recording.models import ChecklistResponse
 
     response_ids = list(
-        ChecklistResponse.objects.filter(checklist_record_id=record_id).values_list(
-            "id", flat=True
-        )
+        ChecklistResponse.objects.filter(checklist_record_id=record_id).values_list("id", flat=True)
     )
     if not response_ids:
         return 0

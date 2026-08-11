@@ -163,11 +163,10 @@ class MaterialSpecification(models.Model):
 
     def clean(self) -> None:
         super().clean()
-        if self.material_id and self.organization_id:
-            if self.material.organization_id != self.organization_id:
-                raise ValidationError(
-                    {"material": "Material must belong to the organization."}
-                )
+        material = self.material
+        if material is not None and self.organization_id:
+            if material.organization_id != self.organization_id:
+                raise ValidationError({"material": "Material must belong to the organization."})
 
 
 class MaterialSpecificationVersion(models.Model):
@@ -234,9 +233,7 @@ class MaterialSpecificationVersion(models.Model):
             and self.effective_to is not None
             and self.effective_from > self.effective_to
         ):
-            raise ValidationError(
-                {"effective_to": "effective_to cannot be before effective_from."}
-            )
+            raise ValidationError({"effective_to": "effective_to cannot be before effective_from."})
 
 
 class MaterialSpecificationParameter(models.Model):
@@ -251,12 +248,8 @@ class MaterialSpecificationParameter(models.Model):
     code = models.CharField(max_length=64)
     name = models.CharField(max_length=255)
     unit = models.CharField(max_length=32, blank=True, default="")
-    bound_min = models.DecimalField(
-        max_digits=18, decimal_places=6, null=True, blank=True
-    )
-    bound_max = models.DecimalField(
-        max_digits=18, decimal_places=6, null=True, blank=True
-    )
+    bound_min = models.DecimalField(max_digits=18, decimal_places=6, null=True, blank=True)
+    bound_max = models.DecimalField(max_digits=18, decimal_places=6, null=True, blank=True)
     notes = models.TextField(
         blank=True,
         default="",
@@ -391,27 +384,28 @@ class ReceiptQualityRecord(models.Model):
 
     def clean(self) -> None:
         super().clean()
-        if self.supplier_profile_id and self.organization_id:
-            if self.supplier_profile.organization_id != self.organization_id:
+        supplier_profile = self.supplier_profile
+        if supplier_profile is not None and self.organization_id:
+            if supplier_profile.organization_id != self.organization_id:
                 raise ValidationError(
                     {"supplier_profile": "Supplier must belong to the organization."}
                 )
-        if self.material_id and self.organization_id:
-            if self.material.organization_id != self.organization_id:
-                raise ValidationError(
-                    {"material": "Material must belong to the organization."}
-                )
+        material = self.material
+        if material is not None and self.organization_id:
+            if material.organization_id != self.organization_id:
+                raise ValidationError({"material": "Material must belong to the organization."})
         if not (self.erp_receipt_reference or "").strip():
             raise ValidationError(
                 {"erp_receipt_reference": "ERP receipt/GRN reference is required."}
             )
         if not (self.supplier_lot or "").strip():
             raise ValidationError({"supplier_lot": "Supplier lot is required."})
+        inspection_checklist_version = self.inspection_checklist_version
         if (
             self.inspection_checklist_version_id
             and self.inspection_checklist_template_id
-            and self.inspection_checklist_version.template_id
-            != self.inspection_checklist_template_id
+            and inspection_checklist_version is not None
+            and inspection_checklist_version.template_id != self.inspection_checklist_template_id
         ):
             raise ValidationError(
                 {
@@ -457,8 +451,9 @@ class ReceiptLabSampleLink(models.Model):
 
     def clean(self) -> None:
         super().clean()
-        if self.receipt_id and self.lab_sample_id:
-            if self.receipt.organization_id != self.lab_sample.organization_id:
+        receipt = self.receipt
+        if receipt is not None and self.lab_sample_id:
+            if receipt.organization_id != self.lab_sample.organization_id:
                 raise ValidationError(
                     {"lab_sample": "Lab sample must belong to the same organization."}
                 )
@@ -490,3 +485,6 @@ class ReceivingHistoryEntry(models.Model):
 
     class Meta:
         ordering = ("-created_at",)
+
+    def __str__(self) -> str:
+        return f"{self.event_type}:{self.receipt_id}"

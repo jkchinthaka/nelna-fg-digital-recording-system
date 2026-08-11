@@ -1,4 +1,4 @@
-﻿{% load scheduling_extras workflow_extras %}
+{% load scheduling_extras workflow_extras %}
 {% if total_count == 0 %}
   <p class="mgmt-page__lead" role="status">
     {% if due_state == "OVERDUE" %}
@@ -32,16 +32,18 @@
           <tr>
             <td>
               <a href="{% url 'scheduling:task_detail' task.id %}">
-                {% if task.batch_reference %}{{ task.batch_reference }}{% else %}{{ task.occurrence_key }}{% endif %}
+                {% if task.batch_reference %}
+                  {{ task.batch_reference }}
+                {% else %}
+                  {{ task.occurrence_key }}
+                {% endif %}
               </a>
             </td>
             <td>{{ task.checklist_template.code }}</td>
             <td>v{{ task.checklist_version.version_number }}</td>
             <td>{{ task.organization.code }}</td>
             <td>
-              <span class="status-pill status-pill--muted">
-                {{ task.get_status_display }}
-              </span>
+              <span class="status-pill status-pill--muted">{{ task.get_status_display }}</span>
             </td>
             <td>
               {% if task.workflow_snapshot %}
@@ -52,9 +54,7 @@
             </td>
             <td>
               {% if task.due_display_state %}
-                <span class="status-pill {% due_badge_class task.due_display_state %}">
-                  {{ task.due_display_label }}
-                </span>
+                <span class="status-pill {% due_badge_class task.due_display_state %}">{{ task.due_display_label }}</span>
               {% else %}
                 <span class="status-pill status-pill--neutral">No due window</span>
               {% endif %}

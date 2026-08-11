@@ -84,7 +84,7 @@ def _manager(*, org: Organization) -> User:
     return user
 
 
-def _published(*, actor: User, org: Organization, code: str = "CHK-07F"):
+def _published(*, actor: User, org: Organization, code: str = "CHK-07F") -> Any:
     template = create_checklist_template(
         actor=actor, organization=org, code=code, name=f"{code} Name"
     )
@@ -101,7 +101,7 @@ def _published(*, actor: User, org: Organization, code: str = "CHK-07F"):
     return template, published
 
 
-def _wire_happy_path(*, actor: User, org: Organization, product: FGProduct | None = None):
+def _wire_happy_path(*, actor: User, org: Organization, product: FGProduct | None = None) -> Any:
     template, published = _published(actor=actor, org=org)
     upsert_external_batch_mapping(
         actor=actor,
@@ -135,9 +135,7 @@ def _wire_happy_path(*, actor: User, org: Organization, product: FGProduct | Non
 def test_happy_path_creates_task_via_map_apply_version() -> None:
     org = make_org(code="ORG07F1")
     actor = _manager(org=org)
-    product = create_fg_product(
-        actor=actor, organization=org, code="P07F1", name="Product 07F1"
-    )
+    product = create_fg_product(actor=actor, organization=org, code="P07F1", name="Product 07F1")
     template, published = _wire_happy_path(actor=actor, org=org, product=product)
 
     receipt = accept_external_batch_event(
@@ -162,9 +160,7 @@ def test_happy_path_creates_task_via_map_apply_version() -> None:
 def test_duplicate_event_is_idempotent() -> None:
     org = make_org(code="ORG07F2")
     actor = _manager(org=org)
-    product = create_fg_product(
-        actor=actor, organization=org, code="P07F2", name="Product 07F2"
-    )
+    product = create_fg_product(actor=actor, organization=org, code="P07F2", name="Product 07F2")
     _wire_happy_path(actor=actor, org=org, product=product)
 
     first = accept_external_batch_event(
@@ -187,9 +183,7 @@ def test_duplicate_event_is_idempotent() -> None:
     assert second.status == ExternalBatchEventStatus.COMPLETED
     assert first.checklist_task_id == second.checklist_task_id
     assert ChecklistTask.objects.filter(batch_reference="BATCH-DUP").count() == 1
-    assert SecurityAuditEvent.objects.filter(
-        event_type="EXTERNAL_BATCH_EVENT_DUPLICATE"
-    ).exists()
+    assert SecurityAuditEvent.objects.filter(event_type="EXTERNAL_BATCH_EVENT_DUPLICATE").exists()
 
 
 @pytest.mark.django_db
@@ -273,9 +267,7 @@ def test_version_conflict_and_overlap_block() -> None:
 def test_retry_after_mapping_correction() -> None:
     org = make_org(code="ORG07F6")
     actor = _manager(org=org)
-    product = create_fg_product(
-        actor=actor, organization=org, code="P07F6", name="Product 07F6"
-    )
+    product = create_fg_product(actor=actor, organization=org, code="P07F6", name="Product 07F6")
     template, published = _published(actor=actor, org=org, code="CHK-RETRY")
     create_checklist_applicability_rule(
         actor=actor,
@@ -334,12 +326,8 @@ def test_cross_org_isolation() -> None:
     org_b = make_org(code="ORG07FB")
     actor_a = _manager(org=org_a)
     actor_b = _manager(org=org_b)
-    product_a = create_fg_product(
-        actor=actor_a, organization=org_a, code="PA", name="Product A"
-    )
-    product_b = create_fg_product(
-        actor=actor_b, organization=org_b, code="PB", name="Product B"
-    )
+    product_a = create_fg_product(actor=actor_a, organization=org_a, code="PA", name="Product A")
+    product_b = create_fg_product(actor=actor_b, organization=org_b, code="PB", name="Product B")
     _wire_happy_path(actor=actor_a, org=org_a, product=product_a)
     _wire_happy_path(actor=actor_b, org=org_b, product=product_b)
 
@@ -437,9 +425,7 @@ def test_audit_metadata_has_no_secret_fields() -> None:
         external_batch_id="BATCH-AUDIT",
         external_organization_key=f"EXT-{org.code}",
     )
-    events = SecurityAuditEvent.objects.filter(
-        event_type__startswith="EXTERNAL_BATCH_EVENT_"
-    )
+    events = SecurityAuditEvent.objects.filter(event_type__startswith="EXTERNAL_BATCH_EVENT_")
     assert events.exists()
     forbidden = {"password", "token", "secret", "authorization", "api_key", "credential"}
     for ev in events:
@@ -452,9 +438,7 @@ class ConcurrentBatchEventTests(TransactionTestCase):
     def test_concurrent_duplicate_events_single_task(self) -> None:
         org = make_org(code="ORG07FC")
         actor = _manager(org=org)
-        product = create_fg_product(
-            actor=actor, organization=org, code="PC", name="Product C"
-        )
+        product = create_fg_product(actor=actor, organization=org, code="PC", name="Product C")
         _wire_happy_path(actor=actor, org=org, product=product)
 
         results: list[ExternalBatchEvent] = []

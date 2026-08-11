@@ -154,6 +154,7 @@ def test_numeric_evaluation_in_out_boundary_and_warn() -> None:
         checklist_record_id=record.id, checklist_item_id=published["number"].id
     )
     assert draft.evaluation_result == ChecklistEvaluationResult.PASS
+    assert draft.evaluation_context is not None
     assert draft.evaluation_context["not_qa_disposition"] is True
 
     save_checklist_draft_responses(
@@ -266,6 +267,7 @@ def test_yes_no_na_select_and_missing_rule() -> None:
         checklist_record_id=record.id, checklist_item_id=bare.id
     )
     assert bare_row.evaluation_result == ChecklistEvaluationResult.NOT_EVALUATED
+    assert bare_row.evaluation_context is not None
     assert bare_row.evaluation_context["reason"] == "no_evaluation_rule_configured"
 
 
@@ -437,6 +439,7 @@ def test_client_spoofed_evaluation_overwritten_no_qareview() -> None:
         checklist_item_id=published["number"].id,
     )
     assert snap.evaluation_result == ChecklistEvaluationResult.FAIL
+    assert snap.evaluation_context is not None
     assert snap.evaluation_context["not_qa_disposition"] is True
     assert QAReview.objects.count() == 0
 
@@ -465,6 +468,7 @@ def test_historical_snapshot_immune_to_future_rule_change() -> None:
         checklist_submission_id=submission.id,
         checklist_item_id=published["number"].id,
     )
+    assert snap.evaluation_context is not None
     frozen = dict(snap.evaluation_context)
     assert snap.evaluation_result == ChecklistEvaluationResult.PASS
 
@@ -532,6 +536,7 @@ def test_correction_recalculates_new_immutable_evaluation() -> None:
         checklist_submission_id=source.id,
         checklist_item_id=published["number"].id,
     )
+    assert source_snap.evaluation_context is not None
     frozen = dict(source_snap.evaluation_context)
     create_supervisor_review(
         actor=reviewer,

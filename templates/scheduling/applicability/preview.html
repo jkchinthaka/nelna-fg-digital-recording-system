@@ -14,10 +14,12 @@
           APR-015 remain open for production policy.
         </p>
       </div>
-      <a class="btn btn--secondary btn--inline" href="{% url 'scheduling:task_list' %}">Back to tasks</a>
+      <a class="btn btn--secondary btn--inline"
+         href="{% url 'scheduling:task_list' %}">Back to tasks</a>
     </header>
-
-    <form method="post" class="mgmt-form" action="{% url 'scheduling:applicability_preview' %}">
+    <form method="post"
+          class="mgmt-form"
+          action="{% url 'scheduling:applicability_preview' %}">
       {% csrf_token %}
       {{ form.non_field_errors }}
       <div class="mgmt-filters__grid">
@@ -31,11 +33,12 @@
       </div>
       <button type="submit" class="btn btn--primary btn--inline">Preview</button>
     </form>
-
     {% if resolution %}
       <section class="mgmt-panel" aria-labelledby="appl-result-heading">
         <h2 id="appl-result-heading">Result</h2>
-        <p><strong>Outcome:</strong> {{ resolution.outcome }}</p>
+        <p>
+          <strong>Outcome:</strong> {{ resolution.outcome }}
+        </p>
         {% if resolution.message %}<p>{{ resolution.message }}</p>{% endif %}
         {% if resolution.outcome == "ONE_MATCH" and resolution.matched_rule %}
           <ul>

@@ -1,4 +1,4 @@
-﻿"""Phase 10B — derived checklist operational workflow lifecycle tests."""
+"""Phase 10B — derived checklist operational workflow lifecycle tests."""
 
 from __future__ import annotations
 
@@ -24,13 +24,15 @@ from apps.checklists.services import (
     publish_checklist_version,
 )
 from apps.core.checklist_workflow import (
-    ChecklistOperationalWorkflowState as S,
     QA_TERMINAL_SEMANTICS_NOTE,
     derive_checklist_workflow,
     detect_workflow_inconsistencies,
     filter_tasks_by_workflow_state,
     prefetch_workflow_graph,
     workflow_prefilter_queryset,
+)
+from apps.core.checklist_workflow import (
+    ChecklistOperationalWorkflowState as S,
 )
 from apps.organizations.models import Organization
 from apps.quality.models import QAReview, QAReviewDecision
@@ -259,9 +261,7 @@ def test_every_existing_happy_path_state() -> None:
     save_checklist_draft_responses(
         actor=fx["recorder"], record_id=record.id, answers=_answers(fx["defs"])
     )
-    submission2 = resubmit_checklist_correction(
-        actor=fx["recorder"], correction_id=correction.id
-    )
+    submission2 = resubmit_checklist_correction(actor=fx["recorder"], correction_id=correction.id)
     task.refresh_from_db()
     assert derive_checklist_workflow(task).state == S.AWAITING_SUPERVISOR_RESUBMISSION
     assert submission2.submission_number == 2

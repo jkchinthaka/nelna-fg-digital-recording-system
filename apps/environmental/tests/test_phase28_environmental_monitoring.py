@@ -92,7 +92,7 @@ def _manager(*, org: Organization) -> User:
     return user
 
 
-def _setup_point_param(manager: User, org: Organization):
+def _setup_point_param(manager: User, org: Organization) -> Any:
     site = make_site(org, code=f"ST{uuid.uuid4().hex[:4].upper()}")
     dept = make_department(org, code=f"D{uuid.uuid4().hex[:4].upper()}", site=site)
     point = create_monitoring_point(
@@ -158,11 +158,14 @@ def test_manual_reading_limit_evaluation_and_trend() -> None:
     assert excursion.outcome == MonitoringEvaluationOutcome.IN_RANGE
     assert reading.device_trace_context["equipment_code"] == equipment.code
     assert reading.spec_version_id == version.id
-    assert trend_for_point_parameter(
-        organization_id=org.id,
-        monitoring_point_id=point.id,
-        parameter_id=param.id,
-    ).count() == 1
+    assert (
+        trend_for_point_parameter(
+            organization_id=org.id,
+            monitoring_point_id=point.id,
+            parameter_id=param.id,
+        ).count()
+        == 1
+    )
     assert SecurityAuditEvent.objects.filter(event_type="EM_READING_RECORDED").exists()
 
 
@@ -210,9 +213,7 @@ def test_excursion_no_automatic_disposition_by_default() -> None:
 def test_policy_enabled_still_blocked_without_settings() -> None:
     org = make_org(code=f"E{uuid.uuid4().hex[:6].upper()}")
     manager = _manager(org=org)
-    upsert_environmental_excursion_policy(
-        actor=manager, organization=org, auto_hold_enabled=True
-    )
+    upsert_environmental_excursion_policy(actor=manager, organization=org, auto_hold_enabled=True)
     decision = evaluate_excursion_hold_policy(
         organization_id=org.id, evaluation_outcome=MonitoringEvaluationOutcome.EXCURSION
     )
@@ -507,6 +508,9 @@ def test_warning_band_evaluation() -> None:
     )
     assert excursion.outcome == MonitoringEvaluationOutcome.WARN
     assert excursion.hold_recommended is False
-    assert evaluate_excursion_hold_policy(
-        organization_id=org.id, evaluation_outcome=MonitoringEvaluationOutcome.WARN
-    ).as_dict()["create_hold"] is False
+    assert (
+        evaluate_excursion_hold_policy(
+            organization_id=org.id, evaluation_outcome=MonitoringEvaluationOutcome.WARN
+        ).as_dict()["create_hold"]
+        is False
+    )

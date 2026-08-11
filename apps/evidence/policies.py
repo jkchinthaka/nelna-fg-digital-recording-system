@@ -78,9 +78,7 @@ def validate_upload_candidate(
         raise ValidationError({"file": "Empty files are not accepted as evidence."})
     limit = max_upload_bytes()
     if size_bytes > limit:
-        raise ValidationError(
-            {"file": f"File exceeds the maximum allowed size of {limit} bytes."}
-        )
+        raise ValidationError({"file": f"File exceeds the maximum allowed size of {limit} bytes."})
 
     safe_name = sanitize_original_filename(original_filename)
     if not safe_name:

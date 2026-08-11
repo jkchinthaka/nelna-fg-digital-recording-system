@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from uuid import UUID
 
 from django.conf import settings
 
-from apps.iqc.models import IqcInspectionCase, IqcWorkflowPolicy
 from apps.integrations.errors import IntegrationError, IntegrationErrorClass
 from apps.integrations.security import redact_mapping
+from apps.iqc.models import IqcInspectionCase, IqcWorkflowPolicy
 from apps.receiving.erp_boundary import (
     OutboundReceiptQualityCommand,
     prepare_receipt_quality_outbound,
@@ -35,7 +36,7 @@ class IqcErpOutboundDecision:
         }
 
 
-def evaluate_iqc_erp_outbound(*, organization_id: object) -> IqcErpOutboundDecision:
+def evaluate_iqc_erp_outbound(*, organization_id: UUID) -> IqcErpOutboundDecision:
     policy = IqcWorkflowPolicy.objects.filter(organization_id=organization_id).first()
     if policy is None or not policy.erp_outbound_enabled:
         return IqcErpOutboundDecision(

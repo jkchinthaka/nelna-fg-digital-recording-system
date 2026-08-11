@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import uuid
+from typing import Any
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -144,7 +145,7 @@ class ReturnQualityRecord(models.Model):
         line = f"/{self.erp_return_line_reference}" if self.erp_return_line_reference else ""
         return f"{self.erp_return_reference}{line} ({self.status})"
 
-    def save(self, *args: object, **kwargs: object) -> None:
+    def save(self, *args: Any, **kwargs: Any) -> None:
         self.not_saleable_via_app = True
         super().save(*args, **kwargs)
 
@@ -160,12 +161,10 @@ class ReturnQualityRecord(models.Model):
                 errors[field_name] = message
         if self.not_saleable_via_app is not True:
             errors["not_saleable_via_app"] = "Returned stock cannot be made saleable by this app."
-        if (
-            self.hold_case_id
-            and self.organization_id
-            and self.hold_case.organization_id != self.organization_id
-        ):
-            errors["hold_case"] = "Hold case must belong to the same organization."
+        if self.hold_case_id and self.organization_id:
+            hold_case = self.hold_case
+            if hold_case is not None and hold_case.organization_id != self.organization_id:
+                errors["hold_case"] = "Hold case must belong to the same organization."
         checklist_organization_ids = {
             "checklist_template": (
                 self.checklist_template.organization_id
@@ -184,12 +183,13 @@ class ReturnQualityRecord(models.Model):
         for field_name, organization_id in checklist_organization_ids.items():
             if organization_id is not None and organization_id != self.organization_id:
                 errors[field_name] = "Checklist object must belong to the same organization."
-        if (
-            self.checklist_version_id
-            and self.checklist_template_id
-            and self.checklist_version.template_id != self.checklist_template_id
-        ):
-            errors["checklist_version"] = "Checklist version must belong to the template."
+        if self.checklist_version_id and self.checklist_template_id:
+            checklist_version = self.checklist_version
+            if (
+                checklist_version is not None
+                and checklist_version.template_id != self.checklist_template_id
+            ):
+                errors["checklist_version"] = "Checklist version must belong to the template."
         if errors:
             raise ValidationError(errors)
 

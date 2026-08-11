@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import uuid
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
+from datetime import datetime
 
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
@@ -59,7 +60,7 @@ def _timeline(
     record: ReturnQualityRecord,
     actor: User,
     event_type: str,
-    metadata: dict[str, object] | None = None,
+    metadata: Mapping[str, object] | None = None,
 ) -> ReturnQualityTimelineEntry:
     entry = ReturnQualityTimelineEntry(
         organization_id=record.organization_id,
@@ -85,7 +86,7 @@ def create_return_quality_record(
     erp_return_reference: str,
     product_reference: str,
     original_batch_reference: str,
-    received_at=None,
+    received_at: datetime | None = None,
     erp_return_line_reference: str = "",
     quantity_reference: str = "",
     uom_reference: str = "",
@@ -296,7 +297,7 @@ def apply_return_disposition(
     record.dispositioned_by = user
     record.dispositioned_at = timezone.now()
     record.status = ReturnQualityStatus.DISPOSITIONED
-    record.quarantine_state = quarantine_by_disposition[code]
+    record.quarantine_state = quarantine_by_disposition[ReturnDisposition(code)]
     record.not_saleable_via_app = True
     record.full_clean()
     record.save()

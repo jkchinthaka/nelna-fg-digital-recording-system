@@ -298,7 +298,7 @@ def test_task_ui_create_detail_cancel_csrf(client: Client) -> None:
     client.force_login(viewer)
     assert client.get(reverse("scheduling:task_list")).status_code == 200
     body = client.get(reverse("scheduling:task_list")).content.decode()
-    assert "No checklist tasks have been created yet" in body
+    assert "No checklist tasks match these filters." in body
     assert client.get(reverse("scheduling:task_create")).status_code == 403
 
     client.force_login(manager)

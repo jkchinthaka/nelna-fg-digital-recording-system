@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import uuid
+from datetime import datetime
 from typing import Any
 
 from django.core.exceptions import PermissionDenied, ValidationError
@@ -237,7 +238,7 @@ def create_batch_checklist_task_using_effective_version(
     organization_id: uuid.UUID,
     checklist_template_id: uuid.UUID,
     batch_reference: str,
-    as_of=None,
+    as_of: datetime | None = None,
 ) -> ChecklistTask:
     """
     Create a task using Phase 07D deterministic effective-version selection.
@@ -310,18 +311,6 @@ def cancel_checklist_task(*, actor: User | None, task_id: uuid.UUID) -> Checklis
 
 # --- Phase 07C checklist applicability (re-export engine API) ---
 
-from apps.scheduling.applicability import (  # noqa: E402
-    MANAGE_APPLICABILITY as MANAGE_CHECKLIST_APPLICABILITY,
-    VIEW_APPLICABILITY as VIEW_CHECKLIST_APPLICABILITY,
-    applicability_authorization_scope,
-    create_checklist_applicability_rule,
-    deactivate_checklist_applicability_rule,
-    delete_checklist_applicability_rule,
-    preview_checklist_applicability,
-    resolve_checklist_applicability,
-    update_checklist_applicability_rule,
-)
 
 # Phase 07G assignment API lives in apps.scheduling.assignment (not re-exported here)
 # to avoid circular import with ASSIGN_CHECKLIST_TASK / task_authorization_scope.
-

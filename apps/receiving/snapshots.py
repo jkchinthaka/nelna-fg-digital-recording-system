@@ -19,9 +19,7 @@ def build_frozen_receipt_context(record: ReceiptQualityRecord) -> dict[str, Any]
         "erp_material_reference": record.material.erp_material_reference,
         "quantity": str(record.quantity) if record.quantity is not None else None,
         "uom": record.uom or "",
-        "received_date": (
-            record.received_date.isoformat() if record.received_date else None
-        ),
+        "received_date": (record.received_date.isoformat() if record.received_date else None),
         "quality_state": record.quality_state,
         "inspection_checklist_template_id": (
             str(record.inspection_checklist_template_id)

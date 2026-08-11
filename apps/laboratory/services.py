@@ -544,7 +544,7 @@ def create_lab_test_parameter(
     if method_reference and method_reference.organization_id != organization.id:
         raise PermissionDenied("Cross-organization method reference is denied.")
     if specification_parameter is not None:
-        spec_org = specification_parameter.version.product_specification.organization_id
+        spec_org = specification_parameter.version.specification.organization_id
         if spec_org != organization.id:
             raise PermissionDenied("Cross-organization specification link is denied.")
     normalized = normalize_code(code)

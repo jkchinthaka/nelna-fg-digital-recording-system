@@ -22,6 +22,4 @@ def notifications_for_recipient(
 def notification_policy_for_organization(
     *, organization_id: uuid.UUID
 ) -> OrganizationNotificationPolicy | None:
-    return OrganizationNotificationPolicy.objects.filter(
-        organization_id=organization_id
-    ).first()
+    return OrganizationNotificationPolicy.objects.filter(organization_id=organization_id).first()

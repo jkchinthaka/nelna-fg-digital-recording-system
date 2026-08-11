@@ -340,7 +340,7 @@ def serialize_measurement_for_mongo(context_or_decimal: Any) -> Any:
 def decimal_to_mongo_safe(value: Decimal | None) -> str | None:
     if value is None:
         return None
-    return serialize_measurement_for_mongo(value)
+    return str(serialize_measurement_for_mongo(value))
 
 
 def mongo_safe_to_decimal(raw: Any) -> Decimal | None:

@@ -1,80 +1,103 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 {% block title %}Quality reports{% endblock %}
 {% block content %}
-<div class="space-y-6">
-  <h1 class="text-xl font-semibold">Governed quality reports</h1>
-  <p class="text-sm text-slate-600">
-    Organization-scoped catalogue. Historical submission/review/QA rows use immutable snapshots only.
-    CSV export is formula-injection protected. Excel/PDF are not implemented in this foundation.
-  </p>
-  {% if organization %}
-  <p class="text-sm">Organization: <strong>{{ organization.code }}</strong></p>
-  <div class="overflow-x-auto">
-    <table class="min-w-full text-sm">
-      <thead>
-        <tr>
-          <th class="text-left p-2">Code</th>
-          <th class="text-left p-2">Title</th>
-          <th class="text-left p-2">Snapshots</th>
-          <th class="text-left p-2">Formats</th>
-          <th class="text-left p-2">Run</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for item in catalogue %}
-        <tr class="border-t">
-          <td class="p-2 font-mono text-xs">{{ item.code }}</td>
-          <td class="p-2">
-            <div class="font-medium">{{ item.title }}</div>
-            <div class="text-slate-600">{{ item.description }}</div>
-          </td>
-          <td class="p-2">{% if item.uses_immutable_snapshots %}Yes{% else %}No{% endif %}</td>
-          <td class="p-2">{{ item.export_formats|join:", " }}</td>
-          <td class="p-2">
-            <form method="post" action="{% url 'reports:run_create' %}" class="space-y-1">
-              {% csrf_token %}
-              <input type="hidden" name="organization_id" value="{{ organization.id }}" />
-              <input type="hidden" name="report_code" value="{{ item.code }}" />
-              <label class="block text-xs">Batch
-                <input name="batch_reference" class="border px-1 w-28" />
-              </label>
-              <label class="block text-xs">From
-                <input type="date" name="date_from" class="border px-1" />
-              </label>
-              <label class="block text-xs">To
-                <input type="date" name="date_to" class="border px-1" />
-              </label>
-              <label class="block text-xs">Limit
-                <input type="number" name="limit" value="200" min="1" max="5000" class="border px-1 w-20" />
-              </label>
-              <label class="inline-flex items-center gap-1 text-xs">
-                <input type="checkbox" name="export" value="1" /> Export audit
-              </label>
-              <label class="inline-flex items-center gap-1 text-xs">
-                <input type="checkbox" name="background" value="1" /> Background
-              </label>
-              <button type="submit" class="border px-2 py-1 text-xs">Run</button>
-            </form>
-          </td>
-        </tr>
+  <div class="space-y-6">
+    <h1 class="text-xl font-semibold">Governed quality reports</h1>
+    <p class="text-sm text-slate-600">
+      Organization-scoped catalogue. Historical submission/review/QA rows use immutable snapshots only.
+      CSV export is formula-injection protected. Excel/PDF are not implemented in this foundation.
+    </p>
+    {% if organization %}
+      <p class="text-sm">
+        Organization: <strong>{{ organization.code }}</strong>
+      </p>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead>
+            <tr>
+              <th class="text-left p-2">Code</th>
+              <th class="text-left p-2">Title</th>
+              <th class="text-left p-2">Snapshots</th>
+              <th class="text-left p-2">Formats</th>
+              <th class="text-left p-2">Run</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in catalogue %}
+              <tr class="border-t">
+                <td class="p-2 font-mono text-xs">{{ item.code }}</td>
+                <td class="p-2">
+                  <div class="font-medium">{{ item.title }}</div>
+                  <div class="text-slate-600">{{ item.description }}</div>
+                </td>
+                <td class="p-2">
+                  {% if item.uses_immutable_snapshots %}
+                    Yes
+                  {% else %}
+                    No
+                  {% endif %}
+                </td>
+                <td class="p-2">{{ item.export_formats|join:", " }}</td>
+                <td class="p-2">
+                  <form method="post"
+                        action="{% url 'reports:run_create' %}"
+                        class="space-y-1">
+                    {% csrf_token %}
+                    <input type="hidden" name="organization_id" value="{{ organization.id }}" />
+                    <input type="hidden" name="report_code" value="{{ item.code }}" />
+                    <label class="block text-xs">
+                      Batch
+                      <input name="batch_reference" class="border px-1 w-28" />
+                    </label>
+                    <label class="block text-xs">
+                      From
+                      <input type="date" name="date_from" class="border px-1" />
+                    </label>
+                    <label class="block text-xs">
+                      To
+                      <input type="date" name="date_to" class="border px-1" />
+                    </label>
+                    <label class="block text-xs">
+                      Limit
+                      <input type="number"
+                             name="limit"
+                             value="200"
+                             min="1"
+                             max="5000"
+                             class="border px-1 w-20" />
+                    </label>
+                    <label class="inline-flex items-center gap-1 text-xs">
+                      <input type="checkbox" name="export" value="1" />
+                      Export audit
+                    </label>
+                    <label class="inline-flex items-center gap-1 text-xs">
+                      <input type="checkbox" name="background" value="1" />
+                      Background
+                    </label>
+                    <button type="submit" class="border px-2 py-1 text-xs">Run</button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <h2 class="text-lg font-semibold">Recent runs</h2>
+      <ul class="text-sm space-y-1">
+        {% for run in recent_runs %}
+          <li>
+            <a href="{% url 'reports:run_detail' report_run_id=run.id %}?organization_id={{ organization.id }}">
+              {{ run.report_code }} — {{ run.status }} — {{ run.created_at }}
+            </a>
+          </li>
+        {% empty %}
+          <li>No runs yet.</li>
         {% endfor %}
-      </tbody>
-    </table>
+      </ul>
+    {% else %}
+      <p class="text-sm text-slate-600">
+        Provide <code>organization_id</code> query parameter to open the catalogue.
+      </p>
+    {% endif %}
   </div>
-  <h2 class="text-lg font-semibold">Recent runs</h2>
-  <ul class="text-sm space-y-1">
-    {% for run in recent_runs %}
-      <li>
-        <a href="{% url 'reports:run_detail' report_run_id=run.id %}?organization_id={{ organization.id }}">
-          {{ run.report_code }} — {{ run.status }} — {{ run.created_at }}
-        </a>
-      </li>
-    {% empty %}
-      <li>No runs yet.</li>
-    {% endfor %}
-  </ul>
-  {% else %}
-  <p class="text-sm text-slate-600">Provide <code>organization_id</code> query parameter to open the catalogue.</p>
-  {% endif %}
-</div>
 {% endblock %}

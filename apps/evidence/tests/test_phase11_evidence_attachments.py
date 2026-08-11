@@ -179,16 +179,16 @@ def _png_bytes() -> bytes:
 
 
 @pytest.fixture
-def evidence_root(tmp_path: Path, settings):
+def evidence_root(tmp_path: Path, settings: Any) -> Any:
     root = tmp_path / "evidence_private"
     root.mkdir()
     settings.EVIDENCE_STORAGE_ROOT = root
     return root
 
 
-def test_sanitize_malicious_filename():
+def test_sanitize_malicious_filename() -> None:
     assert ".." not in sanitize_original_filename("../../etc/passwd.png")
-    assert "<" not in sanitize_original_filename('photo<script>.png')
+    assert "<" not in sanitize_original_filename("photo<script>.png")
     assert "evil.png" in sanitize_original_filename(r"C:\temp\evil.png")
     disp = content_disposition_attachment('quote"name.png')
     assert "attachment;" in disp
@@ -196,7 +196,7 @@ def test_sanitize_malicious_filename():
 
 
 @pytest.mark.django_db
-def test_upload_hash_and_private_key(evidence_root: Path):
+def test_upload_hash_and_private_key(evidence_root: Path) -> None:
     org = make_org(code=f"E{uuid.uuid4().hex[:6].upper()}")
     recorder, response = _make_draft_response(org=org)
     data = _png_bytes()
@@ -225,7 +225,7 @@ def test_upload_hash_and_private_key(evidence_root: Path):
 
 
 @pytest.mark.django_db
-def test_invalid_file_type_rejected(evidence_root: Path):
+def test_invalid_file_type_rejected(evidence_root: Path) -> None:
     org = make_org(code=f"E{uuid.uuid4().hex[:6].upper()}")
     recorder, response = _make_draft_response(org=org)
     with pytest.raises(ValidationError):
@@ -246,7 +246,7 @@ def test_invalid_file_type_rejected(evidence_root: Path):
 
 
 @pytest.mark.django_db
-def test_oversize_rejected(evidence_root: Path, settings):
+def test_oversize_rejected(evidence_root: Path, settings: Any) -> None:
     settings.EVIDENCE_MAX_UPLOAD_BYTES = 64
     org = make_org(code=f"E{uuid.uuid4().hex[:6].upper()}")
     recorder, response = _make_draft_response(org=org)
@@ -263,7 +263,7 @@ def test_oversize_rejected(evidence_root: Path, settings):
 
 
 @pytest.mark.django_db
-def test_authorization_and_cross_org_denied(evidence_root: Path):
+def test_authorization_and_cross_org_denied(evidence_root: Path) -> None:
     org = make_org(code=f"E{uuid.uuid4().hex[:6].upper()}")
     recorder, response = _make_draft_response(org=org)
     attachment = upload_evidence_attachment(
@@ -284,7 +284,7 @@ def test_authorization_and_cross_org_denied(evidence_root: Path):
 
 
 @pytest.mark.django_db
-def test_download_view_headers_and_missing_file(evidence_root: Path):
+def test_download_view_headers_and_missing_file(evidence_root: Path) -> None:
     from apps.evidence.services import open_evidence_download
     from apps.evidence.storage import get_evidence_store
 
@@ -316,9 +316,8 @@ def test_download_view_headers_and_missing_file(evidence_root: Path):
     assert client.get(url).status_code == 404
 
 
-
 @pytest.mark.django_db
-def test_immutable_linkage_soft_retire_only(evidence_root: Path):
+def test_immutable_linkage_soft_retire_only(evidence_root: Path) -> None:
     org = make_org(code=f"E{uuid.uuid4().hex[:6].upper()}")
     actor = make_user(employee_code=f"ACT{uuid.uuid4().hex[:6].upper()}", is_staff=True)
     _grant_checklist_manage(actor, org)
@@ -391,7 +390,7 @@ def test_immutable_linkage_soft_retire_only(evidence_root: Path):
         )
 
 
-def test_null_scanner_honest_and_randomized_keys():
+def test_null_scanner_honest_and_randomized_keys() -> None:
     result = NullMalwareScanner().scan(storage_key="a", content_sha256="b")
     assert result.status == EvidenceMalwareScanStatus.NOT_CONFIGURED
     assert "not configured" in result.detail.lower()
@@ -402,7 +401,7 @@ def test_null_scanner_honest_and_randomized_keys():
 
 
 @pytest.mark.django_db
-def test_upload_without_evidence_permission_denied(evidence_root: Path):
+def test_upload_without_evidence_permission_denied(evidence_root: Path) -> None:
     org = make_org(code=f"E{uuid.uuid4().hex[:6].upper()}")
     recorder, response = _make_draft_response(org=org)
     # Strip evidence by using recorder without evidence bundle
@@ -425,7 +424,7 @@ def test_upload_without_evidence_permission_denied(evidence_root: Path):
 
 
 @pytest.mark.django_db
-def test_admin_disallows_hard_delete(evidence_root: Path):
+def test_admin_disallows_hard_delete(evidence_root: Path) -> None:
     from django.contrib.admin.sites import AdminSite
 
     from apps.evidence.admin import EvidenceAttachmentAdmin
@@ -447,7 +446,7 @@ def test_admin_disallows_hard_delete(evidence_root: Path):
 
 
 @pytest.mark.django_db
-def test_empty_and_forbidden_policy_edges():
+def test_empty_and_forbidden_policy_edges() -> None:
     with pytest.raises(ValidationError):
         validate_upload_candidate(
             original_filename="empty.png",
@@ -463,8 +462,9 @@ def test_empty_and_forbidden_policy_edges():
     long_name = "a" * 200 + ".png"
     assert len(sanitize_original_filename(long_name)) <= 180
 
+
 @pytest.mark.django_db
-def test_upload_and_list_views(evidence_root: Path):
+def test_upload_and_list_views(evidence_root: Path) -> None:
     from django.core.files.uploadedfile import SimpleUploadedFile
 
     org = make_org(code=f"E{uuid.uuid4().hex[:6].upper()}")
@@ -494,10 +494,10 @@ def test_upload_and_list_views(evidence_root: Path):
 
 
 @pytest.mark.django_db
-def test_selectors_and_ncr_capa_links(evidence_root: Path):
+def test_selectors_and_ncr_capa_links(evidence_root: Path) -> None:
     from apps.capa.models import CorrectiveAction
     from apps.evidence.linking import resolve_linked_target
-    from apps.evidence.selectors import list_evidence_for_link, get_evidence_attachment
+    from apps.evidence.selectors import get_evidence_attachment, list_evidence_for_link
     from apps.nonconformance.models import NonConformanceRecord
 
     org = make_org(code=f"E{uuid.uuid4().hex[:6].upper()}")
@@ -557,7 +557,7 @@ def test_selectors_and_ncr_capa_links(evidence_root: Path):
 
 
 @pytest.mark.django_db
-def test_retire_view_and_storage_url_guard(evidence_root: Path):
+def test_retire_view_and_storage_url_guard(evidence_root: Path) -> None:
     org = make_org(code=f"E{uuid.uuid4().hex[:6].upper()}")
     recorder, response = _make_draft_response(org=org)
     attachment = upload_evidence_attachment(
@@ -581,14 +581,17 @@ def test_retire_view_and_storage_url_guard(evidence_root: Path):
         PrivateEvidenceStorage(location=str(evidence_root)).url("x")
 
 
-def test_filename_and_disposition_helpers():
+def test_filename_and_disposition_helpers() -> None:
     assert sanitize_original_filename(r"..\\evil/../ok.png") == "ok.png"
     assert "attachment;" in content_disposition_attachment('a"b.png')
-    assert validate_upload_candidate(
-        original_filename="doc.pdf",
-        content_type="application/pdf",
-        size_bytes=10,
-    ).extension == "pdf"
+    assert (
+        validate_upload_candidate(
+            original_filename="doc.pdf",
+            content_type="application/pdf",
+            size_bytes=10,
+        ).extension
+        == "pdf"
+    )
     with pytest.raises(ValidationError):
         validate_upload_candidate(
             original_filename="x.exe.pdf",
@@ -598,7 +601,7 @@ def test_filename_and_disposition_helpers():
 
 
 @pytest.mark.django_db
-def test_mark_immutable_after_submit_hook(evidence_root: Path):
+def test_mark_immutable_after_submit_hook(evidence_root: Path) -> None:
     org = make_org(code=f"E{uuid.uuid4().hex[:6].upper()}")
     recorder, response = _make_draft_response(org=org)
     attachment = upload_evidence_attachment(
@@ -621,7 +624,7 @@ def test_mark_immutable_after_submit_hook(evidence_root: Path):
 
 
 @pytest.mark.django_db
-def test_supervisor_and_qa_evidence_links(evidence_root: Path):
+def test_supervisor_and_qa_evidence_links(evidence_root: Path) -> None:
     from apps.evidence.linking import resolve_linked_target
     from apps.quality.models import QAReview
     from apps.quality.services import create_qa_review
@@ -710,7 +713,7 @@ def test_supervisor_and_qa_evidence_links(evidence_root: Path):
     )
 
 
-def test_policies_empty_and_unknown_type():
+def test_policies_empty_and_unknown_type() -> None:
     with pytest.raises(ValidationError):
         validate_upload_candidate(original_filename="x.png", content_type="image/png", size_bytes=0)
     with pytest.raises(ValidationError):
@@ -728,7 +731,7 @@ def test_policies_empty_and_unknown_type():
 
 
 @pytest.mark.django_db
-def test_open_missing_and_retire_reason(evidence_root: Path):
+def test_open_missing_and_retire_reason(evidence_root: Path) -> None:
     from apps.evidence.services import open_evidence_file
 
     org = make_org(code=f"E{uuid.uuid4().hex[:6].upper()}")
@@ -752,7 +755,8 @@ def test_open_missing_and_retire_reason(evidence_root: Path):
     with pytest.raises(ValidationError):
         authorize_evidence_download(actor=recorder, attachment_id=uuid.uuid4())
 
-def test_long_filename_truncation_and_empty_guard():
+
+def test_long_filename_truncation_and_empty_guard() -> None:
     long_name = ("a" * 200) + ".png"
     cleaned = sanitize_original_filename(long_name)
     assert len(cleaned) <= 180
@@ -766,7 +770,7 @@ def test_long_filename_truncation_and_empty_guard():
 
 
 @pytest.mark.django_db
-def test_list_unknown_kind_404(evidence_root: Path):
+def test_list_unknown_kind_404(evidence_root: Path) -> None:
     org = make_org(code=f"E{uuid.uuid4().hex[:6].upper()}")
     recorder, response = _make_draft_response(org=org)
     client = Client()
@@ -776,4 +780,3 @@ def test_list_unknown_kind_404(evidence_root: Path):
         kwargs={"linked_kind": "NOT_A_KIND", "linked_object_id": response.id},
     )
     assert client.get(url).status_code == 404
-
