@@ -48,6 +48,7 @@ ALLOWED_APPS = {
     "change_control",
     "quality_audits",
     "compliance_mapping",
+    "quality_risks",
     "supplier_quality",
     "access_control",
     "security_audit",

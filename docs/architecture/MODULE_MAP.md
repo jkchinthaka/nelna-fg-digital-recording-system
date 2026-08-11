@@ -58,6 +58,7 @@ Do **not** rename FG master data, checklist, recording, review, or evidence work
 | change_control | Quality change control (44) | QualityChangeRequest; QualityChangeImpactAssessment; QualityChangeAffectedLink; QualityChangeImplementationLink; QualityChangeEvent | formal change records; impact assessment; affected-area links; implementation citation; verify/close | Engineering ≠ approval; requester cannot self-approve; closed immutable; no invented SOP; APR-069 EVIDENCE REQUIRED | **44** |
 | quality_audits | Quality audit management (45) | QualityAudit; QualityAuditFinding; QualityAuditChecklistBinding; QualityAuditFindingCodeConfig; QualityAuditEvent | plan/execute/close QMS audits; findings; explicit NCR/CAPA; audit-only checklist bind; reports | Distinct from security_audit; no invented frequency/severity; findings do not auto-create CAPA; auditor perms ≠ operational QA; APR-070 EVIDENCE REQUIRED | **45** |
 | compliance_mapping | Compliance / control mapping (46) | ComplianceSource; ComplianceSourceEdition; ComplianceControlMapping; ComplianceEvidenceLink; ComplianceGap; ComplianceGapAction; ComplianceMappingEvent | source register; clause→control mapping; evidence citations; gap follow-up | No ISO/FSSC/HACCP/SLS/legal claims; IMPLEMENTED ≠ COMPLIANT; no seeded applicability; explicit gap actions only; APR-071 EVIDENCE REQUIRED | **46** |
+| quality_risks | Quality risk management (47) | QualityRisk; QualityRiskAssessment; QualityRiskScoringPolicy; QualityRiskLink; QualityRiskMitigation; QualityRiskReview; QualityRiskEvent | configurable risk register; historical assessments; mitigations; dashboard | No invented 1–5/RAG/acceptance matrix; scoring default OFF; accept perm separate; APR-072 EVIDENCE REQUIRED | **47** |
 
 ## Phase mapping reminder
 
@@ -75,6 +76,7 @@ Do **not** rename FG master data, checklist, recording, review, or evidence work
 | 44 | `change_control` formal quality/process/configuration change records; impact; implementation citation; no auto-approval |
 | 45 | `quality_audits` QMS audit planning/execution/findings/follow-up; explicit NCR/CAPA; distinct from security_audit |
 | 46 | `compliance_mapping` controlled source register and clause→system-control evidence mapping; no certification claims |
+| 47 | `quality_risks` configurable quality-risk register; append-only assessments; scoring default OFF |
 
 ## References
 

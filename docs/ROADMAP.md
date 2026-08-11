@@ -611,3 +611,14 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Branch naming | `feature/phase-46-compliance-control-mapping` |
 | Exit criteria | No certification/legal claims; IMPLEMENTED ≠ COMPLIANT; no seeded applicability; explicit gap follow-up |
 | Status | **Technical foundation delivered** on `main` — company/external evidence remains **EVIDENCE REQUIRED** |
+
+## Phase 47 — Quality Risk Management
+
+| Field | Content |
+| --- | --- |
+| Objective | Configurable quality-risk register without inventing Nelna scoring |
+| Outputs | `apps.quality_risks`; ADR-058; historical assessments; mitigations; APR-072 |
+| Approval gate | Scoring method, category catalogue, review cadence, acceptance criteria |
+| Branch naming | `feature/phase-47-quality-risk-management` |
+| Exit criteria | No hardcoded 1–5/RAG; scoring default OFF; append-only assessments; accept perm separate |
+| Status | **Technical foundation delivered** on `main` — scoring methodology remains **EVIDENCE REQUIRED** |

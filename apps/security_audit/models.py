@@ -1241,6 +1241,50 @@ class SecurityAuditEvent(models.Model):
             "COMPLIANCE_GAP_CLOSED",
             "Compliance gap closed",
         )
+        QUALITY_RISK_CREATED = (
+            "QUALITY_RISK_CREATED",
+            "Quality risk created",
+        )
+        QUALITY_RISK_OPENED = (
+            "QUALITY_RISK_OPENED",
+            "Quality risk opened",
+        )
+        QUALITY_RISK_ASSESSED = (
+            "QUALITY_RISK_ASSESSED",
+            "Quality risk historical assessment recorded",
+        )
+        QUALITY_RISK_REVIEWED = (
+            "QUALITY_RISK_REVIEWED",
+            "Quality risk periodic review recorded",
+        )
+        QUALITY_RISK_LINKED = (
+            "QUALITY_RISK_LINKED",
+            "Quality risk context link recorded",
+        )
+        QUALITY_RISK_MITIGATION_ADDED = (
+            "QUALITY_RISK_MITIGATION_ADDED",
+            "Quality risk mitigation recorded",
+        )
+        QUALITY_RISK_ACCEPTED = (
+            "QUALITY_RISK_ACCEPTED",
+            "Residual quality risk accepted",
+        )
+        QUALITY_RISK_CLOSED = (
+            "QUALITY_RISK_CLOSED",
+            "Quality risk closed",
+        )
+        QUALITY_RISK_CANCELLED = (
+            "QUALITY_RISK_CANCELLED",
+            "Quality risk cancelled",
+        )
+        QUALITY_RISK_CATEGORY_UPSERTED = (
+            "QUALITY_RISK_CATEGORY_UPSERTED",
+            "Quality risk category shell upserted",
+        )
+        QUALITY_RISK_SCORING_POLICY_UPDATED = (
+            "QUALITY_RISK_SCORING_POLICY_UPDATED",
+            "Quality risk scoring policy updated",
+        )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 

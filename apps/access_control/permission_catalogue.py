@@ -48,6 +48,7 @@ class CapabilityBucket(StrEnum):
     CHANGE_CONTROL = "change_control"
     QUALITY_AUDITS = "quality_audits"
     COMPLIANCE_MAPPING = "compliance_mapping"
+    QUALITY_RISKS = "quality_risks"
     EVIDENCE = "evidence"
     MASTER_DATA = "master_data"
     CHECKLIST_PUBLISH = "checklist_publish"
@@ -1236,6 +1237,42 @@ PERMISSION_CATALOGUE: Final[tuple[PermissionCatalogueEntry, ...]] = (
         bucket=CapabilityBucket.COMPLIANCE_MAPPING,
         scopes=(ObjectScope.ORGANIZATION,),
         description="Explicitly link gap follow-up (risk/change/NCR/CAPA/action). Never automatic.",
+    ),
+    PermissionCatalogueEntry(
+        key="view_qualityrisk",
+        permission="quality_risks.view_qualityrisk",
+        bucket=CapabilityBucket.QUALITY_RISKS,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="View quality risks, assessments, and dashboard queries.",
+        notes="No invented scoring matrix.",
+    ),
+    PermissionCatalogueEntry(
+        key="manage_qualityrisk",
+        permission="quality_risks.manage_qualityrisk",
+        bucket=CapabilityBucket.QUALITY_RISKS,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Create and maintain quality risks, links, reviews, and mitigations.",
+    ),
+    PermissionCatalogueEntry(
+        key="assess_qualityrisk",
+        permission="quality_risks.assess_qualityrisk",
+        bucket=CapabilityBucket.QUALITY_RISKS,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Record append-only historical assessments. Previous versions are not overwritten.",
+    ),
+    PermissionCatalogueEntry(
+        key="accept_qualityrisk",
+        permission="quality_risks.accept_qualityrisk",
+        bucket=CapabilityBucket.QUALITY_RISKS,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Accept residual risk. Separate from manage. No invented acceptance threshold.",
+    ),
+    PermissionCatalogueEntry(
+        key="manage_qualityriskpolicy",
+        permission="quality_risks.manage_qualityriskpolicy",
+        bucket=CapabilityBucket.QUALITY_RISKS,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Configure owner-cited scoring policy. Default OFF. APR-072 EVIDENCE REQUIRED.",
     ),
     PermissionCatalogueEntry(
         key="manage_supplierquality_qa",

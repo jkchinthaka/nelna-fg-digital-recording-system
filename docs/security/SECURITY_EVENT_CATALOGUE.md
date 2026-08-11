@@ -520,3 +520,23 @@ not certification, legal-compliance, or QMS quality-audit records.
 | COMPLIANCE_MAPPING_VERIFIED | Implemented control verified (not a certificate) |
 | COMPLIANCE_GAP_CLOSED | Gap closed |
 
+### Quality Risk Management (Phase 47)
+
+These events record access-sensitive quality-risk actions. They are not a
+scoring certificate and do not invent a company matrix.
+
+| Event | Meaning |
+| --- | --- |
+| QUALITY_RISK_CREATED | Risk created (no scoring applied) |
+| QUALITY_RISK_OPENED | Risk opened |
+| QUALITY_RISK_ASSESSED | Historical assessment recorded |
+| QUALITY_RISK_REVIEWED | Periodic review recorded |
+| QUALITY_RISK_LINKED | Context link recorded |
+| QUALITY_RISK_MITIGATION_ADDED | Mitigation recorded |
+| QUALITY_RISK_ACCEPTED | Residual risk accepted |
+| QUALITY_RISK_CLOSED | Risk closed |
+| QUALITY_RISK_CANCELLED | Risk cancelled |
+| QUALITY_RISK_CANCELLED | Risk cancelled |
+| QUALITY_RISK_CATEGORY_UPSERTED | Category shell upserted |
+| QUALITY_RISK_SCORING_POLICY_UPDATED | Scoring policy updated (default OFF) |
+

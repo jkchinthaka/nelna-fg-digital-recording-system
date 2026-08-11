@@ -356,3 +356,15 @@ Audit programme and role mapping remain APR-070 EVIDENCE REQUIRED.
 
 Official sources and role mapping remain APR-071 EVIDENCE REQUIRED. No ISO/FSSC/HACCP/SLS/legal claim.
 
+### Quality Risk Management (Phase 47)
+
+| Key | Permission | Notes |
+| --- | --- | --- |
+| view_qualityrisk | `quality_risks.view_qualityrisk` | View risks and dashboards |
+| manage_qualityrisk | `quality_risks.manage_qualityrisk` | Create/maintain risks, reviews, links, mitigations |
+| assess_qualityrisk | `quality_risks.assess_qualityrisk` | Append-only assessments |
+| accept_qualityrisk | `quality_risks.accept_qualityrisk` | Residual acceptance; not a matrix threshold |
+| manage_qualityriskpolicy | `quality_risks.manage_qualityriskpolicy` | Owner-cited scoring policy; default OFF |
+
+Scoring methodology remains APR-072 EVIDENCE REQUIRED.
+

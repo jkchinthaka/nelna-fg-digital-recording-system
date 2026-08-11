@@ -92,6 +92,7 @@ This document records **repository evidence**. It does not invent Nelna operatio
 | `change_control` | **44** | IMPLEMENTED foundation · change requests; impact assessment; affected links; implementation citation; engineering ≠ approval (APR-069) |
 | `quality_audits` | **45** | IMPLEMENTED foundation · QMS audit plans/findings/follow-up; explicit NCR/CAPA; Phase 11 evidence; reports; distinct from security_audit (APR-070) |
 | `compliance_mapping` | **46** | IMPLEMENTED foundation · source register; clause→control mapping; evidence citations; explicit gap follow-up; no certification/legal claims (APR-071) |
+| `quality_risks` | **47** | IMPLEMENTED foundation · configurable risk register; historical assessments; mitigations; scoring default OFF; no invented matrix (APR-072) |
 
 Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 38 except gaps noted elsewhere)._ (`loading` controls are delivered inside `dispatch` for Phase 13 — see ADR-025.)
 
@@ -172,6 +173,7 @@ Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 38 except gaps n
 | 44 Quality Change Control | Technical complete — formal change records, impact assessment, affected-area links, implementation citation, verify/close SoD (ADR-055) | Change SOP / numbering / risk scoring / role mapping EVIDENCE REQUIRED (APR-069) |
 | 45 Quality Audit Management | Technical complete — audit plans, audit-only checklist bindings, findings, explicit NCR/CAPA, reports (ADR-056) | Audit programme / frequency / severity catalogue / SoD EVIDENCE REQUIRED (APR-070) |
 | 46 Compliance Control Mapping | Technical complete — source register, edition citations, control mappings, evidence links, explicit gap actions (ADR-057) | Official sources / applicability / licensed clause text / owner mapping EVIDENCE REQUIRED (APR-071). No ISO/FSSC/HACCP/SLS/legal claim |
+| 47 Quality Risk Management | Technical complete — risk register, append-only assessments, reviews, mitigations, policy-gated high-rated dashboard (ADR-058) | Scoring method / category catalogue / acceptance criteria EVIDENCE REQUIRED (APR-072) |
 | 20–21 Pilot / production release | Not started | Depends on business gates + Phase 19 ops evidence |
 | 20 UAT / Pilot | Package opened — **BLOCKED** pending business evidence ([uat/README.md](uat/README.md)) | Pilot scope APR-034, FG-QA-001, roles/SoD, hosted env EVIDENCE REQUIRED |
 | 21 Production release | Package opened — **GO-LIVE BLOCKED** ([release/README.md](release/README.md)) | Phase 20 FAIL + hosting/config/support gates |
@@ -600,4 +602,10 @@ Quality audit management (ADR-056): organization-scoped QMS audit plans with own
 **STATUS: PHASE 46 COMPLIANCE MAPPING COMPLETE**
 
 Compliance control mapping (ADR-057): organization-scoped source register and versioned editions that record official citations only. Control mappings link owner-supplied clause references to system controls and evidence citations. Statuses are truthful; `IMPLEMENTED` is not `COMPLIANT`. Gaps may create Risk / Change / NCR / CAPA / Action only by explicit authorized action. Administration is restricted; auditor read access is separate. Software implementation supports compliance evidence and does **not** prove ISO, FSSC, HACCP, SLS/SLSI, legal, or regulatory compliance. Official sources, applicability, and licensed clause text remain **EVIDENCE REQUIRED** (APR-071).
+
+## Phase 47 delivery status
+
+**STATUS: PHASE 47 QUALITY RISK MANAGEMENT COMPLETE**
+
+Quality risk management (ADR-058): organization-scoped risks with owner-supplied identifiers and generic cause/impact/control/owner fields. Assessments are append-only historical snapshots. Likelihood/severity/detectability/exposure/residual inputs are stored as owner text. Scoring is **OFF** until an owner-cited company method is configured. The application does not invent a 1–5 matrix, RAG thresholds, or acceptance criteria. Residual acceptance is a separate permission. High-rated dashboard membership uses only owner-configured residual codes on an enabled policy. Company scoring methodology remains **EVIDENCE REQUIRED** (APR-072).
 
