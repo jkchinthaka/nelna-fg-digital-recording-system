@@ -160,3 +160,28 @@ def report_run_export_csv(request: HttpRequest, report_run_id: uuid.UUID) -> Htt
         f'attachment; filename="report-{run.report_code}-{run.id}.csv"'
     )
     return response
+
+
+@login_required
+@require_http_methods(["GET"])
+def quality_trends(request: HttpRequest) -> HttpResponse:
+    from datetime import date
+
+    from apps.reports.trends import quality_trend_counts
+
+    actor = cast(User, request.user)
+    date_from = request.GET.get("date_from") or ""
+    date_to = request.GET.get("date_to") or ""
+    parsed_from = date.fromisoformat(date_from) if date_from else None
+    parsed_to = date.fromisoformat(date_to) if date_to else None
+    counts = quality_trend_counts(actor=actor, date_from=parsed_from, date_to=parsed_to)
+    return render(
+        request,
+        "reports/trends.html",
+        {
+            "page_title": "Quality trends",
+            "counts": counts,
+            "date_from": date_from,
+            "date_to": date_to,
+        },
+    )

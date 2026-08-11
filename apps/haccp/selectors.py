@@ -7,7 +7,33 @@ from datetime import date
 
 from django.db.models import Q, QuerySet
 
+from apps.access_control.services import organization_ids_with_permission
+from apps.accounts.models import User
 from apps.haccp.models import ControlPoint, HaccpPlan, HaccpPlanVersion, HaccpPlanVersionStatus
+from apps.haccp.services import VIEW
+from apps.organizations.models import Organization
+
+
+def actor_can_access_haccp_module(actor: User | None) -> bool:
+    if actor is None or not getattr(actor, "is_authenticated", False):
+        return False
+    return bool(organization_ids_with_permission(actor, VIEW))
+
+
+def organizations_for_haccp_view(actor: User) -> QuerySet[Organization]:
+    org_ids = organization_ids_with_permission(actor, VIEW)
+    if not org_ids:
+        return Organization.objects.none()
+    return Organization.objects.filter(pk__in=org_ids, is_active=True).order_by("code")
+
+
+def plans_for_actor(*, actor: User) -> QuerySet[HaccpPlan]:
+    org_ids = organization_ids_with_permission(actor, VIEW)
+    if not org_ids:
+        return HaccpPlan.objects.none()
+    return HaccpPlan.objects.filter(organization_id__in=org_ids).select_related(
+        "organization", "created_by"
+    )
 
 
 def plans_for_organization(organization_id: uuid.UUID) -> QuerySet[HaccpPlan]:

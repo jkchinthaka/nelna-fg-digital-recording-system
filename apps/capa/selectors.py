@@ -6,10 +6,39 @@ import uuid
 
 from django.db.models import QuerySet
 
-from apps.access_control.services import Scope, user_has_permission
+from apps.access_control.services import (
+    Scope,
+    organization_ids_with_permission,
+    user_has_permission,
+)
 from apps.accounts.models import User
 from apps.capa.models import CapaHistoryEntry, CorrectiveAction
 from apps.capa.services import MANAGE_CAPA, VIEW_CAPA
+from apps.organizations.models import Organization
+
+
+def actor_can_access_capa_module(actor: User | None) -> bool:
+    if actor is None or not getattr(actor, "is_authenticated", False):
+        return False
+    return bool(organization_ids_with_permission(actor, VIEW_CAPA))
+
+
+def organizations_for_capa_view(actor: User) -> QuerySet[Organization]:
+    org_ids = organization_ids_with_permission(actor, VIEW_CAPA)
+    if not org_ids:
+        return Organization.objects.none()
+    return Organization.objects.filter(pk__in=org_ids, is_active=True).order_by("code")
+
+
+def list_corrective_actions_for_actor(*, actor: User) -> QuerySet[CorrectiveAction]:
+    org_ids = organization_ids_with_permission(actor, VIEW_CAPA)
+    if not org_ids:
+        return CorrectiveAction.objects.none()
+    return (
+        CorrectiveAction.objects.filter(organization_id__in=org_ids)
+        .select_related("owner", "created_by", "nonconformance", "organization")
+        .order_by("-created_at")
+    )
 
 
 def list_corrective_actions_for_org(

@@ -1,4 +1,4 @@
-{% load organizations_extras master_data_extras checklists_extras scheduling_extras recording_extras reviews_extras quality_extras reports_extras rca_extras %}
+{% load organizations_extras master_data_extras checklists_extras scheduling_extras recording_extras reviews_extras quality_extras reports_extras rca_extras ncr_extras capa_extras lab_extras haccp_extras %}
 <aside class="app-sidebar" id="app-sidebar" aria-label="Application">
   <div class="app-sidebar__brand">
     <a class="app-sidebar__logo" href="{% url 'accounts:landing' %}">
@@ -58,15 +58,39 @@
         {% endif %}
       {% endif %}
       {% user_can_view_rca as show_rca %}
-      {% if show_rca %}
+      {% user_can_view_ncr as show_ncr %}
+      {% user_can_view_capa as show_capa %}
+      {% user_can_view_lab as show_lab %}
+      {% user_can_view_haccp as show_haccp %}
+      {% if show_rca or show_ncr or show_capa or show_lab or show_haccp %}
         <p class="app-nav-group">Quality cases</p>
-        <a class="app-nav-link{% if '/rca/' in current_path %} is-active{% endif %}"
-           href="{% url 'rca:list' %}">Root Cause Analysis</a>
+        {% if show_ncr %}
+          <a class="app-nav-link{% if '/ncr/' in current_path %} is-active{% endif %}"
+             href="{% url 'nonconformance:list' %}">NCR / Holds</a>
+        {% endif %}
+        {% if show_capa %}
+          <a class="app-nav-link{% if '/capa/' in current_path %} is-active{% endif %}"
+             href="{% url 'capa:list' %}">CAPA</a>
+        {% endif %}
+        {% if show_rca %}
+          <a class="app-nav-link{% if '/rca/' in current_path %} is-active{% endif %}"
+             href="{% url 'rca:list' %}">Root Cause Analysis</a>
+        {% endif %}
+        {% if show_lab %}
+          <a class="app-nav-link{% if '/laboratory/' in current_path %} is-active{% endif %}"
+             href="{% url 'laboratory:list' %}">Laboratory</a>
+        {% endif %}
+        {% if show_haccp %}
+          <a class="app-nav-link{% if '/haccp/' in current_path %} is-active{% endif %}"
+             href="{% url 'haccp:list' %}">HACCP</a>
+        {% endif %}
       {% endif %}
       {% user_can_view_reports as show_reports %}
       {% if show_reports %}
         <p class="app-nav-group">Analytics</p>
-        <a class="app-nav-link{% if '/reports/' in current_path %} is-active{% endif %}"
+        <a class="app-nav-link{% if '/reports/trends/' in current_path %} is-active{% endif %}"
+           href="{% url 'reports:trends' %}">Quality trends</a>
+        <a class="app-nav-link{% if '/reports/' in current_path and '/reports/trends/' not in current_path %} is-active{% endif %}"
            href="{% url 'reports:catalogue' %}">Reports</a>
       {% endif %}
       <p class="app-nav-group">System</p>
