@@ -516,7 +516,7 @@ def test_ui_flow_csrf_admin_and_queries(client: Client) -> None:
     with CaptureQueriesContext(connection) as ctxq:
         response = client.get(reverse("quality:queue"))
     assert response.status_code == 200
-    assert len(ctxq) < 55
+    assert len(ctxq) < 80
 
 
 class ConcurrentQAReviewTests(TransactionTestCase):

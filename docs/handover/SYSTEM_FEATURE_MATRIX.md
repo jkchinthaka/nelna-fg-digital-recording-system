@@ -21,7 +21,11 @@ Labels: IMPLEMENTED = code exists. VALIDATED = tests exist on the feature branch
 | CAPA + effectiveness UI | Yes | Yes | No | Open | No |
 | Laboratory queue | Yes | Yes | No | Open | No |
 | HACCP viewer | Yes | Yes | No | Open | No |
+| Dispatch quality workspace | Yes | Yes | No | Open | No |
+| Complaints workspace | Yes | Yes | No | Open | No |
+| Quarantine workspace | Yes | Yes | No | Open | No |
 | Quality trend counts | Yes | Yes | n/a | Open | No |
+| Measurement series stats | Yes | Partial | n/a | Open | No |
 | COPQ priced model | No — costs not invented | n/a | Required | Open | No |
 | Full OEE | No — Quality-only counts possible | n/a | Required | Open | No |
 | SPC with company limits | No invented limits | n/a | Required | Open | No |

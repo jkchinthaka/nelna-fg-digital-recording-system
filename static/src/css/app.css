@@ -1694,11 +1694,27 @@
   font-size: 1.05rem;
 }
 
+html:has(.print-sheet),
+body.print-sheet,
 .print-sheet {
   background: #fff;
   color: #111;
+}
+
+.print-sheet {
   padding: 16mm;
   font-family: "Segoe UI", "Noto Sans", sans-serif;
+}
+
+.print-sheet__actions {
+  margin: 1rem 0;
+}
+
+@media print {
+  .no-print,
+  .print-sheet__actions {
+    display: none !important;
+  }
 }
 
 .print-sheet__header h1 {

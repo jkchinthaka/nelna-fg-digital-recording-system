@@ -589,9 +589,7 @@ def link_confirmed_cause_to_capa(
             summary=cause.statement[:500],
         )
     elif existing_capa_id is not None:
-        found = CorrectiveAction.objects.filter(
-            pk=existing_capa_id, organization_id=org.id
-        ).first()
+        found = CorrectiveAction.objects.filter(pk=existing_capa_id, organization_id=org.id).first()
         if found is None:
             raise ValidationError({"existing_capa_id": "CAPA not found in organization."})
         capa = found

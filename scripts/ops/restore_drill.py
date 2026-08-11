@@ -29,6 +29,13 @@ def _require_ident(value: str, *, name: str) -> str:
     return value
 
 
+def _sql_literal(value: str) -> str:
+    """Single-quote a validated token for docker/psql -c (no :'var' interpolation)."""
+    if not re.fullmatch(r"[A-Za-z0-9_]+", value):
+        raise ValueError(f"Unsafe SQL literal: {value!r}")
+    return f"'{value}'"
+
+
 def run(cmd: list[str], env: dict[str, str]) -> None:
     print("+", " ".join(_redact_cmd(cmd)))
     subprocess.check_call(cmd, env=env)  # nosec B603 — argv list, no shell, validated tools
@@ -125,12 +132,10 @@ def main() -> int:
                 "postgres",
                 "-v",
                 "ON_ERROR_STOP=1",
-                "-v",
-                f"scratch_db={scratch_db}",
                 "-c",
                 (
                     "SELECT pg_terminate_backend(pid) FROM pg_stat_activity "
-                    "WHERE datname = :'scratch_db' AND pid <> pg_backend_pid();"
+                    f"WHERE datname = '{scratch_db}' AND pid <> pg_backend_pid();"
                 ),
             ),
             env,
@@ -187,12 +192,10 @@ def main() -> int:
                 source_db,
                 "-v",
                 "ON_ERROR_STOP=1",
-                "-v",
-                f"marker={marker}",
                 "-c",
                 (
-                    "INSERT INTO ops_restore_drill_marker(id) VALUES (:'marker') "
-                    "ON CONFLICT DO NOTHING;"
+                    "INSERT INTO ops_restore_drill_marker(id) VALUES "
+                    f"({_sql_literal(marker)}) ON CONFLICT DO NOTHING;"
                 ),
             ),
             env,
@@ -244,10 +247,11 @@ def main() -> int:
                 *common,
                 "-d",
                 scratch_db,
-                "-v",
-                f"marker={marker}",
                 "-Atc",
-                "SELECT count(*) FROM ops_restore_drill_marker WHERE id = :'marker';",
+                (
+                    "SELECT count(*) FROM ops_restore_drill_marker "
+                    f"WHERE id = {_sql_literal(marker)};"
+                ),
             ),
             env=env,
             text=True,

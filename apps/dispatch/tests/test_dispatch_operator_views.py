@@ -1,4 +1,4 @@
-"""Laboratory and HACCP operator workspace tests."""
+"""Operator dispatch quality workspace tests."""
 
 from __future__ import annotations
 
@@ -13,8 +13,7 @@ from django.urls import reverse
 from tests.factories import grant_role, make_role_with_permission
 
 from apps.accounts.models import User
-from apps.haccp.models import HaccpPlan
-from apps.laboratory.models import LabSample
+from apps.dispatch.models import DispatchQualityRecord
 from apps.organizations.models import Organization
 from apps.recording.synthetic_demo import load_synthetic_demo_data
 
@@ -26,8 +25,8 @@ def _grant(user: User, org: Organization, model: type[Any], *codes: str) -> None
         defaults={"name": codes[0]},
     )[0]
     role = make_role_with_permission(
-        code=f"L{uuid.uuid4().hex[:6].upper()}",
-        name="lab",
+        code=f"V{uuid.uuid4().hex[:6].upper()}",
+        name="view",
         permission=first,
     )
     for code in codes[1:]:
@@ -41,14 +40,29 @@ def _grant(user: User, org: Organization, model: type[Any], *codes: str) -> None
 
 
 @pytest.mark.django_db
-def test_lab_and_haccp_lists(client: Client) -> None:
+def test_dispatch_create_and_detail(client: Client) -> None:
     demo = load_synthetic_demo_data()
-    _grant(demo.admin, demo.organization, LabSample, "view_laboratory")
-    _grant(demo.admin, demo.organization, HaccpPlan, "view_haccp")
+    _grant(
+        demo.admin,
+        demo.organization,
+        DispatchQualityRecord,
+        "view_dispatchqualityrecord",
+        "create_dispatchqualityrecord",
+    )
     client.force_login(demo.admin)
-    lab = client.get(reverse("laboratory:list"))
-    assert lab.status_code == 200
-    assert b"Laboratory samples" in lab.content
-    haccp = client.get(reverse("haccp:list"))
-    assert haccp.status_code == 200
-    assert b"HACCP plans" in haccp.content
+    listed = client.get(reverse("dispatch:list"))
+    assert listed.status_code == 200
+    created = client.post(
+        reverse("dispatch:create"),
+        {
+            "code": "DEMO-DSP-UI-1",
+            "vehicle_reference": "DEMO-TRUCK-UI",
+            "notes": "DEMO dispatch note",
+        },
+    )
+    assert created.status_code == 302
+    record = DispatchQualityRecord.objects.get(code="DEMO-DSP-UI-1")
+    detail = client.get(reverse("dispatch:detail", kwargs={"record_id": record.id}))
+    assert detail.status_code == 200
+    assert b"DEMO-TRUCK-UI" in detail.content
+    assert b"Disabled" in detail.content

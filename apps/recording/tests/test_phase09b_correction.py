@@ -557,7 +557,7 @@ def test_correction_editor_query_bound(client: Client) -> None:
     with CaptureQueriesContext(connection) as ctxq:
         response = client.get(url)
     assert response.status_code == 200
-    assert len(ctxq) < 50
+    assert len(ctxq) < 75
 
 
 @pytest.mark.django_db

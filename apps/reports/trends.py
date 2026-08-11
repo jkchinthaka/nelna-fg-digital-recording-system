@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import statistics
+import uuid
 from datetime import date, datetime, time
+from decimal import Decimal
 
 from django.utils import timezone
 
@@ -19,7 +22,7 @@ from apps.reviews.models import SupervisorReviewDecision
 from apps.scheduling.selectors import organizations_for_task_record
 
 
-def _org_ids(actor: User) -> list:
+def _org_ids(actor: User) -> list[uuid.UUID]:
     ids = set(organizations_for_reporting(actor).values_list("id", flat=True))
     ids.update(organizations_for_task_record(actor).values_list("id", flat=True))
     return list(ids)
@@ -105,3 +108,50 @@ def quality_trend_counts(
         decision=QAReviewDecision.REJECT,
     ).count()
     return empty
+
+
+def measurement_series_stats(
+    *, actor: User, form_code: str
+) -> dict[str, Decimal | int | str | None]:
+    """Mean/min/max/stddev from stored numeric snapshots. No invented control limits."""
+    org_ids = _org_ids(actor)
+    values: list[Decimal] = []
+    if org_ids:
+        rows = ChecklistSubmissionResponse.objects.filter(
+            checklist_submission__checklist_record__organization_id__in=org_ids,
+            checklist_submission__checklist_record__checklist_task__checklist_template__code=form_code,
+            number_value__isnull=False,
+        ).values_list("number_value", flat=True)
+        values = [Decimal(str(value)) for value in rows]
+    count = len(values)
+    if count == 0:
+        return {
+            "form_code": form_code,
+            "count": 0,
+            "mean": None,
+            "minimum": None,
+            "maximum": None,
+            "stddev": None,
+            "quality_component": None,
+            "note": "No stored numeric measurements. Control limits are not invented.",
+        }
+    as_float = [float(value) for value in values]
+    stddev = statistics.stdev(as_float) if count >= 2 else None
+    fail_count = ChecklistSubmissionResponse.objects.filter(
+        checklist_submission__checklist_record__organization_id__in=org_ids,
+        checklist_submission__checklist_record__checklist_task__checklist_template__code=form_code,
+        evaluation_result="FAIL",
+    ).count()
+    return {
+        "form_code": form_code,
+        "count": count,
+        "mean": Decimal(str(round(statistics.mean(as_float), 4))),
+        "minimum": min(values),
+        "maximum": max(values),
+        "stddev": Decimal(str(round(stddev, 4))) if stddev is not None else None,
+        "quality_component": Decimal(str(round((count - fail_count) / count, 4))),
+        "note": (
+            "Quality component is good/total stored readings only. "
+            "This is not full OEE. Control limits are not configured."
+        ),
+    }

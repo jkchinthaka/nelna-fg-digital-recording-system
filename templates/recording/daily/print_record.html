@@ -57,6 +57,8 @@
       <span>Record {{ record.id }}</span>
       <span>Printed {{ generated_at }}</span>
     </footer>
-    <script>window.addEventListener("load", function() { window.print(); });</script>
+    <p class="print-sheet__actions no-print">
+      <button type="button" class="btn btn--primary" onclick="window.print()">Print A4</button>
+    </p>
   </body>
 </html>

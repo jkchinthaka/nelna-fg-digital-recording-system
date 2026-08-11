@@ -24,7 +24,12 @@ def test_synthetic_demo_data_is_idempotent_and_labelled() -> None:
     assert second.created is False
     assert second.organization.id == first.organization.id
     assert Organization.objects.filter(code=DEMO_ORG_CODE).count() == 1
-    assert ChecklistTask.objects.filter(organization=first.organization).count() == 1
+    assert ChecklistTask.objects.filter(
+        organization=first.organization, batch_reference="DEMO-BATCH-0001"
+    ).count() == 1
+    assert (
+        ChecklistTask.objects.filter(organization=first.organization).count() >= 1
+    )
 
 
 @pytest.mark.django_db

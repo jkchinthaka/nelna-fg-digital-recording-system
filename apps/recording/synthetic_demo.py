@@ -15,7 +15,7 @@ from uuid import uuid4
 from django.conf import settings
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import ValidationError
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
 
 from apps.access_control.services import assign_role, create_role
@@ -128,7 +128,7 @@ def load_synthetic_demo_data(*, force: bool = False) -> SyntheticDemoDataset:
         from apps.recording.controlled_form_seed import seed_controlled_form_templates
 
         seed_controlled_form_templates(actor=_user("DEMO-ADMIN-001"), organization=existing)
-        return SyntheticDemoDataset(
+        dataset = SyntheticDemoDataset(
             organization=existing,
             site=Site.objects.get(organization=existing, code="DEMOSITE1"),
             department=Department.objects.get(organization=existing, code="DEMODEPT1"),
@@ -142,6 +142,9 @@ def load_synthetic_demo_data(*, force: bool = False) -> SyntheticDemoDataset:
             qa=_user("DEMO-QA-001"),
             created=False,
         )
+        seed_demo_daily_workflow(dataset)
+        seed_demo_quality_cases(dataset)
+        return dataset
 
     admin = _user("DEMO-ADMIN-001")
     recorder = _user("DEMO-REC-001")
@@ -258,7 +261,7 @@ def load_synthetic_demo_data(*, force: bool = False) -> SyntheticDemoDataset:
         checklist_version_id=published.id,
         batch_reference="DEMO-BATCH-0001",
     )
-    return SyntheticDemoDataset(
+    dataset = SyntheticDemoDataset(
         organization=org,
         site=site,
         department=department,
@@ -272,3 +275,143 @@ def load_synthetic_demo_data(*, force: bool = False) -> SyntheticDemoDataset:
         qa=qa,
         created=True,
     )
+    seed_demo_daily_workflow(dataset)
+    seed_demo_quality_cases(dataset)
+    return dataset
+
+
+def _demo_answers_for_task(task: ChecklistTask) -> dict[tuple[object, int], str]:
+    from apps.checklists.models import ChecklistItem, ChecklistResponseType
+
+    answers: dict[tuple[object, int], str] = {}
+    for item in ChecklistItem.objects.filter(section__version=task.checklist_version):
+        if item.response_type == ChecklistResponseType.YES_NO:
+            answers[(item.id, 1)] = "YES"
+        elif item.response_type == ChecklistResponseType.NUMBER:
+            answers[(item.id, 1)] = "-16.5"
+        elif item.code == "VEHICLE":
+            answers[(item.id, 1)] = "DEMO-TRUCK-001"
+        elif item.code == "GIN":
+            answers[(item.id, 1)] = "DEMO-GIN-001"
+        elif item.code == "TIME":
+            answers[(item.id, 1)] = "08:00"
+        elif item.code in {"CORR", "CA", "REMARKS"}:
+            answers[(item.id, 1)] = "DEMO placeholder — not a company reading"
+    return answers
+
+
+def seed_demo_daily_workflow(dataset: SyntheticDemoDataset) -> None:
+    """Idempotent DEMO submitted records for all four SOURCE RECEIVED forms."""
+    if not demo_environment_allowed():
+        return
+    from apps.recording.models import ChecklistRecordStatus
+    from apps.recording.services import (
+        save_checklist_draft_responses,
+        start_checklist_recording,
+        submit_checklist_record,
+    )
+    from apps.scheduling.services import ensure_controlled_daily_task
+
+    record_date = datetime.date(2026, 8, 1)
+    specs: tuple[tuple[str, str], ...] = (
+        ("NMS/PPU/CL/24", ""),
+        ("NMS/PPU/CL/39", "CR1"),
+        ("NMS/PPU/CL/30", ""),
+        ("NMS/PPU/CL/18", ""),
+    )
+    for form_code, room_key in specs:
+        try:
+            task = ensure_controlled_daily_task(
+                actor=dataset.recorder,
+                organization_id=dataset.organization.id,
+                form_code=form_code,
+                record_date=record_date,
+                room_key=room_key,
+            )
+        except ValidationError:
+            continue
+        record = start_checklist_recording(actor=dataset.recorder, task_id=task.id)
+        if record.status == ChecklistRecordStatus.SUBMITTED:
+            continue
+        save_checklist_draft_responses(
+            actor=dataset.recorder,
+            record_id=record.id,
+            answers=_demo_answers_for_task(task),
+        )
+        submit_checklist_record(actor=dataset.recorder, record_id=record.id)
+
+
+def seed_demo_quality_cases(dataset: SyntheticDemoDataset) -> None:
+    """Idempotent DEMO NCR-adjacent quality cases for local workspace queues."""
+    if not demo_environment_allowed():
+        return
+    from apps.access_control.services import organization_ids_with_permission
+    from apps.customer_complaints.models import CustomerComplaintCase
+    from apps.customer_complaints.services import VIEW as VIEW_COMPLAINT
+    from apps.customer_complaints.services import create_complaint_case
+    from apps.dispatch.models import DispatchQualityRecord
+    from apps.dispatch.services import VIEW_DISPATCH, create_dispatch_quality_record
+    from apps.quality_quarantine.models import QualityQuarantineRecord, QuarantineSource
+    from apps.quality_quarantine.services import VIEW as VIEW_QUARANTINE
+    from apps.quality_quarantine.services import open_quarantine_record
+
+    org = dataset.organization
+    admin = dataset.admin
+    if org.id not in organization_ids_with_permission(admin, VIEW_DISPATCH):
+        _grant(
+            user=admin,
+            org=org,
+            model=DispatchQualityRecord,
+            codenames=("view_dispatchqualityrecord", "create_dispatchqualityrecord"),
+        )
+    if org.id not in organization_ids_with_permission(admin, VIEW_COMPLAINT):
+        _grant(
+            user=admin,
+            org=org,
+            model=CustomerComplaintCase,
+            codenames=("view_customercomplaint", "create_customercomplaint"),
+        )
+    if org.id not in organization_ids_with_permission(admin, VIEW_QUARANTINE):
+        _grant(
+            user=admin,
+            org=org,
+            model=QualityQuarantineRecord,
+            codenames=("view_qualityquarantine", "manage_qualityquarantine"),
+        )
+    if not DispatchQualityRecord.objects.filter(organization=org, code="DEMO-DSP-001").exists():
+        try:
+            create_dispatch_quality_record(
+                actor=admin,
+                organization=org,
+                code="DEMO-DSP-001",
+                vehicle_reference="DEMO-TRUCK-001",
+                batch_reference="DEMO-BATCH-0001",
+                notes="DEMO dispatch quality placeholder — not a company load.",
+            )
+        except (ValidationError, PermissionDenied):
+            pass
+    if not CustomerComplaintCase.objects.filter(organization=org, code="DEMO-CMP-001").exists():
+        try:
+            create_complaint_case(
+                actor=admin,
+                organization=org,
+                code="DEMO-CMP-001",
+                description="DEMO complaint placeholder — not a customer record.",
+                product_reference="DEMOPROD1",
+                batch_reference="DEMO-BATCH-0001",
+            )
+        except (ValidationError, PermissionDenied):
+            pass
+    if not QualityQuarantineRecord.objects.filter(organization=org, code="DEMO-QRT-001").exists():
+        try:
+            open_quarantine_record(
+                actor=admin,
+                organization=org,
+                code="DEMO-QRT-001",
+                batch_reference="DEMO-BATCH-0001",
+                source=QuarantineSource.MANUAL,
+                source_reference="DEMO",
+                reason_reference="DEMO quality-state placeholder — not an ERP hold.",
+            )
+        except (ValidationError, PermissionDenied):
+            pass

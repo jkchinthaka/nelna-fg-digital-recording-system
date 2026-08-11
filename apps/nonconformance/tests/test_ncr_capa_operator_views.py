@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import uuid
+from typing import Any
 
 import pytest
 from django.contrib.auth.models import Permission
@@ -11,12 +12,14 @@ from django.test import Client
 from django.urls import reverse
 from tests.factories import grant_role, make_role_with_permission
 
+from apps.accounts.models import User
 from apps.capa.models import CorrectiveAction
 from apps.nonconformance.models import NonConformanceRecord
+from apps.organizations.models import Organization
 from apps.recording.synthetic_demo import load_synthetic_demo_data
 
 
-def _grant(user, org, model, *codes: str) -> None:
+def _grant(user: User, org: Organization, model: type[Any], *codes: str) -> None:
     first = Permission.objects.get_or_create(
         content_type=ContentType.objects.get_for_model(model),
         codename=codes[0],

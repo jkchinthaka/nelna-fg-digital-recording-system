@@ -269,7 +269,7 @@ def display_response(response: ChecklistSubmissionResponse | ChecklistResponse) 
         return str(response.text_value)
     option = getattr(response, "selected_option", None)
     if option is not None:
-        return option.label
+        return str(option.label)
     return ""
 
 

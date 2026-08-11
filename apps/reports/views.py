@@ -167,7 +167,7 @@ def report_run_export_csv(request: HttpRequest, report_run_id: uuid.UUID) -> Htt
 def quality_trends(request: HttpRequest) -> HttpResponse:
     from datetime import date
 
-    from apps.reports.trends import quality_trend_counts
+    from apps.reports.trends import measurement_series_stats, quality_trend_counts
 
     actor = cast(User, request.user)
     date_from = request.GET.get("date_from") or ""
@@ -183,5 +183,9 @@ def quality_trends(request: HttpRequest) -> HttpResponse:
             "counts": counts,
             "date_from": date_from,
             "date_to": date_to,
+            "series_stats": [
+                measurement_series_stats(actor=actor, form_code="NMS/PPU/CL/39"),
+                measurement_series_stats(actor=actor, form_code="NMS/PPU/CL/18"),
+            ],
         },
     )

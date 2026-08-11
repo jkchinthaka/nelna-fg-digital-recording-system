@@ -6,7 +6,35 @@ import uuid
 
 from django.db.models import QuerySet
 
+from apps.access_control.services import organization_ids_with_permission
+from apps.accounts.models import User
+from apps.organizations.models import Organization
 from apps.quality_quarantine.models import QualityQuarantineEvent, QualityQuarantineRecord
+from apps.quality_quarantine.services import VIEW
+
+
+def actor_can_access_quarantine_module(actor: User | None) -> bool:
+    if actor is None or not getattr(actor, "is_authenticated", False):
+        return False
+    return bool(organization_ids_with_permission(actor, VIEW))
+
+
+def organizations_for_quarantine_view(actor: User) -> QuerySet[Organization]:
+    org_ids = organization_ids_with_permission(actor, VIEW)
+    if not org_ids:
+        return Organization.objects.none()
+    return Organization.objects.filter(pk__in=org_ids, is_active=True).order_by("code")
+
+
+def list_quarantines_for_actor(*, actor: User) -> QuerySet[QualityQuarantineRecord]:
+    org_ids = organization_ids_with_permission(actor, VIEW)
+    if not org_ids:
+        return QualityQuarantineRecord.objects.none()
+    return (
+        QualityQuarantineRecord.objects.filter(organization_id__in=org_ids)
+        .select_related("opened_by", "owner", "organization")
+        .order_by("-opened_at")
+    )
 
 
 def get_quarantine_record(

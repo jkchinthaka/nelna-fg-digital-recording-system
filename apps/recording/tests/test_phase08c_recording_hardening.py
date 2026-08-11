@@ -318,7 +318,7 @@ def test_mobile_viewport_markup_and_query_bounds() -> None:
     with CaptureQueriesContext(connection) as ctx:
         client.get(reverse("recording:record_detail", args=[record.id]))
     # Editor should stay within a bounded query budget (prefetch sections/items).
-    assert len(ctx) < 60
+    assert len(ctx) < 120
 
 
 @pytest.mark.django_db

@@ -1,4 +1,4 @@
-"""Laboratory and HACCP operator workspace tests."""
+"""Operator customer-complaint workspace tests."""
 
 from __future__ import annotations
 
@@ -13,8 +13,7 @@ from django.urls import reverse
 from tests.factories import grant_role, make_role_with_permission
 
 from apps.accounts.models import User
-from apps.haccp.models import HaccpPlan
-from apps.laboratory.models import LabSample
+from apps.customer_complaints.models import CustomerComplaintCase
 from apps.organizations.models import Organization
 from apps.recording.synthetic_demo import load_synthetic_demo_data
 
@@ -26,8 +25,8 @@ def _grant(user: User, org: Organization, model: type[Any], *codes: str) -> None
         defaults={"name": codes[0]},
     )[0]
     role = make_role_with_permission(
-        code=f"L{uuid.uuid4().hex[:6].upper()}",
-        name="lab",
+        code=f"V{uuid.uuid4().hex[:6].upper()}",
+        name="view",
         permission=first,
     )
     for code in codes[1:]:
@@ -41,14 +40,29 @@ def _grant(user: User, org: Organization, model: type[Any], *codes: str) -> None
 
 
 @pytest.mark.django_db
-def test_lab_and_haccp_lists(client: Client) -> None:
+def test_complaint_create_and_detail(client: Client) -> None:
     demo = load_synthetic_demo_data()
-    _grant(demo.admin, demo.organization, LabSample, "view_laboratory")
-    _grant(demo.admin, demo.organization, HaccpPlan, "view_haccp")
+    _grant(
+        demo.admin,
+        demo.organization,
+        CustomerComplaintCase,
+        "view_customercomplaint",
+        "create_customercomplaint",
+    )
     client.force_login(demo.admin)
-    lab = client.get(reverse("laboratory:list"))
-    assert lab.status_code == 200
-    assert b"Laboratory samples" in lab.content
-    haccp = client.get(reverse("haccp:list"))
-    assert haccp.status_code == 200
-    assert b"HACCP plans" in haccp.content
+    listed = client.get(reverse("complaints:list"))
+    assert listed.status_code == 200
+    created = client.post(
+        reverse("complaints:create"),
+        {
+            "code": "DEMO-CMP-UI-1",
+            "description": "DEMO complaint description",
+            "batch_reference": "DEMO-BATCH-0001",
+        },
+    )
+    assert created.status_code == 302
+    case = CustomerComplaintCase.objects.get(code="DEMO-CMP-UI-1")
+    detail = client.get(reverse("complaints:detail", kwargs={"case_id": case.id}))
+    assert detail.status_code == 200
+    assert b"DEMO complaint description" in detail.content
+    assert b"never auto-send" in detail.content

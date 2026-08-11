@@ -74,5 +74,21 @@
         <p class="stat-card__value">{{ counts.qa_reject }}</p>
       </li>
     </ul>
+    <h2>Stored measurement series</h2>
+    <p class="mgmt-page__lead">
+      COPQ prices, yield percentages, and full OEE are not calculated. Cost rates and
+      Availability/Performance sources are BUSINESS CONFIGURATION REQUIRED. The
+      quality component below uses stored readings only and is not full OEE.
+    </p>
+    {% for series in series_stats %}
+      <article class="work-card">
+        <h3>{{ series.form_code }}</h3>
+        <p>
+          Count {{ series.count }} · Mean {{ series.mean|default:"—" }} · Min {{ series.minimum|default:"—" }} · Max {{ series.maximum|default:"—" }} · Stddev {{ series.stddev|default:"—" }}
+        </p>
+        <p>Quality component {{ series.quality_component|default:"—" }}</p>
+        <p class="form-help">{{ series.note }}</p>
+      </article>
+    {% endfor %}
   </section>
 {% endblock %}
