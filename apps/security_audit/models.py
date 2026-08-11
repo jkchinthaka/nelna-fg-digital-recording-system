@@ -1093,6 +1093,42 @@ class SecurityAuditEvent(models.Model):
             "DOCUMENT_VERSION_LINKED",
             "Quality record linked to exact document version",
         )
+        CHANGE_REQUESTED = (
+            "CHANGE_REQUESTED",
+            "Quality change request created",
+        )
+        CHANGE_ASSESSMENT_STARTED = (
+            "CHANGE_ASSESSMENT_STARTED",
+            "Quality change moved to assessment",
+        )
+        CHANGE_IMPACT_RECORDED = (
+            "CHANGE_IMPACT_RECORDED",
+            "Quality change impact assessment recorded",
+        )
+        CHANGE_AFFECTED_LINKED = (
+            "CHANGE_AFFECTED_LINKED",
+            "Affected area linked to quality change",
+        )
+        CHANGE_APPROVED = (
+            "CHANGE_APPROVED",
+            "Quality change approved",
+        )
+        CHANGE_IMPLEMENTATION_STARTED = (
+            "CHANGE_IMPLEMENTATION_STARTED",
+            "Approved quality change moved to implementation",
+        )
+        CHANGE_IMPLEMENTATION_LINKED = (
+            "CHANGE_IMPLEMENTATION_LINKED",
+            "Deployed configuration/version linked (not approval)",
+        )
+        CHANGE_VERIFICATION_STARTED = (
+            "CHANGE_VERIFICATION_STARTED",
+            "Quality change submitted for verification",
+        )
+        CHANGE_CLOSED = (
+            "CHANGE_CLOSED",
+            "Quality change verified and closed",
+        )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 

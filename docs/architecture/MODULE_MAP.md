@@ -55,6 +55,7 @@ Do **not** rename FG master data, checklist, recording, review, or evidence work
 | quality_quarantine | Application-side quality quarantine (41) | QualityQuarantineRecord; QualityQuarantineEvent; QualityQuarantinePolicy | open/manage/release local quality state; source links; append-only events; ERP status tracking | ERP is inventory ledger; no locations/bins/conversions; quantity/release/outbound gated; APR-066 EVIDENCE REQUIRED | **41** |
 | rework | Controlled rework management (42) | ReworkCase; ReworkCaseEvent; ReworkPolicyStub | create/authorize/execute rework; genealogy; new reinspection; ERP prepare-only | REJECT != auto rework; original QA/HOLD/NCR immutable; source RELEASE never reused; ERP dual-gate OFF; APR-067 EVIDENCE REQUIRED | **42** |
 | document_control | Quality document control (43) | QualityDocument; QualityDocumentVersion; QualityDocumentEvent; QualityDocumentAcknowledgement; QualityRecordDocumentLink | versioned QMS documents; effective lookup; historical record links; Phase 11 files; optional acknowledgement | No invented Nelna codes; approved/effective immutable; ack ≠ competency; operators see effective only; APR-068 EVIDENCE REQUIRED | **43** |
+| change_control | Quality change control (44) | QualityChangeRequest; QualityChangeImpactAssessment; QualityChangeAffectedLink; QualityChangeImplementationLink; QualityChangeEvent | formal change records; impact assessment; affected-area links; implementation citation; verify/close | Engineering ≠ approval; requester cannot self-approve; closed immutable; no invented SOP; APR-069 EVIDENCE REQUIRED | **44** |
 
 ## Phase mapping reminder
 
@@ -69,6 +70,7 @@ Do **not** rename FG master data, checklist, recording, review, or evidence work
 | 41 | `quality_quarantine` application quality-state foundation; release and ERP outbound dual-gates OFF |
 | 42 | `rework` controlled rework foundation; genealogy; new reinspection; ERP dual-gate OFF |
 | 43 | `document_control` versioned QMS documents; immutability; effective lookup; historical links; Phase 11 files |
+| 44 | `change_control` formal quality/process/configuration change records; impact; implementation citation; no auto-approval |
 
 ## References
 

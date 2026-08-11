@@ -86,6 +86,7 @@ INSTALLED_APPS = [
     "apps.quality_quarantine",
     "apps.rework",
     "apps.document_control",
+    "apps.change_control",
     "apps.nonconformance",
     "apps.capa",
     "apps.dispatch",

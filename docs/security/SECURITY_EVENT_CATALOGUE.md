@@ -462,3 +462,17 @@ Retention period is **deferred** â€” not decided in Phase 03. Events are ap
 | DOCUMENT_ACKNOWLEDGED | Optional read/ack (not competency) |
 | DOCUMENT_VERSION_LINKED | Quality record linked to an exact version |
 
+### Quality Change Control (Phase 44)
+
+| Event | Meaning |
+| --- | --- |
+| CHANGE_REQUESTED | Quality change request created |
+| CHANGE_ASSESSMENT_STARTED | Change moved to assessment |
+| CHANGE_IMPACT_RECORDED | Impact assessment recorded |
+| CHANGE_AFFECTED_LINKED | Affected area linked |
+| CHANGE_APPROVED | Change approved (not engineering completion) |
+| CHANGE_IMPLEMENTATION_STARTED | Approved change moved to implementation |
+| CHANGE_IMPLEMENTATION_LINKED | Deployed config/version linked (not approval) |
+| CHANGE_VERIFICATION_STARTED | Submitted for verification |
+| CHANGE_CLOSED | Verified and closed |
+

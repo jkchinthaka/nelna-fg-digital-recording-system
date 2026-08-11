@@ -578,3 +578,14 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Branch naming | `feature/phase-43-document-control` |
 | Exit criteria | Org-scoped documents; approved/effective versions immutable; operators see effective only; quality records can cite exact version; ack ≠ competency |
 | Status | **Technical foundation delivered** on `main` — document-control SOP remains **EVIDENCE REQUIRED** |
+
+## Phase 44 — Quality Change Control
+
+| Field | Content |
+| --- | --- |
+| Objective | Formal change-control records for significant quality/process/configuration changes |
+| Outputs | `apps.change_control`; ADR-055; impact assessment; affected links; implementation citation; APR-069 |
+| Approval gate | Change SOP, numbering, risk scoring, and approval/verification SoD |
+| Branch naming | `feature/phase-44-change-control` |
+| Exit criteria | Org-scoped requests; impact before approval; engineering ≠ approval; closed historically immutable |
+| Status | **Technical foundation delivered** on `main` — change-control SOP remains **EVIDENCE REQUIRED** |

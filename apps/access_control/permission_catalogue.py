@@ -45,6 +45,7 @@ class CapabilityBucket(StrEnum):
     QUALITY_QUARANTINE = "quality_quarantine"
     REWORK = "rework"
     DOCUMENT_CONTROL = "document_control"
+    CHANGE_CONTROL = "change_control"
     EVIDENCE = "evidence"
     MASTER_DATA = "master_data"
     CHECKLIST_PUBLISH = "checklist_publish"
@@ -1108,6 +1109,50 @@ PERMISSION_CATALOGUE: Final[tuple[PermissionCatalogueEntry, ...]] = (
         bucket=CapabilityBucket.DOCUMENT_CONTROL,
         scopes=(ObjectScope.ORGANIZATION,),
         description="Link a quality record to an exact approved/effective/retired version.",
+    ),
+    PermissionCatalogueEntry(
+        key="view_qualitychange",
+        permission="change_control.view_qualitychange",
+        bucket=CapabilityBucket.CHANGE_CONTROL,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="View quality change requests and lifecycle history.",
+    ),
+    PermissionCatalogueEntry(
+        key="create_qualitychange",
+        permission="change_control.create_qualitychange",
+        bucket=CapabilityBucket.CHANGE_CONTROL,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Create change requests and link affected areas before approval.",
+    ),
+    PermissionCatalogueEntry(
+        key="assess_qualitychange",
+        permission="change_control.assess_qualitychange",
+        bucket=CapabilityBucket.CHANGE_CONTROL,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Record quality, food-safety, technical, training, and data-migration impact.",
+    ),
+    PermissionCatalogueEntry(
+        key="approve_qualitychange",
+        permission="change_control.approve_qualitychange",
+        bucket=CapabilityBucket.CHANGE_CONTROL,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Approve a change after impact assessment. Requester cannot self-approve.",
+        notes="Engineering completion is never approval; APR-069 EVIDENCE REQUIRED.",
+    ),
+    PermissionCatalogueEntry(
+        key="implement_qualitychange",
+        permission="change_control.implement_qualitychange",
+        bucket=CapabilityBucket.CHANGE_CONTROL,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Record deployed configuration/version links after approval.",
+        notes="Implementation links do not constitute business approval.",
+    ),
+    PermissionCatalogueEntry(
+        key="verify_qualitychange",
+        permission="change_control.verify_qualitychange",
+        bucket=CapabilityBucket.CHANGE_CONTROL,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Verify and close a change. Approver cannot also close.",
     ),
     PermissionCatalogueEntry(
         key="manage_supplierquality_qa",

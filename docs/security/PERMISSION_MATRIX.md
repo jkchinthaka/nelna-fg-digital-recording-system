@@ -318,3 +318,16 @@ ERP quantity/status updates remain dual-gated OFF. Owner/SoD mapping remains APR
 
 Document numbering and role mapping remain APR-068 EVIDENCE REQUIRED.
 
+### Quality Change Control (Phase 44)
+
+| Key | Permission | Notes |
+| --- | --- | --- |
+| view_qualitychange | `change_control.view_qualitychange` | View organization-scoped change requests and history |
+| create_qualitychange | `change_control.create_qualitychange` | Create requests and link affected areas before approval |
+| assess_qualitychange | `change_control.assess_qualitychange` | Record impact assessment |
+| approve_qualitychange | `change_control.approve_qualitychange` | Separate from create; requester cannot self-approve |
+| implement_qualitychange | `change_control.implement_qualitychange` | Link deployed config/version; not approval |
+| verify_qualitychange | `change_control.verify_qualitychange` | Verify and close; approver cannot also close |
+
+Change SOP and role mapping remain APR-069 EVIDENCE REQUIRED.
+
