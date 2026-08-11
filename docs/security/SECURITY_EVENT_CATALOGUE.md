@@ -433,3 +433,17 @@ Retention period is **deferred** â€” not decided in Phase 03. Events are ap
 | QUARANTINE_ERP_SYNC_BLOCKED | ERP outbound blocked / refused |
 | QUARANTINE_POLICY_UPSERTED | Quarantine policy stub upserted |
 
+### Controlled Rework (Phase 42)
+
+| Event | Meaning |
+| --- | --- |
+| REWORK_CASE_CREATED | Rework case created (explicit; not from REJECT) |
+| REWORK_CASE_AUTHORIZED | Rework case authorized |
+| REWORK_CASE_STARTED | Rework execution started |
+| REWORK_CASE_COMPLETED | Rework completed with result refs |
+| REWORK_CASE_CANCELLED | Rework case cancelled |
+| REWORK_GENEALOGY_RECORDED | Source/result genealogy recorded |
+| REWORK_REINSPECTION_OPENED | New inspection on resulting batch |
+| REWORK_POLICY_UPSERTED | Rework policy stub upserted |
+| REWORK_ERP_STOCK_MOVEMENT_BLOCKED | ERP quantity/status update blocked |
+

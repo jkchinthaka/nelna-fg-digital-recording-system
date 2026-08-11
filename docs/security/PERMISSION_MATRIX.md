@@ -292,3 +292,16 @@ AI default OFF. AI must not execute RELEASE/HOLD/REJECT, publish, spec/role chan
 | manage_quarantinepolicystub | `quality_quarantine.manage_quarantinepolicystub` | Manage quantity and ERP synchronization policy stubs; does not approve live ERP |
 
 ERP remains the inventory ledger. No role is mapped to a Nelna job title by this technical foundation; owner and SoD mapping remain APR-066 EVIDENCE REQUIRED.
+
+### Controlled Rework (Phase 42)
+
+| Key | Permission | Notes |
+| --- | --- | --- |
+| view_reworkcase | `rework.view_reworkcase` | View organization-scoped rework cases and history |
+| create_reworkcase | `rework.create_reworkcase` | Create cases; REJECT does not auto-create |
+| authorize_reworkcase | `rework.authorize_reworkcase` | Separate authorization grant |
+| execute_reworkcase | `rework.execute_reworkcase` | Start/complete, genealogy, reinspection |
+| manage_reworkpolicystub | `rework.manage_reworkpolicystub` | Org ERP-stock gate stub; does not approve live ERP |
+
+ERP quantity/status updates remain dual-gated OFF. Owner/SoD mapping remains APR-067 EVIDENCE REQUIRED.
+

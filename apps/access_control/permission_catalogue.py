@@ -43,6 +43,7 @@ class CapabilityBucket(StrEnum):
     CUSTOMER_COMPLAINTS = "customer_complaints"
     PRODUCT_RETURNS = "product_returns"
     QUALITY_QUARANTINE = "quality_quarantine"
+    REWORK = "rework"
     EVIDENCE = "evidence"
     MASTER_DATA = "master_data"
     CHECKLIST_PUBLISH = "checklist_publish"
@@ -1017,7 +1018,49 @@ PERMISSION_CATALOGUE: Final[tuple[PermissionCatalogueEntry, ...]] = (
         bucket=CapabilityBucket.QUALITY_QUARANTINE,
         scopes=(ObjectScope.ORGANIZATION,),
         description="Manage quantity-recording and ERP-sync policy stubs.",
-        notes="ERP sync also requires QUALITY_QUARANTINE_ERP_SYNC_APPROVED; APR-066 EVIDENCE REQUIRED.",
+        notes=(
+            "ERP sync also requires QUALITY_QUARANTINE_ERP_SYNC_APPROVED; "
+            "APR-066 EVIDENCE REQUIRED."
+        ),
+    ),
+    PermissionCatalogueEntry(
+        key="view_reworkcase",
+        permission="rework.view_reworkcase",
+        bucket=CapabilityBucket.REWORK,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="View controlled rework cases and append-only history.",
+    ),
+    PermissionCatalogueEntry(
+        key="create_reworkcase",
+        permission="rework.create_reworkcase",
+        bucket=CapabilityBucket.REWORK,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Create rework cases. REJECT does not auto-create rework.",
+        notes="Explicit create permission required; APR-067 EVIDENCE REQUIRED.",
+    ),
+    PermissionCatalogueEntry(
+        key="authorize_reworkcase",
+        permission="rework.authorize_reworkcase",
+        bucket=CapabilityBucket.REWORK,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Authorize a draft rework case before execution.",
+        notes="Create and authorize are separate grants.",
+    ),
+    PermissionCatalogueEntry(
+        key="execute_reworkcase",
+        permission="rework.execute_reworkcase",
+        bucket=CapabilityBucket.REWORK,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Start/complete rework, record genealogy, and open reinspection.",
+        notes="ERP quantity/status still requires REWORK_ERP_STOCK_MOVEMENT_APPROVED.",
+    ),
+    PermissionCatalogueEntry(
+        key="manage_reworkpolicystub",
+        permission="rework.manage_reworkpolicystub",
+        bucket=CapabilityBucket.REWORK,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Manage rework policy stubs including the org ERP-stock gate.",
+        notes="Dual-gated with REWORK_ERP_STOCK_MOVEMENT_APPROVED (default OFF); APR-067.",
     ),
     PermissionCatalogueEntry(
         key="manage_supplierquality_qa",

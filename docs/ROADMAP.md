@@ -555,4 +555,15 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Approval gate | Quarantine/release procedure, role mapping, quantity semantics, and ERP adapter evidence |
 | Branch naming | `feature/phase-41-quality-quarantine` |
 | Exit criteria | Cases are organization-scoped; multiple cases per batch are allowed; history is append-only; release requires scoped permission plus runtime approval; ERP outbound remains fail-closed; no invented operational values |
-| Status | **Technical foundation delivered** ? business procedure, role mapping, and ERP contract remain **EVIDENCE REQUIRED** |
+| Status | **Technical foundation delivered** — business procedure, role mapping, and ERP contract remain **EVIDENCE REQUIRED** |
+
+## Phase 42 — Controlled Rework Management
+
+| Field | Content |
+| --- | --- |
+| Objective | Controlled rework with source/result genealogy; REJECT never auto-creates rework |
+| Outputs | `apps.rework`; ADR-053; create/authorize/execute; genealogy; new reinspection; ERP stock dual-gate OFF; APR-067 |
+| Approval gate | Rework authorization SoD, quantity semantics, and ERP adapter evidence |
+| Branch naming | `feature/phase-42-controlled-rework` |
+| Exit criteria | Cases are org-scoped; create/authorize are separate grants; genealogy preserves source/result/remaining qty; original QA/HOLD/NCR unchanged; reinspection targets resulting batch; ERP outbound remains fail-closed |
+| Status | **Technical foundation delivered** on `main` — rework SOP and ERP enablement remain **EVIDENCE REQUIRED** |

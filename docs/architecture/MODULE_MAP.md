@@ -14,7 +14,6 @@ Do **not** rename FG master data, checklist, recording, review, or evidence work
 | organizations | Organization / site / department scope hierarchy; configurable unseeded Shift (04A) + management UI (04B) + audited lifecycle/import (04C) | Organization, Site, Department, Shift | Hierarchy + Shift create/update/activate/deactivate services; controlled hierarchy import; scoped selectors; Shift management views | Must not invent or seed Nelna org/site/dept/shift business values; real catalogue gated by ASM-004/005/006 | **03 complete** + **04A/04B/04C technical** (real values pending) |
 | access_control | Roles, scoped assignments, RoleTemplate governance, authorization API | Role, RoleTemplate, ScopedRoleAssignment | Permission checks; governance services; decorators/mixins; permission catalogue | Must not seed business roles/templates as OWNER_APPROVED without APR evidence; SoD not invented | **03 complete** + **03C technical** (business mapping pending) |
 | security_audit | Append-oriented auth/RBAC/Shift/Product/Checklist/Task security events | SecurityAuditEvent | `record_event` only; no secrets | Must not store credentials | **03+** |
-| feature_flags | Governed feature flags for staged optional modules (Phase 90) | FeatureFlag | evaluate/upsert; never bypass RBAC | Must not short-circuit permissions; risky keys default OFF | **90** |
 | master_data | Configurable unseeded FG Product (05A–05C); versioned ProductSpecification (06O); other masters only when approved | FGProduct; ProductSpecification / SpecificationVersion / SpecificationParameter | Product CRUD/import; versioned specs (approve/retire/clone); optional checklist SPECIFICATION_PARAMETER pin | Must not invent catalogues or limits (APR-006/ASM-001); MASTER-001 unresolved | **05A/05B/05C + 06O technical** (limits pending evidence) |
 | instruments | Equipment / calibration (05D) + measurement device traceability (25) | Equipment; CalibrationRecord; device_traceability | create/update/activate/deactivate; calibration create; fitness; eligibility; OFF/WARN/BLOCK (default OFF); frozen measurement snapshot | Must not invent calibration intervals; enforcement default OFF; no seeded assets; device fitness ≠ QA disposition | **05D / 25** |
 | training | Training completion gates as approved | TrainingRecord + enforcement policy mode | Currency labels + future WARN/BLOCK modes (default OFF) | Must not invent training matrices | **05E technical foundation** (unseeded) |
@@ -54,6 +53,7 @@ Do **not** rename FG master data, checklist, recording, review, or evidence work
 | customer_complaints | Customer quality complaints (39) | CustomerComplaintCase; batch trace; evidence/investigation links; communications; category config; policy | create/manage/close; batch-trace; RCA/NCR/CAPA links; privacy redaction | No invented taxonomy; ERP customer SoR; no auto-send; sensitive reveal restricted | **39** |
 | product_returns | Returned product quality (40) | ReturnQualityRecord; ReturnQualityPolicy; ReturnQualityTimelineEntry | create/manage/inspect/disposition local return records; checklist inspection hook; prepare-only ERP stock boundary | No invented return taxonomies or quarantine rules; local RELEASE != ERP saleable; ERP stock movement dual-gate OFF by default; no invented ERP endpoints | **40** |
 | quality_quarantine | Application-side quality quarantine (41) | QualityQuarantineRecord; QualityQuarantineEvent; QualityQuarantinePolicy | open/manage/release local quality state; source links; append-only events; ERP status tracking | ERP is inventory ledger; no locations/bins/conversions; quantity/release/outbound gated; APR-066 EVIDENCE REQUIRED | **41** |
+| rework | Controlled rework management (42) | ReworkCase; ReworkCaseEvent; ReworkPolicyStub | create/authorize/execute rework; genealogy; new reinspection; ERP prepare-only | REJECT != auto rework; original QA/HOLD/NCR immutable; source RELEASE never reused; ERP dual-gate OFF; APR-067 EVIDENCE REQUIRED | **42** |
 
 ## Phase mapping reminder
 
@@ -66,6 +66,7 @@ Do **not** rename FG master data, checklist, recording, review, or evidence work
 | 10 | **10A** QA disposition; **10B** derived workflow lifecycle (ADR-022; no duplicated status) |
 | 40 | `product_returns` returned-product quality foundation; quarantine, inspection, local disposition, ERP dual-gate OFF |
 | 41 | `quality_quarantine` application quality-state foundation; release and ERP outbound dual-gates OFF |
+| 42 | `rework` controlled rework foundation; genealogy; new reinspection; ERP dual-gate OFF |
 
 ## References
 

@@ -84,6 +84,7 @@ INSTALLED_APPS = [
     "apps.customer_complaints",
     "apps.product_returns",
     "apps.quality_quarantine",
+    "apps.rework",
     "apps.nonconformance",
     "apps.capa",
     "apps.dispatch",
@@ -361,6 +362,11 @@ QUALITY_QUARANTINE_RELEASE_APPROVED = env.bool(
 )
 QUALITY_QUARANTINE_ERP_SYNC_APPROVED = env.bool(
     "QUALITY_QUARANTINE_ERP_SYNC_APPROVED",
+    default=False,
+)
+# Phase 42 — rework ERP quantity/status updates remain OFF until company approval.
+REWORK_ERP_STOCK_MOVEMENT_APPROVED = env.bool(
+    "REWORK_ERP_STOCK_MOVEMENT_APPROVED",
     default=False,
 )
 

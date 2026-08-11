@@ -1017,6 +1017,42 @@ class SecurityAuditEvent(models.Model):
             "QUARANTINE_POLICY_UPSERTED",
             "Quality quarantine policy stub upserted",
         )
+        REWORK_CASE_CREATED = (
+            "REWORK_CASE_CREATED",
+            "Controlled rework case created",
+        )
+        REWORK_CASE_AUTHORIZED = (
+            "REWORK_CASE_AUTHORIZED",
+            "Controlled rework case authorized",
+        )
+        REWORK_CASE_STARTED = (
+            "REWORK_CASE_STARTED",
+            "Controlled rework execution started",
+        )
+        REWORK_CASE_COMPLETED = (
+            "REWORK_CASE_COMPLETED",
+            "Controlled rework case completed",
+        )
+        REWORK_CASE_CANCELLED = (
+            "REWORK_CASE_CANCELLED",
+            "Controlled rework case cancelled",
+        )
+        REWORK_GENEALOGY_RECORDED = (
+            "REWORK_GENEALOGY_RECORDED",
+            "Rework source/result genealogy recorded",
+        )
+        REWORK_REINSPECTION_OPENED = (
+            "REWORK_REINSPECTION_OPENED",
+            "New rework reinspection checklist task opened",
+        )
+        REWORK_POLICY_UPSERTED = (
+            "REWORK_POLICY_UPSERTED",
+            "Rework policy stub upserted",
+        )
+        REWORK_ERP_STOCK_MOVEMENT_BLOCKED = (
+            "REWORK_ERP_STOCK_MOVEMENT_BLOCKED",
+            "Rework ERP stock movement blocked by dual-gate",
+        )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
