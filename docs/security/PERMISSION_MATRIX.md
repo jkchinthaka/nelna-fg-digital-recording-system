@@ -344,3 +344,15 @@ Change SOP and role mapping remain APR-069 EVIDENCE REQUIRED.
 
 Audit programme and role mapping remain APR-070 EVIDENCE REQUIRED.
 
+### Compliance Control Mapping (Phase 46)
+
+| Key | Permission | Notes |
+| --- | --- | --- |
+| view_compliancemapping | `compliance_mapping.view_compliancemapping` | Read-only auditor access |
+| manage_compliancesource | `compliance_mapping.manage_compliancesource` | Restricted source/applicability administration |
+| manage_compliancecontrol | `compliance_mapping.manage_compliancecontrol` | Mappings, evidence citations, gaps |
+| verify_compliancecontrol | `compliance_mapping.verify_compliancecontrol` | Verification ≠ COMPLIANT |
+| link_compliance_gap_action | `compliance_mapping.link_compliance_gap_action` | Explicit Risk/Change/NCR/CAPA/Action only |
+
+Official sources and role mapping remain APR-071 EVIDENCE REQUIRED. No ISO/FSSC/HACCP/SLS/legal claim.
+

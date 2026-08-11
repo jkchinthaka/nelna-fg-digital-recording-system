@@ -600,3 +600,14 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Branch naming | `feature/phase-45-quality-audit-management` |
 | Exit criteria | Org-scoped audits; findings do not auto-create CAPA; auditor perms ≠ operational QA; distinct from security_audit |
 | Status | **Technical foundation delivered** on `main` — audit programme remains **EVIDENCE REQUIRED** |
+
+## Phase 46 — Compliance Control Mapping
+
+| Field | Content |
+| --- | --- |
+| Objective | Controlled register mapping system controls to company-applicable sources as evidence support only |
+| Outputs | `apps.compliance_mapping`; ADR-057; source editions; mappings; explicit gap actions; APR-071 |
+| Approval gate | Official sources/editions, applicability decisions, licensed clause text, owner mapping |
+| Branch naming | `feature/phase-46-compliance-control-mapping` |
+| Exit criteria | No certification/legal claims; IMPLEMENTED ≠ COMPLIANT; no seeded applicability; explicit gap follow-up |
+| Status | **Technical foundation delivered** on `main` — company/external evidence remains **EVIDENCE REQUIRED** |

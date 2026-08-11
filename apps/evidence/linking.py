@@ -12,6 +12,7 @@ from apps.access_control.services import Scope, user_has_permission
 from apps.accounts.models import User
 from apps.capa.models import CorrectiveAction
 from apps.changeover.models import ChangeoverRecord, LineClearanceRecord
+from apps.compliance_mapping.models import ComplianceControlMapping
 from apps.customer_complaints.models import CustomerComplaintCase
 from apps.document_control.models import DocumentVersionStatus, QualityDocumentVersion
 from apps.environmental.models import MonitoringReading
@@ -91,6 +92,8 @@ PUBLISH_DOCUMENT = "document_control.publish_qualitydocument"
 VIEW_QUALITY_AUDIT = "quality_audits.view_qualityaudit"
 EXECUTE_QUALITY_AUDIT = "quality_audits.execute_qualityaudit"
 CLOSE_QUALITY_AUDIT = "quality_audits.close_qualityaudit"
+VIEW_COMPLIANCE_MAPPING = "compliance_mapping.view_compliancemapping"
+MANAGE_COMPLIANCE_CONTROL = "compliance_mapping.manage_compliancecontrol"
 
 
 @dataclass(frozen=True, slots=True)
@@ -418,6 +421,20 @@ def resolve_linked_target(*, kind: str, object_id: uuid.UUID) -> LinkedTarget:
             obj=finding,
         )
 
+    if kind == EvidenceLinkedKind.COMPLIANCE_CONTROL_MAPPING:
+        mapping = (
+            ComplianceControlMapping.objects.select_related("edition").filter(pk=object_id).first()
+        )
+        if mapping is None:
+            raise ValidationError({"linked_object_id": "Compliance control mapping not found."})
+        return LinkedTarget(
+            kind=kind,
+            object_id=mapping.id,
+            organization_id=mapping.organization_id,
+            linkage_immutable=mapping.edition.is_locked,
+            obj=mapping,
+        )
+
     raise ValidationError({"linked_kind": "Unsupported linked kind."})
 
 
@@ -695,6 +712,23 @@ def _assert_parent_access(*, actor: User, target: LinkedTarget, for_mutate: bool
             raise ValidationError(
                 {"linked_object_id": "Evidence cannot be attached to a closed or cancelled audit."}
             )
+        return
+
+    if kind == EvidenceLinkedKind.COMPLIANCE_CONTROL_MAPPING:
+        allowed = user_has_permission(actor, VIEW_COMPLIANCE_MAPPING, scope=org_scope)
+        if not allowed:
+            raise PermissionDenied("Permission denied.")
+        if for_mutate:
+            if not user_has_permission(actor, MANAGE_COMPLIANCE_CONTROL, scope=org_scope):
+                raise PermissionDenied("Permission denied.")
+            if target.linkage_immutable:
+                raise ValidationError(
+                    {
+                        "linked_object_id": (
+                            "Evidence cannot be attached to a superseded or withdrawn edition."
+                        )
+                    }
+                )
         return
 
     raise PermissionDenied("Permission denied.")

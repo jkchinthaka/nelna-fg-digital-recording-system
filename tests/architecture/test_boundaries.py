@@ -47,6 +47,7 @@ ALLOWED_APPS = {
     "document_control",
     "change_control",
     "quality_audits",
+    "compliance_mapping",
     "supplier_quality",
     "access_control",
     "security_audit",

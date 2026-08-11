@@ -1181,6 +1181,66 @@ class SecurityAuditEvent(models.Model):
             "QUALITY_AUDIT_FINDING_CODE_UPSERTED",
             "QMS audit finding classification/severity shell upserted",
         )
+        COMPLIANCE_SOURCE_REGISTERED = (
+            "COMPLIANCE_SOURCE_REGISTERED",
+            "Compliance source registered (not a certification claim)",
+        )
+        COMPLIANCE_EDITION_RECORDED = (
+            "COMPLIANCE_EDITION_RECORDED",
+            "Compliance source edition recorded",
+        )
+        COMPLIANCE_APPLICABILITY_UPDATED = (
+            "COMPLIANCE_APPLICABILITY_UPDATED",
+            "Compliance source applicability updated",
+        )
+        COMPLIANCE_EDITION_SUPERSEDED = (
+            "COMPLIANCE_EDITION_SUPERSEDED",
+            "Compliance source edition superseded",
+        )
+        COMPLIANCE_EDITION_WITHDRAWN = (
+            "COMPLIANCE_EDITION_WITHDRAWN",
+            "Compliance source edition withdrawn",
+        )
+        COMPLIANCE_MAPPING_CREATED = (
+            "COMPLIANCE_MAPPING_CREATED",
+            "Compliance control mapping created",
+        )
+        COMPLIANCE_MAPPING_STATUS_CHANGED = (
+            "COMPLIANCE_MAPPING_STATUS_CHANGED",
+            "Compliance mapping status changed",
+        )
+        COMPLIANCE_EVIDENCE_LINKED = (
+            "COMPLIANCE_EVIDENCE_LINKED",
+            "Compliance mapping evidence linked",
+        )
+        COMPLIANCE_GAP_RECORDED = (
+            "COMPLIANCE_GAP_RECORDED",
+            "Compliance mapping gap recorded",
+        )
+        COMPLIANCE_GAP_ACTION_LINKED = (
+            "COMPLIANCE_GAP_ACTION_LINKED",
+            "Compliance gap follow-up linked by explicit action",
+        )
+        COMPLIANCE_MAPPING_VERIFIED = (
+            "COMPLIANCE_MAPPING_VERIFIED",
+            "Compliance mapping verification recorded (not certification)",
+        )
+        COMPLIANCE_SOURCE_REVISED = (
+            "COMPLIANCE_SOURCE_REVISED",
+            "Compliance source edition revised",
+        )
+        COMPLIANCE_APPLICABILITY_SET = (
+            "COMPLIANCE_APPLICABILITY_SET",
+            "Compliance source applicability decision recorded",
+        )
+        COMPLIANCE_GAP_OPENED = (
+            "COMPLIANCE_GAP_OPENED",
+            "Compliance gap opened",
+        )
+        COMPLIANCE_GAP_CLOSED = (
+            "COMPLIANCE_GAP_CLOSED",
+            "Compliance gap closed",
+        )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 

@@ -497,3 +497,21 @@ not the QMS audit records themselves.
 | QUALITY_AUDIT_CANCELLED | QMS audit cancelled |
 | QUALITY_AUDIT_FINDING_CODE_UPSERTED | Classification/severity shell upserted |
 
+### Compliance Control Mapping (Phase 46)
+
+These events are security-log records *about* the mapping module. They are
+not certification, legal-compliance, or QMS quality-audit records.
+
+| Event | Meaning |
+| --- | --- |
+| COMPLIANCE_SOURCE_REGISTERED | Source registered (applicability not assessed) |
+| COMPLIANCE_SOURCE_REVISED | New edition; previous superseded |
+| COMPLIANCE_APPLICABILITY_SET | Applicability decision recorded |
+| COMPLIANCE_MAPPING_CREATED | Control mapping created (not a claim) |
+| COMPLIANCE_MAPPING_STATUS_CHANGED | Mapping status updated |
+| COMPLIANCE_EVIDENCE_LINKED | Evidence citation linked |
+| COMPLIANCE_GAP_OPENED | Gap opened |
+| COMPLIANCE_GAP_ACTION_LINKED | Explicit Risk/Change/NCR/CAPA/Action |
+| COMPLIANCE_MAPPING_VERIFIED | Implemented control verified (not a certificate) |
+| COMPLIANCE_GAP_CLOSED | Gap closed |
+

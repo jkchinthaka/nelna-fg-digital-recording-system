@@ -88,6 +88,7 @@ INSTALLED_APPS = [
     "apps.document_control",
     "apps.change_control",
     "apps.quality_audits",
+    "apps.compliance_mapping",
     "apps.nonconformance",
     "apps.capa",
     "apps.dispatch",

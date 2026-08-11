@@ -57,6 +57,7 @@ Do **not** rename FG master data, checklist, recording, review, or evidence work
 | document_control | Quality document control (43) | QualityDocument; QualityDocumentVersion; QualityDocumentEvent; QualityDocumentAcknowledgement; QualityRecordDocumentLink | versioned QMS documents; effective lookup; historical record links; Phase 11 files; optional acknowledgement | No invented Nelna codes; approved/effective immutable; ack ≠ competency; operators see effective only; APR-068 EVIDENCE REQUIRED | **43** |
 | change_control | Quality change control (44) | QualityChangeRequest; QualityChangeImpactAssessment; QualityChangeAffectedLink; QualityChangeImplementationLink; QualityChangeEvent | formal change records; impact assessment; affected-area links; implementation citation; verify/close | Engineering ≠ approval; requester cannot self-approve; closed immutable; no invented SOP; APR-069 EVIDENCE REQUIRED | **44** |
 | quality_audits | Quality audit management (45) | QualityAudit; QualityAuditFinding; QualityAuditChecklistBinding; QualityAuditFindingCodeConfig; QualityAuditEvent | plan/execute/close QMS audits; findings; explicit NCR/CAPA; audit-only checklist bind; reports | Distinct from security_audit; no invented frequency/severity; findings do not auto-create CAPA; auditor perms ≠ operational QA; APR-070 EVIDENCE REQUIRED | **45** |
+| compliance_mapping | Compliance / control mapping (46) | ComplianceSource; ComplianceSourceEdition; ComplianceControlMapping; ComplianceEvidenceLink; ComplianceGap; ComplianceGapAction; ComplianceMappingEvent | source register; clause→control mapping; evidence citations; gap follow-up | No ISO/FSSC/HACCP/SLS/legal claims; IMPLEMENTED ≠ COMPLIANT; no seeded applicability; explicit gap actions only; APR-071 EVIDENCE REQUIRED | **46** |
 
 ## Phase mapping reminder
 
@@ -73,6 +74,7 @@ Do **not** rename FG master data, checklist, recording, review, or evidence work
 | 43 | `document_control` versioned QMS documents; immutability; effective lookup; historical links; Phase 11 files |
 | 44 | `change_control` formal quality/process/configuration change records; impact; implementation citation; no auto-approval |
 | 45 | `quality_audits` QMS audit planning/execution/findings/follow-up; explicit NCR/CAPA; distinct from security_audit |
+| 46 | `compliance_mapping` controlled source register and clause→system-control evidence mapping; no certification claims |
 
 ## References
 

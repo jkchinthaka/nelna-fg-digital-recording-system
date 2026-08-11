@@ -47,6 +47,7 @@ class CapabilityBucket(StrEnum):
     DOCUMENT_CONTROL = "document_control"
     CHANGE_CONTROL = "change_control"
     QUALITY_AUDITS = "quality_audits"
+    COMPLIANCE_MAPPING = "compliance_mapping"
     EVIDENCE = "evidence"
     MASTER_DATA = "master_data"
     CHECKLIST_PUBLISH = "checklist_publish"
@@ -1198,6 +1199,43 @@ PERMISSION_CATALOGUE: Final[tuple[PermissionCatalogueEntry, ...]] = (
         scopes=(ObjectScope.ORGANIZATION,),
         description="Manage unseeded finding classification/severity code shells.",
         notes="APR-070 EVIDENCE REQUIRED before claiming a company taxonomy.",
+    ),
+    PermissionCatalogueEntry(
+        key="view_compliancemapping",
+        permission="compliance_mapping.view_compliancemapping",
+        bucket=CapabilityBucket.COMPLIANCE_MAPPING,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Read-only view of compliance sources and control mappings.",
+        notes="Auditor read access. Not a certification or legal-compliance claim.",
+    ),
+    PermissionCatalogueEntry(
+        key="manage_compliancesource",
+        permission="compliance_mapping.manage_compliancesource",
+        bucket=CapabilityBucket.COMPLIANCE_MAPPING,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Register and revise compliance sources and applicability decisions.",
+        notes="Restricted administration. Do not seed unsupported applicability.",
+    ),
+    PermissionCatalogueEntry(
+        key="manage_compliancecontrol",
+        permission="compliance_mapping.manage_compliancecontrol",
+        bucket=CapabilityBucket.COMPLIANCE_MAPPING,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Create mappings, evidence citations, and gap records.",
+    ),
+    PermissionCatalogueEntry(
+        key="verify_compliancecontrol",
+        permission="compliance_mapping.verify_compliancecontrol",
+        bucket=CapabilityBucket.COMPLIANCE_MAPPING,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Record verification of an implemented control. Verification is not COMPLIANT.",
+    ),
+    PermissionCatalogueEntry(
+        key="link_compliance_gap_action",
+        permission="compliance_mapping.link_compliance_gap_action",
+        bucket=CapabilityBucket.COMPLIANCE_MAPPING,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Explicitly link gap follow-up (risk/change/NCR/CAPA/action). Never automatic.",
     ),
     PermissionCatalogueEntry(
         key="manage_supplierquality_qa",
