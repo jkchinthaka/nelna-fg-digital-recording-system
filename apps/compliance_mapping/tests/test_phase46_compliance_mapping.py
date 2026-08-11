@@ -461,3 +461,239 @@ def test_status_validation_and_admin_retention() -> None:
         ComplianceSource(
             organization=org, source_code=" ", title="x", kind="NOPE", created_by=admin_user
         ).clean()
+
+
+@pytest.mark.django_db
+def test_withdraw_evidence_resolve_and_gap_guardrails() -> None:
+    from apps.compliance_mapping.selectors import list_mapping_gaps
+    from apps.compliance_mapping.services import (
+        add_source_edition,
+        update_edition_applicability,
+        withdraw_source_edition,
+    )
+
+    org = make_org(code="CM-W")
+    org_b = make_org(code="CM-Z")
+    admin_user = _cm_user(
+        org=org, source=True, control=True, gap=True, ncr=True, capa=True, change=True
+    )
+    stranger = _cm_user(org=org_b, view=True)
+    source, edition = _register(admin_user, org, code="SYN-POL-W01")
+    with pytest.raises(ValidationError, match="Unknown applicability"):
+        register_compliance_source(
+            actor=admin_user,
+            organization_id=org.id,
+            source_code="SYN-POL-W02",
+            title="Bad applicability",
+            kind=ComplianceSourceKind.LEGAL_REGULATORY,
+            version_edition="v1",
+            applicability_status="CERTIFIED",
+        )
+    extra = add_source_edition(
+        actor=admin_user,
+        source_id=source.id,
+        version_edition="v1-alt",
+        official_source_citation="Owner-cited alternate edition.",
+    )
+    with pytest.raises(ValidationError, match="Unknown applicability"):
+        add_source_edition(
+            actor=admin_user,
+            source_id=source.id,
+            version_edition="v9",
+            applicability_status="CERTIFIED",
+        )
+    update_edition_applicability(
+        actor=admin_user,
+        edition_id=extra.id,
+        applicability_status=ApplicabilityStatus.APPLICABILITY_PENDING,
+        evidence_reference="APR-071",
+        last_reviewed_on=None,
+    )
+    with pytest.raises(ValidationError, match="Unknown applicability"):
+        update_edition_applicability(
+            actor=admin_user, edition_id=extra.id, applicability_status="CERTIFIED"
+        )
+    mapping = create_control_mapping(
+        actor=admin_user,
+        edition_id=edition.id,
+        clause_reference="W-1",
+        system_control_kind=SystemControlKind.BACKUP_DR,
+        system_control_reference="RESTORE-DRILL",
+    )
+    with pytest.raises(ValidationError, match="not COMPLIANT"):
+        create_control_mapping(
+            actor=admin_user,
+            edition_id=edition.id,
+            clause_reference="W-BAD",
+            system_control_kind=SystemControlKind.OTHER,
+            system_control_reference="x",
+            status="COMPLIANT",
+        )
+    with pytest.raises(ValidationError, match="Unknown mapping status"):
+        create_control_mapping(
+            actor=admin_user,
+            edition_id=edition.id,
+            clause_reference="W-BAD0",
+            system_control_kind=SystemControlKind.OTHER,
+            system_control_reference="x",
+            status="BOGUS",
+        )
+    with pytest.raises(ValidationError, match="Unknown system control"):
+        create_control_mapping(
+            actor=admin_user,
+            edition_id=edition.id,
+            clause_reference="W-BAD2",
+            system_control_kind="ISO_CERT",
+            system_control_reference="x",
+        )
+    link_mapping_evidence(
+        actor=admin_user,
+        mapping_id=mapping.id,
+        evidence_kind=SystemControlKind.SECURITY_CONTROL,
+        citation="Security catalogue",
+        linked_object_id=uuid.uuid4(),
+    )
+    with pytest.raises(ValidationError, match="not found in this organization"):
+        link_mapping_evidence(
+            actor=admin_user,
+            mapping_id=mapping.id,
+            evidence_kind=SystemControlKind.NCR,
+            citation="missing",
+            linked_object_id=uuid.uuid4(),
+        )
+    with pytest.raises(ValidationError, match="Unknown evidence kind"):
+        link_mapping_evidence(
+            actor=admin_user,
+            mapping_id=mapping.id,
+            evidence_kind="FAKE",
+            citation="x",
+        )
+    set_mapping_status(
+        actor=admin_user, mapping_id=mapping.id, status=ControlMappingStatus.APPLICABLE
+    )
+    gap = open_compliance_gap(
+        actor=admin_user, mapping_id=mapping.id, description="First gap"
+    )
+    open_compliance_gap(actor=admin_user, mapping_id=mapping.id, description="Second gap")
+    assert list_mapping_gaps(mapping=mapping).count() == 2
+    with pytest.raises(ValidationError, match="Unknown gap action"):
+        link_gap_action(
+            actor=admin_user,
+            gap_id=gap.id,
+            explicit_user_action=True,
+            action_kind="CERTIFICATE",
+            action_summary="nope",
+        )
+    with pytest.raises(ValidationError, match="Action summary"):
+        link_gap_action(
+            actor=admin_user,
+            gap_id=gap.id,
+            explicit_user_action=True,
+            action_kind=GapActionKind.ACTION,
+            action_summary=" ",
+        )
+    with pytest.raises(ValidationError, match="risk identifier"):
+        link_gap_action(
+            actor=admin_user,
+            gap_id=gap.id,
+            explicit_user_action=True,
+            action_kind=GapActionKind.RISK,
+            action_summary="missing risk",
+        )
+    with pytest.raises(ValidationError, match="Owner-supplied NCR"):
+        link_gap_action(
+            actor=admin_user,
+            gap_id=gap.id,
+            explicit_user_action=True,
+            action_kind=GapActionKind.NCR,
+            action_summary="ncr",
+            create_linked_record=True,
+        )
+    with pytest.raises(ValidationError, match="existing_ncr_id"):
+        link_gap_action(
+            actor=admin_user,
+            gap_id=gap.id,
+            explicit_user_action=True,
+            action_kind=GapActionKind.NCR,
+            action_summary="ncr",
+        )
+    with pytest.raises(ValidationError, match="not found in organization"):
+        link_gap_action(
+            actor=admin_user,
+            gap_id=gap.id,
+            explicit_user_action=True,
+            action_kind=GapActionKind.NCR,
+            action_summary="ncr",
+            existing_ncr_id=uuid.uuid4(),
+        )
+    with pytest.raises(ValidationError, match="Owner-supplied CAPA"):
+        link_gap_action(
+            actor=admin_user,
+            gap_id=gap.id,
+            explicit_user_action=True,
+            action_kind=GapActionKind.CAPA,
+            action_summary="capa",
+            create_follow_up=True,
+        )
+    with pytest.raises(ValidationError, match="existing_capa_id"):
+        link_gap_action(
+            actor=admin_user,
+            gap_id=gap.id,
+            explicit_user_action=True,
+            action_kind=GapActionKind.CAPA,
+            action_summary="capa",
+        )
+    with pytest.raises(ValidationError, match="not found in organization"):
+        link_gap_action(
+            actor=admin_user,
+            gap_id=gap.id,
+            explicit_user_action=True,
+            action_kind=GapActionKind.CAPA,
+            action_summary="capa",
+            existing_capa_id=uuid.uuid4(),
+        )
+    with pytest.raises(ValidationError, match="change request code"):
+        link_gap_action(
+            actor=admin_user,
+            gap_id=gap.id,
+            explicit_user_action=True,
+            action_kind=GapActionKind.CHANGE_REQUEST,
+            action_summary="chg",
+            create_linked_record=True,
+        )
+    with pytest.raises(ValidationError, match="existing_change_id"):
+        link_gap_action(
+            actor=admin_user,
+            gap_id=gap.id,
+            explicit_user_action=True,
+            action_kind=GapActionKind.CHANGE_REQUEST,
+            action_summary="chg",
+        )
+    with pytest.raises(ValidationError, match="not found in organization"):
+        link_gap_action(
+            actor=admin_user,
+            gap_id=gap.id,
+            explicit_user_action=True,
+            action_kind=GapActionKind.CHANGE_REQUEST,
+            action_summary="chg",
+            existing_change_id=uuid.uuid4(),
+        )
+    with pytest.raises(PermissionDenied):
+        list_compliance_sources(actor=stranger, organization_id=org.id)
+    with pytest.raises(PermissionDenied):
+        get_source_for_org(actor=stranger, organization_id=org.id, source_id=source.id)
+    with pytest.raises(PermissionDenied):
+        list_control_mappings(actor=stranger, organization_id=org.id)
+    with pytest.raises(PermissionDenied):
+        list_open_gaps(actor=stranger, organization_id=org.id)
+    with pytest.raises(PermissionDenied):
+        report_mapping_status(actor=stranger, organization_id=org.id)
+    list_control_mappings(
+        actor=admin_user, organization_id=org.id, status=ControlMappingStatus.GAP_IDENTIFIED
+    )
+    withdrawn = withdraw_source_edition(actor=admin_user, edition_id=extra.id)
+    assert withdrawn.register_status == SourceRegisterStatus.WITHDRAWN
+    with pytest.raises(ValidationError, match="historically immutable"):
+        withdraw_source_edition(actor=admin_user, edition_id=extra.id)
+    close_compliance_gap(actor=admin_user, gap_id=gap.id)
+    close_compliance_gap(actor=admin_user, gap_id=gap.id)

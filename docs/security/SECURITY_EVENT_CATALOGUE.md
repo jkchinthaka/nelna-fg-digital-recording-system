@@ -505,11 +505,16 @@ not certification, legal-compliance, or QMS quality-audit records.
 | Event | Meaning |
 | --- | --- |
 | COMPLIANCE_SOURCE_REGISTERED | Source registered (applicability not assessed) |
+| COMPLIANCE_EDITION_RECORDED | Official edition citation recorded |
 | COMPLIANCE_SOURCE_REVISED | New edition; previous superseded |
+| COMPLIANCE_APPLICABILITY_UPDATED | Applicability decision updated |
 | COMPLIANCE_APPLICABILITY_SET | Applicability decision recorded |
+| COMPLIANCE_EDITION_SUPERSEDED | Edition superseded |
+| COMPLIANCE_EDITION_WITHDRAWN | Edition withdrawn |
 | COMPLIANCE_MAPPING_CREATED | Control mapping created (not a claim) |
 | COMPLIANCE_MAPPING_STATUS_CHANGED | Mapping status updated |
 | COMPLIANCE_EVIDENCE_LINKED | Evidence citation linked |
+| COMPLIANCE_GAP_RECORDED | Gap recorded (follow-up not automatic) |
 | COMPLIANCE_GAP_OPENED | Gap opened |
 | COMPLIANCE_GAP_ACTION_LINKED | Explicit Risk/Change/NCR/CAPA/Action |
 | COMPLIANCE_MAPPING_VERIFIED | Implemented control verified (not a certificate) |
