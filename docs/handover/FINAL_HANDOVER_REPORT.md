@@ -29,7 +29,7 @@ This report is an engineering continuity handover. It is **not** a production re
 | --- | --- |
 | Observed GitHub `origin/main` at start | `c64d7ca90d5ee957b98b5d31ddba98d47df6b337` (Phase 23 HACCP snapshot freeze) |
 | Local `HEAD` at start of this session | `fbc28e2c6e701b90bae87db17a56279c2c3ff624` (then 27 local commits already present) |
-| Final SHA after this run (local = `origin/main`) | `14380b5fc255f57ec71408b1d5fe743c679be493` |
+| Final SHA after this run (local = `origin/main`) | `0cd2eadb7583ffb5be8aa4552226dec3c787d310` |
 | Sync | `HEAD == origin/main` after push (no force push) |
 | Authoritative SoR | PostgreSQL (ADR-002) |
 | MongoDB gate | `STATUS: MONGODB POC PARTIAL — … — DO NOT MIGRATE` — exact `MONGODB POC PASSED — DB-03 MAY PROCEED` **absent** |
@@ -55,7 +55,7 @@ This report is an engineering continuity handover. It is **not** a production re
 | `docker compose config` | PASS |
 | Compose postgres/redis | Already healthy on host ports 5433 / 6380 |
 
-Full host gates were re-validated during this run. GitHub `main` was synchronized to `14380b5` after logical-unit commits (no force push).
+Full host gates were re-validated during this run. GitHub `main` was synchronized to `0cd2ead` after logical-unit commits (no force push).
 
 ---
 
