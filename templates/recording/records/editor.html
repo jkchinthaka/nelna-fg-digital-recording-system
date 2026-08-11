@@ -7,14 +7,34 @@
            aria-labelledby="recording-editor-heading">
     <header class="mgmt-page__header">
       <div>
-        <h1 id="recording-editor-heading">Draft Checklist Recording</h1>
+        <h1 id="recording-editor-heading">
+          {% if controlled_spec %}
+            {{ controlled_spec.title }}
+          {% else %}
+            Draft Checklist Recording
+          {% endif %}
+        </h1>
         <p class="mgmt-page__lead">
-          Save Draft may remain incomplete. Submit requires required items answered.
-          The server remains authoritative — autosave never silently overwrites another tab.
+          {% if controlled_spec %}
+            {{ controlled_spec.code }} · {{ controlled_spec.source_status }}.
+            Authenticated recorder/checker/verifier only — do not type actor names.
+            Save Draft may remain incomplete. Submit requires required items.
+          {% else %}
+            Save Draft may remain incomplete. Submit requires required items answered.
+            The server remains authoritative — autosave never silently overwrites another tab.
+          {% endif %}
         </p>
       </div>
-      <a class="btn btn--ghost btn--inline btn--touch"
-         href="{% url 'recording:task_list' %}">Back to recordable tasks</a>
+      <div>
+        {% if controlled_spec %}
+          <a class="btn btn--ghost btn--inline btn--touch"
+             href="{% url 'recording:daily_home' %}">Daily Records</a>
+          <a class="btn btn--ghost btn--inline btn--touch"
+             href="{% url 'recording:daily_print' record_id=record.id %}">Print</a>
+        {% endif %}
+        <a class="btn btn--ghost btn--inline btn--touch"
+           href="{% url 'recording:task_list' %}">Back to recordable tasks</a>
+      </div>
     </header>
     <dl class="mgmt-meta" aria-label="Recording context">
       <div>

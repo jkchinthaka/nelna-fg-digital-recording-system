@@ -6,6 +6,12 @@ app_name = "recording"
 
 urlpatterns = [
     path("daily-records/", daily_views.daily_records_home, name="daily_home"),
+    path("daily-records/history/", daily_views.daily_record_history, name="daily_history"),
+    path(
+        "daily-records/history/export.csv",
+        daily_views.daily_record_export_csv,
+        name="daily_export_csv",
+    ),
     path(
         "daily-records/<path:form_code>/open/",
         daily_views.daily_record_open,

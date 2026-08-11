@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 import uuid
-from datetime import date, datetime
+from datetime import date
 from typing import cast
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
+from django.core.paginator import Paginator
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
@@ -20,9 +21,17 @@ from apps.checklists.controlled_forms import (
     CONTROLLED_FORMS,
     get_controlled_form,
 )
-from apps.recording.models import ChecklistRecord, ChecklistSubmission
+from apps.recording.daily_selectors import (
+    PAGE_SIZE,
+    daily_queue_counts,
+    history_queryset,
+    list_today_records,
+    monthly_pack_context,
+    print_record_context,
+)
 from apps.recording.selectors import actor_can_access_recording_module
 from apps.recording.services import start_checklist_recording
+from apps.reports.csv_safe import render_csv
 from apps.scheduling.selectors import organizations_for_task_record
 from apps.scheduling.services import ensure_controlled_daily_task
 
@@ -47,6 +56,7 @@ def _parse_date(raw: str | None) -> date:
 def daily_records_home(request: HttpRequest) -> HttpResponse:
     _require_recording(request)
     record_date = _parse_date(request.GET.get("date"))
+    counts = daily_queue_counts(actor=_actor(request), record_date=record_date)
     return render(
         request,
         "recording/daily/home.html",
@@ -55,6 +65,8 @@ def daily_records_home(request: HttpRequest) -> HttpResponse:
             "record_date": record_date,
             "forms": CONTROLLED_FORMS,
             "cold_rooms": COLD_ROOM_KEYS,
+            "counts": counts,
+            "today_rows": list_today_records(actor=_actor(request), record_date=record_date),
         },
     )
 
@@ -93,33 +105,15 @@ def daily_record_open(request: HttpRequest, form_code: str) -> HttpResponse:
 @require_GET
 def daily_record_print(request: HttpRequest, record_id: uuid.UUID) -> HttpResponse:
     _require_recording(request)
-    record = (
-        ChecklistRecord.objects.select_related(
-            "checklist_task__checklist_template",
-            "checklist_task__checklist_version",
-            "checklist_task__organization",
-        )
-        .filter(pk=record_id)
-        .first()
-    )
-    if record is None:
+    context = print_record_context(actor=_actor(request), record_id=record_id)
+    if context is None:
         raise PermissionDenied("Record not found.")
-    spec = get_controlled_form(record.checklist_task.checklist_template.code)
-    submission = (
-        ChecklistSubmission.objects.filter(checklist_record=record)
-        .select_related("submitted_by")
-        .order_by("-submitted_at")
-        .first()
-    )
     return render(
         request,
         "recording/daily/print_record.html",
         {
+            **context,
             "page_title": "Print record",
-            "record": record,
-            "task": record.checklist_task,
-            "spec": spec,
-            "submission": submission,
             "generated_at": timezone.now(),
         },
     )
@@ -133,35 +127,105 @@ def daily_monthly_print(request: HttpRequest) -> HttpResponse:
     spec = get_controlled_form(form_code)
     month_raw = (request.GET.get("month") or timezone.localdate().strftime("%Y-%m")).strip()
     year, month = [int(part) for part in month_raw.split("-", 1)]
-    start = date(year, month, 1)
-    if month == 12:
-        end = date(year + 1, 1, 1)
-    else:
-        end = date(year, month + 1, 1)
-    orgs = organizations_for_task_record(_actor(request))
-    submissions = ChecklistSubmission.objects.none()
-    if spec is not None and orgs.exists():
-        submissions = (
-            ChecklistSubmission.objects.filter(
-                checklist_record__checklist_task__organization__in=orgs,
-                checklist_record__checklist_task__checklist_template__code=spec.code,
-                submitted_at__gte=datetime.combine(start, datetime.min.time()),
-                submitted_at__lt=datetime.combine(end, datetime.min.time()),
-            )
-            .select_related(
-                "checklist_record__checklist_task__checklist_template",
-                "submitted_by",
-            )
-            .order_by("submitted_at")
-        )
+    pack = monthly_pack_context(actor=_actor(request), form_code=form_code, year=year, month=month)
     return render(
         request,
         "recording/daily/print_monthly.html",
         {
+            **pack,
+            "spec": spec or pack.get("spec"),
             "page_title": "Monthly print pack",
-            "spec": spec,
-            "month_label": month_raw,
-            "submissions": submissions,
             "generated_at": timezone.now(),
         },
     )
+
+
+@login_required
+@require_GET
+def daily_record_history(request: HttpRequest) -> HttpResponse:
+    _require_recording(request)
+    date_from = _optional_date(request.GET.get("date_from"))
+    date_to = _optional_date(request.GET.get("date_to"))
+    form_code = (request.GET.get("form") or "").strip()
+    qs = history_queryset(
+        actor=_actor(request),
+        date_from=date_from,
+        date_to=date_to,
+        form_code=form_code,
+        batch=(request.GET.get("batch") or "").strip(),
+        vehicle=(request.GET.get("vehicle") or "").strip(),
+        gin=(request.GET.get("gin") or "").strip(),
+        cold_room=(request.GET.get("cold_room") or "").strip(),
+        status=(request.GET.get("status") or "").strip(),
+        recorder=(request.GET.get("recorder") or "").strip(),
+    )
+    page = Paginator(qs, PAGE_SIZE).get_page(request.GET.get("page") or 1)
+    return render(
+        request,
+        "recording/daily/history.html",
+        {
+            "page_title": "Record history",
+            "page": page,
+            "forms": CONTROLLED_FORMS,
+            "filters": {
+                "date_from": request.GET.get("date_from") or "",
+                "date_to": request.GET.get("date_to") or "",
+                "form": form_code,
+                "batch": request.GET.get("batch") or "",
+                "vehicle": request.GET.get("vehicle") or "",
+                "gin": request.GET.get("gin") or "",
+                "cold_room": request.GET.get("cold_room") or "",
+                "status": request.GET.get("status") or "",
+                "recorder": request.GET.get("recorder") or "",
+            },
+        },
+    )
+
+
+@login_required
+@require_GET
+def daily_record_export_csv(request: HttpRequest) -> HttpResponse:
+    _require_recording(request)
+    qs = history_queryset(
+        actor=_actor(request),
+        date_from=_optional_date(request.GET.get("date_from")),
+        date_to=_optional_date(request.GET.get("date_to")),
+        form_code=(request.GET.get("form") or "").strip(),
+        batch=(request.GET.get("batch") or "").strip(),
+        vehicle=(request.GET.get("vehicle") or "").strip(),
+        gin=(request.GET.get("gin") or "").strip(),
+        cold_room=(request.GET.get("cold_room") or "").strip(),
+        status=(request.GET.get("status") or "").strip(),
+        recorder=(request.GET.get("recorder") or "").strip(),
+    )[:2000]
+    headers = (
+        "record_id",
+        "form_code",
+        "batch_reference",
+        "organization",
+        "status",
+        "recorder",
+        "updated_at",
+    )
+    rows = [
+        {
+            "record_id": str(record.id),
+            "form_code": record.checklist_task.checklist_template.code,
+            "batch_reference": record.checklist_task.batch_reference,
+            "organization": record.organization.code,
+            "status": record.status,
+            "recorder": record.started_by.employee_code,
+            "updated_at": record.updated_at.isoformat(),
+        }
+        for record in qs
+    ]
+    payload = render_csv(headers=headers, rows=rows)
+    response = HttpResponse(payload, content_type="text/csv; charset=utf-8")
+    response["Content-Disposition"] = 'attachment; filename="daily-record-history.csv"'
+    return response
+
+
+def _optional_date(raw: str | None) -> date | None:
+    if not raw:
+        return None
+    return date.fromisoformat(raw)

@@ -11,7 +11,7 @@
     </title>
     <link rel="stylesheet" href="/static/dist/css/app.css">
   </head>
-  <body class="print-sheet">
+  <body class="print-sheet{% if spec and spec.print_orientation == 'landscape' %} print-sheet--landscape{% endif %}">
     <header class="print-sheet__header">
       <p>Nelna FG Digital Recording System</p>
       {% if spec %}
@@ -23,21 +23,32 @@
       {% endif %}
       <p>
         Organization {{ task.organization.code }} · Record {{ record.id }} ·
-        Generated {{ generated_at }}
+        Identity {{ task.batch_reference }} · Template
+        {{ task.checklist_template.code }} v{{ task.checklist_version.version_number }}
       </p>
+      <p>Generated {{ generated_at }}</p>
     </header>
-    <p>
-      Batch / daily key: {{ task.batch_reference }} · Template
-      {{ task.checklist_template.code }} v{{ task.checklist_version.version_number }}
-    </p>
-    {% if submission %}
+    {% if is_draft %}
+      <p>Draft — not submitted. Printed values are the current working answers.</p>
+    {% elif submission %}
       <p>
-        Recorded by {{ submission.submitted_by.employee_code }} at
+        Recorder {{ submission.submitted_by.employee_code }} at
         {{ submission.submitted_at }} (authenticated action, not a wet signature).
       </p>
-    {% else %}
-      <p>Draft — not submitted. Print shows working values only.</p>
     {% endif %}
+    {% if supervisor %}
+      <p>
+        Checker / Supervisor {{ supervisor.reviewed_by.employee_code }} —
+        {{ supervisor.get_decision_display }} at {{ supervisor.reviewed_at }}
+      </p>
+    {% endif %}
+    {% if qa %}
+      <p>
+        Verifier / QA {{ qa.reviewed_by.employee_code }} —
+        {{ qa.get_decision_display }} at {{ qa.reviewed_at }}
+      </p>
+    {% endif %}
+    {% include "recording/_snapshot_sections.html" %}
     <p class="print-sheet__note">
       PASS/FAIL and Acceptable/Unacceptable are printed as text. Colour is not required.
       Evaluation PASS/FAIL is measurement-only and is not QA RELEASE, HOLD, or REJECT.

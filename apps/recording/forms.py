@@ -47,10 +47,12 @@ class ChecklistDraftForm(forms.Form):
         draft_version: int = 1,
         equipment_choices: list[tuple[str, str]] | None = None,
         initial_equipment: dict[ResponseKey, Any] | None = None,
+        form_code: str = "",
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
         self.items = items
+        self.form_code = form_code
         self.sample_indexes_by_group = sample_indexes_by_group or {}
         self.equipment_choices = equipment_choices or [("", "— No equipment —")]
         initial_responses = initial_responses or {}
@@ -116,14 +118,15 @@ class ChecklistDraftForm(forms.Form):
         # Django validation uses required=False (incomplete drafts are allowed).
         aria_attrs: dict[str, str] = {"aria-required": "true"} if item.is_required else {}
 
+        yes_label, no_label = self._choice_labels()
         if item.response_type == ChecklistResponseType.YES_NO:
             self.fields[name] = forms.ChoiceField(
                 label=label,
                 required=False,
                 choices=[
                     ("", "— Not answered —"),
-                    (ChoiceResponseValue.YES, "Yes"),
-                    (ChoiceResponseValue.NO, "No"),
+                    (ChoiceResponseValue.YES, yes_label),
+                    (ChoiceResponseValue.NO, no_label),
                 ],
                 widget=forms.RadioSelect(attrs={**aria_attrs, "class": "choice-pill__input"}),
                 initial=initial or "",
@@ -209,6 +212,13 @@ class ChecklistDraftForm(forms.Form):
                 "Company WARN/BLOCK policy is settings-driven (default OFF)."
             ),
         )
+
+    def _choice_labels(self) -> tuple[str, str]:
+        if self.form_code == "NMS/PPU/CL/24":
+            return "Acceptable", "Unacceptable"
+        if self.form_code == "NMS/PPU/CL/30":
+            return "PASS", "FAIL"
+        return "Yes", "No"
 
     def answers_by_item_id(self) -> dict[ResponseKey, Any]:
         """Return answers keyed by ``(item_id, sample_index)``."""

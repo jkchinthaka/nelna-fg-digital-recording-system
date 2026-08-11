@@ -16,6 +16,7 @@ from django.views.decorators.http import require_GET, require_http_methods, requ
 
 from apps.accounts.models import User
 from apps.checklists.constants import REPEAT_SAMPLE_TECHNICAL_CEILING
+from apps.checklists.controlled_forms import get_controlled_form
 from apps.checklists.models import ChecklistResponseType
 from apps.core.checklist_workflow import (
     ChecklistOperationalWorkflowState,
@@ -336,6 +337,7 @@ def record_detail(request: HttpRequest, record_id: uuid.UUID) -> HttpResponse:
             draft_version=record.draft_version,
             equipment_choices=equipment_choices,
             initial_equipment=initial_equipment,
+            form_code=task.checklist_template.code,
         )
 
     if request.method == "POST" and request.POST.get("sample_action"):
@@ -388,6 +390,7 @@ def record_detail(request: HttpRequest, record_id: uuid.UUID) -> HttpResponse:
             "draft_conflict": conflict,
             "section_progress": section_progress,
             "autosave_url": reverse("recording:record_autosave", kwargs={"record_id": record.id}),
+            "controlled_spec": get_controlled_form(task.checklist_template.code),
         },
     )
 
@@ -425,6 +428,7 @@ def record_autosave(request: HttpRequest, record_id: uuid.UUID) -> HttpResponse:
         draft_version=record.draft_version,
         equipment_choices=_equipment_choices_for_org(record.organization_id),
         initial_equipment=_initial_equipment(responses),
+        form_code=record.checklist_task.checklist_template.code,
     )
     if not form.is_valid():
         return JsonResponse(
