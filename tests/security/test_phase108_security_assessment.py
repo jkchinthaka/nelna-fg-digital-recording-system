@@ -28,7 +28,7 @@ def test_require_user_instance_accepts_and_rejects() -> None:
     user = make_user(employee_code="SEC108A1")
     assert require_user_instance(user, context="login") is user
     with pytest.raises(TypeError, match="configured user model"):
-        require_user_instance(object(), context="login")
+        require_user_instance(object(), context="login")  # type: ignore[arg-type]
 
 
 def test_bandit_b101_cleared_on_runtime_apps() -> None:

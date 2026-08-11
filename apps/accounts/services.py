@@ -20,6 +20,13 @@ from apps.accounts.validators import normalize_employee_code
 GENERIC_LOGIN_ERROR = "Unable to sign in with the provided credentials."
 
 
+def _ensure_user(value: object, *, context: str) -> User:
+    """Narrow UserManager Any rows to the concrete User model."""
+    if not isinstance(value, User):
+        raise TypeError(f"{context} must be an application User, got {type(value)!r}.")
+    return value
+
+
 @dataclass(frozen=True, slots=True)
 class AuthResult:
     success: bool
@@ -59,16 +66,16 @@ def create_application_user(
     normalized = normalize_employee_code(employee_code)
     if not normalized:
         raise ValidationError({"employee_code": "Employee code is required."})
-    user = User.objects.create_user(
-        username=username or normalized,
-        password=password,
-        employee_code=normalized,
-        is_active=is_active,
-        is_staff=is_staff,
+    user = _ensure_user(
+        User.objects.create_user(
+            username=username or normalized,
+            password=password,
+            employee_code=normalized,
+            is_active=is_active,
+            is_staff=is_staff,
+        ),
+        context="create_user",
     )
-    from apps.core.type_guards import require_user_instance
-
-    user = require_user_instance(user, context="create_user")
     if must_change_password:
         user.must_change_password = True
         user.save(update_fields=["must_change_password"])
@@ -135,9 +142,6 @@ def authenticate_login(
     )
 
     if user is not None:
-        from apps.core.type_guards import require_user_instance
-
-        user = require_user_instance(user, context="authenticate_login")
         record_successful_login(user, request=request)
         record_event(
             event_type="LOGIN_SUCCESS",
@@ -208,10 +212,9 @@ def authenticate_login(
 @transaction.atomic
 def record_failed_login(user: User, *, request: HttpRequest | None = None) -> User:
     """Increment failure counters under row lock; lock account at threshold."""
-    from apps.core.type_guards import require_user_instance
     from apps.security_audit.services import record_event
 
-    locked_user = require_user_instance(
+    locked_user = _ensure_user(
         User.objects.select_for_update().get(pk=user.pk),
         context="record_failed_login",
     )
@@ -245,9 +248,7 @@ def record_failed_login(user: User, *, request: HttpRequest | None = None) -> Us
 @transaction.atomic
 def record_successful_login(user: User, *, request: HttpRequest) -> User:
     """Reset failure counters, stamp success time, establish session with key cycle."""
-    from apps.core.type_guards import require_user_instance
-
-    locked_user = require_user_instance(
+    locked_user = _ensure_user(
         User.objects.select_for_update().get(pk=user.pk),
         context="record_successful_login",
     )
@@ -357,10 +358,9 @@ def unlock_account(
     actor: User | None = None,
     request: HttpRequest | None = None,
 ) -> User:
-    from apps.core.type_guards import require_user_instance
     from apps.security_audit.services import record_event
 
-    locked_user = require_user_instance(
+    locked_user = _ensure_user(
         User.objects.select_for_update().get(pk=user.pk),
         context="unlock_user",
     )

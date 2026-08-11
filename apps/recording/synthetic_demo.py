@@ -29,7 +29,6 @@ from apps.checklists.services import (
     create_checklist_version,
     publish_checklist_version,
 )
-from apps.core.type_guards import require_user_instance
 from apps.master_data.models import FGProduct
 from apps.master_data.services import create_fg_product
 from apps.organizations.models import Department, Organization, Shift, Site
@@ -95,15 +94,12 @@ def _grant(*, user: User, org: Organization, model: type[Any], codenames: tuple[
 
 def _user(employee_code: str) -> User:
     existing = User.objects.filter(employee_code=employee_code).first()
-    if existing is not None:
-        return require_user_instance(existing, context="demo_user")
-    return require_user_instance(
-        create_application_user(
-            employee_code=employee_code,
-            password=DEMO_PASSWORD,
-            is_staff=True,
-        ),
-        context="demo_user",
+    if isinstance(existing, User):
+        return existing
+    return create_application_user(
+        employee_code=employee_code,
+        password=DEMO_PASSWORD,
+        is_staff=True,
     )
 
 

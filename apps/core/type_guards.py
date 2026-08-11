@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, TypeVar
 
 from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
+
+TUser = TypeVar("TUser", bound=AbstractUser)
 
 
 def require_model_choice_field(field: forms.Field, *, name: str) -> forms.ModelChoiceField[Any]:
@@ -16,7 +18,7 @@ def require_model_choice_field(field: forms.Field, *, name: str) -> forms.ModelC
     return field
 
 
-def require_user_instance(value: object, *, context: str = "user") -> AbstractUser:
+def require_user_instance(value: TUser, *, context: str = "user") -> TUser:
     """Return value as the configured auth user model or raise TypeError."""
     user_model = get_user_model()
     if not isinstance(value, user_model):
