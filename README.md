@@ -100,6 +100,7 @@ Do **not** use `docker compose run --rm web pytest` — pytest is intentionally 
 | Document | Path |
 | --- | --- |
 | **Canonical project status** | [docs/PROJECT_STATUS.md](docs/PROJECT_STATUS.md) |
+| Engineer handover / onboarding | [docs/handover/HANDOVER_README.md](docs/handover/HANDOVER_README.md) |
 | Governance index | [docs/governance/README.md](docs/governance/README.md) |
 | Approval register | [docs/governance/APPROVAL_REGISTER.md](docs/governance/APPROVAL_REGISTER.md) |
 | Roadmap | [docs/ROADMAP.md](docs/ROADMAP.md) |
