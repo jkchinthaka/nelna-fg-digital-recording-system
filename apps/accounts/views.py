@@ -132,7 +132,7 @@ def landing_view(request: HttpRequest) -> HttpResponse:
     from apps.accounts.dashboard import landing_dashboard_cards
 
     user = request.user
-    cards = landing_dashboard_cards(user)  # type: ignore[arg-type]
+    cards = landing_dashboard_cards(user)
     return render(
         request,
         "accounts/landing.html",

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import pytest
+from django.contrib.auth.models import Permission
 from django.test import Client
 from django.urls import reverse
 from tests.factories import grant_role, make_org, make_role_with_permission, make_user
@@ -10,8 +11,7 @@ from tests.factories import grant_role, make_org, make_role_with_permission, mak
 from apps.checklists.models import ChecklistTemplate
 
 
-def _perm(codename: str):
-    from django.contrib.auth.models import Permission
+def _perm(codename: str) -> Permission:
     from django.contrib.contenttypes.models import ContentType
 
     content_type = ContentType.objects.get_for_model(ChecklistTemplate)
