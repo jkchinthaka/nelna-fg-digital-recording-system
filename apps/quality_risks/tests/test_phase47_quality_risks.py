@@ -150,9 +150,7 @@ def test_risk_creation_history_and_scoring_gate() -> None:
             computed_score_text="15",
         )
     with pytest.raises(ValidationError, match="owner-cited company method"):
-        configure_scoring_policy(
-            actor=manager, organization_id=org.id, scoring_enabled=True
-        )
+        configure_scoring_policy(actor=manager, organization_id=org.id, scoring_enabled=True)
     configure_scoring_policy(
         actor=manager,
         organization_id=org.id,
@@ -172,9 +170,9 @@ def test_risk_creation_history_and_scoring_gate() -> None:
     assert first.computed_score_text == ""
     assert second.version_number == 2
     assert list_risk_assessments(risk=risk).count() == 2
-    assert report_high_rated_risks(actor=manager, organization_id=org.id).filter(
-        pk=risk.id
-    ).exists()
+    assert (
+        report_high_rated_risks(actor=manager, organization_id=org.id).filter(pk=risk.id).exists()
+    )
     configure_scoring_policy(
         actor=manager,
         organization_id=org.id,
@@ -213,9 +211,7 @@ def test_mitigation_review_links_and_dashboard() -> None:
         (QualityRiskLinkKind.AUDIT, "QMS audit citation"),
         (QualityRiskLinkKind.CHANGE_CONTROL, "Change-control citation"),
     ):
-        link_quality_risk(
-            actor=manager, risk_id=risk.id, link_kind=kind, citation=citation
-        )
+        link_quality_risk(actor=manager, risk_id=risk.id, link_kind=kind, citation=citation)
     assert risk.links.count() == 10
     capa_mit = add_risk_mitigation(
         actor=manager,
@@ -271,9 +267,9 @@ def test_mitigation_review_links_and_dashboard() -> None:
         next_review_date=date.today() - timedelta(days=5),
     )
     open_quality_risk(actor=manager, risk_id=overdue.id)
-    assert report_overdue_reviews(actor=manager, organization_id=org.id).filter(
-        pk=overdue.id
-    ).exists()
+    assert (
+        report_overdue_reviews(actor=manager, organization_id=org.id).filter(pk=overdue.id).exists()
+    )
     accept_quality_risk(
         actor=manager, risk_id=overdue.id, acceptance_rationale="Owner residual acceptance."
     )
@@ -308,19 +304,13 @@ def test_authorization_cross_org_and_immutability() -> None:
             title="Denied",
         )
     with pytest.raises(PermissionDenied):
-        get_quality_risk_for_org(
-            actor=outsider, organization_id=org_a.id, risk_id=risk.id
-        )
+        get_quality_risk_for_org(actor=outsider, organization_id=org_a.id, risk_id=risk.id)
     with pytest.raises(PermissionDenied):
-        accept_quality_risk(
-            actor=viewer_a, risk_id=risk.id, acceptance_rationale="No accept perm."
-        )
+        accept_quality_risk(actor=viewer_a, risk_id=risk.id, acceptance_rationale="No accept perm.")
     open_quality_risk(actor=manager_a, risk_id=risk.id)
     assert list_quality_risks(actor=viewer_a, organization_id=org_a.id).count() == 1
     with pytest.raises(ValidationError, match="Unknown risk link kind"):
-        link_quality_risk(
-            actor=manager_a, risk_id=risk.id, link_kind="INVENTED", citation="x"
-        )
+        link_quality_risk(actor=manager_a, risk_id=risk.id, link_kind="INVENTED", citation="x")
     close_quality_risk(actor=manager_a, risk_id=risk.id)
     assert risk_is_historically_locked(QualityRiskStatus.CLOSED)
     with pytest.raises(ValidationError, match="historically immutable"):
@@ -356,15 +346,11 @@ def test_authorization_cross_org_and_immutability() -> None:
     with pytest.raises(ValidationError):
         QualityRisk(organization=org_a, risk_code=" ", title="t", created_by=manager_a).clean()
     assert SecurityAuditEvent.objects.filter(event_type="QUALITY_RISK_CREATED").exists()
-    QualityRiskAssessmentAdmin = __import__(
-        "apps.quality_risks.admin", fromlist=["QualityRiskAssessmentAdmin"]
-    ).QualityRiskAssessmentAdmin
+    from apps.quality_risks.admin import QualityRiskAssessmentAdmin, QualityRiskReviewAdmin
+
     assess_admin = QualityRiskAssessmentAdmin(QualityRiskAssessment, AdminSite())
     assert assess_admin.has_add_permission(request) is False
     assert assess_admin.has_change_permission(request) is False
-    QualityRiskReviewAdmin = __import__(
-        "apps.quality_risks.admin", fromlist=["QualityRiskReviewAdmin"]
-    ).QualityRiskReviewAdmin
     review_admin = QualityRiskReviewAdmin(QualityRiskReview, AdminSite())
     assert review_admin.has_add_permission(request) is False
     assert review_admin.has_change_permission(request) is False
@@ -539,9 +525,11 @@ def test_link_resolve_mitigation_guards_and_selector_authz() -> None:
         report_overdue_reviews(actor=stranger, organization_id=org.id)
     with pytest.raises(PermissionDenied):
         report_high_rated_risks(actor=stranger, organization_id=org.id)
-    assert list_quality_risks(
-        actor=manager, organization_id=org.id, status=QualityRiskStatus.OPEN
-    ).filter(pk=risk.id).exists()
+    assert (
+        list_quality_risks(actor=manager, organization_id=org.id, status=QualityRiskStatus.OPEN)
+        .filter(pk=risk.id)
+        .exists()
+    )
     with pytest.raises(ValidationError):
         QualityRisk(organization=org, risk_code="x", title=" ", created_by=manager).clean()
     with pytest.raises(ValidationError):

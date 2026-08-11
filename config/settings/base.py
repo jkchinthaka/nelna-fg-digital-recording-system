@@ -1,4 +1,4 @@
-﻿"""Shared Django settings for all environments."""
+"""Shared Django settings for all environments."""
 
 from __future__ import annotations
 

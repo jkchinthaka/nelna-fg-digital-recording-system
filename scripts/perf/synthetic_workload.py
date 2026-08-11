@@ -12,12 +12,21 @@ import time
 import urllib.error
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from urllib.parse import urlparse
+
+
+def _require_http_url(url: str) -> str:
+    parsed = urlparse(url)
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+        raise ValueError("Only http/https URLs are permitted.")
+    return url
 
 
 def timed_get(url: str, timeout: float) -> tuple[int, float]:
     started = time.perf_counter()
     try:
-        with urllib.request.urlopen(url, timeout=timeout) as resp:  # noqa: S310 — operator-supplied URL
+        safe_url = _require_http_url(url)
+        with urllib.request.urlopen(safe_url, timeout=timeout) as resp:  # noqa: S310  # nosec B310
             code = getattr(resp, "status", 200)
     except urllib.error.HTTPError as exc:
         code = exc.code

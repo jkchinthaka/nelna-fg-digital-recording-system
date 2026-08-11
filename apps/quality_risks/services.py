@@ -109,11 +109,12 @@ def _resolve_link_object(
     elif link_kind == QualityRiskLinkKind.HACCP:
         from apps.haccp.models import ControlPoint, HaccpPlan
 
-        found = HaccpPlan.objects.filter(
-            pk=linked_object_id, organization_id=organization_id
-        ).exists() or ControlPoint.objects.filter(
-            pk=linked_object_id, plan_version__plan__organization_id=organization_id
-        ).exists()
+        found = (
+            HaccpPlan.objects.filter(pk=linked_object_id, organization_id=organization_id).exists()
+            or ControlPoint.objects.filter(
+                pk=linked_object_id, plan_version__plan__organization_id=organization_id
+            ).exists()
+        )
     elif link_kind == QualityRiskLinkKind.SUPPLIER:
         from apps.supplier_quality.models import SupplierQualityProfile
 
@@ -371,8 +372,7 @@ def record_risk_assessment(
             }
         )
     next_version = (
-        QualityRiskAssessment.objects.filter(risk=risk).aggregate(m=Max("version_number"))["m"]
-        or 0
+        QualityRiskAssessment.objects.filter(risk=risk).aggregate(m=Max("version_number"))["m"] or 0
     ) + 1
     assessment = QualityRiskAssessment(
         risk=risk,
@@ -613,9 +613,7 @@ def add_risk_mitigation(
                 )
             mitigation.document_version = found_doc
         elif not mitigation.citation:
-            raise ValidationError(
-                {"citation": "Provide existing_document_version_id or citation."}
-            )
+            raise ValidationError({"citation": "Provide existing_document_version_id or citation."})
     elif kind == QualityRiskMitigationKind.CONTROL and not mitigation.citation:
         raise ValidationError({"citation": "Control mitigation requires an owner-cited control."})
     mitigation.full_clean()

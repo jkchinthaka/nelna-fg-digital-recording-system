@@ -487,9 +487,7 @@ def test_validation_and_admin_retention() -> None:
     assert event is not None
     assert str(event)
     assert str(
-        QualityAuditFinding(
-            audit=audit, status=QualityAuditFindingStatus.OPEN, description="x"
-        )
+        QualityAuditFinding(audit=audit, status=QualityAuditFindingStatus.OPEN, description="x")
     )
     assert str(QualityAuditFindingCodeConfig(kind="SEVERITY", code="X"))
     from apps.quality_audits.historical_safety import audit_is_historically_locked

@@ -24,9 +24,7 @@ def list_compliance_sources(
 ) -> QuerySet[ComplianceSource]:
     if not user_has_permission(actor, PERM_VIEW, scope=_scope(organization_id)):
         raise PermissionDenied("Permission denied.")
-    return ComplianceSource.objects.filter(organization_id=organization_id).order_by(
-        "source_code"
-    )
+    return ComplianceSource.objects.filter(organization_id=organization_id).order_by("source_code")
 
 
 def get_compliance_source_for_org(

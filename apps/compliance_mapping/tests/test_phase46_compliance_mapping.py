@@ -118,9 +118,9 @@ def _cm_user(
     return user
 
 
-def _register(actor: User, org: Organization, code: str = "SYN-POL-001") -> (
-    tuple[ComplianceSource, ComplianceSourceEdition]
-):
+def _register(
+    actor: User, org: Organization, code: str = "SYN-POL-001"
+) -> tuple[ComplianceSource, ComplianceSourceEdition]:
     return register_compliance_source(
         actor=actor,
         organization_id=org.id,
@@ -391,8 +391,7 @@ def test_gap_linkage_requires_explicit_action() -> None:
         )
     assert list_open_gaps(actor=admin_user, organization_id=org.id).count() == 0
     statuses = {
-        row["status"]
-        for row in report_mapping_status(actor=admin_user, organization_id=org.id)
+        row["status"] for row in report_mapping_status(actor=admin_user, organization_id=org.id)
     }
     assert ControlMappingStatus.GAP_IDENTIFIED in statuses
 
@@ -571,9 +570,7 @@ def test_withdraw_evidence_resolve_and_gap_guardrails() -> None:
     set_mapping_status(
         actor=admin_user, mapping_id=mapping.id, status=ControlMappingStatus.APPLICABLE
     )
-    gap = open_compliance_gap(
-        actor=admin_user, mapping_id=mapping.id, description="First gap"
-    )
+    gap = open_compliance_gap(actor=admin_user, mapping_id=mapping.id, description="First gap")
     open_compliance_gap(actor=admin_user, mapping_id=mapping.id, description="Second gap")
     assert list_mapping_gaps(mapping=mapping).count() == 2
     with pytest.raises(ValidationError, match="Unknown gap action"):

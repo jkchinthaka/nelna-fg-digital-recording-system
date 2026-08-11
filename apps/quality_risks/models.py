@@ -28,9 +28,7 @@ class QualityRiskStatus(models.TextChoices):
 
 
 RISK_TRANSITIONS: dict[str, frozenset[str]] = {
-    QualityRiskStatus.DRAFT: frozenset(
-        {QualityRiskStatus.OPEN, QualityRiskStatus.CANCELLED}
-    ),
+    QualityRiskStatus.DRAFT: frozenset({QualityRiskStatus.OPEN, QualityRiskStatus.CANCELLED}),
     QualityRiskStatus.OPEN: frozenset(
         {
             QualityRiskStatus.UNDER_REVIEW,
@@ -255,9 +253,7 @@ class QualityRiskAssessment(models.Model):
     """Append-only assessment snapshot. Previous rows are never overwritten."""
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    risk = models.ForeignKey(
-        QualityRisk, on_delete=models.PROTECT, related_name="assessments"
-    )
+    risk = models.ForeignKey(QualityRisk, on_delete=models.PROTECT, related_name="assessments")
     version_number = models.PositiveIntegerField()
     likelihood_input = models.CharField(max_length=64, blank=True, default="")
     severity_input = models.CharField(max_length=64, blank=True, default="")
@@ -326,9 +322,7 @@ class QualityRiskLink(models.Model):
 
 class QualityRiskMitigation(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    risk = models.ForeignKey(
-        QualityRisk, on_delete=models.PROTECT, related_name="mitigations"
-    )
+    risk = models.ForeignKey(QualityRisk, on_delete=models.PROTECT, related_name="mitigations")
     mitigation_kind = models.CharField(max_length=16, choices=QualityRiskMitigationKind.choices)
     summary = models.CharField(max_length=512)
     citation = models.CharField(max_length=512, blank=True, default="")

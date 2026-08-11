@@ -12,16 +12,26 @@ from __future__ import annotations
 
 import hashlib
 import os
-import subprocess
+import re
+import subprocess  # nosec B404 — allowlisted pg client tools only
 import sys
 import tempfile
 from datetime import UTC, datetime
 from pathlib import Path
 
+_IDENT_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
+_PG_TOOLS = frozenset({"psql", "pg_dump", "pg_restore"})
+
+
+def _require_ident(value: str, *, name: str) -> str:
+    if not _IDENT_RE.fullmatch(value):
+        raise ValueError(f"{name} must be a PostgreSQL identifier, got {value!r}.")
+    return value
+
 
 def run(cmd: list[str], env: dict[str, str]) -> None:
     print("+", " ".join(_redact_cmd(cmd)))
-    subprocess.check_call(cmd, env=env)
+    subprocess.check_call(cmd, env=env)  # nosec B603 — argv list, no shell, validated tools
 
 
 def _redact_cmd(cmd: list[str]) -> list[str]:
@@ -63,6 +73,8 @@ def _docker_service() -> str:
 
 def _pg_cmd(tool: str, *args: str, password: str = "") -> list[str]:
     """Build a pg client command for host tools or docker compose exec."""
+    if tool not in _PG_TOOLS:
+        raise ValueError(f"Unsupported client tool: {tool}")
     service = _docker_service()
     if service:
         # Inside the official postgres image, tools talk to localhost in-container.
@@ -82,10 +94,15 @@ def main() -> int:
     if using_docker:
         host = os.environ.get("RESTORE_DRILL_PGHOST", "127.0.0.1")
         port = os.environ.get("RESTORE_DRILL_PGPORT", "5432")
-    user = os.environ.get("POSTGRES_USER", "nelna_fg")
+    user = _require_ident(os.environ.get("POSTGRES_USER", "nelna_fg"), name="POSTGRES_USER")
     password = os.environ.get("POSTGRES_PASSWORD", "")
-    source_db = os.environ.get("RESTORE_DRILL_SOURCE_DB", "nelna_fg")
-    scratch_db = os.environ.get("RESTORE_DRILL_SCRATCH_DB", "nelna_fg_restore_drill")
+    source_db = _require_ident(
+        os.environ.get("RESTORE_DRILL_SOURCE_DB", "nelna_fg"), name="RESTORE_DRILL_SOURCE_DB"
+    )
+    scratch_db = _require_ident(
+        os.environ.get("RESTORE_DRILL_SCRATCH_DB", "nelna_fg_restore_drill"),
+        name="RESTORE_DRILL_SCRATCH_DB",
+    )
     env = os.environ.copy()
     if password:
         env["PGPASSWORD"] = password
@@ -108,10 +125,12 @@ def main() -> int:
                 "postgres",
                 "-v",
                 "ON_ERROR_STOP=1",
+                "-v",
+                f"scratch_db={scratch_db}",
                 "-c",
                 (
                     "SELECT pg_terminate_backend(pid) FROM pg_stat_activity "
-                    f"WHERE datname = '{scratch_db}' AND pid <> pg_backend_pid();"
+                    "WHERE datname = :'scratch_db' AND pid <> pg_backend_pid();"
                 ),
             ),
             env,
@@ -125,7 +144,7 @@ def main() -> int:
                 "-v",
                 "ON_ERROR_STOP=1",
                 "-c",
-                f"DROP DATABASE IF EXISTS {scratch_db};",
+                f'DROP DATABASE IF EXISTS "{scratch_db}";',
             ),
             env,
         )
@@ -138,7 +157,7 @@ def main() -> int:
                 "-v",
                 "ON_ERROR_STOP=1",
                 "-c",
-                f"CREATE DATABASE {scratch_db} TEMPLATE template0;",
+                f'CREATE DATABASE "{scratch_db}" TEMPLATE template0;',
             ),
             env,
         )
@@ -168,9 +187,11 @@ def main() -> int:
                 source_db,
                 "-v",
                 "ON_ERROR_STOP=1",
+                "-v",
+                f"marker={marker}",
                 "-c",
                 (
-                    f"INSERT INTO ops_restore_drill_marker(id) VALUES ('{marker}') "
+                    "INSERT INTO ops_restore_drill_marker(id) VALUES (:'marker') "
                     "ON CONFLICT DO NOTHING;"
                 ),
             ),
@@ -182,7 +203,9 @@ def main() -> int:
             dump_cmd = pg("pg_dump", *common, "-Fc", source_db)
             print("+", " ".join(_redact_cmd(dump_cmd)), ">", str(dump))
             with dump.open("wb") as dump_writer:
-                subprocess.check_call(dump_cmd, env=env, stdout=dump_writer)
+                subprocess.check_call(  # nosec B603 — argv list, no shell
+                    dump_cmd, env=env, stdout=dump_writer
+                )
             # Stream restore via stdin into scratch DB.
             restore_cmd = pg(
                 "pg_restore",
@@ -194,7 +217,9 @@ def main() -> int:
             )
             print("+", " ".join(_redact_cmd(restore_cmd)), "<", str(dump))
             with dump.open("rb") as dump_reader:
-                subprocess.check_call(restore_cmd, env=env, stdin=dump_reader)
+                subprocess.check_call(  # nosec B603 — argv list, no shell
+                    restore_cmd, env=env, stdin=dump_reader
+                )
         else:
             run(
                 pg("pg_dump", *common, "-Fc", "-f", str(dump), source_db),
@@ -213,14 +238,16 @@ def main() -> int:
                 env,
             )
 
-        verify = subprocess.check_output(
+        verify = subprocess.check_output(  # nosec B603 — argv list, no shell
             pg(
                 "psql",
                 *common,
                 "-d",
                 scratch_db,
+                "-v",
+                f"marker={marker}",
                 "-Atc",
-                f"SELECT count(*) FROM ops_restore_drill_marker WHERE id = '{marker}';",
+                "SELECT count(*) FROM ops_restore_drill_marker WHERE id = :'marker';",
             ),
             env=env,
             text=True,

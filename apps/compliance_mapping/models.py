@@ -84,9 +84,7 @@ MAPPING_TRANSITIONS: dict[str, frozenset[str]] = {
             ControlMappingStatus.GAP_IDENTIFIED,
         }
     ),
-    ControlMappingStatus.NOT_APPLICABLE: frozenset(
-        {ControlMappingStatus.APPLICABILITY_PENDING}
-    ),
+    ControlMappingStatus.NOT_APPLICABLE: frozenset({ControlMappingStatus.APPLICABILITY_PENDING}),
     ControlMappingStatus.CONTROL_DESIGNED: frozenset(
         {
             ControlMappingStatus.APPLICABLE,
@@ -199,9 +197,7 @@ class ComplianceSourceEdition(models.Model):
     """Exact official edition citation only — never reproduced standard text."""
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    source = models.ForeignKey(
-        ComplianceSource, on_delete=models.PROTECT, related_name="editions"
-    )
+    source = models.ForeignKey(ComplianceSource, on_delete=models.PROTECT, related_name="editions")
     version_edition = models.CharField(max_length=128)
     official_source_citation = models.CharField(
         max_length=512,
@@ -298,9 +294,7 @@ class ComplianceControlMapping(models.Model):
     class Meta:
         default_permissions = ()
         indexes = [
-            models.Index(
-                fields=["organization", "status"], name="cm_mapping_org_status_idx"
-            ),
+            models.Index(fields=["organization", "status"], name="cm_mapping_org_status_idx"),
             models.Index(fields=["edition", "status"], name="cm_mapping_edition_status_idx"),
         ]
 
@@ -354,9 +348,7 @@ class ComplianceEvidenceLink(models.Model):
     def clean(self) -> None:
         super().clean()
         if not (self.citation or "").strip() and self.linked_object_id is None:
-            raise ValidationError(
-                {"citation": "Provide a citation or a linked object identifier."}
-            )
+            raise ValidationError({"citation": "Provide a citation or a linked object identifier."})
         self.citation = (self.citation or "").strip()
         if self.evidence_kind not in SystemControlKind.values:
             raise ValidationError({"evidence_kind": "Unknown evidence kind."})
@@ -464,9 +456,7 @@ class ComplianceMappingEvent(models.Model):
     organization = models.ForeignKey(
         Organization, on_delete=models.PROTECT, related_name="compliance_mapping_events"
     )
-    source = models.ForeignKey(
-        ComplianceSource, on_delete=models.PROTECT, related_name="events"
-    )
+    source = models.ForeignKey(ComplianceSource, on_delete=models.PROTECT, related_name="events")
     edition = models.ForeignKey(
         ComplianceSourceEdition,
         on_delete=models.PROTECT,

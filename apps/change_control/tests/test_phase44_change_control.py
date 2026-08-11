@@ -500,9 +500,13 @@ def test_validation_guards_and_admin_retention() -> None:
         actor=requester, organization_id=org.id, change_id=change.id
     )
     assert loaded.id == change.id
-    assert list_quality_changes(
-        actor=requester, organization_id=org.id, status=ChangeRequestStatus.ASSESSMENT
-    ).filter(pk=change.id).exists()
+    assert (
+        list_quality_changes(
+            actor=requester, organization_id=org.id, status=ChangeRequestStatus.ASSESSMENT
+        )
+        .filter(pk=change.id)
+        .exists()
+    )
     with pytest.raises(ValidationError, match="Description is required"):
         create_quality_change(
             actor=requester,

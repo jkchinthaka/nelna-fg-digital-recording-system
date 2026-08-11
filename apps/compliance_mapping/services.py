@@ -126,9 +126,7 @@ def _resolve_evidence_object(
         from apps.haccp.models import ControlPoint, HaccpPlan
 
         found = (
-            HaccpPlan.objects.filter(
-                pk=linked_object_id, organization_id=organization_id
-            ).exists()
+            HaccpPlan.objects.filter(pk=linked_object_id, organization_id=organization_id).exists()
             or ControlPoint.objects.filter(
                 pk=linked_object_id,
                 plan_version__plan__organization_id=organization_id,
@@ -577,9 +575,7 @@ def link_mapping_evidence(
 
 
 @transaction.atomic
-def record_compliance_gap(
-    *, actor: User, mapping_id: uuid.UUID, description: str
-) -> ComplianceGap:
+def record_compliance_gap(*, actor: User, mapping_id: uuid.UUID, description: str) -> ComplianceGap:
     mapping = ComplianceControlMapping.objects.select_related("edition", "edition__source").get(
         pk=mapping_id
     )
@@ -671,9 +667,7 @@ def link_gap_action(
     if kind == GapActionKind.RISK:
         supplied = (risk_reference or "").strip()
         if not supplied:
-            raise ValidationError(
-                {"risk_reference": "Owner-supplied risk identifier is required."}
-            )
+            raise ValidationError({"risk_reference": "Owner-supplied risk identifier is required."})
         action.risk_reference = supplied
     elif kind == GapActionKind.NCR:
         if create_follow_up:
@@ -836,9 +830,7 @@ def revise_compliance_source(
     )
 
 
-def open_compliance_gap(
-    *, actor: User, mapping_id: uuid.UUID, description: str
-) -> ComplianceGap:
+def open_compliance_gap(*, actor: User, mapping_id: uuid.UUID, description: str) -> ComplianceGap:
     return record_compliance_gap(actor=actor, mapping_id=mapping_id, description=description)
 
 
