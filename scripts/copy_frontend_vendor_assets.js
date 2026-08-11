@@ -22,5 +22,9 @@ function mustCopy(src, dest) {
   console.log(`Copied ${path.relative(root, src)} -> ${path.relative(root, dest)}`);
 }
 
+const recordingJsSrc = path.join(root, "static", "src", "js", "recording-editor.js");
+const recordingJsDest = path.join(root, "static", "dist", "js", "recording-editor.js");
+
 mustCopy(htmxSrc, htmxDest);
 mustCopy(appJsSrc, appJsDest);
+mustCopy(recordingJsSrc, recordingJsDest);

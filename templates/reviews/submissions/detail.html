@@ -89,23 +89,26 @@
         </dd>
       </div>
     </dl>
-    {% include "recording/_snapshot_sections.html" %}
-    <section class="mgmt-actions" aria-labelledby="review-actions-heading">
-      <h2 id="review-actions-heading">Supervisor decision</h2>
-      <p class="form-help">
-        Approve means Supervisor review complete / eligible for a future QA stage.
-        It does not mean product release, HOLD clearance, or QA approval.
-      </p>
-      <div class="landing-actions">
-        <a class="btn btn--primary"
-           href="{% url 'reviews:confirm_decision' submission_id=submission.id decision=SupervisorReviewDecision.APPROVED %}">
-          Approve
-        </a>
-        <a class="btn btn--secondary"
-           href="{% url 'reviews:confirm_decision' submission_id=submission.id decision=SupervisorReviewDecision.RETURNED_FOR_CORRECTION %}">
-          Return for correction
-        </a>
-      </div>
-    </section>
+    <div class="review-workspace">
+      <div class="review-workspace__main">{% include "recording/_snapshot_sections.html" %}</div>
+      <aside class="review-workspace__panel"
+             aria-labelledby="review-actions-heading">
+        <h2 id="review-actions-heading">Supervisor decision</h2>
+        <p class="form-help">
+          Approve means Supervisor review complete / eligible for a future QA stage.
+          It does not mean product release, HOLD clearance, or QA approval.
+        </p>
+        <div class="review-actions">
+          <a class="btn btn--primary btn--approve"
+             href="{% url 'reviews:confirm_decision' submission_id=submission.id decision=SupervisorReviewDecision.APPROVED %}">
+            Approve
+          </a>
+          <a class="btn btn--secondary btn--return"
+             href="{% url 'reviews:confirm_decision' submission_id=submission.id decision=SupervisorReviewDecision.RETURNED_FOR_CORRECTION %}">
+            Return for correction
+          </a>
+        </div>
+      </aside>
+    </div>
   </section>
 {% endblock %}

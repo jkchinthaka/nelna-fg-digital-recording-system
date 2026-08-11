@@ -125,7 +125,7 @@ class ChecklistDraftForm(forms.Form):
                     (ChoiceResponseValue.YES, "Yes"),
                     (ChoiceResponseValue.NO, "No"),
                 ],
-                widget=forms.RadioSelect(attrs=aria_attrs),
+                widget=forms.RadioSelect(attrs={**aria_attrs, "class": "choice-pill__input"}),
                 initial=initial or "",
             )
         elif item.response_type == ChecklistResponseType.YES_NO_NA:
@@ -138,7 +138,7 @@ class ChecklistDraftForm(forms.Form):
                     (ChoiceResponseValue.NO, "No"),
                     (ChoiceResponseValue.NA, "N/A"),
                 ],
-                widget=forms.RadioSelect(attrs=aria_attrs),
+                widget=forms.RadioSelect(attrs={**aria_attrs, "class": "choice-pill__input"}),
                 initial=initial or "",
             )
         elif item.response_type == ChecklistResponseType.NUMBER:

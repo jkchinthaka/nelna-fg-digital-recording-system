@@ -129,14 +129,17 @@ def account_locked_view(request: HttpRequest) -> HttpResponse:
 @require_GET
 @login_required
 def landing_view(request: HttpRequest) -> HttpResponse:
+    from apps.accounts.dashboard import landing_dashboard_cards
+
+    user = request.user
+    cards = landing_dashboard_cards(user)  # type: ignore[arg-type]
     return render(
         request,
         "accounts/landing.html",
         {
-            "phase_label": "Phase 03 — Accounts / Auth / RBAC foundation",
-            "message": (
-                "You are signed in. Finished-goods business modules are not available yet."
-            ),
+            "dashboard_cards": cards,
+            "page_title": "Dashboard",
+            "breadcrumbs": [{"label": "Dashboard"}],
         },
     )
 

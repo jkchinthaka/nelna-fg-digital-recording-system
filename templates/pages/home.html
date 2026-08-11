@@ -1,27 +1,19 @@
 {% extends "base.html" %}
-{% block title %}Foundation — Nelna FG Digital Recording System{% endblock %}
+{% block title %}Nelna FG Digital Recording System{% endblock %}
+{% block body_class %}auth-shell{% endblock %}
+{% block site_header %}{% endblock %}
+{% block site_footer %}{% endblock %}
 {% block content %}
-  <section class="foundation-home" aria-labelledby="home-heading">
-    <h1 id="home-heading">{{ project_name }}</h1>
-    <p>Environment: {{ environment_label }}</p>
-    <p>Application version: {{ app_version }}</p>
-    <p>Status: {{ foundation_status }}</p>
-    <ul>
-      <li>
-        <a href="{% url 'accounts:login' %}">Sign in</a>
-      </li>
-      <li>
-        <a href="{% url 'core:health-live' %}">Liveness</a>
-      </li>
-      <li>
-        <a href="{% url 'core:health-ready' %}">Readiness</a>
-      </li>
-    </ul>
-    <div id="htmx-demo"
-         hx-get="{% url 'core:htmx-status' %}"
-         hx-trigger="load"
-         hx-swap="innerHTML">
-      {% include "components/loading_state.html" with message="Checking HTMX foundation…" show_spinner=True %}
+  <div class="auth-layout">
+    <div class="auth-layout__inner">
+      <section class="auth-card" aria-labelledby="home-heading">
+        <h1 class="auth-card__title" id="home-heading">{{ project_name }}</h1>
+        <p class="auth-card__lead">Finished-goods quality recording for authorized plant users.</p>
+        <p class="auth-footer-note">{{ environment_label }} · v{{ app_version }}</p>
+        <div class="landing-actions">
+          <a class="btn btn--primary" href="{% url 'accounts:login' %}">Sign in</a>
+        </div>
+      </section>
     </div>
-  </section>
+  </div>
 {% endblock %}

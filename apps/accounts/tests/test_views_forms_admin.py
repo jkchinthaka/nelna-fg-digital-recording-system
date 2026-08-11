@@ -167,7 +167,8 @@ def test_account_locked_and_landing_pages(client: Client) -> None:
     client.force_login(user)
     response = client.get(reverse("accounts:landing"))
     assert response.status_code == 200
-    assert b"Phase 03" in response.content
+    assert b"Welcome" in response.content
+    assert b"Dashboard" in response.content
 
 
 @pytest.mark.django_db

@@ -1,65 +1,51 @@
 {% extends "base.html" %}
 {% load organizations_extras master_data_extras checklists_extras scheduling_extras recording_extras reviews_extras quality_extras %}
-{% block title %}Signed in — Nelna FG Digital Recording System{% endblock %}
+{% block title %}Dashboard — Nelna FG Digital Recording System{% endblock %}
 {% block content %}
-  <section class="landing-page" aria-labelledby="landing-heading">
-    <div class="landing-card">
-      <h1 id="landing-heading">Welcome</h1>
-      {% if user.is_authenticated %}
-        <p class="landing-meta">
-          Signed in as
-          <strong>
-            {% if user.employee_code %}
-              {{ user.employee_code }}
-            {% else %}
-              {{ user.get_username }}
-            {% endif %}
-          </strong>
+  <section class="dashboard" aria-labelledby="landing-heading">
+    <header class="page-header">
+      <div>
+        <h1 id="landing-heading">Welcome</h1>
+        <p class="page-header__lead">
+          {% if user.is_authenticated %}
+            Signed in as
+            <strong>
+              {% if user.employee_code %}
+                {{ user.employee_code }}
+              {% else %}
+                {{ user.get_username }}
+              {% endif %}
+            </strong>
+          {% endif %}
         </p>
-      {% endif %}
-      <p class="landing-meta">{{ phase_label }}</p>
-      <p class="landing-notice">
-        Shift, FG Product, Checklist Definition, Recording, Supervisor Review, and QA Review
-        technical foundations are available to authorized users when configured.
-        Production use remains gated. No production master data or forms are seeded.
-      </p>
-      <p class="landing-meta">Keep this session private. Sign out when you finish working on a shared device.</p>
-      <div class="landing-actions">
-        {% user_can_view_shifts as show_shifts %}
-        {% if show_shifts %}
-          <a class="btn btn--primary" href="{% url 'organizations:shift_list' %}">Shift Management</a>
-        {% endif %}
-        {% user_can_view_fg_products as show_products %}
-        {% if show_products %}
-          <a class="btn btn--primary" href="{% url 'master_data:product_list' %}">FG Products</a>
-        {% endif %}
-        {% user_can_view_checklists as show_checklists %}
-        {% if show_checklists %}
-          <a class="btn btn--primary" href="{% url 'checklists:template_list' %}">Checklist Definitions</a>
-        {% endif %}
-        {% user_can_view_checklist_tasks as show_checklist_tasks %}
-        {% if show_checklist_tasks %}
-          <a class="btn btn--primary" href="{% url 'scheduling:task_list' %}">Checklist Tasks</a>
-        {% endif %}
-        {% user_can_record_checklist_tasks as show_recording %}
-        {% if show_recording %}
-          <a class="btn btn--primary" href="{% url 'recording:task_list' %}">Checklist Recording</a>
-        {% endif %}
-        {% user_can_review_checklist_submissions as show_reviews %}
-        {% if show_reviews %}
-          <a class="btn btn--primary" href="{% url 'reviews:queue' %}">Supervisor Review</a>
-        {% endif %}
-        {% user_can_qa_review_checklist_submissions as show_qa %}
-        {% if show_qa %}
-          <a class="btn btn--primary" href="{% url 'quality:queue' %}">QA Review</a>
-        {% endif %}
-        <a class="btn btn--secondary"
-           href="{% url 'accounts:change_password' %}">Change password</a>
-        <form method="post" action="{% url 'accounts:logout' %}">
-          {% csrf_token %}
-          <button type="submit" class="btn btn--ghost">Sign out</button>
-        </form>
       </div>
+    </header>
+    {% if dashboard_cards %}
+      <div class="stat-grid" aria-label="Work queues">
+        {% for card in dashboard_cards %}
+          {% include "components/stat_card.html" with label=card.label value=card.value hint=card.hint href=card.href %}
+        {% endfor %}
+      </div>
+    {% endif %}
+    <aside class="landing-notice" role="note">
+      Production use remains gated. No production master data or forms are seeded.
+      Counts reflect authorized records only. Keep this session private on shared devices.
+    </aside>
+    <div class="landing-actions">
+      {% user_can_record_checklist_tasks as show_recording %}
+      {% if show_recording %}
+        <a class="btn btn--primary" href="{% url 'recording:task_list' %}">Open recording</a>
+      {% endif %}
+      {% user_can_view_checklist_tasks as show_checklist_tasks %}
+      {% if show_checklist_tasks %}
+        <a class="btn btn--secondary" href="{% url 'scheduling:task_list' %}">View tasks</a>
+      {% endif %}
+      <a class="btn btn--secondary"
+         href="{% url 'accounts:change_password' %}">Change password</a>
+      <form method="post" action="{% url 'accounts:logout' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn--ghost">Sign out</button>
+      </form>
     </div>
   </section>
 {% endblock %}

@@ -23,9 +23,7 @@ def home(request: HttpRequest) -> HttpResponse:
             "project_name": "Nelna FG Digital Recording System",
             "environment_label": getattr(settings, "ENVIRONMENT_LABEL", "unspecified"),
             "app_version": getattr(settings, "APP_VERSION", "unknown"),
-            "foundation_status": (
-                "Phase 03 — Accounts / Auth / RBAC foundation (no business modules yet)"
-            ),
+            "foundation_status": "Signed-out entry page",
         },
     )
 

@@ -37,7 +37,7 @@
       </div>
     </form>
     {% if not tasks %}
-      <p class="mgmt-page__lead" role="status">No recordable checklist tasks are available.</p>
+      {% include "components/empty_state.html" with title="No recordable tasks" message="No recordable checklist tasks are available." %}
     {% else %}
       <div class="table-wrap"
            role="region"

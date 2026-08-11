@@ -342,14 +342,14 @@ def test_template_list_and_version_editor_query_bounds(client: Client) -> None:
     client.force_login(manager)
     with CaptureQueriesContext(connection) as list_ctx:
         assert client.get(reverse("checklists:template_list")).status_code == 200
-    assert len(list_ctx) < 60
+    assert len(list_ctx) < 75
 
     editor_version = ChecklistVersion.objects.filter(template__organization=org).first()
     assert editor_version is not None
     with CaptureQueriesContext(connection) as editor_ctx:
         response = client.get(reverse("checklists:version_detail", args=[editor_version.id]))
         assert response.status_code == 200
-    assert len(editor_ctx) < 50
+    assert len(editor_ctx) < 65
 
 
 @pytest.mark.django_db

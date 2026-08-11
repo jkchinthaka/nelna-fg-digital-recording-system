@@ -110,7 +110,7 @@
     function autosave() {
       if (!autosaveUrl || saving || !dirty) return;
       saving = true;
-      setStatus("Saving draft…", false);
+      setStatus("Saving…", false);
       stashLocal();
       var body = new FormData(form);
       fetch(autosaveUrl, {
@@ -140,7 +140,7 @@
           if (payload.status === 409 || data.error === "conflict") {
             dirty = false;
             setStatus(
-              "Conflict: draft changed elsewhere. Reload before continuing (no silent overwrite).",
+              "Conflict detected. Reload before continuing (no silent overwrite).",
               true
             );
             var banner = document.getElementById("recording-conflict-banner");
@@ -150,7 +150,7 @@
             return;
           }
           if (!data.ok) {
-            setStatus("Autosave failed validation. Fix highlighted fields, then Save Draft.", true);
+            setStatus("Save failed. Fix highlighted fields, then Save Draft.", true);
             focusFirstError();
             return;
           }
@@ -162,7 +162,7 @@
           try {
             sessionStorage.removeItem(STORAGE_KEY);
           } catch (e) {}
-          setStatus("Draft autosaved (server authoritative). Version " + data.draft_version + ".", false);
+          setStatus("Saved. Server version " + data.draft_version + ".", false);
         })
         .catch(function () {
           stashLocal();

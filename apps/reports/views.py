@@ -36,9 +36,26 @@ def _resolve_organization(request: HttpRequest) -> Organization:
 @login_required
 @require_http_methods(["GET"])
 def report_catalogue(request: HttpRequest) -> HttpResponse:
+    from apps.reports.selectors import organizations_for_reporting
+
+    actor = cast(User, request.user)
+    reporting_orgs = organizations_for_reporting(actor)
+    org_id = request.GET.get("organization_id") or request.POST.get("organization_id")
+    if not org_id:
+        return render(
+            request,
+            "reports/catalogue.html",
+            {
+                "organization": None,
+                "catalogue": [],
+                "recent_runs": [],
+                "reporting_organizations": reporting_orgs,
+                "page_title": "Reports",
+            },
+        )
     try:
         organization = _resolve_organization(request)
-        catalogue = list_report_catalogue(actor=cast(User, request.user), organization=organization)
+        catalogue = list_report_catalogue(actor=actor, organization=organization)
     except (PermissionDenied, ValidationError) as exc:
         raise PermissionDenied(str(exc)) from exc
     recent = list_recent_report_runs(organization_id=organization.id, limit=15)
@@ -49,6 +66,8 @@ def report_catalogue(request: HttpRequest) -> HttpResponse:
             "organization": organization,
             "catalogue": catalogue,
             "recent_runs": recent,
+            "reporting_organizations": reporting_orgs,
+            "page_title": "Reports",
         },
     )
 

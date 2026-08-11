@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.body.classList.add("js-enabled");
   initPasswordToggles();
   initAuthSubmitLoading();
+  initNavDrawer();
 });
 
 function initPasswordToggles() {
@@ -53,5 +54,31 @@ function initAuthSubmitLoading() {
         busy.hidden = false;
       }
     });
+  });
+}
+
+function initNavDrawer() {
+  const toggle = document.querySelector("[data-nav-toggle]");
+  const backdrop = document.querySelector("[data-nav-backdrop]");
+  if (!(toggle instanceof HTMLButtonElement)) {
+    return;
+  }
+  const setOpen = (open) => {
+    document.body.classList.toggle("nav-open", open);
+    toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    if (backdrop instanceof HTMLElement) {
+      backdrop.hidden = !open;
+    }
+  };
+  toggle.addEventListener("click", () => {
+    setOpen(!document.body.classList.contains("nav-open"));
+  });
+  if (backdrop instanceof HTMLElement) {
+    backdrop.addEventListener("click", () => setOpen(false));
+  }
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      setOpen(false);
+    }
   });
 }

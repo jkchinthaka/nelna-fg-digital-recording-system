@@ -1,4 +1,4 @@
-{% load static organizations_extras master_data_extras checklists_extras scheduling_extras recording_extras reviews_extras quality_extras %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE|default:'en' }}">
   <head>
@@ -16,52 +16,10 @@
         hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
     {% csrf_token %}
     <a class="skip-link" href="#main-content">Skip to content</a>
+    <div class="app-nav-backdrop" data-nav-backdrop hidden></div>
     {% block site_header %}
-      <header class="app-header" role="banner">
-        <div class="app-header__inner">
-          <div>
-            <p class="brand">Nelna FG Digital Recording System</p>
-            <p class="env-label">{{ ENVIRONMENT_LABEL }}</p>
-          </div>
-          {% block app_nav %}
-            {% if user.is_authenticated %}
-              <nav class="app-nav" aria-label="Primary">
-                <a href="{% url 'accounts:landing' %}">Home</a>
-                {% user_can_view_shifts as show_shifts %}
-                {% if show_shifts %}
-                  <a href="{% url 'organizations:shift_list' %}">Shift Management</a>
-                {% endif %}
-                {% user_can_view_fg_products as show_products %}
-                {% if show_products %}
-                  <a href="{% url 'master_data:product_list' %}">FG Products</a>
-                {% endif %}
-                {% user_can_view_checklists as show_checklists %}
-                {% if show_checklists %}
-                  <a href="{% url 'checklists:template_list' %}">Checklist Definitions</a>
-                {% endif %}
-                {% user_can_view_checklist_tasks as show_checklist_tasks %}
-                {% if show_checklist_tasks %}
-                  <a href="{% url 'scheduling:task_list' %}">Checklist Tasks</a>
-                {% endif %}
-                {% user_can_record_checklist_tasks as show_recording %}
-                {% if show_recording %}
-                  <a href="{% url 'recording:task_list' %}">Checklist Recording</a>
-                {% endif %}
-                {% user_can_review_checklist_submissions as show_reviews %}
-                {% if show_reviews %}
-                  <a href="{% url 'reviews:queue' %}">Supervisor Review</a>
-                {% endif %}
-                {% user_can_qa_review_checklist_submissions as show_qa %}
-                {% if show_qa %}
-                  <a href="{% url 'quality:queue' %}">QA Review</a>
-                {% endif %}
-                <a href="{% url 'notifications:list' %}">Notifications</a>
-                <a href="{% url 'reports:catalogue' %}">Reports</a>
-              </nav>
-            {% endif %}
-          {% endblock %}
-        </div>
-      </header>
+      {% include "components/sidebar.html" %}
+      {% include "components/top_header.html" %}
     {% endblock %}
     <main id="main-content" class="app-main" tabindex="-1">
       {% if messages %}
@@ -73,7 +31,7 @@
     </main>
     {% block site_footer %}
       <footer class="app-footer" role="contentinfo">
-        <p>Foundation v{{ APP_VERSION }}</p>
+        <p>Nelna FG Digital Recording · v{{ APP_VERSION }} · {{ ENVIRONMENT_BADGE }}</p>
       </footer>
     {% endblock %}
     {% block extra_js %}{% endblock %}

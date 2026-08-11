@@ -113,28 +113,30 @@
         </ol>
       </section>
     {% endif %}
-    {% include "recording/_snapshot_sections.html" %}
-    <section class="mgmt-actions" aria-labelledby="qa-actions-heading">
-      <h2 id="qa-actions-heading">QA disposition</h2>
-      <p class="form-help">
-        These actions record a provisional QA disposition only. They do not evaluate
-        checklist answers automatically and do not perform ERP, inventory, warehouse,
-        or dispatch actions.
-      </p>
-      <div class="landing-actions">
-        <a class="btn btn--primary"
-           href="{% url 'quality:confirm_decision' submission_id=submission.id decision=QAReviewDecision.RELEASE %}">
-          RELEASE
-        </a>
-        <a class="btn btn--secondary"
-           href="{% url 'quality:confirm_decision' submission_id=submission.id decision=QAReviewDecision.HOLD %}">
-          HOLD
-        </a>
-        <a class="btn btn--secondary"
-           href="{% url 'quality:confirm_decision' submission_id=submission.id decision=QAReviewDecision.REJECT %}">
-          REJECT
-        </a>
-      </div>
-    </section>
+    <div class="review-workspace">
+      <div class="review-workspace__main">{% include "recording/_snapshot_sections.html" %}</div>
+      <aside class="review-workspace__panel" aria-labelledby="qa-actions-heading">
+        <h2 id="qa-actions-heading">QA disposition</h2>
+        <p class="form-help">
+          These actions record a provisional QA disposition only. They do not evaluate
+          checklist answers automatically and do not perform ERP, inventory, warehouse,
+          or dispatch actions. Confirmation is required on the next screen.
+        </p>
+        <div class="review-actions">
+          <a class="btn btn--release"
+             href="{% url 'quality:confirm_decision' submission_id=submission.id decision=QAReviewDecision.RELEASE %}">
+            RELEASE
+          </a>
+          <a class="btn btn--hold"
+             href="{% url 'quality:confirm_decision' submission_id=submission.id decision=QAReviewDecision.HOLD %}">
+            HOLD
+          </a>
+          <a class="btn btn--reject"
+             href="{% url 'quality:confirm_decision' submission_id=submission.id decision=QAReviewDecision.REJECT %}">
+            REJECT
+          </a>
+        </div>
+      </aside>
+    </div>
   </section>
 {% endblock %}
