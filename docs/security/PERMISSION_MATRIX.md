@@ -305,3 +305,16 @@ ERP remains the inventory ledger. No role is mapped to a Nelna job title by this
 
 ERP quantity/status updates remain dual-gated OFF. Owner/SoD mapping remains APR-067 EVIDENCE REQUIRED.
 
+### Quality Document Control (Phase 43)
+
+| Key | Permission | Notes |
+| --- | --- | --- |
+| view_effectivedocument | `document_control.view_effectivedocument` | Operators see applicable effective documents/files only |
+| edit_qualitydocument | `document_control.edit_qualitydocument` | Create documents and edit drafts |
+| approve_qualitydocument | `document_control.approve_qualitydocument` | Separate from edit; author cannot approve own version |
+| publish_qualitydocument | `document_control.publish_qualitydocument` | Make effective or retire |
+| acknowledge_qualitydocument | `document_control.acknowledge_qualitydocument` | Optional read/ack; not competency training |
+| link_qualitydocumentversion | `document_control.link_qualitydocumentversion` | Bind a quality record to an exact version |
+
+Document numbering and role mapping remain APR-068 EVIDENCE REQUIRED.
+

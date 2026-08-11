@@ -447,3 +447,18 @@ Retention period is **deferred** â€” not decided in Phase 03. Events are ap
 | REWORK_POLICY_UPSERTED | Rework policy stub upserted |
 | REWORK_ERP_STOCK_MOVEMENT_BLOCKED | ERP quantity/status update blocked |
 
+### Quality Document Control (Phase 43)
+
+| Event | Meaning |
+| --- | --- |
+| DOCUMENT_CREATED | Quality document created with first draft revision |
+| DOCUMENT_VERSION_CREATED | New draft revision created |
+| DOCUMENT_VERSION_UPDATED | Draft version updated |
+| DOCUMENT_SUBMITTED_FOR_REVIEW | Version submitted for review |
+| DOCUMENT_RETURNED_TO_DRAFT | Version returned to draft |
+| DOCUMENT_APPROVED | Version approved (author cannot approve) |
+| DOCUMENT_MADE_EFFECTIVE | Version made effective |
+| DOCUMENT_RETIRED | Version retired (including supersession) |
+| DOCUMENT_ACKNOWLEDGED | Optional read/ack (not competency) |
+| DOCUMENT_VERSION_LINKED | Quality record linked to an exact version |
+

@@ -70,6 +70,10 @@ class EvidenceLinkedKind(models.TextChoices):
         "RETURN_QUALITY_RECORD",
         "Returned product quality record",
     )
+    QUALITY_DOCUMENT_VERSION = (
+        "QUALITY_DOCUMENT_VERSION",
+        "Quality document version file",
+    )
 
 
 class EvidenceLifecycleStatus(models.TextChoices):

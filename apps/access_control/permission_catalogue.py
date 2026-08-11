@@ -44,6 +44,7 @@ class CapabilityBucket(StrEnum):
     PRODUCT_RETURNS = "product_returns"
     QUALITY_QUARANTINE = "quality_quarantine"
     REWORK = "rework"
+    DOCUMENT_CONTROL = "document_control"
     EVIDENCE = "evidence"
     MASTER_DATA = "master_data"
     CHECKLIST_PUBLISH = "checklist_publish"
@@ -1061,6 +1062,52 @@ PERMISSION_CATALOGUE: Final[tuple[PermissionCatalogueEntry, ...]] = (
         scopes=(ObjectScope.ORGANIZATION,),
         description="Manage rework policy stubs including the org ERP-stock gate.",
         notes="Dual-gated with REWORK_ERP_STOCK_MOVEMENT_APPROVED (default OFF); APR-067.",
+    ),
+    PermissionCatalogueEntry(
+        key="view_effectivedocument",
+        permission="document_control.view_effectivedocument",
+        bucket=CapabilityBucket.DOCUMENT_CONTROL,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="View applicable effective quality documents and their files.",
+        notes="Operators do not see draft, under-review, or approved-but-not-effective versions.",
+    ),
+    PermissionCatalogueEntry(
+        key="edit_qualitydocument",
+        permission="document_control.edit_qualitydocument",
+        bucket=CapabilityBucket.DOCUMENT_CONTROL,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Create documents and edit draft versions.",
+        notes="Approved/effective/retired versions are immutable; create a new revision.",
+    ),
+    PermissionCatalogueEntry(
+        key="approve_qualitydocument",
+        permission="document_control.approve_qualitydocument",
+        bucket=CapabilityBucket.DOCUMENT_CONTROL,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Review and approve document versions (not the version author).",
+        notes="Separate from edit and publish; APR-068 EVIDENCE REQUIRED.",
+    ),
+    PermissionCatalogueEntry(
+        key="publish_qualitydocument",
+        permission="document_control.publish_qualitydocument",
+        bucket=CapabilityBucket.DOCUMENT_CONTROL,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Make a version effective or retire it.",
+    ),
+    PermissionCatalogueEntry(
+        key="acknowledge_qualitydocument",
+        permission="document_control.acknowledge_qualitydocument",
+        bucket=CapabilityBucket.DOCUMENT_CONTROL,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Record optional read/acknowledgement of an effective version.",
+        notes="Acknowledgement is not competency training (Phase 05E).",
+    ),
+    PermissionCatalogueEntry(
+        key="link_qualitydocumentversion",
+        permission="document_control.link_qualitydocumentversion",
+        bucket=CapabilityBucket.DOCUMENT_CONTROL,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Link a quality record to an exact approved/effective/retired version.",
     ),
     PermissionCatalogueEntry(
         key="manage_supplierquality_qa",

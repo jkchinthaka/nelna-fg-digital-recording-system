@@ -13,6 +13,7 @@ from apps.accounts.models import User
 from apps.capa.models import CorrectiveAction
 from apps.changeover.models import ChangeoverRecord, LineClearanceRecord
 from apps.customer_complaints.models import CustomerComplaintCase
+from apps.document_control.models import DocumentVersionStatus, QualityDocumentVersion
 from apps.environmental.models import MonitoringReading
 from apps.evidence.models import EvidenceLinkedKind
 from apps.instruments.models import CalibrationRecord
@@ -82,6 +83,10 @@ VIEW_RETURN = "product_returns.view_returnquality"
 MANAGE_RETURN = "product_returns.manage_returnquality"
 INSPECT_RETURN = "product_returns.inspect_returnquality"
 DISPOSITION_RETURN = "product_returns.disposition_returnquality"
+VIEW_EFFECTIVE_DOCUMENT = "document_control.view_effectivedocument"
+EDIT_DOCUMENT = "document_control.edit_qualitydocument"
+APPROVE_DOCUMENT = "document_control.approve_qualitydocument"
+PUBLISH_DOCUMENT = "document_control.publish_qualitydocument"
 
 
 @dataclass(frozen=True, slots=True)
@@ -162,7 +167,7 @@ def resolve_linked_target(*, kind: str, object_id: uuid.UUID) -> LinkedTarget:
         )
 
     if kind == EvidenceLinkedKind.QA_REVIEW:
-        review = (
+        qa_review = (
             QAReview.objects.select_related(
                 "organization",
                 "checklist_submission",
@@ -171,14 +176,14 @@ def resolve_linked_target(*, kind: str, object_id: uuid.UUID) -> LinkedTarget:
             .filter(pk=object_id)
             .first()
         )
-        if review is None:
+        if qa_review is None:
             raise ValidationError({"linked_object_id": "QA review not found."})
         return LinkedTarget(
             kind=kind,
-            object_id=review.id,
-            organization_id=review.organization_id,
+            object_id=qa_review.id,
+            organization_id=qa_review.organization_id,
             linkage_immutable=True,
-            obj=review,
+            obj=qa_review,
         )
 
     if kind == EvidenceLinkedKind.NONCONFORMANCE:
@@ -373,9 +378,27 @@ def resolve_linked_target(*, kind: str, object_id: uuid.UUID) -> LinkedTarget:
             kind=kind,
             object_id=return_record.id,
             organization_id=return_record.organization_id,
-            linkage_immutable=return_record.status
-            in {"DISPOSITIONED", "CANCELLED"},
+            linkage_immutable=return_record.status in {"DISPOSITIONED", "CANCELLED"},
             obj=return_record,
+        )
+
+    if kind == EvidenceLinkedKind.QUALITY_DOCUMENT_VERSION:
+        document_version = (
+            QualityDocumentVersion.objects.select_related("document").filter(pk=object_id).first()
+        )
+        if document_version is None:
+            raise ValidationError({"linked_object_id": "Quality document version not found."})
+        return LinkedTarget(
+            kind=kind,
+            object_id=document_version.id,
+            organization_id=document_version.document.organization_id,
+            linkage_immutable=document_version.status
+            in {
+                DocumentVersionStatus.APPROVED,
+                DocumentVersionStatus.EFFECTIVE,
+                DocumentVersionStatus.RETIRED,
+            },
+            obj=document_version,
         )
 
     raise ValidationError({"linked_kind": "Unsupported linked kind."})
@@ -610,5 +633,37 @@ def _assert_parent_access(*, actor: User, target: LinkedTarget, for_mutate: bool
         if not allowed:
             raise PermissionDenied("Permission denied.")
         return
+
+    if kind == EvidenceLinkedKind.QUALITY_DOCUMENT_VERSION:
+        version: QualityDocumentVersion = target.obj
+        editor = (
+            user_has_permission(actor, EDIT_DOCUMENT, scope=org_scope)
+            or user_has_permission(actor, APPROVE_DOCUMENT, scope=org_scope)
+            or user_has_permission(actor, PUBLISH_DOCUMENT, scope=org_scope)
+        )
+        if for_mutate:
+            if not editor:
+                raise PermissionDenied("Permission denied.")
+            if version.status in {
+                DocumentVersionStatus.APPROVED,
+                DocumentVersionStatus.EFFECTIVE,
+                DocumentVersionStatus.RETIRED,
+            }:
+                raise ValidationError(
+                    {
+                        "linked_object_id": (
+                            "Files cannot be attached to approved, effective, or "
+                            "retired document versions."
+                        )
+                    }
+                )
+            return
+        if editor:
+            return
+        if version.status == DocumentVersionStatus.EFFECTIVE and user_has_permission(
+            actor, VIEW_EFFECTIVE_DOCUMENT, scope=org_scope
+        ):
+            return
+        raise PermissionDenied("Operators may access only effective document files.")
 
     raise PermissionDenied("Permission denied.")

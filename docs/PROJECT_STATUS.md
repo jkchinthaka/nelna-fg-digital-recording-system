@@ -88,6 +88,7 @@ This document records **repository evidence**. It does not invent Nelna operatio
 | `product_returns` | **40** | IMPLEMENTED foundation · returned-product quality records; quarantine; checklist inspection; disposition architecture; ERP stock dual-gate OFF (APR-065) |
 | `quality_quarantine` | **41** | IMPLEMENTED foundation · application quality state; source-linked cases; append-only history; quantity/release/ERP gates OFF by default (APR-066) |
 | `rework` | **42** | IMPLEMENTED foundation · create/authorize/execute; source/result genealogy; new reinspection; ERP stock dual-gate OFF (APR-067) |
+| `document_control` | **43** | IMPLEMENTED foundation · versioned QMS documents; immutability; effective lookup; historical links; Phase 11 files; ack ≠ competency (APR-068) |
 
 Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 38 except gaps noted elsewhere)._ (`loading` controls are delivered inside `dispatch` for Phase 13 — see ADR-025.)
 
@@ -164,6 +165,7 @@ Not started (by MODULE_MAP): _(none for MODULE_MAP apps through 38 except gaps n
 | 40 Returned Product Quality | Technical complete — ERP/SFA return mapping, quarantine, checklist inspection, disposition architecture, ERP stock movement dual-gate OFF (ADR-051) | Return disposition / quarantine / ERP stock movement EVIDENCE REQUIRED (APR-065) |
 | 41 Quality Quarantine Management | Technical complete — source-linked local cases, append-only events, policy-gated quantity refs, release/ERP dual-gates, fail-closed outbound (ADR-052) | Quarantine/release SOP, role mapping, quantity semantics, and ERP adapter EVIDENCE REQUIRED (APR-066) |
 | 42 Controlled Rework Management | Technical complete — explicit create/authorize, source/result genealogy, quantity conservation, new reinspection, ERP stock dual-gate OFF (ADR-053) | Rework SOP / SoD / ERP adapter EVIDENCE REQUIRED (APR-067) |
+| 43 Quality Document Control | Technical complete — versioned documents, immutability, effective lookup, historical links, Phase 11 files, optional acknowledgement (ADR-054) | Document numbering / type catalogue / SoD / acknowledgement obligation EVIDENCE REQUIRED (APR-068) |
 | 20–21 Pilot / production release | Not started | Depends on business gates + Phase 19 ops evidence |
 | 20 UAT / Pilot | Package opened — **BLOCKED** pending business evidence ([uat/README.md](uat/README.md)) | Pilot scope APR-034, FG-QA-001, roles/SoD, hosted env EVIDENCE REQUIRED |
 | 21 Production release | Package opened — **GO-LIVE BLOCKED** ([release/README.md](release/README.md)) | Phase 20 FAIL + hosting/config/support gates |
@@ -568,4 +570,10 @@ Quality quarantine management (ADR-052): organization-scoped local quality state
 **STATUS: PHASE 42 REWORK MANAGEMENT COMPLETE**
 
 Controlled rework management (ADR-053): organization-scoped rework cases with explicit create and authorize permissions, source/result genealogy, quantity conservation, and a new published-version reinspection on the resulting batch. REJECT does not automatically create rework. Original QA review, HOLD, REJECT, and NCR history is never rewritten. ERP quantity/status updates remain blocked behind dual-gate approval. Company rework SOP, SoD mapping, and ERP adapter evidence remain **EVIDENCE REQUIRED** (APR-067).
+
+## Phase 43 delivery status
+
+**STATUS: PHASE 43 DOCUMENT CONTROL COMPLETE**
+
+Quality document control (ADR-054): organization-scoped versioned QMS documents with generic architectural kinds only (SOP, work instruction, specification, test method, policy, form reference). Approved, effective, and retired versions are immutable. Operators see only currently effective documents and files. Quality records may cite an exact approved/effective/retired version. Files use Phase 11 private evidence storage. Optional acknowledgement is not competency training. Document numbering, type catalogue, and role mapping remain **EVIDENCE REQUIRED** (APR-068).
 

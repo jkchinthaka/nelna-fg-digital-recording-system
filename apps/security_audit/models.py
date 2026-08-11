@@ -1053,6 +1053,46 @@ class SecurityAuditEvent(models.Model):
             "REWORK_ERP_STOCK_MOVEMENT_BLOCKED",
             "Rework ERP stock movement blocked by dual-gate",
         )
+        DOCUMENT_CREATED = (
+            "DOCUMENT_CREATED",
+            "Quality document created",
+        )
+        DOCUMENT_VERSION_CREATED = (
+            "DOCUMENT_VERSION_CREATED",
+            "Quality document version created",
+        )
+        DOCUMENT_VERSION_UPDATED = (
+            "DOCUMENT_VERSION_UPDATED",
+            "Quality document draft version updated",
+        )
+        DOCUMENT_SUBMITTED_FOR_REVIEW = (
+            "DOCUMENT_SUBMITTED_FOR_REVIEW",
+            "Quality document version submitted for review",
+        )
+        DOCUMENT_RETURNED_TO_DRAFT = (
+            "DOCUMENT_RETURNED_TO_DRAFT",
+            "Quality document version returned to draft",
+        )
+        DOCUMENT_APPROVED = (
+            "DOCUMENT_APPROVED",
+            "Quality document version approved",
+        )
+        DOCUMENT_MADE_EFFECTIVE = (
+            "DOCUMENT_MADE_EFFECTIVE",
+            "Quality document version made effective",
+        )
+        DOCUMENT_RETIRED = (
+            "DOCUMENT_RETIRED",
+            "Quality document version retired",
+        )
+        DOCUMENT_ACKNOWLEDGED = (
+            "DOCUMENT_ACKNOWLEDGED",
+            "Quality document version acknowledged (not competency)",
+        )
+        DOCUMENT_VERSION_LINKED = (
+            "DOCUMENT_VERSION_LINKED",
+            "Quality record linked to exact document version",
+        )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 

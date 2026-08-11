@@ -567,3 +567,14 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Branch naming | `feature/phase-42-controlled-rework` |
 | Exit criteria | Cases are org-scoped; create/authorize are separate grants; genealogy preserves source/result/remaining qty; original QA/HOLD/NCR unchanged; reinspection targets resulting batch; ERP outbound remains fail-closed |
 | Status | **Technical foundation delivered** on `main` — rework SOP and ERP enablement remain **EVIDENCE REQUIRED** |
+
+## Phase 43 — Quality Document Control
+
+| Field | Content |
+| --- | --- |
+| Objective | Controlled versioned management of quality procedures |
+| Outputs | `apps.document_control`; ADR-054; lifecycle; immutability; effective lookup; historical links; Phase 11 files; optional acknowledgement; APR-068 |
+| Approval gate | Document numbering, type catalogue, acknowledgement obligation, and approver SoD |
+| Branch naming | `feature/phase-43-document-control` |
+| Exit criteria | Org-scoped documents; approved/effective versions immutable; operators see effective only; quality records can cite exact version; ack ≠ competency |
+| Status | **Technical foundation delivered** on `main` — document-control SOP remains **EVIDENCE REQUIRED** |

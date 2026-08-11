@@ -85,6 +85,7 @@ INSTALLED_APPS = [
     "apps.product_returns",
     "apps.quality_quarantine",
     "apps.rework",
+    "apps.document_control",
     "apps.nonconformance",
     "apps.capa",
     "apps.dispatch",

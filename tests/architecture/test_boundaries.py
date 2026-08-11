@@ -44,6 +44,7 @@ ALLOWED_APPS = {
     "product_returns",
     "quality_quarantine",
     "rework",
+    "document_control",
     "supplier_quality",
     "access_control",
     "security_audit",
