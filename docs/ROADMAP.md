@@ -622,3 +622,14 @@ Do **not** invent or seed Day/Night shift names, official shift start/end times,
 | Branch naming | `feature/phase-47-quality-risk-management` |
 | Exit criteria | No hardcoded 1–5/RAG; scoring default OFF; append-only assessments; accept perm separate |
 | Status | **Technical foundation delivered** on `main` — scoring methodology remains **EVIDENCE REQUIRED** |
+
+## Phase 48 — Process FMEA
+
+| Field | Content |
+| --- | --- |
+| Objective | Structured Process FMEA linked to quality-risk architecture without inventing RPN/AP policy |
+| Outputs | `apps.process_fmea`; ADR-059; versioned worksheets; APR-073 |
+| Approval gate | PFMEA methodology, rating scales, RPN or Action Priority use, review cadence |
+| Branch naming | `feature/phase-48-process-fmea` |
+| Exit criteria | Approved versions immutable; scoring default OFF; S×O×D only after configured model; explicit CAPA/change |
+| Status | **Technical foundation delivered** on `main` — PFMEA methodology remains **EVIDENCE REQUIRED** |

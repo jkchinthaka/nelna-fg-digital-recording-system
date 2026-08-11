@@ -1285,6 +1285,70 @@ class SecurityAuditEvent(models.Model):
             "QUALITY_RISK_SCORING_POLICY_UPDATED",
             "Quality risk scoring policy updated",
         )
+        PROCESS_FMEA_CREATED = (
+            "PROCESS_FMEA_CREATED",
+            "Process FMEA created",
+        )
+        PROCESS_FMEA_VERSION_CREATED = (
+            "PROCESS_FMEA_VERSION_CREATED",
+            "Process FMEA revision created",
+        )
+        PROCESS_FMEA_SUBMITTED = (
+            "PROCESS_FMEA_SUBMITTED",
+            "Process FMEA version submitted for review",
+        )
+        PROCESS_FMEA_APPROVED = (
+            "PROCESS_FMEA_APPROVED",
+            "Process FMEA version approved",
+        )
+        PROCESS_FMEA_SUPERSEDED = (
+            "PROCESS_FMEA_SUPERSEDED",
+            "Process FMEA version superseded",
+        )
+        PROCESS_FMEA_CANCELLED = (
+            "PROCESS_FMEA_CANCELLED",
+            "Process FMEA version cancelled",
+        )
+        PROCESS_FMEA_WITHDRAWN = (
+            "PROCESS_FMEA_WITHDRAWN",
+            "Process FMEA version withdrawn",
+        )
+        PROCESS_FMEA_STEP_ADDED = (
+            "PROCESS_FMEA_STEP_ADDED",
+            "Process FMEA process step recorded",
+        )
+        PROCESS_FMEA_FAILURE_MODE_ADDED = (
+            "PROCESS_FMEA_FAILURE_MODE_ADDED",
+            "Process FMEA failure mode recorded",
+        )
+        PROCESS_FMEA_SCORED = (
+            "PROCESS_FMEA_SCORED",
+            "Process FMEA score snapshot recorded",
+        )
+        PROCESS_FMEA_ASSESSED = (
+            "PROCESS_FMEA_ASSESSED",
+            "Process FMEA assessment recorded",
+        )
+        PROCESS_FMEA_LINKED = (
+            "PROCESS_FMEA_LINKED",
+            "Process FMEA context link recorded",
+        )
+        PROCESS_FMEA_ACTION_ADDED = (
+            "PROCESS_FMEA_ACTION_ADDED",
+            "Process FMEA recommended action recorded",
+        )
+        PROCESS_FMEA_ACTION_RECORDED = (
+            "PROCESS_FMEA_ACTION_RECORDED",
+            "Process FMEA recommended action recorded",
+        )
+        PROCESS_FMEA_ACTION_PROMOTED = (
+            "PROCESS_FMEA_ACTION_PROMOTED",
+            "Process FMEA recommended action promoted by explicit action",
+        )
+        PROCESS_FMEA_SCORING_POLICY_UPDATED = (
+            "PROCESS_FMEA_SCORING_POLICY_UPDATED",
+            "Process FMEA scoring policy updated",
+        )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 

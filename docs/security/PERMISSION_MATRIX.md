@@ -368,3 +368,15 @@ Official sources and role mapping remain APR-071 EVIDENCE REQUIRED. No ISO/FSSC/
 
 Scoring methodology remains APR-072 EVIDENCE REQUIRED.
 
+### Process FMEA (Phase 48)
+
+| Key | Permission | Notes |
+| --- | --- | --- |
+| view_processfmea | `process_fmea.view_processfmea` | View FMEA records and versions |
+| manage_processfmea | `process_fmea.manage_processfmea` | Draft structure, links, generic actions |
+| approve_processfmea | `process_fmea.approve_processfmea` | Approve draft versions; approved are immutable |
+| configure_processfmeascoring | `process_fmea.configure_processfmeascoring` | Owner-cited scoring policy; default OFF |
+| link_processfmea_action | `process_fmea.link_processfmea_action` | Explicit CAPA/change from recommended actions |
+
+PFMEA methodology remains APR-073 EVIDENCE REQUIRED. S×O×D product is not an RPN policy.
+

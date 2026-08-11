@@ -44,6 +44,7 @@
 | RSK-G-024 | Repository / IP ownership ambiguity | Legal / Continuity | 3 | 4 | 12 | Management Sponsor (TBC) | Written company clarification; continuity plan — no legal conclusion here | Handover without ownership clarity | Open |
 | RSK-G-025 | Compliance mapping treated as certification or legal compliance | Compliance / QA / Legal | 3 | 5 | 15 | QMS / Food Safety / Governance (TBC) | ADR-057; no COMPLIANT status; APR-071; no seeded ISO/FSSC/HACCP/SLS applicability | Marketing or audit pack claims certified because mappings exist | Open |
 | RSK-G-026 | Invented quality-risk scoring treated as company method | Quality Risk / Food Safety / QA | 4 | 5 | 20 | Quality Risk / QA / Governance (TBC) | ADR-058; scoring default OFF; no 1–5/RAG/acceptance matrix; APR-072 | Dashboard or audit pack presents hardcoded scores as Nelna policy | Open |
+| RSK-G-027 | Invented PFMEA RPN or Action Priority treated as company method | Process Quality / FMEA / Risk / QA | 4 | 5 | 20 | Process Quality / QA / Governance (TBC) | ADR-059; scoring default OFF; RPN math-only after citation; no AP table; APR-073 | Worksheet or audit pack presents hardcoded RPN bands as Nelna policy | Open |
 
 ---
 

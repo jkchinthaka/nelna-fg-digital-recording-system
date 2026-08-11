@@ -49,6 +49,7 @@ class CapabilityBucket(StrEnum):
     QUALITY_AUDITS = "quality_audits"
     COMPLIANCE_MAPPING = "compliance_mapping"
     QUALITY_RISKS = "quality_risks"
+    PROCESS_FMEA = "process_fmea"
     EVIDENCE = "evidence"
     MASTER_DATA = "master_data"
     CHECKLIST_PUBLISH = "checklist_publish"
@@ -1258,7 +1259,9 @@ PERMISSION_CATALOGUE: Final[tuple[PermissionCatalogueEntry, ...]] = (
         permission="quality_risks.assess_qualityrisk",
         bucket=CapabilityBucket.QUALITY_RISKS,
         scopes=(ObjectScope.ORGANIZATION,),
-        description="Record append-only historical assessments. Previous versions are not overwritten.",
+        description=(
+            "Record append-only historical assessments. Previous versions are not overwritten."
+        ),
     ),
     PermissionCatalogueEntry(
         key="accept_qualityrisk",
@@ -1273,6 +1276,44 @@ PERMISSION_CATALOGUE: Final[tuple[PermissionCatalogueEntry, ...]] = (
         bucket=CapabilityBucket.QUALITY_RISKS,
         scopes=(ObjectScope.ORGANIZATION,),
         description="Configure owner-cited scoring policy. Default OFF. APR-072 EVIDENCE REQUIRED.",
+    ),
+    PermissionCatalogueEntry(
+        key="view_processfmea",
+        permission="process_fmea.view_processfmea",
+        bucket=CapabilityBucket.PROCESS_FMEA,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="View process FMEA records and versions.",
+        notes="No invented RPN or Action Priority policy.",
+    ),
+    PermissionCatalogueEntry(
+        key="manage_processfmea",
+        permission="process_fmea.manage_processfmea",
+        bucket=CapabilityBucket.PROCESS_FMEA,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Draft and maintain process FMEA versions, steps, modes, and links.",
+    ),
+    PermissionCatalogueEntry(
+        key="approve_processfmea",
+        permission="process_fmea.approve_processfmea",
+        bucket=CapabilityBucket.PROCESS_FMEA,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Approve a draft process FMEA version. Approved versions are immutable.",
+    ),
+    PermissionCatalogueEntry(
+        key="configure_processfmeascoring",
+        permission="process_fmea.configure_processfmeascoring",
+        bucket=CapabilityBucket.PROCESS_FMEA,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description="Configure owner-cited FMEA scoring. Default OFF. APR-073 EVIDENCE REQUIRED.",
+    ),
+    PermissionCatalogueEntry(
+        key="link_processfmea_action",
+        permission="process_fmea.link_processfmea_action",
+        bucket=CapabilityBucket.PROCESS_FMEA,
+        scopes=(ObjectScope.ORGANIZATION,),
+        description=(
+            "Explicitly link recommended actions to CAPA or change request. Never automatic."
+        ),
     ),
     PermissionCatalogueEntry(
         key="manage_supplierquality_qa",

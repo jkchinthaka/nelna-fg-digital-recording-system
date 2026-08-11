@@ -540,3 +540,22 @@ scoring certificate and do not invent a company matrix.
 | QUALITY_RISK_CATEGORY_UPSERTED | Category shell upserted |
 | QUALITY_RISK_SCORING_POLICY_UPDATED | Scoring policy updated (default OFF) |
 
+### Process FMEA (Phase 48)
+
+These events record access-sensitive Process FMEA actions. They are not an
+RPN certificate and do not invent Action Priority bands.
+
+| Event | Meaning |
+| --- | --- |
+| PROCESS_FMEA_CREATED | FMEA created with draft version 1 |
+| PROCESS_FMEA_VERSION_CREATED | New revision created from an approved version |
+| PROCESS_FMEA_APPROVED | Version approved and locked |
+| PROCESS_FMEA_SUPERSEDED | Prior approved version superseded |
+| PROCESS_FMEA_WITHDRAWN | Draft version withdrawn and locked |
+| PROCESS_FMEA_STEP_ADDED | Process step recorded |
+| PROCESS_FMEA_FAILURE_MODE_ADDED | Failure mode recorded |
+| PROCESS_FMEA_ASSESSED | S/O/D assessment recorded (no threshold) |
+| PROCESS_FMEA_LINKED | Context link recorded |
+| PROCESS_FMEA_ACTION_RECORDED | Recommended action recorded |
+| PROCESS_FMEA_SCORING_POLICY_UPDATED | Scoring policy updated (default OFF) |
+
