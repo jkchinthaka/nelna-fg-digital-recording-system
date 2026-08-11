@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Monthly pack
+      {% if spec %}— {{ spec.code }}{% endif %}
+    </title>
+    <link rel="stylesheet" href="/static/dist/css/app.css">
+  </head>
+  <body class="print-sheet print-sheet--monthly">
+    <header class="print-sheet__header">
+      {% if spec %}
+        <h1>{{ spec.title }} — monthly pack {{ month_label }}</h1>
+        <p>
+          Form {{ spec.code }} · Issued {{ spec.issued }} · Rev {{ spec.revision }}
+          · {{ spec.source_status }}
+        </p>
+      {% else %}
+        <h1>Monthly pack</h1>
+        <p>Select a registered controlled form.</p>
+      {% endif %}
+      <p>Generated {{ generated_at }}</p>
+    </header>
+    {% if spec and spec.notes %}
+      <ul>
+        {% for note in spec.notes %}<li>{{ note }}</li>{% endfor %}
+      </ul>
+    {% endif %}
+    {% if submissions %}
+      <table class="print-table">
+        <thead>
+          <tr>
+            <th scope="col">Submitted</th>
+            <th scope="col">Daily key</th>
+            <th scope="col">Recorded by</th>
+            <th scope="col">Submission</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in submissions %}
+            <tr>
+              <td>{{ row.submitted_at }}</td>
+              <td>{{ row.checklist_record.checklist_task.batch_reference }}</td>
+              <td>{{ row.submitted_by.employee_code }}</td>
+              <td>#{{ row.submission_number }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p>No submitted records for this month in your organization scope.</p>
+    {% endif %}
+    <footer class="print-sheet__footer">
+      <span>Monthly pack {{ month_label }}</span>
+      <span>Page printed {{ generated_at }}</span>
+    </footer>
+  </body>
+</html>

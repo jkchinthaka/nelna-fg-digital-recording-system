@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any
 
 from django.core.exceptions import PermissionDenied, ValidationError
@@ -82,6 +82,7 @@ def create_batch_checklist_task(
     checklist_template_id: uuid.UUID,
     checklist_version_id: uuid.UUID,
     batch_reference: str,
+    required_permission: str = MANAGE_CHECKLIST_TASK,
 ) -> ChecklistTask:
     """
     Create (or return idempotently) a PENDING checklist task for one batch reference.
@@ -95,7 +96,9 @@ def create_batch_checklist_task(
     if organization is None:
         raise ValidationError({"organization": "Organization not found."})
 
-    require_permission(user, MANAGE_CHECKLIST_TASK, scope=Scope(organization_id=organization.id))
+    if required_permission not in {MANAGE_CHECKLIST_TASK, RECORD_CHECKLIST_TASK}:
+        raise ValidationError({"permission": "Unsupported task-create permission."})
+    require_permission(user, required_permission, scope=Scope(organization_id=organization.id))
 
     template = (
         ChecklistTemplate.objects.select_related("organization")
@@ -108,6 +111,17 @@ def create_batch_checklist_task(
         raise ValidationError(
             {"checklist_template": ("Checklist template must belong to the selected organization.")}
         )
+    if required_permission == RECORD_CHECKLIST_TASK:
+        from apps.checklists.controlled_forms import is_controlled_form_code
+
+        if not is_controlled_form_code(template.code):
+            raise ValidationError(
+                {
+                    "checklist_template": (
+                        "Recorders may open only registered controlled source forms."
+                    )
+                }
+            )
 
     version = (
         ChecklistVersion.objects.select_related("template", "template__organization")
@@ -310,6 +324,54 @@ def cancel_checklist_task(*, actor: User | None, task_id: uuid.UUID) -> Checklis
 
 
 # --- Phase 07C checklist applicability (re-export engine API) ---
+
+
+def ensure_controlled_daily_task(
+    *,
+    actor: User | None,
+    organization_id: uuid.UUID,
+    form_code: str,
+    record_date: date,
+    room_key: str = "",
+) -> ChecklistTask:
+    """Idempotent daily task for a SOURCE RECEIVED controlled form.
+
+    Recorders may open today's form without manage_checklisttask. Only registered
+    controlled-form codes are eligible.
+    """
+    from apps.checklists.controlled_forms import is_controlled_form_code
+
+    user = _require_authenticated_actor(actor)
+    if not is_controlled_form_code(form_code):
+        raise ValidationError({"form_code": "Not a registered controlled source form."})
+    require_permission(user, RECORD_CHECKLIST_TASK, scope=Scope(organization_id=organization_id))
+    if not isinstance(record_date, date):
+        raise ValidationError({"record_date": "A calendar date is required."})
+    template = ChecklistTemplate.objects.filter(
+        organization_id=organization_id, code=form_code, is_active=True
+    ).first()
+    if template is None:
+        raise ValidationError(
+            {"form_code": "Controlled form template is not published in this organization."}
+        )
+    version = (
+        ChecklistVersion.objects.filter(template=template, status=ChecklistVersionStatus.PUBLISHED)
+        .order_by("-version_number")
+        .first()
+    )
+    if version is None:
+        raise ValidationError({"form_code": "No published version exists for this form."})
+    slug = form_code.replace("/", "-")
+    suffix = f"-{room_key}" if room_key else ""
+    batch_ref = f"{slug}-{record_date.isoformat()}{suffix}"
+    return create_batch_checklist_task(
+        actor=user,
+        organization_id=organization_id,
+        checklist_template_id=template.id,
+        checklist_version_id=version.id,
+        batch_reference=batch_ref,
+        required_permission=RECORD_CHECKLIST_TASK,
+    )
 
 
 # Phase 07G assignment API lives in apps.scheduling.assignment (not re-exported here)

@@ -125,6 +125,9 @@ def load_synthetic_demo_data(*, force: bool = False) -> SyntheticDemoDataset:
             organization=existing,
             batch_reference="DEMO-BATCH-0001",
         ).get()
+        from apps.recording.controlled_form_seed import seed_controlled_form_templates
+
+        seed_controlled_form_templates(actor=_user("DEMO-ADMIN-001"), organization=existing)
         return SyntheticDemoDataset(
             organization=existing,
             site=Site.objects.get(organization=existing, code="DEMOSITE1"),
@@ -245,6 +248,9 @@ def load_synthetic_demo_data(*, force: bool = False) -> SyntheticDemoDataset:
         is_required=False,
     )
     published = publish_checklist_version(actor=admin, version_id=version.id)
+    from apps.recording.controlled_form_seed import seed_controlled_form_templates
+
+    seed_controlled_form_templates(actor=admin, organization=org)
     task = create_batch_checklist_task(
         actor=admin,
         organization_id=org.id,

@@ -27,6 +27,8 @@
         {% if show_recording %}
           <a class="app-nav-link{% if '/recording/' in current_path %} is-active{% endif %}"
              href="{% url 'recording:task_list' %}">Checklist Recording</a>
+          <a class="app-nav-link{% if '/daily-records/' in current_path %} is-active{% endif %}"
+             href="{% url 'recording:daily_home' %}">Daily Records</a>
         {% endif %}
         {% if show_reviews %}
           <a class="app-nav-link{% if '/reviews/' in current_path %} is-active{% endif %}"

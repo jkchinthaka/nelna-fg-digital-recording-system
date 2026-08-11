@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Daily Records — Nelna FG Digital Recording System{% endblock %}
+{% block body_class %}mgmt-shell{% endblock %}
+{% block content %}
+  <section class="mgmt-page" aria-labelledby="daily-heading">
+    <header class="mgmt-page__header">
+      <div>
+        <h1 id="daily-heading">Daily Records</h1>
+        <p class="mgmt-page__lead">
+          SOURCE RECEIVED company forms. Not business approved for digitalization.
+          Unacceptable / FAIL / out-of-range values do not auto-create NCR, CAPA,
+          or QA RELEASE/HOLD/REJECT. Offline recording is not supported.
+        </p>
+      </div>
+    </header>
+    <form class="mgmt-filters"
+          method="get"
+          action="{% url 'recording:daily_home' %}">
+      <div class="form-field">
+        <label for="id_date">Date</label>
+        <input class="form-input"
+               type="date"
+               id="id_date"
+               name="date"
+               value="{{ record_date|date:'Y-m-d' }}">
+      </div>
+      <button type="submit" class="btn btn--secondary btn--inline">Show date</button>
+    </form>
+    <ul class="mgmt-list">
+      {% for form in forms %}
+        <li>
+          <strong>{{ form.code }}</strong> — {{ form.title }}
+          <p class="form-help">Issued {{ form.issued }} · Rev {{ form.revision }} · {{ form.source_status }}</p>
+          {% if form.code == "NMS/PPU/CL/39" %}
+            {% for room in cold_rooms %}
+              <a class="btn btn--primary btn--inline"
+                 href="{% url 'recording:daily_open' form_code=form.code %}?date={{ record_date|date:'Y-m-d' }}&amp;room={{ room }}">Open {{ room }}</a>
+            {% endfor %}
+          {% else %}
+            <a class="btn btn--primary btn--inline"
+               href="{% url 'recording:daily_open' form_code=form.code %}?date={{ record_date|date:'Y-m-d' }}">Open today’s record</a>
+          {% endif %}
+          <a class="btn btn--ghost btn--inline"
+             href="{% url 'recording:daily_monthly_print' %}?form={{ form.code }}&amp;month={{ record_date|date:'Y-m' }}">Print monthly pack</a>
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+{% endblock %}

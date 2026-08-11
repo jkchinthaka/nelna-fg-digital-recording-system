@@ -1,10 +1,26 @@
 from django.urls import path
 
-from apps.recording import views
+from apps.recording import daily_views, views
 
 app_name = "recording"
 
 urlpatterns = [
+    path("daily-records/", daily_views.daily_records_home, name="daily_home"),
+    path(
+        "daily-records/<path:form_code>/open/",
+        daily_views.daily_record_open,
+        name="daily_open",
+    ),
+    path(
+        "daily-records/print/monthly/",
+        daily_views.daily_monthly_print,
+        name="daily_monthly_print",
+    ),
+    path(
+        "daily-records/print/<uuid:record_id>/",
+        daily_views.daily_record_print,
+        name="daily_print",
+    ),
     path("recording/", views.recordable_task_list, name="task_list"),
     path(
         "recording/tasks/<uuid:task_id>/start/",

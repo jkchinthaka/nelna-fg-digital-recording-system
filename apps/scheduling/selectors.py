@@ -112,6 +112,13 @@ def organizations_for_task_manage(actor: User | None) -> QuerySet[Organization]:
     return Organization.objects.filter(pk__in=org_ids).order_by("code")
 
 
+def organizations_for_task_record(actor: User | None) -> QuerySet[Organization]:
+    org_ids = organization_ids_with_permission(actor, RECORD_CHECKLIST_TASK)
+    if not org_ids:
+        return Organization.objects.none()
+    return Organization.objects.filter(pk__in=org_ids).order_by("code")
+
+
 def templates_for_task_manage(
     actor: User | None,
     *,

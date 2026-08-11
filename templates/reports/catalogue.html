@@ -135,8 +135,10 @@
       {% else %}
         {% include "components/empty_state.html" with title="No runs yet" message="No report runs for this organization." %}
       {% endif %}
-    {% else %}
+    {% elif reporting_organizations %}
       {% include "components/empty_state.html" with title="Select an organization" message="Choose an authorized organization to open the report catalogue." %}
+    {% else %}
+      {% include "components/empty_state.html" with title="No organizations are currently available for reporting." message="Your account can open this page, but no organization-scoped report catalogue permission is assigned." %}
     {% endif %}
   </section>
 {% endblock %}

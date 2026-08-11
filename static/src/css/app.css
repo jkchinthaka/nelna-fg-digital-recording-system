@@ -1672,3 +1672,50 @@
     padding: 0.25rem 0;
   }
 }
+
+.print-sheet {
+  background: #fff;
+  color: #111;
+  padding: 16mm;
+  font-family: "Segoe UI", "Noto Sans", sans-serif;
+}
+
+.print-sheet__header h1 {
+  margin: 0.25rem 0;
+  font-size: 1.25rem;
+}
+
+.print-sheet__note,
+.print-sheet__footer {
+  color: #222;
+  font-size: 0.85rem;
+}
+
+.print-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.print-table th,
+.print-table td {
+  border: 1px solid #222;
+  padding: 0.35rem;
+  text-align: left;
+}
+
+@media print {
+  .app-sidebar,
+  .app-topbar,
+  .btn,
+  .skip-link {
+    display: none !important;
+  }
+
+  .print-sheet {
+    padding: 0;
+  }
+
+  .print-sheet--monthly {
+    size: A4 landscape;
+  }
+}
