@@ -348,7 +348,7 @@ def test_gap_linkage_requires_explicit_action() -> None:
         explicit_user_action=True,
         action_kind=GapActionKind.NCR,
         action_summary="Open NCR from gap.",
-        create_linked_record=True,
+        create_follow_up=True,
         ncr_code="SYN-NCR-CM",
     )
     assert ncr_action.nonconformance is not None
@@ -358,7 +358,7 @@ def test_gap_linkage_requires_explicit_action() -> None:
         explicit_user_action=True,
         action_kind=GapActionKind.CAPA,
         action_summary="Open CAPA from gap.",
-        create_linked_record=True,
+        create_follow_up=True,
         capa_code="SYN-CAPA-CM",
     )
     assert capa_action.corrective_action is not None
@@ -368,7 +368,7 @@ def test_gap_linkage_requires_explicit_action() -> None:
         explicit_user_action=True,
         action_kind=GapActionKind.CHANGE_REQUEST,
         action_summary="Open change from gap.",
-        create_linked_record=True,
+        create_follow_up=True,
         change_code="SYN-CHG-CM",
     )
     assert change_action.change_request is not None
@@ -390,7 +390,10 @@ def test_gap_linkage_requires_explicit_action() -> None:
             action_summary="Too late",
         )
     assert list_open_gaps(actor=admin_user, organization_id=org.id).count() == 0
-    statuses = {row["status"] for row in report_mapping_status(actor=admin_user, organization_id=org.id)}
+    statuses = {
+        row["status"]
+        for row in report_mapping_status(actor=admin_user, organization_id=org.id)
+    }
     assert ControlMappingStatus.GAP_IDENTIFIED in statuses
 
 

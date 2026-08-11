@@ -74,10 +74,12 @@ def list_mapping_events(*, source: ComplianceSource) -> QuerySet[ComplianceMappi
 def list_open_gaps(*, actor: User, organization_id: uuid.UUID) -> QuerySet[ComplianceGap]:
     if not user_has_permission(actor, PERM_VIEW, scope=_scope(organization_id)):
         raise PermissionDenied("Permission denied.")
-    return ComplianceGap.objects.filter(
-        mapping__organization_id=organization_id,
-        status=ComplianceGap.Status.OPEN,
-    ).select_related("mapping")
+    return (
+        ComplianceGap.objects.filter(mapping__organization_id=organization_id)
+        .exclude(status=ComplianceGap.Status.CLOSED)
+        .select_related("mapping", "mapping__edition")
+        .order_by("created_at")
+    )
 
 
 def report_mapping_status(*, actor: User, organization_id: uuid.UUID) -> list[dict[str, object]]:
