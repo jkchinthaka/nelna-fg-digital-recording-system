@@ -630,6 +630,7 @@ def link_gap_action(
     action_kind: str,
     action_summary: str,
     create_follow_up: bool = False,
+    create_linked_record: bool | None = None,
     risk_reference: str = "",
     due_date: date | None = None,
     owner: User | None = None,
@@ -646,6 +647,8 @@ def link_gap_action(
     org = gap.mapping.organization
     _require(actor, PERM_LINK_GAP, org.id)
     _assert_edition_mutable(gap.mapping.edition)
+    if gap.status == ComplianceGap.Status.CLOSED:
+        raise ValidationError({"status": "Closed gaps cannot receive new actions."})
     if not explicit_user_action:
         raise ValidationError(
             {"explicit_user_action": "Gap follow-up requires explicit_user_action=True."}
@@ -686,14 +689,16 @@ def link_gap_action(
         elif existing_ncr_id is not None:
             from apps.nonconformance.models import NonConformanceRecord
 
-            found = NonConformanceRecord.objects.filter(
+            found_ncr = NonConformanceRecord.objects.filter(
                 pk=existing_ncr_id, organization_id=org.id
             ).first()
-            if found is None:
+            if found_ncr is None:
                 raise ValidationError({"existing_ncr_id": "NCR not found in organization."})
-            action.nonconformance = found
+            action.nonconformance = found_ncr
         else:
-            raise ValidationError({"nonconformance": "Provide create_follow_up or existing_ncr_id."})
+            raise ValidationError(
+                {"nonconformance": "Provide create_follow_up or existing_ncr_id."}
+            )
     elif kind == GapActionKind.CAPA:
         if create_follow_up:
             supplied = (capa_code or "").strip()
@@ -709,12 +714,12 @@ def link_gap_action(
         elif existing_capa_id is not None:
             from apps.capa.models import CorrectiveAction
 
-            found = CorrectiveAction.objects.filter(
+            found_capa = CorrectiveAction.objects.filter(
                 pk=existing_capa_id, organization_id=org.id
             ).first()
-            if found is None:
+            if found_capa is None:
                 raise ValidationError({"existing_capa_id": "CAPA not found in organization."})
-            action.corrective_action = found
+            action.corrective_action = found_capa
         else:
             raise ValidationError(
                 {"corrective_action": "Provide create_follow_up or existing_capa_id."}
@@ -772,3 +777,99 @@ def link_gap_action(
         },
     )
     return action
+
+
+def set_source_applicability(
+    *,
+    actor: User,
+    edition_id: uuid.UUID,
+    applicability_status: str,
+    evidence_reference: str | None = None,
+    last_reviewed_on: date | None = None,
+) -> ComplianceSourceEdition:
+    return update_edition_applicability(
+        actor=actor,
+        edition_id=edition_id,
+        applicability_status=applicability_status,
+        evidence_reference=evidence_reference,
+        last_reviewed_on=last_reviewed_on,
+    )
+
+
+def set_mapping_status(
+    *, actor: User, mapping_id: uuid.UUID, status: str
+) -> ComplianceControlMapping:
+    return transition_mapping_status(actor=actor, mapping_id=mapping_id, target_status=status)
+
+
+@transaction.atomic
+def revise_compliance_source(
+    *,
+    actor: User,
+    source_id: uuid.UUID,
+    version_edition: str,
+    official_source_citation: str = "",
+    applicability_status: str = ApplicabilityStatus.NOT_ASSESSED,
+    evidence_reference: str = "",
+    last_reviewed_on: date | None = None,
+) -> ComplianceSourceEdition:
+    source = ComplianceSource.objects.get(pk=source_id)
+    _require(actor, PERM_MANAGE_SOURCE, source.organization_id)
+    previous = (
+        ComplianceSourceEdition.objects.filter(
+            source=source, register_status=SourceRegisterStatus.ACTIVE
+        )
+        .order_by("-created_at")
+        .first()
+    )
+    return add_source_edition(
+        actor=actor,
+        source_id=source_id,
+        version_edition=version_edition,
+        official_source_citation=official_source_citation,
+        applicability_status=applicability_status,
+        evidence_reference=evidence_reference,
+        last_reviewed_on=last_reviewed_on,
+        supersede_edition_id=previous.id if previous is not None else None,
+    )
+
+
+def open_compliance_gap(
+    *, actor: User, mapping_id: uuid.UUID, description: str
+) -> ComplianceGap:
+    return record_compliance_gap(actor=actor, mapping_id=mapping_id, description=description)
+
+
+@transaction.atomic
+def close_compliance_gap(*, actor: User, gap_id: uuid.UUID) -> ComplianceGap:
+    gap = ComplianceGap.objects.select_related("mapping", "mapping__edition", "mapping__edition__source").get(
+        pk=gap_id
+    )
+    _require(actor, PERM_MANAGE_CONTROL, gap.mapping.organization_id)
+    _assert_edition_mutable(gap.mapping.edition)
+    if gap.status == ComplianceGap.Status.CLOSED:
+        return gap
+    gap.status = ComplianceGap.Status.CLOSED
+    gap.closed_by = actor
+    gap.closed_at = timezone.now()
+    gap.save(update_fields=["status", "closed_by", "closed_at", "updated_at"])
+    _append_event(
+        organization_id=gap.mapping.organization_id,
+        source=gap.mapping.edition.source,
+        edition=gap.mapping.edition,
+        mapping=gap.mapping,
+        gap=gap,
+        event_type="COMPLIANCE_GAP_CLOSED",
+        actor=actor,
+        summary="Compliance gap closed. Not a certification conclusion.",
+        payload={},
+    )
+    record_event(
+        event_type="COMPLIANCE_GAP_CLOSED",
+        actor=actor,
+        metadata={
+            "organization_id": str(gap.mapping.organization_id),
+            "gap_id": str(gap.id),
+        },
+    )
+    return gap
