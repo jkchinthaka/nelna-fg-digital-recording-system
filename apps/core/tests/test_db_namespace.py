@@ -9,29 +9,41 @@ from django.test import override_settings
 
 @pytest.mark.django_db
 def test_apply_fg_collection_namespace_prefixes_models() -> None:
-    from apps.core.db_namespace import apply_fg_collection_namespace
-
-    with override_settings(
-        FG_COLLECTION_NAMESPACE_ENABLED=True,
-        FG_COLLECTION_PREFIX="fg_",
-    ):
-        count = apply_fg_collection_namespace()
-        assert count > 0
-        user_model = apps.get_model("accounts", "User")
-        assert user_model._meta.db_table.startswith("fg_")
-        assert user_model._meta.db_table == "fg_accounts_user"
-
-
-def test_namespace_disabled_leaves_default_table_names() -> None:
-    from apps.core.db_namespace import apply_fg_collection_namespace
+    from apps.core.db_namespace import (
+        apply_fg_collection_namespace,
+        restore_postgresql_table_names,
+    )
 
     user_model = apps.get_model("accounts", "User")
     original = user_model._meta.db_table
+    try:
+        with override_settings(
+            FG_COLLECTION_NAMESPACE_ENABLED=True,
+            FG_COLLECTION_PREFIX="fg_",
+        ):
+            count = apply_fg_collection_namespace()
+            assert count > 0
+            assert user_model._meta.db_table.startswith("fg_")
+            assert user_model._meta.db_table == "fg_accounts_user"
+    finally:
+        restore_postgresql_table_names()
+        assert user_model._meta.db_table == original or not user_model._meta.db_table.startswith(
+            "fg_"
+        )
+
+
+def test_namespace_disabled_leaves_default_table_names() -> None:
+    from apps.core.db_namespace import (
+        apply_fg_collection_namespace,
+        restore_postgresql_table_names,
+    )
+
+    restore_postgresql_table_names()
+    user_model = apps.get_model("accounts", "User")
     with override_settings(FG_COLLECTION_NAMESPACE_ENABLED=False):
         patched = apply_fg_collection_namespace()
         assert patched == 0
-    if not original.startswith("fg_"):
-        user_model._meta.db_table = original
+    assert not user_model._meta.db_table.startswith("fg_")
 
 
 def test_mongo_same_db_poc_rejects_production_database_name(
