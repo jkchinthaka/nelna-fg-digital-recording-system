@@ -4,6 +4,20 @@
 
 **Hard rule:** Cursor / engineering must **never** invent business PASS results, pilot metrics, or signoff signatures.
 
+## Formal UAT execution (feature freeze @ c08ebec)
+
+| Document | Role |
+| --- | --- |
+| [UAT_MASTER_EXECUTION.md](UAT_MASTER_EXECUTION.md) | Executable UAT-01…UAT-18 sheets (human Actual/PASS blank) |
+| [UAT_DEFECT_REGISTER.md](UAT_DEFECT_REGISTER.md) | Defect log during formal UAT |
+| [UAT_SIGNOFF.md](UAT_SIGNOFF.md) | Human sign-off (blank until exit criteria) |
+| [evidence/](evidence/) | Per-case screenshots and print evidence |
+
+**Application UAT baseline SHA:** `c08ebec96b8551209bc2228866ceb2fb65031668`  
+**Environment until named business testers are assigned:** TECHNICAL UAT DRY RUN (not formal business approval)
+
+## Legacy Phase 20 package (retained)
+
 | Document | Role |
 | --- | --- |
 | [PREREQUISITES.md](PREREQUISITES.md) | Entry criteria checklist |
@@ -20,4 +34,4 @@
 
 ## Current outcome
 
-See final report: **STATUS: PHASE 20 UAT/PILOT BLOCKED**
+See final report: **STATUS: PHASE 20 UAT/PILOT BLOCKED** until human formal UAT and sign-off complete.
