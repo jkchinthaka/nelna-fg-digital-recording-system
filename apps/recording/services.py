@@ -194,7 +194,7 @@ def start_checklist_recording(
             return raced_existing
 
         try:
-            record = create_immutable_unique(
+            record, created = create_immutable_unique(
                 model=ChecklistRecord,
                 create_kwargs={
                     "organization_id": locked.organization_id,
@@ -212,7 +212,7 @@ def start_checklist_recording(
                 return raced
             raise ValidationError({"task": "Unable to start checklist recording."}) from exc
 
-        if record.started_by_id == user.id:
+        if created:
             record_event(
                 event_type="CHECKLIST_RECORD_STARTED",
                 actor=user,
@@ -849,8 +849,11 @@ def save_checklist_draft_responses(
         except TransitionConflictError as exc:
             from apps.recording.concurrency import DraftConcurrencyConflict
 
+            current = ChecklistRecord.objects.filter(pk=record.pk).values_list(
+                "draft_version", flat=True
+            ).first()
             raise DraftConcurrencyConflict(
-                current_version=expected_version,
+                current_version=current if current is not None else expected_version,
                 expected_version=expected_draft_version,
             ) from exc
         meta = _record_metadata(record, changed_item_count=changed)

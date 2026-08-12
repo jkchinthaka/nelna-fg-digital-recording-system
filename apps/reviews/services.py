@@ -147,7 +147,7 @@ def create_supervisor_review(
             )
 
         try:
-            review = create_immutable_unique(
+            review, created = create_immutable_unique(
                 model=SupervisorReview,
                 create_kwargs={
                     "organization_id": record.organization_id,
@@ -170,7 +170,7 @@ def create_supervisor_review(
                 }
             ) from exc
 
-        if review.reviewed_by_id == user.id and review.decision == decision:
+        if created:
             meta = _review_metadata(review)
             meta["self_review_mode"] = self_review_eval.mode
             meta["self_review_is_self"] = self_review_eval.is_self_review

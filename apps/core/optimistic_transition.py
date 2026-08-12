@@ -119,36 +119,40 @@ def create_immutable_unique(
     unique_lookup: Mapping[str, Any],
     decision_field: str,
     decision_value: Any,
-) -> Model:
+) -> tuple[Model, bool]:
     """Insert an immutable decision row protected by a unique constraint.
 
     Race handling:
     * IntegrityError / unique ValidationError → re-read by ``unique_lookup``
     * same decision → return existing (idempotent)
     * different decision → TransitionConflictError
+
+    Returns:
+        (instance, created) tuple where created=True only for fresh inserts.
     """
     try:
-        with transaction.atomic():
-            obj = model(**create_kwargs)
-            if hasattr(obj, "full_clean"):
-                obj.full_clean()
-            obj.save()
-            return obj
+        obj = model(**create_kwargs)
+        if hasattr(obj, "full_clean"):
+            obj.full_clean()
+        obj.save()
+        return (obj, True)
     except IntegrityError:
-        return _resolve_unique_conflict(
+        existing = _resolve_unique_conflict(
             model=model,
             unique_lookup=unique_lookup,
             decision_field=decision_field,
             decision_value=decision_value,
         )
+        return (existing, False)
     except ValidationError:
         # Django unique validators fire in full_clean before IntegrityError.
-        return _resolve_unique_conflict(
+        existing = _resolve_unique_conflict(
             model=model,
             unique_lookup=unique_lookup,
             decision_field=decision_field,
             decision_value=decision_value,
         )
+        return (existing, False)
 
 
 def cas_versioned_update(

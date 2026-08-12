@@ -130,7 +130,7 @@ def create_qa_review_cas(
             "reviewed_by": user,
         }
         try:
-            review = create_immutable_unique(
+            review, created = create_immutable_unique(
                 model=QAReview,
                 create_kwargs=create_kwargs,
                 unique_lookup={"checklist_submission_id": submission.id},
@@ -147,7 +147,7 @@ def create_qa_review_cas(
                 }
             ) from exc
 
-        if review.reviewed_by_id == user.id and review.decision == decision:
+        if created:
             meta = _qa_review_metadata(review)
             meta["concurrency_pattern"] = "optimistic_unique_insert"
             record_event(event_type="QA_REVIEW_COMPLETED", actor=user, metadata=meta)

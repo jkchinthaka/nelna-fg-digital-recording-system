@@ -51,7 +51,7 @@ def test_create_immutable_unique_supervisor_style() -> None:
     reviewer = _reviewer(org=org)
     submission = data["submission"]
 
-    first = create_immutable_unique(
+    first, first_created = create_immutable_unique(
         model=SupervisorReview,
         create_kwargs={
             "organization_id": org.id,
@@ -64,7 +64,7 @@ def test_create_immutable_unique_supervisor_style() -> None:
         decision_field="decision",
         decision_value=SupervisorReviewDecision.APPROVED,
     )
-    second = create_immutable_unique(
+    second, second_created = create_immutable_unique(
         model=SupervisorReview,
         create_kwargs={
             "organization_id": org.id,
@@ -78,6 +78,8 @@ def test_create_immutable_unique_supervisor_style() -> None:
         decision_value=SupervisorReviewDecision.APPROVED,
     )
     assert first.id == second.id
+    assert first_created is True
+    assert second_created is False
 
     with pytest.raises(TransitionConflictError):
         create_immutable_unique(

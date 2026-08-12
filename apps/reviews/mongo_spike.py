@@ -114,7 +114,7 @@ def create_supervisor_review_cas(
             "reviewed_by": user,
         }
         try:
-            review = create_immutable_unique(
+            review, created = create_immutable_unique(
                 model=SupervisorReview,
                 create_kwargs=create_kwargs,
                 unique_lookup={"checklist_submission_id": submission.id},
@@ -131,8 +131,7 @@ def create_supervisor_review_cas(
                 }
             ) from exc
 
-        # Emit audit only when this call owns the stored decision row.
-        if review.reviewed_by_id == user.id and review.decision == decision:
+        if created:
             meta = _review_metadata(review)
             meta["self_review_mode"] = self_review_eval.mode
             meta["self_review_is_self"] = self_review_eval.is_self_review

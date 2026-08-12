@@ -67,7 +67,7 @@ def start_checklist_recording_cas(
             return raced
 
         try:
-            record = create_immutable_unique(
+            record, created = create_immutable_unique(
                 model=ChecklistRecord,
                 create_kwargs={
                     "organization_id": task.organization_id,
@@ -85,11 +85,7 @@ def start_checklist_recording_cas(
                 return fallback
             raise ValidationError({"task": "Unable to start checklist recording."}) from exc
 
-        # Idempotent return of peer's row — do not steal started_by / duplicate audit
-        if record.started_by_id == user.id and record.status == ChecklistRecordStatus.DRAFT:
-            # Only emit audit when this call created the row (same actor).
-            # Peer idempotent return also has started_by of winner — skip if already existed
-            # before this call by checking whether we just created: use race-safe uniqueness.
+        if created:
             meta = _record_metadata(record)
             meta["concurrency_pattern"] = "optimistic_unique_insert"
             record_event(

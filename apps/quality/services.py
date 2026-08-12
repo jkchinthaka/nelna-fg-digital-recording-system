@@ -172,7 +172,7 @@ def create_qa_review(
             )
 
         try:
-            review = create_immutable_unique(
+            review, created = create_immutable_unique(
                 model=QAReview,
                 create_kwargs={
                     "organization_id": record.organization_id,
@@ -196,7 +196,7 @@ def create_qa_review(
                 }
             ) from exc
 
-        if review.reviewed_by_id == user.id and review.decision == decision:
+        if created:
             meta = _qa_review_metadata(review)
             meta["concurrency_pattern"] = "optimistic_unique_insert"
             record_event(event_type="QA_REVIEW_COMPLETED", actor=user, metadata=meta)
