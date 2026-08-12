@@ -2,7 +2,7 @@
 
 ## Executive status
 
-PostgreSQL remains the authoritative system of record. MongoDB remains an assessment stream only.
+PostgreSQL remains the authoritative system of record on `main`. MongoDB same-database cutover with MaintainPro is **blocked** — see [../migration/SAME_DATABASE_MONGODB_CUTOVER_AUDIT.md](../migration/SAME_DATABASE_MONGODB_CUTOVER_AUDIT.md).
 
 Exact gate status from the MongoDB POC results:
 
