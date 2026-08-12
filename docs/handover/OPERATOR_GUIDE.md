@@ -55,12 +55,30 @@ The paper header may show 1–5. Digital recording stores ten samples.
 3. Correct answers.
 4. Resubmit. The original submission stays in history.
 
+## Supervisor review
+
+1. Open **Supervisor Review** (authorized checkers only).
+2. Open the submitted record.
+3. **Approve** or **Return** with a clear reason.
+4. Returned work goes back to the recorder for correction and resubmit. Old submissions stay in history.
+
+## QA review
+
+1. Open **QA Review** (authorized QA only).
+2. Choose **RELEASE**, **HOLD**, or **REJECT** only when the company process applies.
+3. Record the reason. This is not an ERP write.
+
 ## Search / print / export
 
 - **Record history** filters stored controlled-form records.
 - **Print** opens a print sheet of saved answers (sidebar hidden).
 - **Print monthly pack** reprints the selected month.
-- **Export CSV** downloads the filtered history. Do not rename CSV to XLSX.
+- **Export CSV** downloads the filtered history (may be capped; watch for truncation notice). Do not rename CSV to XLSX.
+
+## Logout / support
+
+- Use **Logout** when leaving a shared tablet.
+- Escalation: supervisor → IT support (`docs/operations/SUPPORT_RUNBOOK.md`).
 
 ## If save or network fails
 

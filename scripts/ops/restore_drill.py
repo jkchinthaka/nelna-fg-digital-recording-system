@@ -117,6 +117,8 @@ def main() -> int:
         def pg(*args: str) -> list[str]:
             return _pg_cmd(*args, password=password)
 
+        # Use validated identifiers in SQL (avoid psql :'var' — unreliable via
+        # docker compose exec on Windows, where -v substitution can fail).
         run(
             pg(
                 "psql",
@@ -125,12 +127,11 @@ def main() -> int:
                 "postgres",
                 "-v",
                 "ON_ERROR_STOP=1",
-                "-v",
-                f"scratch_db={scratch_db}",
                 "-c",
                 (
+                    # Identifiers validated by _require_ident (alphanumeric + underscore only).
                     "SELECT pg_terminate_backend(pid) FROM pg_stat_activity "
-                    "WHERE datname = :'scratch_db' AND pid <> pg_backend_pid();"
+                    f"WHERE datname = '{scratch_db}' AND pid <> pg_backend_pid();"  # nosec B608
                 ),
             ),
             env,
@@ -144,7 +145,7 @@ def main() -> int:
                 "-v",
                 "ON_ERROR_STOP=1",
                 "-c",
-                f'DROP DATABASE IF EXISTS "{scratch_db}";',
+                f'DROP DATABASE IF EXISTS "{scratch_db}";',  # nosec B608
             ),
             env,
         )
@@ -157,7 +158,7 @@ def main() -> int:
                 "-v",
                 "ON_ERROR_STOP=1",
                 "-c",
-                f'CREATE DATABASE "{scratch_db}" TEMPLATE template0;',
+                f'CREATE DATABASE "{scratch_db}" TEMPLATE template0;',  # nosec B608
             ),
             env,
         )
@@ -179,6 +180,9 @@ def main() -> int:
             ),
             env,
         )
+        # marker is generated locally (phase19_restore_drill_<UTC stamp>).
+        if not re.fullmatch(r"[A-Za-z0-9_]+", marker):
+            raise ValueError(f"unsafe marker id: {marker!r}")
         run(
             pg(
                 "psql",
@@ -187,11 +191,9 @@ def main() -> int:
                 source_db,
                 "-v",
                 "ON_ERROR_STOP=1",
-                "-v",
-                f"marker={marker}",
                 "-c",
                 (
-                    "INSERT INTO ops_restore_drill_marker(id) VALUES (:'marker') "
+                    f"INSERT INTO ops_restore_drill_marker(id) VALUES ('{marker}') "  # nosec B608
                     "ON CONFLICT DO NOTHING;"
                 ),
             ),
@@ -244,10 +246,8 @@ def main() -> int:
                 *common,
                 "-d",
                 scratch_db,
-                "-v",
-                f"marker={marker}",
                 "-Atc",
-                "SELECT count(*) FROM ops_restore_drill_marker WHERE id = :'marker';",
+                f"SELECT count(*) FROM ops_restore_drill_marker WHERE id = '{marker}';",  # nosec B608
             ),
             env=env,
             text=True,
@@ -275,6 +275,38 @@ def main() -> int:
         )
         evidence.write_text(body, encoding="utf-8", newline="\n")
         print(body)
+        # Destroy only the isolated scratch DB after successful verify.
+        if ok:
+            run(
+                pg(
+                    "psql",
+                    *common,
+                    "-d",
+                    "postgres",
+                    "-v",
+                    "ON_ERROR_STOP=1",
+                    "-c",
+                    (
+                        "SELECT pg_terminate_backend(pid) FROM pg_stat_activity "
+                        f"WHERE datname = '{scratch_db}' AND pid <> pg_backend_pid();"  # nosec B608
+                    ),
+                ),
+                env,
+            )
+            run(
+                pg(
+                    "psql",
+                    *common,
+                    "-d",
+                    "postgres",
+                    "-v",
+                    "ON_ERROR_STOP=1",
+                    "-c",
+                    f'DROP DATABASE IF EXISTS "{scratch_db}";',  # nosec B608
+                ),
+                env,
+            )
+            print(f"Dropped isolated scratch database {scratch_db}.")
         return 0 if ok else 1
 
 

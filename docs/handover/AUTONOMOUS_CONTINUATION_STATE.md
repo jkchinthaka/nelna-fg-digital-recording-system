@@ -1,23 +1,37 @@
-# Autonomous continuation state
+# Autonomous Continuation State
 
-**Classification:** TECHNICAL HANDOVER COMPLETE — BUSINESS/UAT/PRODUCTION GATES REMAIN
+**Updated:** 2026-08-12  
+**Branch:** `main`  
+**Purpose:** Checkpoint for production-readiness package (not a claim of go-live).
 
-This file is retained for continuity. Prefer `FINAL_HANDOVER.md` and `FINAL_HANDOVER_REPORT.md`.
+## Completed this package
 
-## Git
+- Protected/committed human UAT-01..03 evidence  
+- Production readiness documentation package (UAT print/device, security, SoD, provisioning, staging, deploy, monitoring, support, Bileeta, MaintainPro, go-live/signoff, master-data templates)  
+- Restore drill script fix (Windows docker `:'var'` failure) + LOCAL/TEST restore PASS evidence  
+- Staging Compose template with isolated `STAGING_POSTGRES_DB`  
+- MaintainPro: **REPO PATH REQUIRED** (spec only)  
+- Baseline pytest: 893 passed, coverage 83.45%  
+- Technical smoke: health/login HTTP 200 on `:8001`
 
-| Item | Value |
-| --- | --- |
-| Current branch | `main` |
-| HEAD / `origin/main` | `4b5914e7b17fb7d752dd6f1f6d1dbd52de0380b6` |
-| Feature branch | equals `main` at close-out |
-| Unrelated stash | `stash@{0}` WIP format-only quality/compliance drift |
+## Pending (external / human)
 
-## Close-out evidence
+- UAT-04..18 human execution  
+- MaintainPro code change (path required)  
+- Staging/production host deploy, TLS, SMTP, secrets  
+- Formal sign-offs and master data  
+- Bileeta credentials/contract  
 
-- Full pytest on main: **893 passed**, coverage **83.45%**
-- Pre-UAT audit findings closed (RCA locking/duplicate race, CL/18 labels, date/month validation, admin workflow readonly)
+## Next exact tasks
 
-## Not claimed
+1. Provide MaintainPro repository path for nav link implementation.  
+2. Continue assisted human UAT from UAT-04.  
+3. Host staging using `compose.staging.yaml` + `infra/staging/`.  
 
-UAT PASS, PRODUCTION READY, live Bileeta, Mongo cutover, invented Nelna limits.
+## Classification intent
+
+```text
+TECHNICAL PRODUCTION READINESS COMPLETE — FORMAL UAT/BUSINESS/INFRASTRUCTURE GATES REMAIN
+```
+
+(Confirm after commit/push of this package.)
