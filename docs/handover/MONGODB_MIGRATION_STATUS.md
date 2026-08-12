@@ -2,7 +2,9 @@
 
 ## Executive status
 
-PostgreSQL remains the authoritative system of record on `main`. MongoDB same-database cutover with MaintainPro is **blocked** — see [../migration/SAME_DATABASE_MONGODB_CUTOVER_AUDIT.md](../migration/SAME_DATABASE_MONGODB_CUTOVER_AUDIT.md).
+PostgreSQL remains the authoritative system of record on `main`. MongoDB same-database cutover with MaintainPro in **`mgintginpro_prod`** is **blocked** — see [../migration/SAME_DATABASE_MONGODB_CUTOVER_AUDIT.md](../migration/SAME_DATABASE_MONGODB_CUTOVER_AUDIT.md) and [../migration/COLLECTION_COLLISION_AUDIT.md](../migration/COLLECTION_COLLISION_AUDIT.md).
+
+Static collection collision audit (231 FG `fg_*` vs 114 MaintainPro Prisma collections): **SAFE — NO COLLISION** (0 exact matches). Live read-only inventory on company MongoDB still required before any write.
 
 Exact gate status from the MongoDB POC results:
 

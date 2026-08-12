@@ -33,6 +33,22 @@ if _missing:
 MONGODB_URI = env("MONGODB_URI")
 MONGODB_DATABASE = env("MONGODB_DATABASE")
 
+# Documented company MaintainPro logical database (same-server target).
+MONGODB_PRODUCTION_TARGET_DATABASE = env.str(
+    "MONGODB_PRODUCTION_TARGET_DATABASE",
+    default="mgintginpro_prod",
+)
+
+if MONGODB_DATABASE != MONGODB_PRODUCTION_TARGET_DATABASE:
+    raise ImproperlyConfigured(
+        "mongo_same_db mode requires MONGODB_DATABASE to equal "
+        f"MONGODB_PRODUCTION_TARGET_DATABASE ({MONGODB_PRODUCTION_TARGET_DATABASE!r}). "
+        "Use mongo_same_db_poc for isolated compatibility testing."
+    )
+
+FG_COLLECTION_NAMESPACE_ENABLED = True
+FG_COLLECTION_PREFIX = "fg_"
+
 DATABASES = {
     "default": {
         "ENGINE": "django_mongodb_backend",

@@ -1,224 +1,94 @@
 # Same-Database MongoDB Cutover Audit — FG + MaintainPro
 
 **Branch:** `feature/mongodb-same-maintainpro-db`  
-**Baseline SHA:** `d5a44605219884de6467ecb94a3730e7f2d1c87e`  
-**Classification:** **MONGODB SAME-DATABASE CUTOVER BLOCKED — INVARIANTS OR BACKEND LIMITATIONS NOT SAFELY RESOLVED**  
-**Additional gate:** **MONGODB CUTOVER BLOCKED — EXACT MAINTAINPRO DATABASE NAME REQUIRED** (production name not supplied in this phase)
+**Classification:** **MONGODB SAME-DATABASE CUTOVER BLOCKED — INVARIANTS OR BACKEND LIMITATIONS NOT SAFELY RESOLVED**
 
 Do not merge to `main`. PostgreSQL remains the application default on `main`.
 
 ---
 
-## Pre-cutover checklist (not completed)
+## Confirmed company MongoDB target
 
 | Field | Value |
 | --- | --- |
-| EXISTING_DATABASE_NAME | **UNKNOWN — company must supply exact `MONGODB_DATABASE`** |
-| EXISTING_COLLECTION_COUNT | ~120+ Prisma models in MaintainPro schema (estimate only; production inventory required) |
-| PLANNED_FG_COLLECTION_COUNT | **225** Django models (default `app_label_modelname` tables) |
-| COLLECTION_COLLISIONS | **UNKNOWN — MANUAL REVIEW REQUIRED** (no production read-only inventory performed) |
-| MONGODB_VERSION | Not verified against company server |
-| TOPOLOGY | MaintainPro uses MongoDB via Prisma; **transaction support on company topology not verified** |
-| TRANSACTIONS_AVAILABLE | **UNKNOWN** — FG requires multi-doc semantics for recording/submit/review |
-| AUTH_SCOPE | Independent FG auth; no SSO |
-| BACKUP_VERIFIED | **No** |
-| MAINTAINPRO_HEALTH_BEFORE | **Not measured** (no production access) |
+| Host (documented) | `127.0.0.1` |
+| Port (documented) | `27018` |
+| **Logical database** | **`mgintginpro_prod`** |
+| FG collection namespace | **`fg_` prefix required** |
+| Credentials | **Never in Git** — `MONGODB_URI` from server env only |
+
+FG must store collections in **`mgintginpro_prod`**. Do **not** create a separate FG logical database at cutover.
 
 ---
 
-## Business constraint vs technical reality
+## Pre-cutover checklist
 
-The required end state is FG and MaintainPro sharing **one logical MongoDB database** on the company server, with **zero modification** to MaintainPro data.
-
-Current repository evidence:
-
-1. **Isolated MongoDB POC** (`apps/mongo_poc`, 16 tests) — PASS on dedicated `nelna_fg_mongo_poc` only  
-2. **Full application** — designed and tested on **PostgreSQL** (893 pytest, 83.45% coverage)  
-3. **Prior formal assessment** — `MONGODB POC FAILED FOR CUTOVER — DO NOT MIGRATE` ([MONGODB_POC_RESULTS.md](MONGODB_POC_RESULTS.md))
-
----
-
-## Mongo backend
-
-| Item | Value |
+| Field | Value |
 | --- | --- |
-| Package | `django-mongodb-backend==5.2.3` (official; pinned in `pyproject.toml`) |
-| Prohibited | djongo, mongoengine, ODM replacement |
-| POC settings | `config.settings.mongo_poc` (isolated; not production) |
-| Production mode | **Not implemented** — `config.settings.database.build_databases()` still PostgreSQL-only |
-
-Required production shape (when authorized):
-
-```python
-DATABASES = {
-    "default": {
-        "ENGINE": "django_mongodb_backend",
-        "HOST": env("MONGODB_URI"),
-        "NAME": env("MONGODB_DATABASE"),
-    }
-}
-```
-
-Fail-closed if `MONGODB_URI` or `MONGODB_DATABASE` missing.
+| EXISTING_DATABASE_NAME | **`mgintginpro_prod`** (confirmed) |
+| EXISTING_COLLECTION_COUNT | **114** MaintainPro Prisma models (static; live inventory still required) |
+| PLANNED_FG_COLLECTION_COUNT | **231** with `fg_` namespace (includes M2M through tables) |
+| COLLECTION_COLLISIONS (static) | **0 exact** — see [COLLECTION_COLLISION_AUDIT.md](COLLECTION_COLLISION_AUDIT.md) |
+| Live listCollections vs static audit | **PENDING** — read-only on authorized host |
+| MONGODB_VERSION | Not verified on `127.0.0.1:27018` |
+| TOPOLOGY / TRANSACTIONS | **UNKNOWN** — must not modify company topology |
+| BACKUP_VERIFIED | **No** |
+| MAINTAINPRO_HEALTH_BEFORE | **Not measured** |
 
 ---
 
-## Compatibility matrix summary
+## Development / POC rules (mandatory)
 
-Full matrix: [MONGODB_COMPATIBILITY_MATRIX.md](MONGODB_COMPATIBILITY_MATRIX.md)
-
-| Area | PostgreSQL today | Mongo status | Decision |
-| --- | --- | --- | --- |
-| Default engine | `django.db.backends.postgresql` | Not wired for prod | BLOCK until redesign |
-| `select_for_update()` | **~138 call sites** in `apps/` | **Unsupported** | REDESIGN required |
-| `prefetch_related` | **~30+ usages** in selectors/services | **Unsupported** | REDESIGN required |
-| `OuterRef` / `Subquery` | QA/supervisor queues, daily selectors | Partial / unproven | POC / REDESIGN |
-| `django.db.transaction.atomic` | Ubiquitous | **No-op** on Mongo backend | Use `django_mongodb_backend.transaction.atomic` |
-| Nested savepoints | Checklist version allocation | **Unsupported** | REDESIGN required |
-| `IntegrityError` idempotency | Widespread | Mapping unproven at scale | TEST on Mongo |
-| `UniqueConstraint` + `Lower()` | User employee_code, products | Functional unique POC needed | EVIDENCE REQUIRED |
-| `CheckConstraint` | Recording XOR, shifts | Not equivalent | App-layer validation |
-| `auth.User` / sessions / admin | Django contrib | UUID User OK; contrib collections need **fg_** namespace | B with namespace |
-| Migrations | 100+ PostgreSQL migrations | Not portable as-is | New Mongo migration strategy |
-| Full pytest on Mongo | N/A | **Not run** (893 tests PG-only) | BLOCK |
+1. **Do not write** to `mgintginpro_prod` during development or POC.  
+2. Use **`config.settings.mongo_same_db_poc`** with isolated database e.g. `fg_same_db_poc`.  
+3. Static collision audit: `uv run python scripts/migration/collection_collision_audit.py`  
+4. Production cutover settings: **`config.settings.mongo_same_db`** (fail-closed; requires exact DB name).
 
 ---
 
-## Primary keys
+## Namespace implementation
 
-| Model class | PK strategy | Mongo notes |
-| --- | --- | --- |
-| `accounts.User` | **UUID** | Compatible intent; contrib still needs Mongo backend validation |
-| Most domain models | **UUID** (`UUIDField`) | Preferred for identity preservation |
-| Django implicit IDs | `BigAutoField` on some contrib/M2M through tables | Requires `ObjectIdAutoField` or explicit strategy — **not fully audited** |
-| MaintainPro (Prisma) | **ObjectId** (`@db.ObjectId`) | Different ID space — **no shared documents** |
+| Component | Purpose |
+| --- | --- |
+| `apps/core/db_namespace.py` | Applies `fg_` prefix when `FG_COLLECTION_NAMESPACE_ENABLED=True` |
+| `apps/core/apps.py` | Calls namespace on `AppConfig.ready()` |
+| `scripts/migration/collection_collision_audit.py` | Static audit vs MaintainPro Prisma schema |
+| `scripts/migration/fg_collection_inventory.py` | Lists planned FG collections |
 
-Identity-preserving cutover from PostgreSQL → Mongo **not demonstrated**. No silent ID regeneration permitted.
+**Gap:** Runtime namespace is applied; **Django migration files still reference PostgreSQL table names** until Mongo-specific migrations are generated on this branch.
 
 ---
 
-## Transaction / concurrency blockers
+## PostgreSQL assumptions still blocking cutover
 
-Critical invariants (all currently rely on PostgreSQL row locks or savepoints):
+| Blocker | Scale |
+| --- | --- |
+| `select_for_update()` | **~138 call sites** — unsupported |
+| `prefetch_related` | **~30+ usages** |
+| `OuterRef` / `Subquery` | QA/supervisor queues |
+| Nested savepoints | Checklist versioning |
+| Full pytest on Mongo | **Not run** (893 tests = PostgreSQL evidence only) |
 
-- Duplicate daily records prevented  
-- Duplicate submissions prevented  
-- Latest submission only reviewable  
-- Supervisor / QA decision races  
-- Closed/cancelled RCA immutability  
-- Correction history immutability  
-- Duplicate business identifiers (RCA code, etc.)
+See [MONGODB_COMPATIBILITY_MATRIX.md](MONGODB_COMPATIBILITY_MATRIX.md).
 
-**`select_for_update` replacement status:** **0% production-path complete** (RCA hardening added on PostgreSQL only).
+---
 
-If company MongoDB is standalone (no replica set), multi-document transactions may be unavailable:
+## Environment variables
 
 ```text
-SAME-DATABASE MONGODB CUTOVER BLOCKED — REQUIRED TRANSACTION SEMANTICS UNAVAILABLE
+MONGODB_URI=<from vault — never commit>
+MONGODB_DATABASE=mgintginpro_prod
+MONGODB_PRODUCTION_TARGET_DATABASE=mgintginpro_prod
 ```
 
-Do not weaken invariants to pass migration.
-
----
-
-## Collection namespace / collision audit
-
-### MaintainPro (Prisma → MongoDB)
-
-- MaintainPro repo: `C:\Users\chint\source\newmone\maintainpro`  
-- Schema: `prisma/schema.prisma` — provider `mongodb`  
-- Collection names follow **Prisma model names** (e.g. `User`, `Tenant`, `Department`, `WorkOrder`, `AuditLog`)
-
-### FG (Django default table names)
-
-- **225 models** → default names like `accounts_user`, `recording_checklistrecord`, `organizations_department`  
-- **No `db_table` / `fg_` prefix applied today** — collision risk with any future shared naming is **UNKNOWN**
-
-### Django contrib collections FG would create
-
-| Planned FG collection | MaintainPro Prisma model | Preliminary class |
-| --- | --- | --- |
-| `django_migrations` | (none observed) | SAFE — FG-only |
-| `django_session` | (none observed) | SAFE — FG-only |
-| `django_admin_log` | (none observed) | SAFE — FG-only |
-| `django_content_type` | (none observed) | SAFE — FG-only |
-| `auth_permission` | (none observed) | SAFE — FG-only |
-| `auth_group` | (none observed) | SAFE — FG-only |
-| `accounts_user` | `User` | **UNKNOWN** — different names but both are “user” stores; must not merge |
-| `organizations_department` | `Department` | **UNKNOWN** — semantic overlap, separate collections if names differ |
-
-**Required before any write to company DB:**
-
-1. Read-only `listCollections` on production/staging MaintainPro database  
-2. Compare against `scripts/migration/fg_collection_inventory.py` output  
-3. Apply **`fg_` prefix** via `Meta.db_table` on all FG models if any name collision  
-4. Re-run collision script until zero `COLLISION` rows
-
----
-
-## Isolated POC evidence (this session)
+Isolated POC (example — no production writes):
 
 ```text
-RESTORE DRILL: N/A
-Mongo POC: 16 passed on nelna_fg_mongo_poc @ 127.0.0.1:27027 (replica set)
-Full app pytest on Mongo: NOT RUN
+DJANGO_SETTINGS_MODULE=config.settings.mongo_same_db_poc
+MONGODB_URI=mongodb://127.0.0.1:27027/?replicaSet=nelnaPocRs&directConnection=true&retryWrites=true&w=majority
+MONGODB_DATABASE=fg_same_db_poc
+MONGODB_PRODUCTION_TARGET_DATABASE=mgintginpro_prod
 ```
-
----
-
-## Redis / Celery
-
-Unchanged — Redis remains cache + Celery broker/result. **Do not** store Celery queues in MaintainPro MongoDB.
-
-Celery against Mongo-backed FG: **not verified**.
-
----
-
-## Security — FG database user (prepare only)
-
-Do not create credentials in this phase. Administrator template:
-
-```javascript
-// PLACEHOLDER — run on company MongoDB by DBA only
-use <MAINTAINPRO_DATABASE_NAME>
-db.createUser({
-  user: "fg_digital_recording_app",
-  pwd: "<FROM_VAULT>",
-  roles: [{ role: "readWrite", db: "<MAINTAINPRO_DATABASE_NAME>" }]
-})
-```
-
-FG user must **not** use MaintainPro root credentials. MaintainPro credentials remain untouched.
-
----
-
-## Workflow verification on Mongo
-
-| Workflow | PostgreSQL | Mongo |
-| --- | --- | --- |
-| Recorder draft/submit | Tested (893 tests) | **NOT TESTED** |
-| Supervisor approve/return | Tested | **NOT TESTED** |
-| QA Release/Hold/Reject | Tested | **NOT TESTED** |
-| Correction/resubmit | Tested | **NOT TESTED** |
-| RCA/CAPA/NCR | Tested | **NOT TESTED** |
-| CL/24, CL/39, CL/30, CL/18 | Human UAT partial | **NOT TESTED** |
-| Print / export / RBAC | Tested on PG | **NOT TESTED** |
-
----
-
-## Required work before merge (not done)
-
-1. Company supplies exact `MONGODB_DATABASE` name  
-2. Read-only collection inventory on that database  
-3. Implement `fg_*` `db_table` namespace across all FG models  
-4. Replace **138** `select_for_update` call sites with Mongo-safe concurrency  
-5. Rewrite `prefetch_related` / `OuterRef` selectors  
-6. New Mongo settings module + fail-closed production config  
-7. Full pytest + ≥80% coverage **on Mongo**  
-8. Concurrency integration tests  
-9. Staging same-DB dry run with MaintainPro health check before/after  
-10. Written infrastructure approval for MongoDB transaction topology if required  
-11. APR-020 / architecture decision superseding ADR-002 PostgreSQL SoR
 
 ---
 
@@ -228,5 +98,6 @@ FG user must **not** use MaintainPro root credentials. MaintainPro credentials r
 MONGODB SAME-DATABASE CUTOVER BLOCKED — INVARIANTS OR BACKEND LIMITATIONS NOT SAFELY RESOLVED
 ```
 
-**Main merged?** No — work remains on `feature/mongodb-same-maintainpro-db` only.  
-**MaintainPro impact:** None — no production Mongo writes, no MaintainPro code changes.
+Static collection audit with `fg_` prefix: **SAFE — NO COLLISION** (0 exact matches vs 114 MaintainPro Prisma collections).
+
+**Main merged?** No.
