@@ -11,6 +11,7 @@
 | Repository | `C:\Projects\nelna-fg-digital-recording-system` |
 | Branch | `main` |
 | **UAT_BASELINE_SHA** (application under test) | `c08ebec96b8551209bc2228866ceb2fb65031668` |
+| UAT evidence package docs commit | `4121e5834988c27f42d1efa1662781b4098dab4a` (docs only; no application code change) |
 | Environment classification | **TECHNICAL UAT DRY RUN** until named business testers and company-approved UAT data are assigned |
 | Formal business UAT | **NOT STARTED** — requires named Recorder / Supervisor / QA / Business Owner |
 
