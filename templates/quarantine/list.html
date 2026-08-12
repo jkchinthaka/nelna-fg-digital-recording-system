@@ -11,7 +11,8 @@
         </p>
       </div>
       {% if can_create %}
-        <a class="btn btn--primary btn--inline" href="{% url 'quarantine:create' %}">Open quarantine</a>
+        <a class="btn btn--primary btn--inline"
+           href="{% url 'quarantine:create' %}">Open quarantine</a>
       {% endif %}
     </header>
     <form class="mgmt-filters" method="get">

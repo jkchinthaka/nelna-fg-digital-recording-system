@@ -12,7 +12,8 @@
         </p>
       </div>
       {% if can_create %}
-        <a class="btn btn--primary btn--inline" href="{% url 'complaints:create' %}">Open complaint</a>
+        <a class="btn btn--primary btn--inline"
+           href="{% url 'complaints:create' %}">Open complaint</a>
       {% endif %}
     </header>
     <form class="mgmt-filters" method="get">

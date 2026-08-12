@@ -12,7 +12,8 @@
         </p>
       </div>
       {% if can_create %}
-        <a class="btn btn--primary btn--inline" href="{% url 'dispatch:create' %}">Open dispatch record</a>
+        <a class="btn btn--primary btn--inline"
+           href="{% url 'dispatch:create' %}">Open dispatch record</a>
       {% endif %}
     </header>
     <form class="mgmt-filters" method="get">

@@ -2,7 +2,8 @@
 {% block title %}{{ record.code }} — Nelna FG Digital Recording System{% endblock %}
 {% block body_class %}mgmt-shell{% endblock %}
 {% block content %}
-  <section class="mgmt-page review-workspace" aria-labelledby="quarantine-detail-heading">
+  <section class="mgmt-page review-workspace"
+           aria-labelledby="quarantine-detail-heading">
     <header class="mgmt-page__header">
       <div>
         <h1 id="quarantine-detail-heading">{{ record.code }}</h1>
@@ -15,19 +16,27 @@
     <dl class="mgmt-meta">
       <div>
         <dt>Batch</dt>
-        <dd>{{ record.batch_reference }}</dd>
+        <dd>
+          {{ record.batch_reference }}
+        </dd>
       </div>
       <div>
         <dt>Source</dt>
-        <dd>{{ record.get_source_display }}</dd>
+        <dd>
+          {{ record.get_source_display }}
+        </dd>
       </div>
       <div>
         <dt>Source reference</dt>
-        <dd>{{ record.source_reference }}</dd>
+        <dd>
+          {{ record.source_reference }}
+        </dd>
       </div>
       <div>
         <dt>ERP sync</dt>
-        <dd>{{ record.get_erp_sync_status_display }}</dd>
+        <dd>
+          {{ record.get_erp_sync_status_display }}
+        </dd>
       </div>
     </dl>
     <article class="work-card">

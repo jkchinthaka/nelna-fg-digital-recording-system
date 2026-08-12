@@ -6,9 +6,7 @@
     <header class="mgmt-page__header">
       <div>
         <h1 id="complaint-create-heading">Open customer complaint</h1>
-        <p class="mgmt-page__lead">
-          Organization {{ organization.code }}. Category and severity catalogues are not invented.
-        </p>
+        <p class="mgmt-page__lead">Organization {{ organization.code }}. Category and severity catalogues are not invented.</p>
       </div>
     </header>
     <form method="post" class="mgmt-form">
@@ -31,15 +29,23 @@
       </div>
       <div class="form-field">
         <label for="id_erp_customer_reference">ERP customer reference</label>
-        <input class="form-input" id="id_erp_customer_reference" name="erp_customer_reference">
+        <input class="form-input"
+               id="id_erp_customer_reference"
+               name="erp_customer_reference">
       </div>
       <div class="form-field">
         <label for="id_customer_display_label">Customer display label</label>
-        <input class="form-input" id="id_customer_display_label" name="customer_display_label">
+        <input class="form-input"
+               id="id_customer_display_label"
+               name="customer_display_label">
       </div>
       <div class="form-field">
         <label for="id_description">Description</label>
-        <textarea class="form-input" id="id_description" name="description" rows="4" required></textarea>
+        <textarea class="form-input"
+                  id="id_description"
+                  name="description"
+                  rows="4"
+                  required></textarea>
       </div>
       <button type="submit" class="btn btn--primary">Open complaint</button>
     </form>
