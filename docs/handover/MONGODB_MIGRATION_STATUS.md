@@ -2,53 +2,88 @@
 
 ## Executive status
 
-PostgreSQL remains the authoritative system of record on `main`. MongoDB same-database cutover with MaintainPro in **`mgintginpro_prod`** is **blocked** — continuing compatibility engineering on `feature/mongodb-same-maintainpro-db`.
+```text
+STARTING_BRANCH=feature/mongodb-same-maintainpro-db
+STARTING_SHA=aa4c789
+MAIN_SHA=d5a4460
+ORIGIN_MAIN_SHA=d5a4460
+```
+
+PostgreSQL remains the authoritative system of record on `main`.
 
 ```text
 MONGODB SAME-DATABASE CUTOVER BLOCKED — CONTINUING COMPATIBILITY ENGINEERING
 ```
 
-Static collection collision audit (231 FG `fg_*` vs 114 MaintainPro Prisma collections): **SAFE — NO COLLISION** (0 exact matches). Live read-only inventory on company MongoDB still required before any write.
+Exact classification for this checkpoint:
+
+```text
+CONTINUATION REQUIRED — MONGODB FUNCTIONAL PARITY MIGRATION CHECKPOINT CREATED
+```
 
 ---
 
-## Checkpoint (this branch)
+## Production target (unchanged)
+
+```text
+Host route: via MONGODB_URI (do not hard-code 127.0.0.1:27018 in Python)
+Logical database: mgintginpro_prod
+FG namespace: fg_
+Isolated POC only: fg_same_db_poc
+Company Mongo writes: NONE
+MaintainPro impact: NONE
+main merged: NO
+```
+
+---
+
+## Checkpoint progress
 
 | Item | Status |
 | --- | --- |
-| Safety boundary commit | Done |
-| Permanent `fg_` naming contract | Done (`apps/core/db_namespace.py` + manifest) |
-| Primary key audit | Done — 220 UUID SAFE; 6 through; 4 contrib; 1 other |
-| `select_for_update` inventory | **137** sites documented |
-| Concurrency pattern | Optimistic CAS / unique insert (`optimistic_transition`) |
-| Supervisor Mongo spike | PASS on PostgreSQL race harness (6 tests) |
-| QA / Recording / RCA spikes | Not started |
-| Full Mongo POC pytest | Not run |
-| Company Mongo writes | **NONE** |
-| `main` merged | **NO** |
+| Full compatibility inventory | Done — `MONGO_FULL_COMPATIBILITY_INVENTORY.md` (exact AST scan) |
+| Persistence facade | Done — `apps/core/persistence/` (vendor detect, atomic, CAS) |
+| Permanent `fg_` naming + manifests | Done |
+| Primary key matrix | Done |
+| Contrib Mongo config plan | Documented — not activated on main |
+| Supervisor CAS spike | PASS |
+| QA CAS spike | PASS (this batch) |
+| Recording start CAS spike | PASS (this batch) |
+| Recording submit/correction spike | **NEXT** |
+| RCA / CAPA / NCR spikes | Not started |
+| prefetch / Subquery rewrites | Inventory only |
+| Full Mongo pytest suite | Not run |
+| Live company read-only audit | Script ready — not executed |
 
 ---
 
-## Production target (confirmed)
+## Exact inventory highlights (this generation)
 
-```text
-Host: 127.0.0.1
-Port: 27018
-Database: mgintginpro_prod
-FG namespace: fg_
-```
+| Token | Count |
+| --- | ---: |
+| select_for_update | 137 |
+| prefetch_related | 34 |
+| OuterRef | 2 |
+| transaction.atomic | 396 |
+| IntegrityError | 113 |
+| Lower | 87 |
 
-Isolated POC only: `fg_same_db_poc` on local replica set port 27027.
+---
+
+## Next continuation module
+
+1. **Recording submit + draft + correction CAS spikes** (`apps/recording/services.py`)
+2. Replace production Supervisor/QA paths to call persistence facade behind feature flag / backend detection
+3. RCA close/cancel concurrency spike
+4. Begin prefetch_related rewrites for Supervisor/QA queues
+5. Isolated Mongo POC migrate + subset pytest under `mongo_same_db_poc`
 
 ---
 
 ## References
 
-- [../migration/SAME_DATABASE_MONGODB_CUTOVER_AUDIT.md](../migration/SAME_DATABASE_MONGODB_CUTOVER_AUDIT.md)
-- [../migration/FG_MONGODB_COLLECTION_MANIFEST.md](../migration/FG_MONGODB_COLLECTION_MANIFEST.md)
-- [../migration/MONGODB_PRIMARY_KEY_PLAN.md](../migration/MONGODB_PRIMARY_KEY_PLAN.md)
-- [../migration/MONGO_CONCURRENCY_INVENTORY.md](../migration/MONGO_CONCURRENCY_INVENTORY.md)
+- [../migration/MONGO_FULL_COMPATIBILITY_INVENTORY.md](../migration/MONGO_FULL_COMPATIBILITY_INVENTORY.md)
 - [../migration/MONGO_CONCURRENCY_PATTERN.md](../migration/MONGO_CONCURRENCY_PATTERN.md)
-- [../migration/MONGO_QUERY_COMPATIBILITY_INVENTORY.md](../migration/MONGO_QUERY_COMPATIBILITY_INVENTORY.md)
-- [../migration/MONGO_TEST_STRATEGY.md](../migration/MONGO_TEST_STRATEGY.md)
-- [../migration/FG_MONGO_DBA_USER_INSTRUCTIONS.md](../migration/FG_MONGO_DBA_USER_INSTRUCTIONS.md)
+- [../migration/FG_COLLECTION_MANIFEST.md](../migration/FG_COLLECTION_MANIFEST.md)
+- [../migration/DJANGO_CONTRIB_MONGO_CONFIG.md](../migration/DJANGO_CONTRIB_MONGO_CONFIG.md)
+- [../migration/MONGO_PRIMARY_KEY_MATRIX.md](../migration/MONGO_PRIMARY_KEY_MATRIX.md)

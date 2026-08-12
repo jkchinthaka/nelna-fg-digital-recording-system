@@ -11,11 +11,10 @@ import uuid
 from typing import Any
 
 from django.core.exceptions import PermissionDenied, ValidationError
-from django.db import transaction
 
 from apps.access_control.services import require_permission
 from apps.accounts.models import User
-from apps.core.optimistic_transition import TransitionConflictError, create_immutable_unique
+from apps.core.persistence import TransitionConflictError, atomic, create_immutable_unique
 from apps.recording.models import ChecklistRecordStatus, ChecklistSubmission
 from apps.reviews.governance import assert_self_review_allowed
 from apps.reviews.models import SupervisorReview, SupervisorReviewDecision
@@ -45,7 +44,7 @@ def create_supervisor_review_cas(
 
     note = normalize_review_note(review_note)
 
-    with transaction.atomic():
+    with atomic(savepoint=False):
         submission = (
             ChecklistSubmission.objects.select_related(
                 "checklist_record",
