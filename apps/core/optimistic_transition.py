@@ -134,7 +134,8 @@ def create_immutable_unique(
         obj = model(**create_kwargs)
         if hasattr(obj, "full_clean"):
             obj.full_clean()
-        obj.save()
+        with transaction.atomic():
+            obj.save()
         return (obj, True)
     except IntegrityError:
         existing = _resolve_unique_conflict(
