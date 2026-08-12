@@ -7,7 +7,7 @@ from decimal import Decimal, InvalidOperation
 from typing import Any
 
 from django.core.exceptions import PermissionDenied, ValidationError
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError
 
 from apps.access_control.services import require_permission
 from apps.accounts.models import User
@@ -17,6 +17,13 @@ from apps.checklists.models import (
     ChecklistItemOption,
     ChecklistResponseType,
     ChecklistVersionStatus,
+)
+from apps.core.persistence import (
+    TransitionConflictError,
+    atomic,
+    create_immutable_unique,
+    lock_queryset,
+    require_conditional_update,
 )
 from apps.recording.models import (
     ChecklistRecord,
@@ -158,51 +165,21 @@ def start_checklist_recording(
     if existing is not None:
         return existing
 
-    try:
-        with transaction.atomic():
-            locked = (
-                ChecklistTask.objects.select_related(
-                    "organization",
-                    "checklist_template",
-                    "checklist_version",
-                )
-                .select_for_update()
-                .filter(pk=task.id)
-                .first()
+    with atomic():
+        locked = (
+            ChecklistTask.objects.select_related(
+                "organization",
+                "checklist_template",
+                "checklist_version",
             )
-            if locked is None:
-                raise ValidationError({"task": "Checklist task not found."})
-            _assert_task_recordable(locked)
+            .filter(pk=task.id)
+            .first()
+        )
+        if locked is None:
+            raise ValidationError({"task": "Checklist task not found."})
+        _assert_task_recordable(locked)
 
-            raced_existing = (
-                ChecklistRecord.objects.select_related(
-                    "organization",
-                    "checklist_task",
-                    "checklist_task__checklist_template",
-                    "checklist_task__checklist_version",
-                    "started_by",
-                )
-                .filter(checklist_task_id=locked.id)
-                .first()
-            )
-            if raced_existing is not None:
-                return raced_existing
-
-            record = ChecklistRecord(
-                organization_id=locked.organization_id,
-                checklist_task=locked,
-                status=ChecklistRecordStatus.DRAFT,
-                started_by=user,
-            )
-            record.full_clean()
-            record.save()
-            record_event(
-                event_type="CHECKLIST_RECORD_STARTED",
-                actor=user,
-                metadata=_record_metadata(record),
-            )
-    except IntegrityError:
-        raced = (
+        raced_existing = (
             ChecklistRecord.objects.select_related(
                 "organization",
                 "checklist_task",
@@ -210,12 +187,37 @@ def start_checklist_recording(
                 "checklist_task__checklist_version",
                 "started_by",
             )
-            .filter(checklist_task_id=task.id)
+            .filter(checklist_task_id=locked.id)
             .first()
         )
-        if raced is None:
-            raise
-        return raced
+        if raced_existing is not None:
+            return raced_existing
+
+        try:
+            record = create_immutable_unique(
+                model=ChecklistRecord,
+                create_kwargs={
+                    "organization_id": locked.organization_id,
+                    "checklist_task": locked,
+                    "status": ChecklistRecordStatus.DRAFT,
+                    "started_by": user,
+                },
+                unique_lookup={"checklist_task_id": locked.id},
+                decision_field="checklist_task_id",
+                decision_value=locked.id,
+            )
+        except TransitionConflictError as exc:
+            raced = ChecklistRecord.objects.filter(checklist_task_id=task.id).first()
+            if raced is not None:
+                return raced
+            raise ValidationError({"task": "Unable to start checklist recording."}) from exc
+
+        if record.started_by_id == user.id:
+            record_event(
+                event_type="CHECKLIST_RECORD_STARTED",
+                actor=user,
+                metadata=_record_metadata(record),
+            )
 
     return ChecklistRecord.objects.select_related(
         "organization",
@@ -689,8 +691,8 @@ def save_checklist_draft_responses(
         next_draft_version,
     )
 
-    with transaction.atomic():
-        record = (
+    with atomic():
+        record = lock_queryset(
             ChecklistRecord.objects.select_related(
                 "organization",
                 "checklist_task",
@@ -698,10 +700,7 @@ def save_checklist_draft_responses(
                 "checklist_task__checklist_template",
                 "checklist_task__checklist_version",
             )
-            .select_for_update()
-            .filter(pk=record_id)
-            .first()
-        )
+        ).filter(pk=record_id).first()
         if record is None:
             raise ValidationError({"record": "Checklist record not found."})
 
@@ -727,7 +726,7 @@ def save_checklist_draft_responses(
         items = {item.id: item for item in item_rows}
         existing = responses_by_key(
             list(
-                ChecklistResponse.objects.select_for_update().filter(checklist_record_id=record.id)
+                lock_queryset(ChecklistResponse.objects.filter(checklist_record_id=record.id))
             )
         )
 
@@ -834,8 +833,26 @@ def save_checklist_draft_responses(
             actor=user,
             calibration_overrides=calibration_overrides or {},
         )
-        record.draft_version = next_draft_version(record.draft_version)
-        record.save(update_fields=["updated_at", "draft_version"])
+        expected_version = record.draft_version
+        record.draft_version = next_draft_version(expected_version)
+        try:
+            from django.utils import timezone as dj_timezone
+
+            require_conditional_update(
+                ChecklistRecord.objects.all(),
+                expected={"pk": record.pk, "draft_version": expected_version},
+                updates={
+                    "draft_version": record.draft_version,
+                    "updated_at": dj_timezone.now(),
+                },
+            )
+        except TransitionConflictError as exc:
+            from apps.recording.concurrency import DraftConcurrencyConflict
+
+            raise DraftConcurrencyConflict(
+                current_version=expected_version,
+                expected_version=expected_draft_version,
+            ) from exc
         meta = _record_metadata(record, changed_item_count=changed)
         meta["draft_version"] = record.draft_version
         meta["save_mode"] = save_mode
@@ -934,8 +951,8 @@ def submit_checklist_record(
     user = _require_authenticated_actor(actor)
 
     try:
-        with transaction.atomic():
-            record = (
+        with atomic():
+            record = lock_queryset(
                 ChecklistRecord.objects.select_related(
                     "organization",
                     "checklist_task",
@@ -944,10 +961,7 @@ def submit_checklist_record(
                     "checklist_task__checklist_version",
                     "started_by",
                 )
-                .select_for_update()
-                .filter(pk=record_id)
-                .first()
-            )
+            ).filter(pk=record_id).first()
             if record is None:
                 raise ValidationError({"record": "Checklist record not found."})
 
@@ -990,9 +1004,10 @@ def submit_checklist_record(
             )
             draft_responses = responses_by_key(
                 list(
-                    ChecklistResponse.objects.select_for_update(of=("self",))
-                    .filter(checklist_record_id=record.id)
-                    .select_related("selected_option")
+                    lock_queryset(
+                        ChecklistResponse.objects.filter(checklist_record_id=record.id),
+                        of=("self",),
+                    ).select_related("selected_option")
                 )
             )
             from apps.recording.calculation_runtime import apply_calculations_to_draft

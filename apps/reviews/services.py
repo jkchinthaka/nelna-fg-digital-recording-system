@@ -6,10 +6,10 @@ import uuid
 from typing import Any
 
 from django.core.exceptions import PermissionDenied, ValidationError
-from django.db import IntegrityError, transaction
 
 from apps.access_control.services import Scope, require_permission
 from apps.accounts.models import User
+from apps.core.persistence import TransitionConflictError, atomic, create_immutable_unique
 from apps.recording.models import ChecklistRecordStatus, ChecklistSubmission
 from apps.reviews.governance import assert_self_review_allowed
 from apps.reviews.models import SupervisorReview, SupervisorReviewDecision
@@ -72,9 +72,7 @@ def create_supervisor_review(
 
     Idempotent when the same decision already exists.
     Conflict when an existing review has a different decision.
-    Does not reopen records, mutate snapshots, create Submission #2, or start QA.
-    Self-review prohibition is enforced only when org governance policy is
-    PROHIBIT with owner evidence (Phase 09C). PENDING policy does not block.
+    Concurrency: unique(submission) + create_immutable_unique (no select_for_update).
     """
     user = _require_authenticated_actor(actor)
 
@@ -83,118 +81,107 @@ def create_supervisor_review(
 
     note = normalize_review_note(review_note)
 
-    try:
-        with transaction.atomic():
-            submission = (
-                ChecklistSubmission.objects.select_related(
-                    "checklist_record",
-                    "checklist_record__organization",
-                    "checklist_record__checklist_task",
-                    "checklist_record__checklist_task__checklist_template",
-                    "checklist_record__checklist_task__checklist_version",
-                    "submitted_by",
-                )
-                .select_for_update()
-                .filter(pk=submission_id)
-                .first()
+    with atomic():
+        submission = (
+            ChecklistSubmission.objects.select_related(
+                "checklist_record",
+                "checklist_record__organization",
+                "checklist_record__checklist_task",
+                "checklist_record__checklist_task__checklist_template",
+                "checklist_record__checklist_task__checklist_version",
+                "submitted_by",
             )
-            if submission is None:
-                raise ValidationError({"submission": "Checklist submission not found."})
+            .filter(pk=submission_id)
+            .first()
+        )
+        if submission is None:
+            raise ValidationError({"submission": "Checklist submission not found."})
 
-            record = submission.checklist_record
-            require_permission(
-                user,
-                REVIEW_CHECKLIST_SUBMISSION,
-                scope=submission_authorization_scope(submission),
+        record = submission.checklist_record
+        require_permission(
+            user,
+            REVIEW_CHECKLIST_SUBMISSION,
+            scope=submission_authorization_scope(submission),
+        )
+
+        self_review_eval = assert_self_review_allowed(actor=user, submission=submission)
+
+        if record.status != ChecklistRecordStatus.SUBMITTED:
+            raise ValidationError(
+                {
+                    "submission": (
+                        "Only SUBMITTED checklist records may receive Supervisor review."
+                    )
+                }
             )
 
-            self_review_eval = assert_self_review_allowed(actor=user, submission=submission)
-
-            if record.status != ChecklistRecordStatus.SUBMITTED:
-                raise ValidationError(
-                    {
-                        "submission": (
-                            "Only SUBMITTED checklist records may receive Supervisor review."
-                        )
-                    }
-                )
-
-            # Only the latest submission on the record may receive a new review.
-            latest = (
-                ChecklistSubmission.objects.filter(checklist_record_id=record.id)
-                .order_by("-submission_number", "-submitted_at")
-                .values_list("id", flat=True)
-                .first()
+        latest = (
+            ChecklistSubmission.objects.filter(checklist_record_id=record.id)
+            .order_by("-submission_number", "-submitted_at")
+            .values_list("id", flat=True)
+            .first()
+        )
+        if latest is not None and latest != submission.id:
+            raise ValidationError(
+                {
+                    "submission": (
+                        "Only the latest checklist submission for this record may be "
+                        "reviewed. Earlier submissions keep immutable review history."
+                    )
+                }
             )
-            if latest is not None and latest != submission.id:
-                raise ValidationError(
-                    {
-                        "submission": (
-                            "Only the latest checklist submission for this record may be "
-                            "reviewed. Earlier submissions keep immutable review history."
-                        )
-                    }
-                )
 
-            existing = (
-                SupervisorReview.objects.select_for_update()
-                .filter(checklist_submission_id=submission.id)
-                .first()
+        existing = SupervisorReview.objects.filter(
+            checklist_submission_id=submission.id
+        ).first()
+        if existing is not None:
+            if existing.decision == decision:
+                return existing
+            raise ValidationError(
+                {
+                    "decision": (
+                        "This submission already has an immutable Supervisor review "
+                        f"({existing.decision}). Different decisions cannot overwrite it."
+                    )
+                }
             )
-            if existing is not None:
-                if existing.decision == decision:
-                    return existing
-                raise ValidationError(
-                    {
-                        "decision": (
-                            "This submission already has an immutable Supervisor review "
-                            f"({existing.decision}). Different decisions cannot overwrite it."
-                        )
-                    }
-                )
 
-            review = SupervisorReview(
-                organization_id=record.organization_id,
-                checklist_submission=submission,
-                decision=decision,
-                review_note=note,
-                reviewed_by=user,
+        try:
+            review = create_immutable_unique(
+                model=SupervisorReview,
+                create_kwargs={
+                    "organization_id": record.organization_id,
+                    "checklist_submission": submission,
+                    "decision": decision,
+                    "review_note": note,
+                    "reviewed_by": user,
+                },
+                unique_lookup={"checklist_submission_id": submission.id},
+                decision_field="decision",
+                decision_value=decision,
             )
-            review.full_clean()
-            review.save()
+        except TransitionConflictError as exc:
+            raise ValidationError(
+                {
+                    "decision": (
+                        "This submission already has an immutable Supervisor review "
+                        "with a different decision. Different decisions cannot overwrite it."
+                    )
+                }
+            ) from exc
 
+        if review.reviewed_by_id == user.id and review.decision == decision:
             meta = _review_metadata(review)
             meta["self_review_mode"] = self_review_eval.mode
             meta["self_review_is_self"] = self_review_eval.is_self_review
             meta["self_review_enforcement"] = self_review_eval.enforcement
             meta["governance_phase"] = "09C"
+            meta["concurrency_pattern"] = "optimistic_unique_insert"
             record_event(
                 event_type="SUPERVISOR_REVIEW_COMPLETED",
                 actor=user,
                 metadata=meta,
             )
-    except IntegrityError:
-        raced = (
-            SupervisorReview.objects.select_related(
-                "organization",
-                "checklist_submission",
-                "reviewed_by",
-            )
-            .filter(checklist_submission_id=submission_id)
-            .first()
-        )
-        if raced is not None:
-            if raced.decision == decision:
-                return raced
-            raise ValidationError(
-                {
-                    "decision": (
-                        "This submission already has an immutable Supervisor review "
-                        f"({raced.decision}). Different decisions cannot overwrite it."
-                    )
-                }
-            ) from None
-        raise ValidationError({"review": "Unable to create Supervisor review."}) from None
 
     return SupervisorReview.objects.select_related(
         "organization",

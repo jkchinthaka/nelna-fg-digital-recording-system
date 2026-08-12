@@ -44,7 +44,7 @@ def create_supervisor_review_cas(
 
     note = normalize_review_note(review_note)
 
-    with atomic(savepoint=False):
+    with atomic():
         submission = (
             ChecklistSubmission.objects.select_related(
                 "checklist_record",

@@ -45,7 +45,7 @@ def create_qa_review_cas(
 
     note = normalize_qa_review_note(review_note)
 
-    with atomic(savepoint=False):
+    with atomic():
         submission = (
             ChecklistSubmission.objects.select_related(
                 "checklist_record",

@@ -60,7 +60,7 @@ def start_checklist_recording_cas(
     if existing is not None:
         return existing
 
-    with atomic(savepoint=False):
+    with atomic():
         # Re-check under atomic boundary (no row lock).
         raced = ChecklistRecord.objects.filter(checklist_task_id=task.id).first()
         if raced is not None:

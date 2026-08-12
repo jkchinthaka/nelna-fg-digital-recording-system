@@ -14,7 +14,6 @@ from dataclasses import dataclass
 from typing import Any
 
 from django.core.exceptions import PermissionDenied, ValidationError
-from django.db import transaction
 from django.utils import timezone
 
 from apps.access_control.models import Role, ScopedRoleAssignment
@@ -26,6 +25,7 @@ from apps.access_control.services import (
     revoke_role_assignment,
 )
 from apps.accounts.models import User
+from apps.core.persistence import atomic_fn, lock_queryset
 from apps.organizations.models import Organization
 from apps.recording.models import ChecklistSubmission
 from apps.reviews.models import (
@@ -173,7 +173,7 @@ def resolve_review_due(
     )
 
 
-@transaction.atomic
+@atomic_fn
 def upsert_supervisor_review_governance_policy(
     *,
     actor: User | None,
@@ -201,11 +201,9 @@ def upsert_supervisor_review_governance_policy(
     if self_review_mode not in SelfReviewPolicyMode.values:
         raise ValidationError({"self_review_mode": "Invalid self-review policy mode."})
 
-    policy = (
-        SupervisorReviewGovernancePolicy.objects.select_for_update()
-        .filter(organization_id=org.id)
-        .first()
-    )
+    policy = lock_queryset(
+        SupervisorReviewGovernancePolicy.objects.filter(organization_id=org.id)
+    ).first()
     if policy is None:
         policy = SupervisorReviewGovernancePolicy(organization=org)
     policy.self_review_mode = self_review_mode
@@ -262,7 +260,7 @@ def _technical_review_delegate_role(*, organization: Organization) -> Role:
     )
 
 
-@transaction.atomic
+@atomic_fn
 def grant_temporary_supervisor_review_delegation(
     *,
     actor: User | None,
@@ -330,7 +328,7 @@ def grant_temporary_supervisor_review_delegation(
     return assignment
 
 
-@transaction.atomic
+@atomic_fn
 def revoke_temporary_supervisor_review_delegation(
     *,
     actor: User | None,

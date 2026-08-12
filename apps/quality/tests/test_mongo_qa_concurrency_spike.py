@@ -12,7 +12,7 @@ from tests.factories import make_org
 
 from apps.core.db_namespace import restore_postgresql_table_names
 from apps.quality.models import QAReview, QAReviewDecision
-from apps.quality.mongo_spike import create_qa_review_cas
+from apps.quality.services import create_qa_review
 from apps.quality.tests.test_phase10a_qa_review import _approved_submission, _qa_actor
 
 pytestmark = pytest.mark.django_db(transaction=True)
@@ -35,7 +35,7 @@ def test_cas_release_vs_release_idempotent() -> None:
 
     def _run() -> QAReview:
         connection.close()
-        return create_qa_review_cas(
+        return create_qa_review(
             actor=qa,
             submission_id=submission.id,
             decision=QAReviewDecision.RELEASE,
@@ -65,7 +65,7 @@ def test_cas_conflicting_dispositions_one_wins(left: str, right: str) -> None:
         connection.close()
         try:
             wins.append(
-                create_qa_review_cas(
+                create_qa_review(
                     actor=qa,
                     submission_id=submission.id,
                     decision=decision,
@@ -91,7 +91,7 @@ def test_cas_hold_vs_hold_idempotent() -> None:
 
     def _run() -> QAReview:
         connection.close()
-        return create_qa_review_cas(
+        return create_qa_review(
             actor=qa,
             submission_id=submission.id,
             decision=QAReviewDecision.HOLD,
@@ -109,7 +109,7 @@ def test_cas_reject_vs_reject_idempotent() -> None:
 
     def _run() -> QAReview:
         connection.close()
-        return create_qa_review_cas(
+        return create_qa_review(
             actor=qa,
             submission_id=submission.id,
             decision=QAReviewDecision.REJECT,
@@ -123,13 +123,13 @@ def test_cas_reject_vs_reject_idempotent() -> None:
 
 def test_cas_duplicate_retry_same_decision() -> None:
     qa, submission = _fixture()
-    first = create_qa_review_cas(
+    first = create_qa_review(
         actor=qa,
         submission_id=submission.id,
         decision=QAReviewDecision.RELEASE,
         review_note="n1",
     )
-    second = create_qa_review_cas(
+    second = create_qa_review(
         actor=qa,
         submission_id=submission.id,
         decision=QAReviewDecision.RELEASE,
@@ -140,13 +140,13 @@ def test_cas_duplicate_retry_same_decision() -> None:
 
 def test_cas_stale_conflicting_decision() -> None:
     qa, submission = _fixture()
-    create_qa_review_cas(
+    create_qa_review(
         actor=qa,
         submission_id=submission.id,
         decision=QAReviewDecision.RELEASE,
     )
     with pytest.raises(ValidationError):
-        create_qa_review_cas(
+        create_qa_review(
             actor=qa,
             submission_id=submission.id,
             decision=QAReviewDecision.HOLD,

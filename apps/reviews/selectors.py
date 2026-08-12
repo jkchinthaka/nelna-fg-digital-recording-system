@@ -7,7 +7,7 @@ import uuid
 from typing import Any, Literal
 
 from django.core.exceptions import PermissionDenied
-from django.db.models import F, OuterRef, Prefetch, QuerySet, Subquery
+from django.db.models import QuerySet
 from django.utils import timezone
 
 from apps.access_control.services import (
@@ -15,7 +15,9 @@ from apps.access_control.services import (
     user_has_permission,
 )
 from apps.accounts.models import User
-from apps.checklists.models import ChecklistItem, ChecklistItemOption, ChecklistSection
+from apps.checklists.compat_queries import load_sections_with_items_and_options
+from apps.checklists.models import ChecklistSection
+from apps.core.persistence import latest_ids_by_parent
 from apps.recording.models import (
     ChecklistRecordStatus,
     ChecklistSubmission,
@@ -44,11 +46,18 @@ def actor_can_access_review_module(actor: User | None) -> bool:
 
 
 def _base_pending_queryset(org_ids: set[uuid.UUID]) -> QuerySet[ChecklistSubmission]:
-    """Unreviewed SUBMITTED submissions; prefer latest-per-record via annotation filter."""
-    latest_number = (
-        ChecklistSubmission.objects.filter(checklist_record_id=OuterRef("checklist_record_id"))
-        .order_by("-submission_number", "-submitted_at")
-        .values("submission_number")[:1]
+    """Unreviewed SUBMITTED latest-per-record submissions (no OuterRef/Subquery)."""
+    candidates = ChecklistSubmission.objects.filter(
+        checklist_record__organization_id__in=org_ids,
+        checklist_record__status=ChecklistRecordStatus.SUBMITTED,
+        supervisor_review__isnull=True,
+    )
+    record_ids = list(candidates.values_list("checklist_record_id", flat=True).distinct())
+    latest_ids = latest_ids_by_parent(
+        model=ChecklistSubmission,
+        parent_field="checklist_record_id",
+        number_field="submission_number",
+        parent_ids=record_ids,
     )
     return (
         ChecklistSubmission.objects.select_related(
@@ -59,12 +68,10 @@ def _base_pending_queryset(org_ids: set[uuid.UUID]) -> QuerySet[ChecklistSubmiss
             "checklist_record__checklist_task__checklist_template",
             "checklist_record__checklist_task__checklist_version",
         )
-        .annotate(_latest_number=Subquery(latest_number))
         .filter(
-            checklist_record__organization_id__in=org_ids,
-            checklist_record__status=ChecklistRecordStatus.SUBMITTED,
+            pk__in=latest_ids,
             supervisor_review__isnull=True,
-            submission_number=F("_latest_number"),
+            checklist_record__status=ChecklistRecordStatus.SUBMITTED,
         )
         .order_by("-submitted_at")
     )
@@ -219,21 +226,7 @@ def get_supervisor_review(actor: User | None, review_id: uuid.UUID) -> Superviso
 
 
 def _load_sections(version_id: uuid.UUID) -> list[ChecklistSection]:
-    return list(
-        ChecklistSection.objects.filter(version_id=version_id)
-        .prefetch_related(
-            Prefetch(
-                "items",
-                queryset=ChecklistItem.objects.prefetch_related(
-                    Prefetch(
-                        "options",
-                        queryset=ChecklistItemOption.objects.order_by("position"),
-                    )
-                ).order_by("position"),
-            )
-        )
-        .order_by("position")
-    )
+    return load_sections_with_items_and_options(version_id)
 
 
 def load_submission_review_context(

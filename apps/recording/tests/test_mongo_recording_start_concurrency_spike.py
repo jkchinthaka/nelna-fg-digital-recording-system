@@ -11,7 +11,7 @@ from tests.factories import make_org
 
 from apps.core.db_namespace import restore_postgresql_table_names
 from apps.recording.models import ChecklistRecord
-from apps.recording.mongo_spike import start_checklist_recording_cas
+from apps.recording.services import start_checklist_recording
 from apps.recording.tests.test_phase08a_draft_recording import (
     _make_rich_published,
     _pending_task,
@@ -48,7 +48,7 @@ def test_concurrent_start_creates_single_record() -> None:
 
     def _run() -> ChecklistRecord:
         connection.close()
-        return start_checklist_recording_cas(actor=recorder, task_id=task.id)
+        return start_checklist_recording(actor=recorder, task_id=task.id)
 
     with ThreadPoolExecutor(max_workers=4) as pool:
         futures = [pool.submit(_run) for _ in range(4)]
@@ -61,8 +61,8 @@ def test_concurrent_start_creates_single_record() -> None:
 
 def test_start_idempotent_repeat_call() -> None:
     recorder, task = _fixture()
-    first = start_checklist_recording_cas(actor=recorder, task_id=task.id)
-    second = start_checklist_recording_cas(actor=recorder, task_id=task.id)
+    first = start_checklist_recording(actor=recorder, task_id=task.id)
+    second = start_checklist_recording(actor=recorder, task_id=task.id)
     assert first.id == second.id
     assert first.started_by_id == second.started_by_id
 
@@ -84,7 +84,7 @@ def test_concurrent_start_two_recorders_one_owner() -> None:
 
     def _run(actor) -> ChecklistRecord:
         connection.close()
-        return start_checklist_recording_cas(actor=actor, task_id=task.id)
+        return start_checklist_recording(actor=actor, task_id=task.id)
 
     with ThreadPoolExecutor(max_workers=2) as pool:
         f1 = pool.submit(_run, recorder_a)

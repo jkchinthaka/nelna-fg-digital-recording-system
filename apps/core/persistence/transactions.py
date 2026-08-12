@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
+from functools import wraps
 from typing import Any
 
 from django.db import transaction as django_transaction
@@ -40,6 +41,17 @@ def atomic(*, using: str | None = None, savepoint: bool = True) -> Iterator[Any]
 
     with django_transaction.atomic(using=using, savepoint=savepoint):
         yield
+
+
+def atomic_fn(func: Callable[..., Any]) -> Callable[..., Any]:
+    """Decorator equivalent of ``atomic()`` (Mongo has no savepoints)."""
+
+    @wraps(func)
+    def inner(*args: Any, **kwargs: Any) -> Any:
+        with atomic():
+            return func(*args, **kwargs)
+
+    return inner
 
 
 def on_commit(func: Callable[..., Any], *, using: str | None = None) -> None:

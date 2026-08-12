@@ -4,7 +4,7 @@
 
 ```text
 STARTING_BRANCH=feature/mongodb-same-maintainpro-db
-STARTING_SHA=aa4c789
+STARTING_SHA=d8682b7
 MAIN_SHA=d5a4460
 ORIGIN_MAIN_SHA=d5a4460
 ```
@@ -41,17 +41,15 @@ main merged: NO
 
 | Item | Status |
 | --- | --- |
-| Full compatibility inventory | Done — `MONGO_FULL_COMPATIBILITY_INVENTORY.md` (exact AST scan) |
-| Persistence facade | Done — `apps/core/persistence/` (vendor detect, atomic, CAS) |
-| Permanent `fg_` naming + manifests | Done |
-| Primary key matrix | Done |
-| Contrib Mongo config plan | Documented — not activated on main |
-| Supervisor CAS spike | PASS |
-| QA CAS spike | PASS (this batch) |
-| Recording start CAS spike | PASS (this batch) |
-| Recording submit/correction spike | **NEXT** |
-| RCA / CAPA / NCR spikes | Not started |
-| prefetch / Subquery rewrites | Inventory only |
+| Persistence facade | Done — `apps/core/persistence/` (vendor, atomic, CAS, lock_queryset, latest_ids) |
+| Supervisor production path | Done — unique insert, no `select_for_update` |
+| QA production path | Done — unique insert, no `select_for_update` |
+| Recording start production | Done — unique(task) insert |
+| Recording draft save | Done — `lock_queryset` + draft_version CAS |
+| Recording submit / correction | Done — `lock_queryset` + unique IntegrityError |
+| RCA close/cancel | Done — CAS status + mutable guard; `@atomic_fn` |
+| Supervisor/QA queue OuterRef/Subquery | Done — `latest_ids_by_parent` |
+| Supervisor/QA section prefetch | Done — batched `load_sections_with_items_and_options` |
 | Full Mongo pytest suite | Not run |
 | Live company read-only audit | Script ready — not executed |
 
@@ -61,22 +59,22 @@ main merged: NO
 
 | Token | Count |
 | --- | ---: |
-| select_for_update | 137 |
-| prefetch_related | 34 |
-| OuterRef | 2 |
-| transaction.atomic | 396 |
-| IntegrityError | 113 |
+| select_for_update | 118 (was 137) |
+| prefetch_related | 30 (was 34) |
+| OuterRef / Subquery (core queues) | 0 remaining in reviews/quality selectors |
+| transaction.atomic | 372 |
+| IntegrityError | 110 |
 | Lower | 87 |
 
 ---
 
 ## Next continuation module
 
-1. **Recording submit + draft + correction CAS spikes** (`apps/recording/services.py`)
-2. Replace production Supervisor/QA paths to call persistence facade behind feature flag / backend detection
-3. RCA close/cancel concurrency spike
-4. Begin prefetch_related rewrites for Supervisor/QA queues
-5. Isolated Mongo POC migrate + subset pytest under `mongo_same_db_poc`
+1. Remaining `select_for_update` in checklists versioning, scheduling, CAPA, NCR, laboratory, HACCP, master_data (~118 sites)
+2. Remaining `prefetch_related` in checklists selectors/services
+3. Isolated Mongo POC: migrate + subset pytest under `mongo_same_db_poc`
+4. Contrib Mongo AppConfig activation (POC only)
+5. FG-only backup/restore for `fg_*` collections
 
 ---
 

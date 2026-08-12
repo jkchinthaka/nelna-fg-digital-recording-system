@@ -6,12 +6,13 @@ import uuid
 from typing import Any
 
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
-from django.db import IntegrityError, models, transaction
+from django.db import IntegrityError, models
 from django.utils import timezone
 
 from apps.access_control.services import require_permission
 from apps.accounts.models import User
 from apps.checklists.models import ChecklistItem, ChecklistItemKind
+from apps.core.persistence import atomic, lock_queryset
 from apps.recording.models import (
     ChecklistCorrection,
     ChecklistCorrectionStatus,
@@ -236,8 +237,8 @@ def start_checklist_correction(
     user = _require_authenticated_actor(actor)
 
     try:
-        with transaction.atomic():
-            source = (
+        with atomic():
+            source = lock_queryset(
                 ChecklistSubmission.objects.select_related(
                     "checklist_record",
                     "checklist_record__organization",
@@ -246,24 +247,18 @@ def start_checklist_correction(
                     "checklist_record__checklist_task__checklist_version",
                     "submitted_by",
                 )
-                .select_for_update()
-                .filter(pk=source_submission_id)
-                .first()
-            )
+            ).filter(pk=source_submission_id).first()
             if source is None:
                 raise ValidationError({"source_submission": "Checklist submission not found."})
 
-            record = (
+            record = lock_queryset(
                 ChecklistRecord.objects.select_related(
                     "organization",
                     "checklist_task",
                     "checklist_task__checklist_template",
                     "checklist_task__checklist_version",
                 )
-                .select_for_update()
-                .filter(pk=source.checklist_record_id)
-                .first()
-            )
+            ).filter(pk=source.checklist_record_id).first()
             if record is None:
                 raise ValidationError({"record": "Checklist record not found."})
 
@@ -274,11 +269,9 @@ def start_checklist_correction(
             _assert_task_not_cancelled(task)
             _assert_source_eligible_for_correction(record=record, source_submission=source)
 
-            existing = (
-                ChecklistCorrection.objects.select_for_update()
-                .filter(source_submission_id=source.id)
-                .first()
-            )
+            existing = lock_queryset(
+                ChecklistCorrection.objects.filter(source_submission_id=source.id)
+            ).first()
             if existing is not None:
                 return existing
 
@@ -437,8 +430,8 @@ def resubmit_checklist_correction(
     user = _require_authenticated_actor(actor)
 
     try:
-        with transaction.atomic():
-            correction = (
+        with atomic():
+            correction = lock_queryset(
                 ChecklistCorrection.objects.select_related(
                     "organization",
                     "checklist_record",
@@ -449,10 +442,7 @@ def resubmit_checklist_correction(
                     "source_submission",
                     "started_by",
                 )
-                .select_for_update()
-                .filter(pk=correction_id)
-                .first()
-            )
+            ).filter(pk=correction_id).first()
             if correction is None:
                 raise ValidationError({"correction": "Checklist correction not found."})
 
@@ -464,17 +454,14 @@ def resubmit_checklist_correction(
                     pk=correction.resulting_submission_id
                 ).first()
 
-            record = (
+            record = lock_queryset(
                 ChecklistRecord.objects.select_related(
                     "organization",
                     "checklist_task",
                     "checklist_task__checklist_template",
                     "checklist_task__checklist_version",
                 )
-                .select_for_update()
-                .filter(pk=correction.checklist_record_id)
-                .first()
-            )
+            ).filter(pk=correction.checklist_record_id).first()
             if record is None:
                 raise ValidationError({"record": "Checklist record not found."})
 
@@ -514,9 +501,10 @@ def resubmit_checklist_correction(
             )
             existing = responses_by_key(
                 list(
-                    ChecklistResponse.objects.select_for_update(of=("self",))
-                    .filter(checklist_record_id=record.id)
-                    .select_related("selected_option")
+                    lock_queryset(
+                        ChecklistResponse.objects.filter(checklist_record_id=record.id),
+                        of=("self",),
+                    ).select_related("selected_option")
                 )
             )
             from apps.recording.calculation_runtime import apply_calculations_to_draft
