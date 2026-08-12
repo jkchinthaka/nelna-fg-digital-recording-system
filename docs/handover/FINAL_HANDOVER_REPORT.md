@@ -4,7 +4,7 @@
 **Authoritative repository:** `C:\Projects\nelna-fg-digital-recording-system`  
 **Remote:** `https://github.com/jkchinthaka/nelna-fg-digital-recording-system.git`  
 **Branch:** `main`  
-**HEAD:** `303831d4484e1d483a9fcaa32513dc87ad4a380a`  
+**HEAD:** `4b5914e7b17fb7d752dd6f1f6d1dbd52de0380b6`  
 **Do not use** the OneDrive clone for day-to-day work.
 
 This report is an engineering continuity handover. It is **not** a production release certificate.
@@ -30,15 +30,15 @@ This report is an engineering continuity handover. It is **not** a production re
 | Item | Value |
 | --- | --- |
 | Prior incomplete tip referenced by older prompts | `395dc3b` (superseded) |
-| `origin/main` | `303831d4484e1d483a9fcaa32513dc87ad4a380a` |
+| `origin/main` | `4b5914e7b17fb7d752dd6f1f6d1dbd52de0380b6` |
 | Local `HEAD` | equals `origin/main` (verified after push; no force push) |
-| Feature branch | `feature/phase-49-structured-rca` may lag at `671bace` if network blocked mid-sync; **use `main`** |
+| Feature branch | `feature/phase-49-structured-rca` tip equals `main` at close-out |
 | Authoritative SoR | PostgreSQL (ADR-002) |
 | Unrelated stash preserved | `stash@{0}` format-only WIP (also partially applied earlier) |
 
 ---
 
-## Quality gates (main @ 303831d)
+## Quality gates (code baseline `303831d`; docs tip follows)
 
 | Gate | Result |
 | --- | --- |

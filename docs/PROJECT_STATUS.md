@@ -31,7 +31,7 @@ This document records **repository evidence**. It does not invent Nelna operatio
 | --- | --- |
 | Current DB platform | **PostgreSQL** (authoritative; ADR-002). Redis for cache/Celery. MongoDB/Atlas **requested by company** — DB-01 ADR-018; DB-02 isolated POC evidence in `docs/migration/MONGODB_POC_RESULTS.md` (**CUTOVER BLOCKED / DO NOT MIGRATE**); **not** application SoR |
 | Current deployment | **Local / developer Docker Compose only**. No staging/UAT/production deployment recorded |
-| Feature continuation | RCA + Daily Records + print/history + NCR/CAPA/Lab/HACCP operator URLs **merged to `main`** @ `303831d` (gates green). Prefer `main` over lagging feature branch tips. |
+| Feature continuation | RCA + Daily Records + print/history + NCR/CAPA/Lab/HACCP operator URLs **merged to `main`** (gates green @ `303831d`; docs close-out @ `4b5914e`). |
 | Production readiness | **NOT claimed** |
 | FG-QA-001 | Project-proposed **DRAFT** only — Phase 06N **BLOCKED — BUSINESS APPROVAL REQUIRED**; **NOT APPROVED**; not auto-published |
 | Phase 10A QA foundation | **IMPLEMENTED** on `main` at baseline SHA above |

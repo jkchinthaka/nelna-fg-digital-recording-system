@@ -9,8 +9,8 @@ This file is retained for continuity. Prefer `FINAL_HANDOVER.md` and `FINAL_HAND
 | Item | Value |
 | --- | --- |
 | Current branch | `main` |
-| HEAD / `origin/main` | `303831d4484e1d483a9fcaa32513dc87ad4a380a` |
-| Feature branch | `feature/phase-49-structured-rca` may lag; prefer `main` |
+| HEAD / `origin/main` | `4b5914e7b17fb7d752dd6f1f6d1dbd52de0380b6` |
+| Feature branch | equals `main` at close-out |
 | Unrelated stash | `stash@{0}` WIP format-only quality/compliance drift |
 
 ## Close-out evidence

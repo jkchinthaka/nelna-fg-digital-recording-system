@@ -14,7 +14,7 @@ This package describes the technically implementable factory-floor recording sys
 | --- | --- |
 | Canonical repo | `C:\Projects\nelna-fg-digital-recording-system` |
 | GitHub | `jkchinthaka/nelna-fg-digital-recording-system` |
-| `origin/main` | `303831d4484e1d483a9fcaa32513dc87ad4a380a` |
+| `origin/main` | `4b5914e7b17fb7d752dd6f1f6d1dbd52de0380b6` |
 | Feature branch tip (last synced) | may lag; prefer `main` |
 | Local HEAD | equals `origin/main` at handover time |
 
