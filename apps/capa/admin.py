@@ -27,6 +27,13 @@ class CapaActionItemInline(admin.TabularInline):  # type: ignore[type-arg]
 
 @admin.register(CorrectiveAction)
 class CorrectiveActionAdmin(SoftRetentionAdmin):
+    """
+    CAPA status transitions are service-driven only.
+
+    Workflow/status and terminal audit fields are read-only in admin for all
+    staff (including superuser) to prevent silent state-machine bypass.
+    """
+
     list_display = (
         "code",
         "title",
@@ -41,11 +48,15 @@ class CorrectiveActionAdmin(SoftRetentionAdmin):
     search_fields = ("code", "title", "summary")
     readonly_fields = (
         "id",
+        "status",
         "created_at",
         "updated_at",
         "closed_at",
+        "closed_by",
         "verified_at",
+        "verified_by",
         "effectiveness_reviewed_at",
+        "effectiveness_reviewed_by",
     )
     autocomplete_fields = (
         "organization",

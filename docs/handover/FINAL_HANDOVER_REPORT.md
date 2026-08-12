@@ -50,8 +50,8 @@ This report is an engineering continuity handover. It is **not** a production re
 | `bandit` | PASS (0 issues after restore-drill / URL hardening) |
 | `pip-audit` | PASS |
 | `npm ci` / `npm run build` | PASS (after local disk cleanup) |
-| `pytest` full | **881 passed** |
-| Coverage | **83.38%** (>= 80%) |
+| `pytest` full | **893 passed** |
+| Coverage | **83.45%** (>= 80%) |
 
 ---
 

@@ -20,6 +20,13 @@ class SoftRetentionAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
 
 @admin.register(NonConformanceRecord)
 class NonConformanceRecordAdmin(SoftRetentionAdmin):
+    """
+    NCR status transitions are service-driven only.
+
+    Workflow/status fields are read-only in admin for all staff (including
+    superuser) to prevent silent state-machine bypass.
+    """
+
     list_display = (
         "code",
         "title",
@@ -32,7 +39,14 @@ class NonConformanceRecordAdmin(SoftRetentionAdmin):
     )
     list_filter = ("status", "source", "organization")
     search_fields = ("code", "title", "batch_reference", "description")
-    readonly_fields = ("id", "created_at", "updated_at", "closed_at")
+    readonly_fields = (
+        "id",
+        "status",
+        "created_at",
+        "updated_at",
+        "closed_at",
+        "closed_by",
+    )
     autocomplete_fields = (
         "organization",
         "owner",
@@ -45,6 +59,8 @@ class NonConformanceRecordAdmin(SoftRetentionAdmin):
 
 @admin.register(HoldCase)
 class HoldCaseAdmin(SoftRetentionAdmin):
+    """Hold status transitions are service-driven only; status is admin read-only."""
+
     list_display = (
         "code",
         "organization",
@@ -56,7 +72,14 @@ class HoldCaseAdmin(SoftRetentionAdmin):
     )
     list_filter = ("status", "organization")
     search_fields = ("code", "reason_reference", "batch_reference", "scope")
-    readonly_fields = ("id", "opened_at", "updated_at", "closed_at")
+    readonly_fields = (
+        "id",
+        "status",
+        "opened_at",
+        "updated_at",
+        "closed_at",
+        "closed_by",
+    )
     autocomplete_fields = (
         "organization",
         "owner",

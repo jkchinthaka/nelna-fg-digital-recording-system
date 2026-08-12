@@ -10,7 +10,7 @@ import uuid
 from typing import Any
 
 from django.core.exceptions import PermissionDenied, ValidationError
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.utils import timezone
 
 from apps.access_control.services import Scope, user_has_permission
@@ -87,6 +87,45 @@ def _transition(rca: RootCauseAnalysis, target: str) -> None:
         raise ValidationError({"status": f"Cannot transition RCA from {rca.status} to {target}."})
 
 
+def _locked_rca(rca_id: uuid.UUID) -> RootCauseAnalysis:
+    """Lock RCA row before status/mutability checks (CAPA/reviews pattern)."""
+    rca = (
+        RootCauseAnalysis.objects.select_for_update()
+        .select_related("organization")
+        .filter(pk=rca_id)
+        .first()
+    )
+    if rca is None:
+        raise ValidationError({"rca": "RCA not found."})
+    return rca
+
+
+def _locked_cause(cause_id: uuid.UUID) -> RcaCause:
+    """Lock parent RCA then cause to serialize status and cause-state mutations."""
+    cause = RcaCause.objects.filter(pk=cause_id).only("id", "rca_id").first()
+    if cause is None:
+        raise ValidationError({"cause": "Cause not found."})
+    rca = _locked_rca(cause.rca_id)
+    locked = (
+        RcaCause.objects.select_for_update()
+        .select_related("rca", "rca__organization")
+        .filter(pk=cause_id, rca_id=rca.id)
+        .first()
+    )
+    if locked is None:
+        raise ValidationError({"cause": "Cause not found."})
+    locked.rca = rca
+    return locked
+
+
+def _rca_code_conflict(exc: Exception) -> ValidationError:
+    if isinstance(exc, IntegrityError) or "unique" in str(exc).lower():
+        return ValidationError({"rca_code": "RCA with this identifier already exists."})
+    if isinstance(exc, ValidationError):
+        return exc
+    return ValidationError(str(exc))
+
+
 def _resolve_source_object(
     *, organization_id: uuid.UUID, source_kind: str, linked_object_id: uuid.UUID
 ) -> None:
@@ -150,7 +189,7 @@ def create_rca(
     if RootCauseAnalysis.objects.filter(
         organization_id=organization_id, rca_code__iexact=code
     ).exists():
-        raise ValidationError({"rca_code": "An RCA with this identifier already exists."})
+        raise ValidationError({"rca_code": "RCA with this identifier already exists."})
     if linked_object_id is not None:
         _resolve_source_object(
             organization_id=organization_id,
@@ -171,8 +210,11 @@ def create_rca(
         status=RcaStatus.DRAFT,
         created_by=actor,
     )
-    rca.full_clean()
-    rca.save()
+    try:
+        rca.full_clean()
+        rca.save()
+    except (ValidationError, IntegrityError) as exc:
+        raise _rca_code_conflict(exc) from exc
     _append_event(
         rca=rca,
         event_type="RCA_CREATED",
@@ -195,7 +237,7 @@ def create_rca(
 
 @transaction.atomic
 def start_rca(*, actor: User, rca_id: uuid.UUID) -> RootCauseAnalysis:
-    rca = RootCauseAnalysis.objects.select_related("organization").get(pk=rca_id)
+    rca = _locked_rca(rca_id)
     _require(actor, PERM_MANAGE, rca.organization_id)
     _assert_mutable(rca)
     _transition(rca, RcaStatus.IN_PROGRESS)
@@ -225,7 +267,7 @@ def add_rca_participant(
     name_reference: str = "",
     role_note: str = "",
 ) -> RcaParticipant:
-    rca = RootCauseAnalysis.objects.select_related("organization").get(pk=rca_id)
+    rca = _locked_rca(rca_id)
     _require(actor, PERM_MANAGE, rca.organization_id)
     _assert_mutable(rca)
     row = RcaParticipant(
@@ -256,7 +298,7 @@ def add_five_why_step(
     why_question: str,
     answer: str,
 ) -> RcaFiveWhyStep:
-    rca = RootCauseAnalysis.objects.select_related("organization").get(pk=rca_id)
+    rca = _locked_rca(rca_id)
     _require(actor, PERM_MANAGE, rca.organization_id)
     _assert_mutable(rca)
     step = RcaFiveWhyStep(
@@ -292,7 +334,7 @@ def add_fishbone_entry(
     description: str,
     category_label: str = "",
 ) -> RcaFishboneEntry:
-    rca = RootCauseAnalysis.objects.select_related("organization").get(pk=rca_id)
+    rca = _locked_rca(rca_id)
     _require(actor, PERM_MANAGE, rca.organization_id)
     _assert_mutable(rca)
     if category not in RcaFishboneCategory.values:
@@ -330,7 +372,7 @@ def add_possible_cause(
     suggested_by_ai: bool = False,
     evidence_citation: str = "",
 ) -> RcaCause:
-    rca = RootCauseAnalysis.objects.select_related("organization").get(pk=rca_id)
+    rca = _locked_rca(rca_id)
     _require(actor, PERM_MANAGE, rca.organization_id)
     _assert_mutable(rca)
     cause = RcaCause(
@@ -376,12 +418,12 @@ def add_rca_evidence(
     cause_id: uuid.UUID | None = None,
     linked_object_id: uuid.UUID | None = None,
 ) -> RcaEvidenceLink:
-    rca = RootCauseAnalysis.objects.select_related("organization").get(pk=rca_id)
+    rca = _locked_rca(rca_id)
     _require(actor, PERM_MANAGE, rca.organization_id)
     _assert_mutable(rca)
     cause = None
     if cause_id is not None:
-        cause = RcaCause.objects.filter(pk=cause_id, rca=rca).first()
+        cause = RcaCause.objects.select_for_update().filter(pk=cause_id, rca=rca).first()
         if cause is None:
             raise ValidationError({"cause_id": "Cause does not belong to this RCA."})
     if linked_object_id is not None:
@@ -422,7 +464,7 @@ def add_rca_evidence(
 def mark_cause_supported(
     *, actor: User, cause_id: uuid.UUID, evidence_citation: str = ""
 ) -> RcaCause:
-    cause = RcaCause.objects.select_related("rca").get(pk=cause_id)
+    cause = _locked_cause(cause_id)
     _require(actor, PERM_MANAGE, cause.rca.organization_id)
     _assert_mutable(cause.rca)
     if cause.state != RcaCauseState.POSSIBLE_CAUSE:
@@ -465,7 +507,7 @@ def confirm_root_cause(
     *, actor: User, cause_id: uuid.UUID, confirmation_note: str = ""
 ) -> RcaCause:
     """Human-only confirmation. Software/AI must never call this autonomously."""
-    cause = RcaCause.objects.select_related("rca").get(pk=cause_id)
+    cause = _locked_cause(cause_id)
     _require(actor, PERM_CONFIRM, cause.rca.organization_id)
     _assert_mutable(cause.rca)
     if cause.state != RcaCauseState.SUPPORTED_CAUSE:
@@ -524,7 +566,7 @@ def confirm_root_cause(
 def record_rca_verification(
     *, actor: User, rca_id: uuid.UUID, verification_notes: str
 ) -> RootCauseAnalysis:
-    rca = RootCauseAnalysis.objects.select_related("organization").get(pk=rca_id)
+    rca = _locked_rca(rca_id)
     _require(actor, PERM_CONFIRM, rca.organization_id)
     _assert_mutable(rca)
     notes = (verification_notes or "").strip()
@@ -568,7 +610,7 @@ def link_confirmed_cause_to_capa(
     capa_code: str = "",
     existing_capa_id: uuid.UUID | None = None,
 ) -> RcaCapaLink:
-    cause = RcaCause.objects.select_related("rca__organization").get(pk=cause_id)
+    cause = _locked_cause(cause_id)
     org = cause.rca.organization
     _require(actor, PERM_CAPA, org.id)
     _assert_mutable(cause.rca)
@@ -626,7 +668,7 @@ def link_confirmed_cause_to_capa(
 
 @transaction.atomic
 def close_rca(*, actor: User, rca_id: uuid.UUID) -> RootCauseAnalysis:
-    rca = RootCauseAnalysis.objects.select_related("organization").get(pk=rca_id)
+    rca = _locked_rca(rca_id)
     _require(actor, PERM_MANAGE, rca.organization_id)
     _assert_mutable(rca)
     _transition(rca, RcaStatus.CLOSED)
@@ -651,7 +693,7 @@ def close_rca(*, actor: User, rca_id: uuid.UUID) -> RootCauseAnalysis:
 
 @transaction.atomic
 def cancel_rca(*, actor: User, rca_id: uuid.UUID) -> RootCauseAnalysis:
-    rca = RootCauseAnalysis.objects.select_related("organization").get(pk=rca_id)
+    rca = _locked_rca(rca_id)
     _require(actor, PERM_MANAGE, rca.organization_id)
     _assert_mutable(rca)
     _transition(rca, RcaStatus.CANCELLED)

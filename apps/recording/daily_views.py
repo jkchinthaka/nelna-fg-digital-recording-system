@@ -35,6 +35,8 @@ from apps.reports.csv_safe import render_csv
 from apps.scheduling.selectors import organizations_for_task_record
 from apps.scheduling.services import ensure_controlled_daily_task
 
+CSV_EXPORT_ROW_LIMIT = 2000
+
 
 def _actor(request: HttpRequest) -> User:
     return cast(User, request.user)
@@ -45,17 +47,56 @@ def _require_recording(request: HttpRequest) -> None:
         raise PermissionDenied("Permission denied.")
 
 
+def _validation_message(exc: ValidationError) -> str:
+    if hasattr(exc, "message_dict"):
+        parts: list[str] = []
+        for messages_list in exc.message_dict.values():
+            parts.extend(str(item) for item in messages_list)
+        return "; ".join(parts)
+    if hasattr(exc, "messages"):
+        return "; ".join(str(item) for item in exc.messages)
+    return str(exc)
+
+
 def _parse_date(raw: str | None) -> date:
     if not raw:
         return timezone.localdate()
-    return date.fromisoformat(raw)
+    try:
+        return date.fromisoformat(raw.strip())
+    except ValueError as exc:
+        raise ValidationError({"date": "Enter a valid date (YYYY-MM-DD)."}) from exc
+
+
+def _optional_date(raw: str | None) -> date | None:
+    if not raw:
+        return None
+    try:
+        return date.fromisoformat(raw.strip())
+    except ValueError as exc:
+        raise ValidationError({"date": "Enter a valid date (YYYY-MM-DD)."}) from exc
+
+
+def _parse_year_month(raw: str) -> tuple[int, int]:
+    try:
+        year_text, month_text = raw.split("-", 1)
+        year = int(year_text)
+        month = int(month_text)
+        # Reject invalid calendar months (e.g. 2026-99) via date construction.
+        date(year, month, 1)
+        return year, month
+    except (TypeError, ValueError) as exc:
+        raise ValidationError({"month": "Enter a valid month (YYYY-MM)."}) from exc
 
 
 @login_required
 @require_GET
 def daily_records_home(request: HttpRequest) -> HttpResponse:
     _require_recording(request)
-    record_date = _parse_date(request.GET.get("date"))
+    try:
+        record_date = _parse_date(request.GET.get("date"))
+    except ValidationError as exc:
+        messages.error(request, _validation_message(exc))
+        return redirect("recording:daily_home")
     counts = daily_queue_counts(actor=_actor(request), record_date=record_date)
     return render(
         request,
@@ -78,7 +119,11 @@ def daily_record_open(request: HttpRequest, form_code: str) -> HttpResponse:
     spec = get_controlled_form(form_code) or get_controlled_form(form_code.replace("-", "/"))
     if spec is None:
         raise PermissionDenied("Unknown controlled form.")
-    record_date = _parse_date(request.GET.get("date") or request.POST.get("date"))
+    try:
+        record_date = _parse_date(request.GET.get("date") or request.POST.get("date"))
+    except ValidationError as exc:
+        messages.error(request, _validation_message(exc))
+        return redirect("recording:daily_home")
     room_key = (request.GET.get("room") or request.POST.get("room") or "").strip()
     if spec.code == "NMS/PPU/CL/39" and room_key not in COLD_ROOM_KEYS:
         room_key = "CR1"
@@ -126,7 +171,11 @@ def daily_monthly_print(request: HttpRequest) -> HttpResponse:
     form_code = (request.GET.get("form") or "").strip()
     spec = get_controlled_form(form_code)
     month_raw = (request.GET.get("month") or timezone.localdate().strftime("%Y-%m")).strip()
-    year, month = [int(part) for part in month_raw.split("-", 1)]
+    try:
+        year, month = _parse_year_month(month_raw)
+    except ValidationError as exc:
+        messages.error(request, _validation_message(exc))
+        return redirect("recording:daily_home")
     pack = monthly_pack_context(actor=_actor(request), form_code=form_code, year=year, month=month)
     return render(
         request,
@@ -144,8 +193,12 @@ def daily_monthly_print(request: HttpRequest) -> HttpResponse:
 @require_GET
 def daily_record_history(request: HttpRequest) -> HttpResponse:
     _require_recording(request)
-    date_from = _optional_date(request.GET.get("date_from"))
-    date_to = _optional_date(request.GET.get("date_to"))
+    try:
+        date_from = _optional_date(request.GET.get("date_from"))
+        date_to = _optional_date(request.GET.get("date_to"))
+    except ValidationError as exc:
+        messages.error(request, _validation_message(exc))
+        return redirect("recording:daily_history")
     form_code = (request.GET.get("form") or "").strip()
     qs = history_queryset(
         actor=_actor(request),
@@ -167,6 +220,7 @@ def daily_record_history(request: HttpRequest) -> HttpResponse:
             "page_title": "Record history",
             "page": page,
             "forms": CONTROLLED_FORMS,
+            "csv_export_row_limit": CSV_EXPORT_ROW_LIMIT,
             "filters": {
                 "date_from": request.GET.get("date_from") or "",
                 "date_to": request.GET.get("date_to") or "",
@@ -186,10 +240,16 @@ def daily_record_history(request: HttpRequest) -> HttpResponse:
 @require_GET
 def daily_record_export_csv(request: HttpRequest) -> HttpResponse:
     _require_recording(request)
+    try:
+        date_from = _optional_date(request.GET.get("date_from"))
+        date_to = _optional_date(request.GET.get("date_to"))
+    except ValidationError as exc:
+        messages.error(request, _validation_message(exc))
+        return redirect("recording:daily_history")
     qs = history_queryset(
         actor=_actor(request),
-        date_from=_optional_date(request.GET.get("date_from")),
-        date_to=_optional_date(request.GET.get("date_to")),
+        date_from=date_from,
+        date_to=date_to,
         form_code=(request.GET.get("form") or "").strip(),
         batch=(request.GET.get("batch") or "").strip(),
         vehicle=(request.GET.get("vehicle") or "").strip(),
@@ -197,7 +257,10 @@ def daily_record_export_csv(request: HttpRequest) -> HttpResponse:
         cold_room=(request.GET.get("cold_room") or "").strip(),
         status=(request.GET.get("status") or "").strip(),
         recorder=(request.GET.get("recorder") or "").strip(),
-    )[:2000]
+    )
+    fetched = list(qs[: CSV_EXPORT_ROW_LIMIT + 1])
+    truncated = len(fetched) > CSV_EXPORT_ROW_LIMIT
+    records = fetched[:CSV_EXPORT_ROW_LIMIT]
     headers = (
         "record_id",
         "form_code",
@@ -217,15 +280,24 @@ def daily_record_export_csv(request: HttpRequest) -> HttpResponse:
             "recorder": record.started_by.employee_code,
             "updated_at": record.updated_at.isoformat(),
         }
-        for record in qs
+        for record in records
     ]
+    if truncated:
+        rows.append(
+            {
+                "record_id": f"EXPORT TRUNCATED AT {CSV_EXPORT_ROW_LIMIT} ROWS",
+                "form_code": "",
+                "batch_reference": "",
+                "organization": "",
+                "status": "",
+                "recorder": "",
+                "updated_at": "",
+            }
+        )
     payload = render_csv(headers=headers, rows=rows)
     response = HttpResponse(payload, content_type="text/csv; charset=utf-8")
     response["Content-Disposition"] = 'attachment; filename="daily-record-history.csv"'
+    response["X-Export-Max-Rows"] = str(CSV_EXPORT_ROW_LIMIT)
+    if truncated:
+        response["X-Export-Truncated"] = "true"
     return response
-
-
-def _optional_date(raw: str | None) -> date | None:
-    if not raw:
-        return None
-    return date.fromisoformat(raw)

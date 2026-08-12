@@ -15,11 +15,8 @@ This file is retained for continuity. Prefer `FINAL_HANDOVER.md` and `FINAL_HAND
 
 ## Close-out evidence
 
-- Full pytest on main: **881 passed**, coverage **83.38%**
-- Security/format gates cleared in `303831d`
-- Print preview + monthly pack validated live on `:8001`
-- SUP Approve/Return and QA RELEASE/HOLD/REJECT exercised on demo data
-- Handover docs updated for main integration
+- Full pytest on main: **893 passed**, coverage **83.45%**
+- Pre-UAT audit findings closed (RCA locking/duplicate race, CL/18 labels, date/month validation, admin workflow readonly)
 
 ## Not claimed
 

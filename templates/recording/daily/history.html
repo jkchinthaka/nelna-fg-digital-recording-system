@@ -16,6 +16,8 @@
         <p class="mgmt-page__lead">
           Stored controlled-form records only. Filters use fields that exist on
           the record identity. Export is CSV with formula-injection protection.
+          CSV export is limited to {{ csv_export_row_limit }} rows; larger result
+          sets are truncated with an explicit marker row.
         </p>
       </div>
     </header>

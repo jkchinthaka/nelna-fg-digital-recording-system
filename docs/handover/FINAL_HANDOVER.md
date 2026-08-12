@@ -30,7 +30,8 @@ This package describes the technically implementable factory-floor recording sys
 - Operator workspaces: NCR, CAPA (including effectiveness), Laboratory, HACCP, Dispatch, Complaints, Quarantine
 - Quality trend counts from stored records only
 - Online-only recording (no unsafe offline writes)
-- Quality gates on main: ruff, format, mypy, Django check, bandit, pip-audit, npm build, pytest **881 passed / coverage 83.38%**
+- Quality gates on main: ruff, format, mypy, Django check, bandit, pip-audit, npm build, pytest **893 passed / coverage 83.45%**
+- Pre-UAT defect fixes: RCA `select_for_update` + duplicate-code IntegrityError handling; CL/18 PASS/FAIL labels; malformed date/month validation; admin workflow field lock-down; CSV export 2000-row limit labeled
 
 ## Explicitly not claimed
 

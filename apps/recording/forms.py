@@ -216,7 +216,7 @@ class ChecklistDraftForm(forms.Form):
     def _choice_labels(self) -> tuple[str, str]:
         if self.form_code == "NMS/PPU/CL/24":
             return "Acceptable", "Unacceptable"
-        if self.form_code == "NMS/PPU/CL/30":
+        if self.form_code in {"NMS/PPU/CL/30", "NMS/PPU/CL/18"}:
             return "PASS", "FAIL"
         return "Yes", "No"
 
