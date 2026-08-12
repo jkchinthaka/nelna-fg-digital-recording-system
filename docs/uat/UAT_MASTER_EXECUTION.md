@@ -44,7 +44,16 @@ If code changes after a defect fix, retest against the new SHA; keep old evidenc
 | Steps | 1) Valid login 2) Invalid login 3) Logout 4) Permission-aware nav 5) Direct URL to unauthorized module 6) Role boundary checks |
 | Expected Result | Authorized access only; unauthorized denied; no permission bypass via URL |
 | Evidence folder | `evidence/UAT-01/` |
-| Status | AWAITING HUMAN UAT |
+| Tested SHA | `c08ebec96b8551209bc2228866ceb2fb65031668` |
+| Actual Result | Recorder login successful. Dashboard and Daily Records accessible. Invalid password rejected safely. Logout worked. Recorder could not access unauthorized Supervisor/QA areas. Supervisor could access Supervisor Review. QA could access QA Review. Direct URL authorization behaved correctly. |
+| Pass / Fail | **PASS** (human tester confirmed) |
+| Tester | Chinthaka Jayaweera |
+| Date | 2026-08-12 |
+| Evidence reference | None / screenshots captured if applicable |
+| Defect ID | None |
+| Retest result | |
+| Sign-off | |
+| Status | EXECUTED — PASS (human) |
 
 ---
 
@@ -61,7 +70,16 @@ If code changes after a defect fix, retest against the new SHA; keep old evidenc
 | Steps | Open form → enter Acceptable/Unacceptable → Save Draft → confirm autosave → Submit → Checker → Verifier |
 | Expected Result | Labels Acceptable/Unacceptable; draft/submit work; **no automatic NCR/CAPA** unless approved rule exists (none claimed) |
 | Evidence folder | `evidence/UAT-02/` |
-| Status | AWAITING HUMAN UAT |
+| Tested SHA | `c08ebec96b8551209bc2228866ceb2fb65031668` |
+| Actual Result | CL/24 Daily Cleaning record opened successfully. All Finish Good and Changing Room items available. Choice labels displayed Acceptable / Unacceptable correctly. At least one item recorded as Unacceptable. Correction and Corrective Action entered successfully. Save Draft worked and values remained after reopen/refresh. Checklist submission completed successfully. No automatic NCR/CAPA created solely from Unacceptable. |
+| Pass / Fail | **PASS** (human tester confirmed) |
+| Tester | Chinthaka Jayaweera |
+| Date | 2026-08-12 |
+| Evidence reference | None |
+| Defect ID | None |
+| Retest result | |
+| Sign-off | |
+| Status | EXECUTED — PASS (human) |
 
 ---
 
@@ -78,7 +96,16 @@ If code changes after a defect fix, retest against the new SHA; keep old evidenc
 | Steps | Open CR1 and CR2 → enter slots → submit → review warnings |
 | Expected Result | Source target presentation **−15°C to −18°C** informational; out-of-target does **not** auto HOLD/REJECT; schedule slot labels remain as published (business confirmation still open for schedule ambiguity) |
 | Evidence folder | `evidence/UAT-03/` |
-| Status | AWAITING HUMAN UAT |
+| Tested SHA | `c08ebec96b8551209bc2228866ceb2fb65031668` |
+| Actual Result | CL/39 Cold Room CR1 opened successfully. Target band -15°C to -18°C displayed correctly. In-target and out-of-target decimal temperatures entered correctly. Invalid numeric input rejected safely. Remarks, Save Draft, reopen/refresh, and Submit worked correctly. Saved values remained after reopen. No automatic HOLD, REJECT, or NCR from out-of-target reading. CR2 opened successfully and accepted a valid test reading. Schedule slot labels displayed as configured and were not reinterpreted. |
+| Pass / Fail | **PASS** (human tester confirmed) |
+| Tester | Chinthaka Jayaweera |
+| Date | 2026-08-12 |
+| Evidence reference | None |
+| Defect ID | None |
+| Retest result | |
+| Sign-off | |
+| Status | EXECUTED — PASS (human) |
 
 ---
 
@@ -341,6 +368,9 @@ If code changes after a defect fix, retest against the new SHA; keep old evidenc
 
 | UAT ID | Status |
 | --- | --- |
-| UAT-01 … UAT-18 | AWAITING HUMAN UAT |
+| UAT-01 | EXECUTED — PASS (human: Chinthaka Jayaweera, 2026-08-12) |
+| UAT-02 | EXECUTED — PASS (human: Chinthaka Jayaweera, 2026-08-12) |
+| UAT-03 | EXECUTED — PASS (human: Chinthaka Jayaweera, 2026-08-12) |
+| UAT-04 … UAT-18 | AWAITING HUMAN UAT |
 
 Related: `UAT_DEFECT_REGISTER.md`, `UAT_SIGNOFF.md`, existing Phase 20 package in this folder (not overwritten).
