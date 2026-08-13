@@ -60,6 +60,17 @@ def _guard_capa_open(action: CorrectiveAction) -> None:
         raise ValidationError({"status": "Closed CAPA records cannot be modified."})
 
 
+def _verify_capa_still_open(action: CorrectiveAction) -> None:
+    """Final CAS verification that CAPA remained open during mutation."""
+    matched = (
+        CorrectiveAction.objects.filter(pk=action.pk)
+        .exclude(status=CorrectiveActionStatus.CLOSED)
+        .update(updated_at=timezone.now())
+    )
+    if matched != 1:
+        raise ValidationError({"status": "CAPA was closed during this operation."})
+
+
 def _append_history(
     *,
     capa: CorrectiveAction,
@@ -379,6 +390,7 @@ def add_capa_action_item(
     )
     item.full_clean()
     item.save()
+    _verify_capa_still_open(action)
     _append_history(
         capa=action,
         event_type="ACTION_ITEM_ADDED",
@@ -423,6 +435,7 @@ def complete_capa_action_item(
     item.completed_at = timezone.now()
     item.full_clean()
     item.save(update_fields=["status", "completed_at", "updated_at"])
+    _verify_capa_still_open(item.capa)
     _append_history(
         capa=item.capa,
         event_type="ACTION_ITEM_COMPLETED",

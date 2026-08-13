@@ -68,6 +68,17 @@ def _guard_ncr_open(record: NonConformanceRecord) -> None:
         raise ValidationError({"status": "Closed nonconformances cannot be updated."})
 
 
+def _verify_ncr_still_open(record: NonConformanceRecord) -> None:
+    """Final CAS verification that NCR remained open during mutation."""
+    matched = (
+        NonConformanceRecord.objects.filter(pk=record.pk)
+        .exclude(status=NonConformanceStatus.CLOSED)
+        .update(updated_at=timezone.now())
+    )
+    if matched != 1:
+        raise ValidationError({"status": "Nonconformance was closed during this operation."})
+
+
 def _append_history(
     *,
     organization_id: uuid.UUID,
@@ -238,6 +249,7 @@ def update_nonconformance_case_fields(
         return record
     record.full_clean()
     record.save()
+    _verify_ncr_still_open(record)
     _append_history(
         organization_id=record.organization_id,
         case_kind=QualityCaseHistoryKind.NONCONFORMANCE,

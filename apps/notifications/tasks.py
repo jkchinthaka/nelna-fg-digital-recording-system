@@ -32,7 +32,7 @@ def deliver_notification_email(self: Any, delivery_attempt_id: str) -> dict[str,
 
     Already-DELIVERED attempts are no-ops. Failures update status and may retry.
     """
-    with transaction.atomic():
+    with atomic():
         attempt = (
             lock_queryset(
             NotificationDeliveryAttempt.objects.select_related("notification", "notification__recipient").filter(pk=delivery_attempt_id)

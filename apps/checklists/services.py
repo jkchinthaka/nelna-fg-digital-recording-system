@@ -1118,8 +1118,9 @@ def create_checklist_version(
 
     version: ChecklistVersion | None = None
     last_error: Exception | None = None
-    # Template row lock serializes allocation; unique constraint + savepoint retry
+    # Template row lock serializes allocation; unique constraint retry
     # covers residual races if another writer sneaks between max() and insert.
+    # No nested atomic() — already inside atomic_fn, Mongo has no savepoints.
     for _attempt in range(8):
         version_number = _allocate_next_version_number(template)
         candidate = ChecklistVersion(
@@ -1128,9 +1129,8 @@ def create_checklist_version(
             status=ChecklistVersionStatus.DRAFT,
         )
         try:
-            with atomic():
-                candidate.full_clean()
-                candidate.save()
+            candidate.full_clean()
+            candidate.save()
             version = candidate
             break
         except IntegrityError as exc:
