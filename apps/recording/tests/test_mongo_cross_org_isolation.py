@@ -88,6 +88,7 @@ def _published_task(*, org: Organization, actor: User) -> tuple[ChecklistTask, A
         actor=actor,
         organization_id=org.id,
         checklist_template_id=template.id,
+        checklist_version_id=version.id,
         batch_reference=f"XO-BATCH-{suffix}",
     )
     return task, item

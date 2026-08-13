@@ -121,6 +121,7 @@ def test_decimal_bson_draft_submit_roundtrip(value: Decimal) -> None:
         actor=manager,
         organization_id=org.id,
         checklist_template_id=template.id,
+        checklist_version_id=version.id,
         batch_reference=f"DEC-BATCH-{suffix}",
     )
     record = start_checklist_recording(actor=recorder, task_id=task.id)
