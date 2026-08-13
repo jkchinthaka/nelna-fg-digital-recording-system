@@ -4,15 +4,15 @@
 
 ```text
 STARTING_BRANCH=feature/mongodb-same-maintainpro-db
-STARTING_SHA=3c99312
-FINAL_SHA=(see git after this commit)
+STARTING_SHA=e3a5e67
+FINAL_SHA=7c1e576
 MAIN_SHA=d5a4460
 MAIN_MERGED=NO
 REAL_COMPANY_MONGO_WRITTEN_TO=NO
 ```
 
 ```text
-CONTINUATION REQUIRED — MONGODB FUNCTIONAL PARITY MIGRATION CHECKPOINT CREATED
+CONTINUATION REQUIRED — FINAL SERVER-HOSTING VERIFICATION CHECKPOINT CREATED
 ```
 
 PostgreSQL remains authoritative on `main`. Isolated Mongo POC proves runtime for migrated paths.
@@ -33,37 +33,50 @@ Isolated POC: fg_same_db_poc @ compose.mongo-poc.yaml (127.0.0.1:27027 / nelnaPo
 
 | Item | Status |
 | --- | --- |
-| Partial unique rewrite | **Fixed** — `isnull=False` → field unique; other partials (e.g. empty batch) **skipped** (not converted to full unique) |
-| Checklist version allocation on Mongo | **Green** (retry on unique ValidationError + order_by alloc) |
-| Scheduling generator concurrency | **Green** (no false batch unique collision) |
-| NCR update vs close race | **Fixed** — open-filtered update_fields; no status clobber |
-| CAPA / RCA / recording / Supervisor / QA spikes | **Green** |
-| Auth + employee_code uniqueness on Mongo | **Green** (13 auth + concurrent case variants) |
-| Core daily/controlled forms HTTP on Mongo | **Previously green** (40-test batch) |
-| `/health/ready/` Mongo mode | **mongodb+redis ok** (no PostgreSQL check) |
-| FG-only backup/restore tooling | **Added** — refuses `mgintginpro_prod` write/restore; dry-run inventory 232 `fg_*` |
-| Full Mongo pytest / coverage ≥80% | Not complete |
-| Full PG regression | Targeted changed modules **31 passed**; full suite not re-run |
-| Browser smoke | Not run |
+| Production `transaction.atomic` → facade | **Done** — 303 `@atomic_fn` + 11 `with atomic()` across 50 service modules |
+| Runtime `Lower()` annotate | **Rewritten** — `proposal_loader` uses `code__iexact` |
+| Auth + module concurrency spikes | **Green** — 43 passed |
+| Decimal BSON round-trip | **Green** — 8/8 values (dedicated test) |
+| Dedicated cross-org Mongo suite | **Green** — service + HTTP history/print/CSV denial |
+| FG dump → restore drill | **Green** — 232 `fg_*`; refuse prod dump/restore; `NON_FG=0`; users 1→1 |
+| Celery worker live | **Green** — `health_echo` + `generate_due_checklist_tasks` on Mongo+Redis |
+| Celery Beat | **Boot started**; schedule `*/5`; duplicate prevention `replay_safe=True` |
+| Health | **Green** — `/health/live/` + `/health/ready/` mongodb+redis+celery_broker ok |
+| Full Mongo pytest + coverage ≥80% | **In progress** |
+| Full PG regression + quality/security | Not complete |
+| Browser Mongo smoke | Not complete |
 
 ### Focused Mongo evidence this pass
 
 ```text
 SPIKES+AUTH: 43 passed
-PRIOR CORE BATCH (auth+daily+controlled+recording/supervisor/QA spikes): 40 passed (then 52/53 with one unique flake before rewrite fix)
-PG CHANGED-MODULE REGRESSION: 31 passed
-FG COLLECTIONS (POC): 232 fg_*; 0 non-fg leftovers
+DECIMAL+CROSS_ORG: 10 passed
+FG_DUMP_COLLECTIONS: 232
+FG_RESTORE: 232 fg_*; NON_FG_COLLECTIONS_WRITTEN=0
+CELERY_WORKER: health_echo + generate_due executed
+HEALTH_READY: mongodb ok, redis ok, celery_broker ok
+```
+
+---
+
+## Inventory (recalculated)
+
+```text
+LOWER/FUNCTION: TOTAL≈102; UNRESOLVED runtime Lower=0 after iexact rewrite;
+  remaining aggregates treated as supported-under-suite (pending full-suite proof)
+TRANSACTION production raw django.atomic: 0 (migrated to facade)
+NESTED_MONGO_SAVEPOINT_DEPENDENCY: 0 (facade nested atomic is Mongo no-op)
 ```
 
 ---
 
 ## Next exact action
 
-1. Run full application pytest under `config.settings.mongo_same_db_poc`; fix failures continuously
-2. Mongo coverage ≥80%
-3. Full PostgreSQL regression + quality/security gates
-4. Isolated FG mongodump/mongorestore drill (requires mongodump binary)
-5. Browser smoke against Mongo runtime
+1. Finish full `pytest --ds=config.settings.mongo_same_db_poc --ignore=apps/mongo_poc` + coverage ≥80%
+2. Full PostgreSQL regression + quality/security gates
+3. Observe Celery Beat due-tick against Mongo worker
+4. Playwright/browser smoke on isolated Mongo runtime
+5. Rebuild release package from final green SHA
 6. Company cutover remains authorization-blocked
 
 ---
