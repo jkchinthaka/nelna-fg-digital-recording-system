@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import uuid
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import uuid
 
 import pytest
 from django.core.exceptions import ValidationError

@@ -10,6 +10,7 @@ from django.conf import settings
 from django.contrib.auth import login, logout
 from django.core.exceptions import ValidationError
 from django.db import transaction
+from apps.core.persistence import lock_queryset
 from django.http import HttpRequest
 from django.utils import timezone
 
@@ -215,7 +216,7 @@ def record_failed_login(user: User, *, request: HttpRequest | None = None) -> Us
     from apps.security_audit.services import record_event
 
     locked_user = _ensure_user(
-        User.objects.select_for_update().get(pk=user.pk),
+        lock_queryset(User.objects.filter(pk=user.pk)).get(),
         context="record_failed_login",
     )
     if locked_user.is_locked:
@@ -249,7 +250,7 @@ def record_failed_login(user: User, *, request: HttpRequest | None = None) -> Us
 def record_successful_login(user: User, *, request: HttpRequest) -> User:
     """Reset failure counters, stamp success time, establish session with key cycle."""
     locked_user = _ensure_user(
-        User.objects.select_for_update().get(pk=user.pk),
+        lock_queryset(User.objects.filter(pk=user.pk)).get(),
         context="record_successful_login",
     )
     now = timezone.now()
@@ -361,7 +362,7 @@ def unlock_account(
     from apps.security_audit.services import record_event
 
     locked_user = _ensure_user(
-        User.objects.select_for_update().get(pk=user.pk),
+        lock_queryset(User.objects.filter(pk=user.pk)).get(),
         context="unlock_user",
     )
     locked_user.failed_login_count = 0
