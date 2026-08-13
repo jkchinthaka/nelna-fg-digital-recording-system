@@ -4,9 +4,10 @@
 
 ```text
 STARTING_BRANCH=feature/mongodb-same-maintainpro-db
-STARTING_SHA=c140d72
-MAIN_SHA=d5a4460
-ORIGIN_MAIN_SHA=d5a4460
+STARTING_SHA=5fce899
+FINAL_SHA=(see git after commit)
+MAIN_SHA=(do not merge)
+WORKING_TREE=Mongo POC runtime work committed; unrelated WIP may remain local
 ```
 
 PostgreSQL remains the authoritative system of record on `main`.
@@ -20,65 +21,63 @@ CONTINUATION REQUIRED — MONGODB FUNCTIONAL PARITY MIGRATION CHECKPOINT CREATED
 ## Production target (unchanged)
 
 ```text
-Host route: via MONGODB_URI (do not hard-code 127.0.0.1:27018 in Python)
+Host route: via MONGODB_URI (do not hard-code credentials/host in Python)
 Logical database: mgintginpro_prod
 FG namespace: fg_
 Isolated POC only: fg_same_db_poc
 Company Mongo writes: NONE
 MaintainPro impact: NONE
 main merged: NO
+REAL COMPANY MONGO WRITTEN TO: NO
 ```
 
 ---
 
-## Checkpoint progress
+## This checkpoint — actual isolated Mongo runtime
 
 | Item | Status |
 | --- | --- |
-| Persistence facade | Extended — `locked_get`, `prefetch_related_compat`, `cas_status_transition`, Mongo QuerySet safety net |
-| Checklist versioning | Done — unique(template, version_number)+retry, CAS publish/retire, draft immutability guard |
-| Scheduling | Done — `lock_queryset`/`atomic_fn`, unique occurrence_key upsert, CAS cancel |
-| CAPA | Done — `locked_get` + status CAS close/verify/effectiveness + open guard |
-| NCR / Hold | Done — `locked_get` + status CAS close + open guard |
-| Access-control governance | Done — last raw `select_for_update` sites → `lock_queryset` + `atomic_fn` |
-| Production `.select_for_update(` | **0** outside persistence facade helper |
-| Operational `.prefetch_related(` | **0** outside facade/compat; recording uses batched `load_version_items_for_recording` |
-| Health | Backend-aware: Mongo mode pings Mongo+Redis, not PostgreSQL |
-| FG-only backup plan | `docs/handover/MONGO_BACKUP_RESTORE_SHARED_DB.md` |
-| Concurrency spikes (PG harness) | Checklist / scheduling / CAPA / NCR / core persistence — green |
-| Full Mongo pytest suite | Not run |
-| Live company read-only audit | Script ready — not executed |
+| Contrib ObjectId AppConfigs (POC only) | Done — `config/mongo_contrib.py` + `mongo_migrations/` |
+| Safety guard rejects `mgintginpro_prod` as POC DB | Proven |
+| `migrate` on `fg_same_db_poc` | **Succeeded** (full app graph) |
+| FG collection namespace | **232 `fg_*` collections; 0 bare leftovers** after ORM `DatabaseWrapper.get_collection` prefix |
+| Auth on Mongo | **Proven** — create/login/bad password/lockout/inactive/password change/session/logout + concurrent `ABC001`/`abc001`/`AbC001` → 1 row |
+| Auth pytest (`apps/accounts/tests/test_auth.py`) | **13 passed** under `--ds=config.settings.mongo_same_db_poc` |
+| Core workflow + CL forms HTTP | **`test_daily_records_completion` + `test_controlled_daily_records` + auth + recording/supervisor/QA spikes: 40 passed** |
+| Persistence `atomic()` on Mongo | **No-op by design** (CAS/unique); explicit `mongo_multi_doc_atomic` for rare multi-doc cases |
+| Employee code uniqueness | Normalized field unique + migration `0004`; concurrent case variants OK |
+| Schema compat | Lower/Upper rewrite; CheckConstraint skip+warn; partial unique predicate drop |
+| Remaining concurrency spikes | Checklist version alloc / scheduling generator / some CAPA·NCR races still failing on Mongo |
+| Full Mongo pytest suite | Not complete |
+| Mongo coverage ≥80% | Not measured |
+| PG full regression this SHA | Not re-run yet |
+| Browser smoke | Not run |
+| FG-only dump/restore drill | Not run |
 
-### Inventory counts (this checkpoint)
+### Inventory notes (recalculated direction)
 
 ```text
-SELECT_FOR_UPDATE INITIAL=137
-SELECT_FOR_UPDATE CURRENT_RAW_PRODUCTION=0  (facade helper only)
-SELECT_FOR_UPDATE MIGRATED≈137
-
-PREFETCH INITIAL=34
-PREFETCH CURRENT_RAW_PRODUCTION=0  (compat helper / Mongo no-op only)
-PREFETCH REMAINING_COMPAT_SITES≈operational via prefetch_related_compat
-
-TRANSACTION.ATOMIC ≈328 remaining (many behind atomic_fn / PG-only paths)
-LOWER / FUNCTION ≈87 (still to rewrite for Mongo)
+SELECT_FOR_UPDATE raw production: 0 (facade only)
+PREFETCH_RELATED raw production: 0 (compat / Mongo no-op)
+TRANSACTION: service atomic() is PG-real / Mongo-noop; classify remaining django.db.transaction.atomic sites
+LOWER/function: schema rewrite active; query iexact largely works via backend regex path; inventory rewrite still open
 ```
 
 ---
 
 ## Next exact action
 
-1. Isolated Mongo POC (`fg_same_db_poc`): migrate + run full pytest under `mongo_same_db_poc`
-2. Rewrite high-priority `Lower()` / function expressions (employee_code uniqueness, search)
-3. Contrib Mongo AppConfig activation (POC only) — auth/session/admin proof
-4. Full recording → Supervisor → QA → RCA workflow on **actual** isolated Mongo
-5. Isolated FG-only dump/restore drill
-6. PostgreSQL regression + quality gates
+1. Fix remaining Mongo concurrency spikes (checklist version allocation retry, scheduling duplicate-key normalize, CAPA/NCR CAS edge cases)
+2. Continue full pytest under `mongo_same_db_poc` — fix failures without mass-skip
+3. Mongo coverage ≥80%; then PostgreSQL full regression + quality gates
+4. FG-only mongodump/restore drill on isolated POC
+5. Browser smoke against isolated Mongo runtime
+6. Company cutover remains **authorization-blocked** (no writes to `mgintginpro_prod`)
 
 ---
 
 ## Safety
 
-- Do not write to `mgintginpro_prod`
-- Do not merge `main`
-- Do not touch MaintainPro data
+- Do not use the OneDrive clone for this branch
+- Do not merge `main` automatically
+- Do not write to MaintainPro / `mgintginpro_prod`
