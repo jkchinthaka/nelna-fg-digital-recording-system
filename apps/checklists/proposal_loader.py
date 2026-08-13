@@ -12,9 +12,9 @@ from pathlib import Path
 from typing import Any
 
 from django.core.exceptions import ValidationError
-from django.db import transaction
 from django.db.models.functions import Lower
 
+from apps.core.persistence.transactions import atomic_fn
 from apps.accounts.models import User
 from apps.checklists.compat_queries import load_sections_with_items_and_options
 from apps.checklists.measurement import assert_known_unit
@@ -497,7 +497,7 @@ def _populate_version_from_proposal(
         raise ValidationError({"version": "Proposal loader must leave the version in DRAFT."})
 
 
-@transaction.atomic
+@atomic_fn
 def load_fg_qa_001_draft(
     *,
     actor: User | None,

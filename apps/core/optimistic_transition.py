@@ -35,8 +35,10 @@ from dataclasses import dataclass
 from typing import Any
 
 from django.core.exceptions import ValidationError
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError
 from django.db.models import Model, QuerySet
+
+from apps.core.persistence.transactions import atomic
 
 
 class TransitionConflictError(Exception):
@@ -136,7 +138,7 @@ def create_immutable_unique(
             obj = model(**create_kwargs)
             if hasattr(obj, "full_clean"):
                 obj.full_clean()
-            with transaction.atomic():
+            with atomic():
                 obj.save()
             return (obj, True)
         except IntegrityError:
