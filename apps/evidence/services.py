@@ -8,6 +8,7 @@ from typing import Any, BinaryIO
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.files.uploadedfile import UploadedFile
 from django.db import transaction
+from apps.core.persistence import locked_get
 from django.http import FileResponse
 from django.utils import timezone
 
@@ -259,7 +260,7 @@ def retire_evidence_attachment(
     if not reason_clean:
         raise ValidationError({"reason": "A retirement reason is required."})
 
-    attachment = EvidenceAttachment.objects.select_for_update().filter(pk=attachment_id).first()
+    attachment = locked_get(EvidenceAttachment, pk=attachment_id)
     if attachment is None:
         raise ValidationError({"attachment": "Evidence attachment not found."})
 

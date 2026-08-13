@@ -9,6 +9,7 @@ from typing import Any
 
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import IntegrityError, transaction
+from apps.core.persistence import lock_queryset, locked_get
 from django.utils import timezone
 
 from apps.access_control.services import Scope, require_permission
@@ -226,7 +227,7 @@ def create_draft_spec_version(
     change_summary: str = "",
 ) -> MonitoringSpecVersion:
     user = _require_actor(actor)
-    spec = MonitoringSpec.objects.select_for_update().filter(pk=spec_id).first()
+    spec = locked_get(MonitoringSpec, pk=spec_id)
     if spec is None:
         raise ValidationError({"spec": "Monitoring specification not found."})
     require_permission(user, MANAGE, scope=_org_scope(spec.organization_id))
@@ -266,10 +267,9 @@ def add_limit_rule(
 ) -> MonitoringLimitRule:
     user = _require_actor(actor)
     version = (
-        MonitoringSpecVersion.objects.select_related("spec")
-        .select_for_update()
-        .filter(pk=spec_version_id)
-        .first()
+        lock_queryset(
+        MonitoringSpecVersion.objects.select_related("spec").filter(pk=spec_version_id)
+        ).first()
     )
     if version is None:
         raise ValidationError({"spec_version": "Spec version not found."})
@@ -303,10 +303,9 @@ def approve_spec_version(
 ) -> MonitoringSpecVersion:
     user = _require_actor(actor)
     version = (
-        MonitoringSpecVersion.objects.select_related("spec")
-        .select_for_update()
-        .filter(pk=spec_version_id)
-        .first()
+        lock_queryset(
+        MonitoringSpecVersion.objects.select_related("spec").filter(pk=spec_version_id)
+        ).first()
     )
     if version is None:
         raise ValidationError({"spec_version": "Spec version not found."})
@@ -333,10 +332,9 @@ def retire_spec_version(
 ) -> MonitoringSpecVersion:
     user = _require_actor(actor)
     version = (
-        MonitoringSpecVersion.objects.select_related("spec")
-        .select_for_update()
-        .filter(pk=spec_version_id)
-        .first()
+        lock_queryset(
+        MonitoringSpecVersion.objects.select_related("spec").filter(pk=spec_version_id)
+        ).first()
     )
     if version is None:
         raise ValidationError({"spec_version": "Spec version not found."})

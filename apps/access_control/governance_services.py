@@ -10,11 +10,11 @@ import uuid
 from collections.abc import Iterable, Sequence
 
 from django.contrib.auth.models import Permission
-from django.core.exceptions import ObjectDoesNotExist, ValidationError
-from django.db import transaction
+from django.core.exceptions import ValidationError
 
 from apps.access_control.models import Role, RoleTemplate, ScopedRoleAssignment
 from apps.accounts.models import User
+from apps.core.persistence import atomic_fn, lock_queryset, prefetch_related_compat
 
 SOD_PENDING = "PENDING"
 
@@ -77,7 +77,7 @@ def list_sod_open_questions() -> list[dict[str, str]]:
     return [{"question": q, "status": SOD_PENDING, "response": ""} for q in questions]
 
 
-@transaction.atomic
+@atomic_fn
 def set_role_permissions(
     actor: User | None,
     role_id: uuid.UUID,
@@ -88,10 +88,9 @@ def set_role_permissions(
     """Replace Role.permissions from codenames; audit ROLE_PERMISSIONS_UPDATED."""
     from apps.security_audit.services import record_event
 
-    try:
-        role = Role.objects.select_for_update().get(pk=role_id)
-    except ObjectDoesNotExist as exc:
-        raise ValidationError("Role not found.") from exc
+    role = lock_queryset(Role.objects.filter(pk=role_id)).first()
+    if role is None:
+        raise ValidationError("Role not found.")
 
     perms = _resolve_permission_codenames(permission_codenames)
     before = sorted(
@@ -118,7 +117,7 @@ def set_role_permissions(
     return role
 
 
-@transaction.atomic
+@atomic_fn
 def create_role_template(
     actor: User | None,
     *,
@@ -164,7 +163,7 @@ def create_role_template(
     return template
 
 
-@transaction.atomic
+@atomic_fn
 def update_role_template_permissions(
     actor: User | None,
     template_id: uuid.UUID,
@@ -175,10 +174,9 @@ def update_role_template_permissions(
     """Replace template permissions; audit ROLE_TEMPLATE_UPDATED."""
     from apps.security_audit.services import record_event
 
-    try:
-        template = RoleTemplate.objects.select_for_update().get(pk=template_id)
-    except ObjectDoesNotExist as exc:
-        raise ValidationError("Role template not found.") from exc
+    template = lock_queryset(RoleTemplate.objects.filter(pk=template_id)).first()
+    if template is None:
+        raise ValidationError("Role template not found.")
 
     perms = _resolve_permission_codenames(permission_codenames)
     before = sorted(
@@ -207,7 +205,7 @@ def update_role_template_permissions(
     return template
 
 
-@transaction.atomic
+@atomic_fn
 def apply_role_template_to_role(
     actor: User | None,
     template_id: uuid.UUID,
@@ -222,19 +220,18 @@ def apply_role_template_to_role(
     """
     from apps.security_audit.services import record_event
 
-    try:
-        template = RoleTemplate.objects.prefetch_related("permissions__content_type").get(
-            pk=template_id
-        )
-    except ObjectDoesNotExist as exc:
-        raise ValidationError("Role template not found.") from exc
+    template = prefetch_related_compat(
+        RoleTemplate.objects.filter(pk=template_id),
+        "permissions__content_type",
+    ).first()
+    if template is None:
+        raise ValidationError("Role template not found.")
     if not template.is_active:
         raise ValidationError("Cannot apply an inactive role template.")
 
-    try:
-        role = Role.objects.select_for_update().get(pk=role_id)
-    except ObjectDoesNotExist as exc:
-        raise ValidationError("Role not found.") from exc
+    role = lock_queryset(Role.objects.filter(pk=role_id)).first()
+    if role is None:
+        raise ValidationError("Role not found.")
 
     perms = list(template.permissions.all())
     before = sorted(

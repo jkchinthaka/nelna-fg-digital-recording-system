@@ -22,6 +22,7 @@ from apps.access_control.services import Scope, require_permission, user_has_per
 from apps.accounts.models import User
 from apps.batch_genealogy.models import GenealogyNodeKind
 from apps.batch_genealogy.services import trace_backward, trace_forward
+from apps.core.persistence import prefetch_related_compat
 from apps.organizations.models import Organization
 from apps.recall.models import (
     MOCK_RECALL_BANNER,
@@ -81,12 +82,12 @@ def user_has_explicit_scoped_permission(
     if user is None or not getattr(user, "is_authenticated", False) or not user.is_active:
         return False
     now = timezone.now()
-    assignments = (
+    assignments = prefetch_related_compat(
         ScopedRoleAssignment.objects.filter(user=user, is_active=True, role__is_active=True)
         .filter(Q(valid_from__isnull=True) | Q(valid_from__lte=now))
         .filter(Q(valid_until__isnull=True) | Q(valid_until__gt=now))
-        .select_related("role")
-        .prefetch_related("role__permissions__content_type")
+        .select_related("role"),
+        "role__permissions__content_type",
     )
     for assignment in assignments:
         if assignment.organization_id is None:

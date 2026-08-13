@@ -66,6 +66,7 @@ from apps.checklists.services import (
     update_checklist_section,
     update_checklist_template,
 )
+from apps.core.persistence import prefetch_related_compat
 from apps.master_data.models import FGProduct
 from apps.organizations.models import Organization
 
@@ -560,14 +561,12 @@ def item_add(request: HttpRequest, section_id: uuid.UUID) -> HttpResponse:
 @login_required
 @require_http_methods(["GET", "POST"])
 def item_edit(request: HttpRequest, item_id: uuid.UUID) -> HttpResponse:
-    item = (
+    item = prefetch_related_compat(
         ChecklistItem.objects.select_related(
             "section", "section__version", "section__version__template"
-        )
-        .prefetch_related("options")
-        .filter(pk=item_id)
-        .first()
-    )
+        ).filter(pk=item_id),
+        "options",
+    ).first()
     if item is None:
         raise Http404("Item not found.")
     version = _get_version_or_404(request, item.section.version_id)

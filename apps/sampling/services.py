@@ -9,6 +9,7 @@ from typing import Any
 
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import IntegrityError, transaction
+from apps.core.persistence import lock_queryset, locked_get
 from django.utils import timezone
 
 from apps.access_control.services import Scope, require_permission
@@ -121,7 +122,7 @@ def create_draft_plan_version(
     effective_to: date | None = None,
 ) -> SamplingPlanVersion:
     user = _require_actor(actor)
-    plan = SamplingPlan.objects.select_for_update().filter(pk=plan_id).first()
+    plan = locked_get(SamplingPlan, pk=plan_id)
     if plan is None:
         raise ValidationError({"plan": "Sampling plan not found."})
     require_permission(user, MANAGE, scope=_org_scope(plan.organization_id))
@@ -285,10 +286,9 @@ def approve_plan_version(
 ) -> SamplingPlanVersion:
     user = _require_actor(actor)
     version = (
-        SamplingPlanVersion.objects.select_for_update()
-        .select_related("plan")
-        .filter(pk=plan_version_id)
-        .first()
+        lock_queryset(
+        SamplingPlanVersion.objects.select_related("plan").filter(pk=plan_version_id)
+        ).first()
     )
     if version is None:
         raise ValidationError({"plan_version": "Plan version not found."})
@@ -341,10 +341,9 @@ def approve_plan_version(
 def retire_plan_version(*, actor: User | None, plan_version_id: uuid.UUID) -> SamplingPlanVersion:
     user = _require_actor(actor)
     version = (
-        SamplingPlanVersion.objects.select_for_update()
-        .select_related("plan")
-        .filter(pk=plan_version_id)
-        .first()
+        lock_queryset(
+        SamplingPlanVersion.objects.select_related("plan").filter(pk=plan_version_id)
+        ).first()
     )
     if version is None:
         raise ValidationError({"plan_version": "Plan version not found."})

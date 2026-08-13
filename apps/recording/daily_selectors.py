@@ -12,6 +12,7 @@ from django.db.models import Prefetch, QuerySet
 
 from apps.accounts.models import User
 from apps.checklists.controlled_forms import CONTROLLED_FORM_CODES, get_controlled_form
+from apps.core.persistence import prefetch_related_compat
 from apps.quality.models import QAReview
 from apps.recording.models import (
     ChecklistRecord,
@@ -72,13 +73,14 @@ def controlled_records_qs(actor: User) -> QuerySet[ChecklistRecord]:
 
 
 def _with_latest_submission(qs: QuerySet[ChecklistRecord]) -> QuerySet[ChecklistRecord]:
-    return qs.prefetch_related(
+    return prefetch_related_compat(
+        qs,
         Prefetch(
             "submissions",
             queryset=ChecklistSubmission.objects.select_related(
                 "submitted_by", "supervisor_review", "qa_review"
             ).order_by("-submission_number"),
-        )
+        ),
     )
 
 
@@ -191,28 +193,24 @@ def monthly_pack_context(*, actor: User, form_code: str, year: int, month: int) 
         end = date(year, month + 1, 1)
     start = date(year, month, 1)
     org_ids = _org_ids(actor)
-    submissions = (
+    submissions = prefetch_related_compat(
         ChecklistSubmission.objects.filter(
             checklist_record__organization_id__in=org_ids,
             checklist_record__checklist_task__checklist_template__code=spec.code,
-        )
-        .select_related(
+        ).select_related(
             "submitted_by",
             "checklist_record__checklist_task__checklist_template",
             "checklist_record__started_by",
             "supervisor_review__reviewed_by",
             "qa_review__reviewed_by",
-        )
-        .prefetch_related(
-            Prefetch(
-                "responses",
-                queryset=ChecklistSubmissionResponse.objects.select_related(
-                    "checklist_item", "selected_option"
-                ),
-            )
-        )
-        .order_by("checklist_record__checklist_task__batch_reference", "submitted_at")
-    )
+        ),
+        Prefetch(
+            "responses",
+            queryset=ChecklistSubmissionResponse.objects.select_related(
+                "checklist_item", "selected_option"
+            ),
+        ),
+    ).order_by("checklist_record__checklist_task__batch_reference", "submitted_at")
     days: list[date] = []
     cursor = start
     while cursor < end:

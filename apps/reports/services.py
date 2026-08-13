@@ -12,6 +12,7 @@ from typing import Any
 
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
+from apps.core.persistence import atomic, locked_get
 from django.utils import timezone
 
 from apps.access_control.services import (
@@ -265,7 +266,7 @@ def get_report_run_csv(*, actor: User | None, report_run_id: uuid.UUID) -> tuple
 def execute_report_run_by_id(report_run_id: uuid.UUID) -> ReportRun:
     """Worker entry: generate CSV for a PENDING/RUNNING run."""
     with transaction.atomic():
-        run = ReportRun.objects.select_for_update().filter(pk=report_run_id).first()
+        run = locked_get(ReportRun, pk=report_run_id)
         if run is None:
             raise ValidationError({"report_run": "Report run not found."})
         if run.status == ReportRunStatus.COMPLETED:

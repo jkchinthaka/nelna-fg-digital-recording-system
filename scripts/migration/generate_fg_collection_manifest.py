@@ -28,6 +28,8 @@ def main() -> int:
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", args.settings)
     django.setup()
 
+    from django.apps import apps
+
     from apps.core.db_namespace import (
         build_collection_specs,
         collision_note,
@@ -36,7 +38,6 @@ def main() -> int:
         planned_collection_for_model,
         relationship_summary,
     )
-    from django.apps import apps
 
     # Optional MaintainPro names from sibling repo if present
     mp_names: set[str] = set()
@@ -53,7 +54,7 @@ def main() -> int:
         "# FG MongoDB Collection Manifest",
         "",
         f"**Generated (UTC):** {stamp}  ",
-        "**Production logical database:** `mgintginpro_prod`  ",
+        f"**Production logical database:** `mgintginpro_prod`  ",
         f"**Namespace prefix:** `{args.prefix}`  ",
         f"**Collection count:** {len(specs)}  ",
         "",

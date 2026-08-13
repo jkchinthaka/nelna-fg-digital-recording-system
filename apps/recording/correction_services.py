@@ -12,6 +12,7 @@ from django.utils import timezone
 from apps.access_control.services import require_permission
 from apps.accounts.models import User
 from apps.checklists.models import ChecklistItem, ChecklistItemKind
+from apps.checklists.compat_queries import load_version_items_for_recording
 from apps.core.persistence import atomic, lock_queryset
 from apps.recording.models import (
     ChecklistCorrection,
@@ -238,27 +239,35 @@ def start_checklist_correction(
 
     try:
         with atomic():
-            source = lock_queryset(
-                ChecklistSubmission.objects.select_related(
-                    "checklist_record",
-                    "checklist_record__organization",
-                    "checklist_record__checklist_task",
-                    "checklist_record__checklist_task__checklist_template",
-                    "checklist_record__checklist_task__checklist_version",
-                    "submitted_by",
+            source = (
+                lock_queryset(
+                    ChecklistSubmission.objects.select_related(
+                        "checklist_record",
+                        "checklist_record__organization",
+                        "checklist_record__checklist_task",
+                        "checklist_record__checklist_task__checklist_template",
+                        "checklist_record__checklist_task__checklist_version",
+                        "submitted_by",
+                    )
                 )
-            ).filter(pk=source_submission_id).first()
+                .filter(pk=source_submission_id)
+                .first()
+            )
             if source is None:
                 raise ValidationError({"source_submission": "Checklist submission not found."})
 
-            record = lock_queryset(
-                ChecklistRecord.objects.select_related(
-                    "organization",
-                    "checklist_task",
-                    "checklist_task__checklist_template",
-                    "checklist_task__checklist_version",
+            record = (
+                lock_queryset(
+                    ChecklistRecord.objects.select_related(
+                        "organization",
+                        "checklist_task",
+                        "checklist_task__checklist_template",
+                        "checklist_task__checklist_version",
+                    )
                 )
-            ).filter(pk=source.checklist_record_id).first()
+                .filter(pk=source.checklist_record_id)
+                .first()
+            )
             if record is None:
                 raise ValidationError({"record": "Checklist record not found."})
 
@@ -431,18 +440,22 @@ def resubmit_checklist_correction(
 
     try:
         with atomic():
-            correction = lock_queryset(
-                ChecklistCorrection.objects.select_related(
-                    "organization",
-                    "checklist_record",
-                    "checklist_record__organization",
-                    "checklist_record__checklist_task",
-                    "checklist_record__checklist_task__checklist_template",
-                    "checklist_record__checklist_task__checklist_version",
-                    "source_submission",
-                    "started_by",
+            correction = (
+                lock_queryset(
+                    ChecklistCorrection.objects.select_related(
+                        "organization",
+                        "checklist_record",
+                        "checklist_record__organization",
+                        "checklist_record__checklist_task",
+                        "checklist_record__checklist_task__checklist_template",
+                        "checklist_record__checklist_task__checklist_version",
+                        "source_submission",
+                        "started_by",
+                    )
                 )
-            ).filter(pk=correction_id).first()
+                .filter(pk=correction_id)
+                .first()
+            )
             if correction is None:
                 raise ValidationError({"correction": "Checklist correction not found."})
 
@@ -454,14 +467,18 @@ def resubmit_checklist_correction(
                     pk=correction.resulting_submission_id
                 ).first()
 
-            record = lock_queryset(
-                ChecklistRecord.objects.select_related(
-                    "organization",
-                    "checklist_task",
-                    "checklist_task__checklist_template",
-                    "checklist_task__checklist_version",
+            record = (
+                lock_queryset(
+                    ChecklistRecord.objects.select_related(
+                        "organization",
+                        "checklist_task",
+                        "checklist_task__checklist_template",
+                        "checklist_task__checklist_version",
+                    )
                 )
-            ).filter(pk=correction.checklist_record_id).first()
+                .filter(pk=correction.checklist_record_id)
+                .first()
+            )
             if record is None:
                 raise ValidationError({"record": "Checklist record not found."})
 
@@ -490,15 +507,7 @@ def resubmit_checklist_correction(
             )
 
             version_id = task.checklist_version_id
-            item_rows = list(
-                ChecklistItem.objects.select_related("section", "parent_item")
-                .prefetch_related(
-                    "options",
-                    "calculation_operand_links__source_item__section",
-                )
-                .filter(section__version_id=version_id)
-                .order_by("section__position", "position")
-            )
+            item_rows = load_version_items_for_recording(version_id)
             existing = responses_by_key(
                 list(
                     lock_queryset(

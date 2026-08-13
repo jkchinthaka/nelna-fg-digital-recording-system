@@ -11,6 +11,8 @@ from django.conf import settings
 from django.db import connection
 from django.http import HttpRequest, JsonResponse
 
+from apps.core.persistence.backend import is_mongodb
+
 
 def check_postgres() -> dict[str, Any]:
     try:
@@ -70,6 +72,18 @@ def check_evidence_storage() -> dict[str, Any]:
         return {"name": "evidence_storage", "status": "ok"}
     except Exception:  # noqa: BLE001
         return {"name": "evidence_storage", "status": "unavailable"}
+
+
+def check_mongodb() -> dict[str, Any]:
+    """Required Mongo ping when the active Django database engine is MongoDB.
+
+    Never includes URI, host, or password in the payload.
+    """
+    try:
+        connection.ensure_connection()
+        return {"name": "mongodb", "status": "ok"}
+    except Exception:  # noqa: BLE001 — readiness must not leak exception details
+        return {"name": "mongodb", "status": "unavailable"}
 
 
 def check_mongodb_optional() -> dict[str, Any]:
@@ -141,16 +155,27 @@ def readiness(_request: HttpRequest) -> JsonResponse:
     """
     Dependency readiness.
 
-    Required for HTTP 200: PostgreSQL, Redis, Celery broker, evidence storage.
+    PostgreSQL mode required: PostgreSQL, Redis, Celery broker, evidence storage.
+    MongoDB mode required: Mongo ping, Redis, Celery broker, evidence storage.
     Optional/skipped checks are reported but do not fail readiness.
+    Never expose connection URIs or passwords.
     """
-    required = [
-        check_postgres(),
-        check_redis(),
-        check_celery_broker(),
-        check_evidence_storage(),
-    ]
-    optional = [check_mongodb_optional(), check_critical_integration()]
+    if is_mongodb():
+        required = [
+            check_mongodb(),
+            check_redis(),
+            check_celery_broker(),
+            check_evidence_storage(),
+        ]
+        optional = [check_critical_integration()]
+    else:
+        required = [
+            check_postgres(),
+            check_redis(),
+            check_celery_broker(),
+            check_evidence_storage(),
+        ]
+        optional = [check_mongodb_optional(), check_critical_integration()]
     checks = required + optional
     ready = all(item["status"] == "ok" for item in required)
     payload = {

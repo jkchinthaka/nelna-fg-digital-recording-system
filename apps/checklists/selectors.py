@@ -6,17 +6,15 @@ import uuid
 from typing import Literal
 
 from django.core.exceptions import PermissionDenied
-from django.db.models import Count, Max, Prefetch, Q, QuerySet
+from django.db.models import Count, Max, Q, QuerySet
 
 from apps.access_control.services import (
     organization_ids_with_permission,
     user_has_permission,
 )
 from apps.accounts.models import User
+from apps.checklists.compat_queries import load_sections_with_items_and_options
 from apps.checklists.models import (
-    ChecklistItem,
-    ChecklistItemOption,
-    ChecklistSection,
     ChecklistTemplate,
     ChecklistVersion,
 )
@@ -26,6 +24,7 @@ from apps.checklists.services import (
     template_authorization_scope,
     version_authorization_scope,
 )
+from apps.core.persistence import attach_reverse_relation
 from apps.master_data.models import FGProduct
 from apps.organizations.models import Organization
 
@@ -180,26 +179,6 @@ def get_version_with_structure(
     version = get_checklist_version(actor, version_id)
     if version is None:
         return None
-    # Re-fetch with prefetch for editor/detail rendering.
-    return (
-        ChecklistVersion.objects.select_related(
-            "template", "template__organization", "template__product"
-        )
-        .prefetch_related(
-            Prefetch(
-                "sections",
-                queryset=ChecklistSection.objects.order_by("position").prefetch_related(
-                    Prefetch(
-                        "items",
-                        queryset=ChecklistItem.objects.order_by("position").prefetch_related(
-                            Prefetch(
-                                "options",
-                                queryset=ChecklistItemOption.objects.order_by("position"),
-                            )
-                        ),
-                    )
-                ),
-            )
-        )
-        .get(pk=version.pk)
-    )
+    sections = load_sections_with_items_and_options(version.id)
+    attach_reverse_relation([version], sections, fk_attr="version_id", related_name="sections")
+    return version

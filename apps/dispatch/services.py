@@ -17,6 +17,7 @@ from django.utils import timezone
 
 from apps.access_control.services import Scope, require_permission, user_has_permission
 from apps.accounts.models import User
+from apps.core.persistence import lock_queryset, locked_get
 from apps.dispatch.models import (
     ColdChainTemperatureReading,
     DispatchHistoryEntry,
@@ -245,7 +246,7 @@ def update_dispatch_quality_record(
     notes: str | None = None,
 ) -> DispatchQualityRecord:
     user = _require_authenticated_actor(actor)
-    record = DispatchQualityRecord.objects.select_for_update().filter(pk=dispatch_record_id).first()
+    record = locked_get(DispatchQualityRecord, pk=dispatch_record_id)
     if record is None:
         raise ValidationError({"dispatch_record": "Dispatch quality record not found."})
     require_permission(user, MANAGE_DISPATCH, scope=Scope(organization_id=record.organization_id))
@@ -327,7 +328,7 @@ def link_vehicle_inspection(
 ) -> DispatchQualityRecord:
     """Link dynamic checklist definition/submission — no hardcoded inspection questions."""
     user = _require_authenticated_actor(actor)
-    record = DispatchQualityRecord.objects.select_for_update().filter(pk=dispatch_record_id).first()
+    record = locked_get(DispatchQualityRecord, pk=dispatch_record_id)
     if record is None:
         raise ValidationError({"dispatch_record": "Dispatch quality record not found."})
     require_permission(user, MANAGE_DISPATCH, scope=Scope(organization_id=record.organization_id))
@@ -374,7 +375,7 @@ def link_qa_review(
     qa_review_id: uuid.UUID,
 ) -> DispatchQualityRecord:
     user = _require_authenticated_actor(actor)
-    record = DispatchQualityRecord.objects.select_for_update().filter(pk=dispatch_record_id).first()
+    record = locked_get(DispatchQualityRecord, pk=dispatch_record_id)
     if record is None:
         raise ValidationError({"dispatch_record": "Dispatch quality record not found."})
     require_permission(user, MANAGE_DISPATCH, scope=Scope(organization_id=record.organization_id))
@@ -420,7 +421,7 @@ def record_cold_chain_temperature(
 ) -> ColdChainTemperatureReading:
     """Record temperature as Decimal — no allowable range evaluation."""
     user = _require_authenticated_actor(actor)
-    record = DispatchQualityRecord.objects.select_for_update().filter(pk=dispatch_record_id).first()
+    record = locked_get(DispatchQualityRecord, pk=dispatch_record_id)
     if record is None:
         raise ValidationError({"dispatch_record": "Dispatch quality record not found."})
     require_permission(user, MANAGE_DISPATCH, scope=Scope(organization_id=record.organization_id))
@@ -484,7 +485,7 @@ def set_dispatch_quantity_line(
 ) -> DispatchQuantityLine:
     """Set released/loaded quantities; derive remaining. Not an ERP ledger."""
     user = _require_authenticated_actor(actor)
-    record = DispatchQualityRecord.objects.select_for_update().filter(pk=dispatch_record_id).first()
+    record = locked_get(DispatchQualityRecord, pk=dispatch_record_id)
     if record is None:
         raise ValidationError({"dispatch_record": "Dispatch quality record not found."})
     require_permission(user, MANAGE_DISPATCH, scope=Scope(organization_id=record.organization_id))
@@ -498,11 +499,9 @@ def set_dispatch_quantity_line(
         loaded = Decimal("0")
     remaining = released - loaded
     if quantity_line_id is not None:
-        line = (
-            DispatchQuantityLine.objects.select_for_update()
-            .filter(pk=quantity_line_id, dispatch_record=record)
-            .first()
-        )
+        line = lock_queryset(
+            DispatchQuantityLine.objects.filter(pk=quantity_line_id, dispatch_record=record)
+        ).first()
         if line is None:
             raise ValidationError({"quantity_line": "Quantity line not found on this record."})
         line.released_quantity = released
@@ -610,11 +609,9 @@ def complete_dispatch_quality_record(
     user = _require_authenticated_actor(actor)
     try:
         with transaction.atomic():
-            record = (
-                DispatchQualityRecord.objects.select_for_update()
-                .filter(pk=dispatch_record_id)
-                .first()
-            )
+            record = lock_queryset(
+                DispatchQualityRecord.objects.filter(pk=dispatch_record_id)
+            ).first()
             if record is None:
                 raise ValidationError({"dispatch_record": "Dispatch quality record not found."})
             can_complete = user_has_permission(
@@ -706,7 +703,7 @@ def cancel_dispatch_quality_record(
     note: str = "",
 ) -> DispatchQualityRecord:
     user = _require_authenticated_actor(actor)
-    record = DispatchQualityRecord.objects.select_for_update().filter(pk=dispatch_record_id).first()
+    record = locked_get(DispatchQualityRecord, pk=dispatch_record_id)
     if record is None:
         raise ValidationError({"dispatch_record": "Dispatch quality record not found."})
     require_permission(user, MANAGE_DISPATCH, scope=Scope(organization_id=record.organization_id))

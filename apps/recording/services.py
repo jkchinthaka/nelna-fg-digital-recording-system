@@ -18,6 +18,7 @@ from apps.checklists.models import (
     ChecklistResponseType,
     ChecklistVersionStatus,
 )
+from apps.checklists.compat_queries import load_version_items_for_recording
 from apps.core.persistence import (
     TransitionConflictError,
     atomic,
@@ -356,12 +357,7 @@ def collect_submission_completeness(
     """
     version_id = record.checklist_task.checklist_version_id
     if items is None:
-        items = list(
-            ChecklistItem.objects.select_related("section", "parent_item")
-            .prefetch_related("options")
-            .filter(section__version_id=version_id)
-            .order_by("section__position", "position")
-        )
+        items = load_version_items_for_recording(version_id)
     if responses is None:
         responses = responses_by_key(
             list(
@@ -692,15 +688,19 @@ def save_checklist_draft_responses(
     )
 
     with atomic():
-        record = lock_queryset(
-            ChecklistRecord.objects.select_related(
-                "organization",
-                "checklist_task",
-                "checklist_task__organization",
-                "checklist_task__checklist_template",
-                "checklist_task__checklist_version",
+        record = (
+            lock_queryset(
+                ChecklistRecord.objects.select_related(
+                    "organization",
+                    "checklist_task",
+                    "checklist_task__organization",
+                    "checklist_task__checklist_template",
+                    "checklist_task__checklist_version",
+                )
             )
-        ).filter(pk=record_id).first()
+            .filter(pk=record_id)
+            .first()
+        )
         if record is None:
             raise ValidationError({"record": "Checklist record not found."})
 
@@ -718,16 +718,10 @@ def save_checklist_draft_responses(
         )
 
         version_id = task.checklist_version_id
-        item_rows = list(
-            ChecklistItem.objects.select_related("section", "parent_item")
-            .prefetch_related("calculation_operand_links__source_item__section")
-            .filter(section__version_id=version_id)
-        )
+        item_rows = load_version_items_for_recording(version_id)
         items = {item.id: item for item in item_rows}
         existing = responses_by_key(
-            list(
-                lock_queryset(ChecklistResponse.objects.filter(checklist_record_id=record.id))
-            )
+            list(lock_queryset(ChecklistResponse.objects.filter(checklist_record_id=record.id)))
         )
 
         # Server is authoritative for CALCULATED — ignore client-supplied values.
@@ -955,16 +949,20 @@ def submit_checklist_record(
 
     try:
         with atomic():
-            record = lock_queryset(
-                ChecklistRecord.objects.select_related(
-                    "organization",
-                    "checklist_task",
-                    "checklist_task__organization",
-                    "checklist_task__checklist_template",
-                    "checklist_task__checklist_version",
-                    "started_by",
+            record = (
+                lock_queryset(
+                    ChecklistRecord.objects.select_related(
+                        "organization",
+                        "checklist_task",
+                        "checklist_task__organization",
+                        "checklist_task__checklist_template",
+                        "checklist_task__checklist_version",
+                        "started_by",
+                    )
                 )
-            ).filter(pk=record_id).first()
+                .filter(pk=record_id)
+                .first()
+            )
             if record is None:
                 raise ValidationError({"record": "Checklist record not found."})
 
@@ -996,15 +994,7 @@ def submit_checklist_record(
 
             _assert_record_is_draft(record)
             version_id = task.checklist_version_id
-            item_rows = list(
-                ChecklistItem.objects.select_related("section", "parent_item")
-                .prefetch_related(
-                    "options",
-                    "calculation_operand_links__source_item__section",
-                )
-                .filter(section__version_id=version_id)
-                .order_by("section__position", "position")
-            )
+            item_rows = load_version_items_for_recording(version_id)
             draft_responses = responses_by_key(
                 list(
                     lock_queryset(

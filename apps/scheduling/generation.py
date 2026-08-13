@@ -21,6 +21,7 @@ from apps.access_control.services import Scope, require_permission
 from apps.accounts.models import User
 from apps.checklists.effective_version import assert_exactly_one_effective_version
 from apps.checklists.models import ChecklistTemplate, ChecklistVersion, ChecklistVersionStatus
+from apps.core.persistence import atomic, atomic_fn, lock_queryset
 from apps.organizations.models import Organization, Shift
 from apps.scheduling.models import (
     ChecklistMissedPolicy,
@@ -340,7 +341,7 @@ def _task_metadata(task: ChecklistTask) -> dict[str, Any]:
     }
 
 
-@transaction.atomic
+@atomic_fn
 def upsert_occurrence_task(
     *,
     actor: User | None,
@@ -393,9 +394,10 @@ def upsert_occurrence_task(
         status=plan.status,
     )
     try:
-        task.full_clean()
-        task.save()
-    except IntegrityError:
+        with atomic():
+            task.full_clean()
+            task.save()
+    except (IntegrityError, ValidationError):
         raced = ChecklistTask.objects.filter(
             organization_id=schedule.organization_id,
             checklist_template_id=schedule.checklist_template_id,
@@ -632,12 +634,9 @@ def deactivate_checklist_schedule(
     *, actor: User | None, schedule_id: uuid.UUID
 ) -> ChecklistSchedule:
     user = _require_authenticated_actor(actor)
-    schedule = (
-        ChecklistSchedule.objects.select_related("organization")
-        .select_for_update()
-        .filter(pk=schedule_id)
-        .first()
-    )
+    schedule = lock_queryset(
+        ChecklistSchedule.objects.select_related("organization").filter(pk=schedule_id)
+    ).first()
     if schedule is None:
         raise ValidationError({"schedule": "Checklist schedule not found."})
     require_permission(

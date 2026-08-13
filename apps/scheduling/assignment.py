@@ -16,6 +16,7 @@ from django.utils import timezone
 from apps.access_control.models import Role
 from apps.access_control.services import require_permission, user_has_permission
 from apps.accounts.models import User
+from apps.core.persistence import lock_queryset
 from apps.organizations.models import Department, Shift
 from apps.scheduling.models import (
     ChecklistTask,
@@ -274,12 +275,9 @@ def assign_checklist_task(
     user = _require_authenticated_actor(actor)
     reason_n = _norm_reason(reason)
 
-    task = (
-        ChecklistTask.objects.select_for_update(of=("self",))
-        .select_related("organization")
-        .filter(pk=task_id)
-        .first()
-    )
+    task = lock_queryset(
+        ChecklistTask.objects.select_related("organization").filter(pk=task_id)
+    ).first()
     if task is None:
         raise ValidationError({"task": "Checklist task not found."})
 
@@ -350,12 +348,9 @@ def unassign_checklist_task(
     user = _require_authenticated_actor(actor)
     reason_n = _norm_reason(reason)
 
-    task = (
-        ChecklistTask.objects.select_for_update(of=("self",))
-        .select_related("organization")
-        .filter(pk=task_id)
-        .first()
-    )
+    task = lock_queryset(
+        ChecklistTask.objects.select_related("organization").filter(pk=task_id)
+    ).first()
     if task is None:
         raise ValidationError({"task": "Checklist task not found."})
 

@@ -7,6 +7,7 @@ from datetime import datetime
 
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
+from apps.core.persistence import lock_queryset
 from django.utils import timezone
 
 from apps.access_control.services import Scope, require_permission, user_has_permission
@@ -171,7 +172,7 @@ def update_quarantine_quantity(
     uom_reference: str | None = None,
 ) -> QualityQuarantineRecord:
     user = _require(actor, MANAGE, quarantine.organization_id)
-    record = QualityQuarantineRecord.objects.select_for_update().get(pk=quarantine.pk)
+    record = lock_queryset(QualityQuarantineRecord.objects.filter(pk=quarantine.pk)).get()
     if record.status != QuarantineStatus.OPEN:
         raise ValidationError(
             {"status": "Only open quarantine records can change quantity references."}
@@ -227,7 +228,7 @@ def release_quarantine_record(
     resolution_reference: str = "",
 ) -> QualityQuarantineRecord:
     user = _require(actor, RELEASE, quarantine.organization_id)
-    record = QualityQuarantineRecord.objects.select_for_update().get(pk=quarantine.pk)
+    record = lock_queryset(QualityQuarantineRecord.objects.filter(pk=quarantine.pk)).get()
     if record.status != QuarantineStatus.OPEN:
         raise ValidationError({"status": "Only open quarantine records can be released."})
     decision = evaluate_quarantine_release(organization_id=record.organization_id)
@@ -287,7 +288,7 @@ def cancel_quarantine_record(
     resolution_reference: str = "",
 ) -> QualityQuarantineRecord:
     user = _require(actor, MANAGE, quarantine.organization_id)
-    record = QualityQuarantineRecord.objects.select_for_update().get(pk=quarantine.pk)
+    record = lock_queryset(QualityQuarantineRecord.objects.filter(pk=quarantine.pk)).get()
     if record.status != QuarantineStatus.OPEN:
         raise ValidationError({"status": "Only open quarantine records can be cancelled."})
     record.status = QuarantineStatus.CANCELLED
@@ -326,7 +327,7 @@ def record_erp_sync_status(
     user = _require(actor, MANAGE, quarantine.organization_id)
     if status not in QuarantineErpSyncStatus.values:
         raise ValidationError({"erp_sync_status": "Unsupported ERP sync status."})
-    record = QualityQuarantineRecord.objects.select_for_update().get(pk=quarantine.pk)
+    record = lock_queryset(QualityQuarantineRecord.objects.filter(pk=quarantine.pk)).get()
     before = {"status": record.erp_sync_status, "detail": record.erp_sync_detail}
     record.erp_sync_status = status
     record.erp_sync_detail = _clean(detail, max_length=2000)

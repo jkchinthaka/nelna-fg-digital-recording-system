@@ -10,7 +10,7 @@ from datetime import date
 from typing import Any
 
 from django.core.exceptions import PermissionDenied, ValidationError
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError
 from django.utils import timezone
 
 from apps.access_control.services import Scope, require_permission, user_has_permission
@@ -22,6 +22,13 @@ from apps.capa.models import (
     CapaHistoryEntry,
     CorrectiveAction,
     CorrectiveActionStatus,
+)
+from apps.core.persistence import (
+    TransitionConflictError,
+    atomic_fn,
+    cas_status_transition,
+    lock_queryset,
+    locked_get,
 )
 from apps.nonconformance.models import NonConformanceRecord
 from apps.organizations.models import Organization
@@ -38,6 +45,19 @@ def _require_authenticated_actor(actor: User | None) -> User:
     if actor is None or not getattr(actor, "is_authenticated", False) or not actor.is_active:
         raise PermissionDenied("Authentication required.")
     return actor
+
+
+def _guard_capa_open(action: CorrectiveAction) -> None:
+    """Fail closed if another writer already closed the CAPA (Mongo-safe CAS)."""
+    if action.status == CorrectiveActionStatus.CLOSED:
+        raise ValidationError({"status": "Closed CAPA records cannot be modified."})
+    matched = (
+        CorrectiveAction.objects.filter(pk=action.pk)
+        .exclude(status=CorrectiveActionStatus.CLOSED)
+        .update(updated_at=timezone.now())
+    )
+    if matched != 1:
+        raise ValidationError({"status": "Closed CAPA records cannot be modified."})
 
 
 def _append_history(
@@ -79,7 +99,7 @@ def _can_close_capa(user: User, organization_id: uuid.UUID) -> bool:
     )
 
 
-@transaction.atomic
+@atomic_fn
 def create_corrective_action(
     *,
     actor: User | None,
@@ -141,7 +161,7 @@ def create_corrective_action(
     return action
 
 
-@transaction.atomic
+@atomic_fn
 def transition_capa_status(
     *,
     actor: User | None,
@@ -150,21 +170,30 @@ def transition_capa_status(
     note: str = "",
 ) -> CorrectiveAction:
     user = _require_authenticated_actor(actor)
-    action = CorrectiveAction.objects.select_for_update().filter(pk=capa_id).first()
+    action = locked_get(CorrectiveAction, pk=capa_id)
     if action is None:
         raise ValidationError({"capa": "Corrective action not found."})
     require_permission(user, MANAGE_CAPA, scope=Scope(organization_id=action.organization_id))
     if to_status == CorrectiveActionStatus.CLOSED:
         raise ValidationError({"status": "Use close_corrective_action to close a CAPA."})
-    allowed = CAPA_STATUS_TRANSITIONS.get(action.status, frozenset())
+    from_status = action.status
+    allowed = CAPA_STATUS_TRANSITIONS.get(from_status, frozenset())
     if to_status not in allowed:
         raise ValidationError(
-            {"status": f"Transition from {action.status} to {to_status} is not allowed."}
+            {"status": f"Transition from {from_status} to {to_status} is not allowed."}
         )
-    from_status = action.status
-    action.status = to_status
-    action.full_clean()
-    action.save(update_fields=["status", "updated_at"])
+    now = timezone.now()
+    try:
+        cas_status_transition(
+            CorrectiveAction,
+            pk=action.pk,
+            from_status=from_status,
+            to_status=to_status,
+            extra_updates={"updated_at": now},
+        )
+    except TransitionConflictError as exc:
+        raise ValidationError({"status": "CAPA was updated concurrently."}) from exc
+    action.refresh_from_db()
     _append_history(
         capa=action,
         event_type="STATUS_CHANGED",
@@ -187,7 +216,7 @@ def transition_capa_status(
     return action
 
 
-@transaction.atomic
+@atomic_fn
 def record_capa_verification(
     *,
     actor: User | None,
@@ -196,36 +225,43 @@ def record_capa_verification(
 ) -> CorrectiveAction:
     """Record verification notes and move case to VERIFICATION."""
     user = _require_authenticated_actor(actor)
-    action = CorrectiveAction.objects.select_for_update().filter(pk=capa_id).first()
+    action = locked_get(CorrectiveAction, pk=capa_id)
     if action is None:
         raise ValidationError({"capa": "Corrective action not found."})
     require_permission(user, MANAGE_CAPA, scope=Scope(organization_id=action.organization_id))
-    if action.status == CorrectiveActionStatus.CLOSED:
-        raise ValidationError({"status": "Closed CAPA records cannot be verified."})
+    _guard_capa_open(action)
     text = (notes or "").strip()
     if not text:
         raise ValidationError({"notes": "Verification notes cannot be blank."})
     from_status = action.status
-    if action.status != CorrectiveActionStatus.VERIFICATION:
-        allowed = CAPA_STATUS_TRANSITIONS.get(action.status, frozenset())
+    now = timezone.now()
+    if from_status != CorrectiveActionStatus.VERIFICATION:
+        allowed = CAPA_STATUS_TRANSITIONS.get(from_status, frozenset())
         if CorrectiveActionStatus.VERIFICATION not in allowed:
             raise ValidationError(
-                {"status": (f"Cannot move to VERIFICATION from status {action.status}.")}
+                {"status": (f"Cannot move to VERIFICATION from status {from_status}.")}
             )
-        action.status = CorrectiveActionStatus.VERIFICATION
     action.verification_notes = text
     action.verified_by = user
-    action.verified_at = timezone.now()
+    action.verified_at = now
+    action.status = CorrectiveActionStatus.VERIFICATION
     action.full_clean()
-    action.save(
-        update_fields=[
-            "verification_notes",
-            "verified_by",
-            "verified_at",
-            "status",
-            "updated_at",
-        ]
-    )
+    try:
+        cas_status_transition(
+            CorrectiveAction,
+            pk=action.pk,
+            from_status=from_status,
+            to_status=CorrectiveActionStatus.VERIFICATION,
+            extra_updates={
+                "verification_notes": text,
+                "verified_by_id": user.pk,
+                "verified_at": now,
+                "updated_at": now,
+            },
+        )
+    except TransitionConflictError as exc:
+        raise ValidationError({"status": "CAPA was updated concurrently."}) from exc
+    action.refresh_from_db()
     _append_history(
         capa=action,
         event_type="VERIFICATION_RECORDED",
@@ -248,7 +284,7 @@ def record_capa_verification(
     return action
 
 
-@transaction.atomic
+@atomic_fn
 def record_capa_effectiveness_review(
     *,
     actor: User | None,
@@ -257,36 +293,43 @@ def record_capa_effectiveness_review(
 ) -> CorrectiveAction:
     """Record effectiveness review and move case to EFFECTIVENESS_REVIEW."""
     user = _require_authenticated_actor(actor)
-    action = CorrectiveAction.objects.select_for_update().filter(pk=capa_id).first()
+    action = locked_get(CorrectiveAction, pk=capa_id)
     if action is None:
         raise ValidationError({"capa": "Corrective action not found."})
     require_permission(user, MANAGE_CAPA, scope=Scope(organization_id=action.organization_id))
-    if action.status == CorrectiveActionStatus.CLOSED:
-        raise ValidationError({"status": "Closed CAPA records cannot be reviewed."})
+    _guard_capa_open(action)
     text = (notes or "").strip()
     if not text:
         raise ValidationError({"notes": "Effectiveness review notes cannot be blank."})
     from_status = action.status
-    if action.status != CorrectiveActionStatus.EFFECTIVENESS_REVIEW:
-        allowed = CAPA_STATUS_TRANSITIONS.get(action.status, frozenset())
+    now = timezone.now()
+    if from_status != CorrectiveActionStatus.EFFECTIVENESS_REVIEW:
+        allowed = CAPA_STATUS_TRANSITIONS.get(from_status, frozenset())
         if CorrectiveActionStatus.EFFECTIVENESS_REVIEW not in allowed:
             raise ValidationError(
-                {"status": (f"Cannot move to EFFECTIVENESS_REVIEW from status {action.status}.")}
+                {"status": (f"Cannot move to EFFECTIVENESS_REVIEW from status {from_status}.")}
             )
-        action.status = CorrectiveActionStatus.EFFECTIVENESS_REVIEW
     action.effectiveness_notes = text
     action.effectiveness_reviewed_by = user
-    action.effectiveness_reviewed_at = timezone.now()
+    action.effectiveness_reviewed_at = now
+    action.status = CorrectiveActionStatus.EFFECTIVENESS_REVIEW
     action.full_clean()
-    action.save(
-        update_fields=[
-            "effectiveness_notes",
-            "effectiveness_reviewed_by",
-            "effectiveness_reviewed_at",
-            "status",
-            "updated_at",
-        ]
-    )
+    try:
+        cas_status_transition(
+            CorrectiveAction,
+            pk=action.pk,
+            from_status=from_status,
+            to_status=CorrectiveActionStatus.EFFECTIVENESS_REVIEW,
+            extra_updates={
+                "effectiveness_notes": text,
+                "effectiveness_reviewed_by_id": user.pk,
+                "effectiveness_reviewed_at": now,
+                "updated_at": now,
+            },
+        )
+    except TransitionConflictError as exc:
+        raise ValidationError({"status": "CAPA was updated concurrently."}) from exc
+    action.refresh_from_db()
     _append_history(
         capa=action,
         event_type="EFFECTIVENESS_REVIEW_RECORDED",
@@ -309,7 +352,7 @@ def record_capa_effectiveness_review(
     return action
 
 
-@transaction.atomic
+@atomic_fn
 def add_capa_action_item(
     *,
     actor: User | None,
@@ -319,12 +362,11 @@ def add_capa_action_item(
     due_date: date | None = None,
 ) -> CapaActionItem:
     user = _require_authenticated_actor(actor)
-    action = CorrectiveAction.objects.select_for_update().filter(pk=capa_id).first()
+    action = locked_get(CorrectiveAction, pk=capa_id)
     if action is None:
         raise ValidationError({"capa": "Corrective action not found."})
     require_permission(user, MANAGE_CAPA, scope=Scope(organization_id=action.organization_id))
-    if action.status == CorrectiveActionStatus.CLOSED:
-        raise ValidationError({"status": "Cannot add actions to a closed CAPA."})
+    _guard_capa_open(action)
     desc = (description or "").strip()
     if not desc:
         raise ValidationError({"description": "Description cannot be blank."})
@@ -359,24 +401,20 @@ def add_capa_action_item(
     return item
 
 
-@transaction.atomic
+@atomic_fn
 def complete_capa_action_item(
     *,
     actor: User | None,
     action_item_id: uuid.UUID,
 ) -> CapaActionItem:
     user = _require_authenticated_actor(actor)
-    item = (
-        CapaActionItem.objects.select_for_update()
-        .select_related("capa")
-        .filter(pk=action_item_id)
-        .first()
-    )
+    item = lock_queryset(
+        CapaActionItem.objects.select_related("capa").filter(pk=action_item_id)
+    ).first()
     if item is None:
         raise ValidationError({"action_item": "CAPA action item not found."})
     require_permission(user, MANAGE_CAPA, scope=Scope(organization_id=item.capa.organization_id))
-    if item.capa.status == CorrectiveActionStatus.CLOSED:
-        raise ValidationError({"status": "Cannot complete actions on a closed CAPA."})
+    _guard_capa_open(item.capa)
     if item.status == CapaActionItemStatus.DONE:
         return item
     if item.status == CapaActionItemStatus.CANCELLED:
@@ -396,7 +434,7 @@ def complete_capa_action_item(
     return item
 
 
-@transaction.atomic
+@atomic_fn
 def close_corrective_action(
     *,
     actor: User | None,
@@ -405,7 +443,7 @@ def close_corrective_action(
 ) -> CorrectiveAction:
     """Human-only CAPA closure. Never callable by AI decision paths."""
     user = _require_authenticated_actor(actor)
-    action = CorrectiveAction.objects.select_for_update().filter(pk=capa_id).first()
+    action = locked_get(CorrectiveAction, pk=capa_id)
     if action is None:
         raise ValidationError({"capa": "Corrective action not found."})
     if not _can_close_capa(user, action.organization_id):
@@ -416,12 +454,32 @@ def close_corrective_action(
     if CorrectiveActionStatus.CLOSED not in allowed:
         raise ValidationError({"status": f"Cannot close CAPA from status {action.status}."})
     from_status = action.status
+    now = timezone.now()
+    notes = (closure_notes or "").strip()
     action.status = CorrectiveActionStatus.CLOSED
-    action.closure_notes = (closure_notes or "").strip()
+    action.closure_notes = notes
     action.closed_by = user
-    action.closed_at = timezone.now()
+    action.closed_at = now
     action.full_clean()
-    action.save(update_fields=["status", "closure_notes", "closed_by", "closed_at", "updated_at"])
+    try:
+        cas_status_transition(
+            CorrectiveAction,
+            pk=action.pk,
+            from_status=from_status,
+            to_status=CorrectiveActionStatus.CLOSED,
+            extra_updates={
+                "closure_notes": notes,
+                "closed_by_id": user.pk,
+                "closed_at": now,
+                "updated_at": now,
+            },
+        )
+    except TransitionConflictError as exc:
+        fresh = CorrectiveAction.objects.filter(pk=capa_id).first()
+        if fresh is not None and fresh.status == CorrectiveActionStatus.CLOSED:
+            return fresh
+        raise ValidationError({"status": "CAPA was updated concurrently."}) from exc
+    action.refresh_from_db()
     _append_history(
         capa=action,
         event_type="CLOSED",

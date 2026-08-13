@@ -13,6 +13,7 @@ from django.utils import timezone
 
 from apps.access_control.services import Scope, require_permission
 from apps.accounts.models import User
+from apps.core.persistence import lock_queryset
 from apps.master_data.historical_safety import (
     refuse_hard_delete_product_specification,
     refuse_hard_delete_specification_version,
@@ -239,12 +240,11 @@ def create_specification_version(
     notes: str = "",
 ) -> SpecificationVersion:
     user = _require_authenticated_actor(actor)
-    spec = (
-        ProductSpecification.objects.select_for_update(of=("self",))
-        .select_related("organization", "product")
-        .filter(pk=specification_id)
-        .first()
-    )
+    spec = lock_queryset(
+        ProductSpecification.objects.select_related("organization", "product").filter(
+            pk=specification_id
+        )
+    ).first()
     if spec is None:
         raise ValidationError({"specification": "Product specification not found."})
     require_permission(
@@ -286,12 +286,11 @@ def update_draft_specification_version(
     notes: Any = _UNSET,
 ) -> SpecificationVersion:
     user = _require_authenticated_actor(actor)
-    version = (
-        SpecificationVersion.objects.select_for_update(of=("self",))
-        .select_related("specification", "specification__organization")
-        .filter(pk=version_id)
-        .first()
-    )
+    version = lock_queryset(
+        SpecificationVersion.objects.select_related(
+            "specification", "specification__organization"
+        ).filter(pk=version_id)
+    ).first()
     if version is None:
         raise ValidationError({"version": "Specification version not found."})
     require_permission(
@@ -352,12 +351,11 @@ def upsert_specification_parameter(
     Bounds may be left empty (pending APR-006). Do not invent Nelna limits.
     """
     user = _require_authenticated_actor(actor)
-    version = (
-        SpecificationVersion.objects.select_for_update(of=("self",))
-        .select_related("specification", "specification__organization")
-        .filter(pk=version_id)
-        .first()
-    )
+    version = lock_queryset(
+        SpecificationVersion.objects.select_related(
+            "specification", "specification__organization"
+        ).filter(pk=version_id)
+    ).first()
     if version is None:
         raise ValidationError({"version": "Specification version not found."})
     require_permission(
@@ -372,11 +370,9 @@ def upsert_specification_parameter(
     if not normalized_name:
         raise ValidationError({"name": "Name cannot be blank."})
 
-    param = (
-        SpecificationParameter.objects.select_for_update()
-        .filter(version_id=version.id, code__iexact=normalized_code)
-        .first()
-    )
+    param = lock_queryset(
+        SpecificationParameter.objects.filter(version_id=version.id, code__iexact=normalized_code)
+    ).first()
     created = param is None
     if param is None:
         param = SpecificationParameter(version=version, code=normalized_code)
@@ -437,12 +433,11 @@ def remove_specification_parameter(
     parameter_id: uuid.UUID,
 ) -> None:
     user = _require_authenticated_actor(actor)
-    param = (
-        SpecificationParameter.objects.select_for_update(of=("self",))
-        .select_related("version", "version__specification", "version__specification__organization")
-        .filter(pk=parameter_id)
-        .first()
-    )
+    param = lock_queryset(
+        SpecificationParameter.objects.select_related(
+            "version", "version__specification", "version__specification__organization"
+        ).filter(pk=parameter_id)
+    ).first()
     if param is None:
         raise ValidationError({"parameter": "Specification parameter not found."})
     version = param.version
@@ -472,12 +467,11 @@ def approve_specification_version(
     Does not invent limits. Empty parameter bounds remain empty after approval.
     """
     user = _require_authenticated_actor(actor)
-    version = (
-        SpecificationVersion.objects.select_for_update(of=("self",))
-        .select_related("specification", "specification__organization")
-        .filter(pk=version_id)
-        .first()
-    )
+    version = lock_queryset(
+        SpecificationVersion.objects.select_related(
+            "specification", "specification__organization"
+        ).filter(pk=version_id)
+    ).first()
     if version is None:
         raise ValidationError({"version": "Specification version not found."})
     require_permission(
@@ -513,12 +507,11 @@ def retire_specification_version(
     version_id: uuid.UUID,
 ) -> SpecificationVersion:
     user = _require_authenticated_actor(actor)
-    version = (
-        SpecificationVersion.objects.select_for_update(of=("self",))
-        .select_related("specification", "specification__organization")
-        .filter(pk=version_id)
-        .first()
-    )
+    version = lock_queryset(
+        SpecificationVersion.objects.select_related(
+            "specification", "specification__organization"
+        ).filter(pk=version_id)
+    ).first()
     if version is None:
         raise ValidationError({"version": "Specification version not found."})
     require_permission(

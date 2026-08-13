@@ -18,6 +18,7 @@ from django.utils import timezone
 from apps.access_control.services import Scope, require_permission, user_has_permission
 from apps.accounts.models import User
 from apps.capa.services import create_corrective_action
+from apps.core.persistence import lock_queryset
 from apps.customer_complaints.models import (
     COMPLAINT_STATUS_TRANSITIONS,
     ComplaintCaseStatus,
@@ -98,7 +99,7 @@ def upsert_complaint_policy(
 ) -> CustomerComplaintPolicy:
     user = _require_actor(actor)
     require_permission(user, MANAGE_POLICY, scope=_org_scope(organization.id))
-    policy, _ = CustomerComplaintPolicy.objects.select_for_update().get_or_create(
+    policy, _ = lock_queryset(CustomerComplaintPolicy.objects.all()).get_or_create(
         organization=organization,
         defaults={
             "updated_by": user,

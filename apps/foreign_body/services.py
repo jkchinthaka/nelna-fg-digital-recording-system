@@ -8,6 +8,7 @@ from typing import Any
 
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import IntegrityError, transaction
+from apps.core.persistence import lock_queryset, locked_get
 from django.utils import timezone
 
 from apps.access_control.services import Scope, require_permission
@@ -301,10 +302,9 @@ def verify_challenge_test(
 ) -> MetalDetectorChallengeTest:
     user = _require_actor(actor)
     test = (
-        MetalDetectorChallengeTest.objects.select_for_update()
-        .select_related("organization")
-        .filter(pk=challenge_test_id)
-        .first()
+        lock_queryset(
+        MetalDetectorChallengeTest.objects.select_related("organization").filter(pk=challenge_test_id)
+        ).first()
     )
     if test is None:
         raise ValidationError({"challenge_test": "Challenge test not found."})
@@ -345,7 +345,7 @@ def void_challenge_test(
 ) -> MetalDetectorChallengeTest:
     user = _require_actor(actor)
     test = (
-        MetalDetectorChallengeTest.objects.select_for_update().filter(pk=challenge_test_id).first()
+        locked_get(MetalDetectorChallengeTest, pk=challenge_test_id)
     )
     if test is None:
         raise ValidationError({"challenge_test": "Challenge test not found."})

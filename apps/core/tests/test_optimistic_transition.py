@@ -8,6 +8,7 @@ import pytest
 
 from apps.core.optimistic_transition import (
     TransitionConflictError,
+    cas_status_transition,
     conditional_update,
     create_immutable_unique,
     require_conditional_update,
@@ -94,4 +95,31 @@ def test_create_immutable_unique_supervisor_style() -> None:
             unique_lookup={"checklist_submission_id": submission.id},
             decision_field="decision",
             decision_value=SupervisorReviewDecision.RETURNED_FOR_CORRECTION,
+        )
+
+
+@pytest.mark.django_db
+def test_cas_status_transition_rejects_stale_predicate() -> None:
+    from tests.factories import make_org
+
+    from apps.organizations.models import Organization
+
+    org = make_org(code="CASSTAT1", name="CAS Status")
+    updated = cas_status_transition(
+        Organization,
+        pk=org.pk,
+        from_status=True,
+        to_status=False,
+        extra_updates={"name": "CAS Status Off"},
+        status_field="is_active",
+    )
+    assert updated.is_active is False
+    assert updated.name == "CAS Status Off"
+    with pytest.raises(TransitionConflictError):
+        cas_status_transition(
+            Organization,
+            pk=org.pk,
+            from_status=True,
+            to_status=False,
+            status_field="is_active",
         )

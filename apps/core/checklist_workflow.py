@@ -12,6 +12,7 @@ from dataclasses import dataclass
 
 from django.db.models import Prefetch, QuerySet
 
+from apps.core.persistence import prefetch_related_compat
 from apps.quality.models import QAReview, QAReviewDecision
 from apps.recording.models import (
     ChecklistCorrection,
@@ -305,12 +306,13 @@ def derive_checklist_workflow(
 
 def prefetch_workflow_graph(qs: QuerySet[ChecklistTask]) -> QuerySet[ChecklistTask]:
     """Prefetch record/submission/review/correction/QA for derived workflow reads."""
-    return qs.select_related(
-        "organization",
-        "checklist_template",
-        "checklist_version",
-        "checklist_record",
-    ).prefetch_related(
+    return prefetch_related_compat(
+        qs.select_related(
+            "organization",
+            "checklist_template",
+            "checklist_version",
+            "checklist_record",
+        ),
         Prefetch(
             "checklist_record__submissions",
             queryset=ChecklistSubmission.objects.select_related(

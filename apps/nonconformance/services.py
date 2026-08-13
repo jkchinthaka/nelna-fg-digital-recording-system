@@ -10,11 +10,17 @@ import uuid
 from typing import Any
 
 from django.core.exceptions import PermissionDenied, ValidationError
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError
 from django.utils import timezone
 
 from apps.access_control.services import Scope, require_permission, user_has_permission
 from apps.accounts.models import User
+from apps.core.persistence import (
+    TransitionConflictError,
+    atomic_fn,
+    cas_status_transition,
+    locked_get,
+)
 from apps.nonconformance.models import (
     NCR_STATUS_TRANSITIONS,
     HoldCase,
@@ -48,6 +54,18 @@ def _require_authenticated_actor(actor: User | None) -> User:
     if actor is None or not getattr(actor, "is_authenticated", False) or not actor.is_active:
         raise PermissionDenied("Authentication required.")
     return actor
+
+
+def _guard_ncr_open(record: NonConformanceRecord) -> None:
+    if record.status == NonConformanceStatus.CLOSED:
+        raise ValidationError({"status": "Closed nonconformances cannot be updated."})
+    matched = (
+        NonConformanceRecord.objects.filter(pk=record.pk)
+        .exclude(status=NonConformanceStatus.CLOSED)
+        .update(updated_at=timezone.now())
+    )
+    if matched != 1:
+        raise ValidationError({"status": "Closed nonconformances cannot be updated."})
 
 
 def _append_history(
@@ -90,7 +108,7 @@ def _can_close_ncr(user: User, organization_id: uuid.UUID) -> bool:
     )
 
 
-@transaction.atomic
+@atomic_fn
 def create_nonconformance(
     *,
     actor: User | None,
@@ -170,7 +188,7 @@ def create_nonconformance(
     return record
 
 
-@transaction.atomic
+@atomic_fn
 def update_nonconformance_case_fields(
     *,
     actor: User | None,
@@ -185,12 +203,11 @@ def update_nonconformance_case_fields(
 ) -> NonConformanceRecord:
     """Update open NCR fields. Closed cases are immutable."""
     user = _require_authenticated_actor(actor)
-    record = NonConformanceRecord.objects.select_for_update().filter(pk=nonconformance_id).first()
+    record = locked_get(NonConformanceRecord, pk=nonconformance_id)
     if record is None:
         raise ValidationError({"nonconformance": "Nonconformance not found."})
     require_permission(user, MANAGE_NCR, scope=Scope(organization_id=record.organization_id))
-    if record.status == NonConformanceStatus.CLOSED:
-        raise ValidationError({"status": "Closed nonconformances cannot be updated."})
+    _guard_ncr_open(record)
     changed: list[str] = []
     if title is not None:
         normalized_title = normalize_name(title)
@@ -245,7 +262,7 @@ def update_nonconformance_case_fields(
     return record
 
 
-@transaction.atomic
+@atomic_fn
 def transition_nonconformance_status(
     *,
     actor: User | None,
@@ -255,7 +272,7 @@ def transition_nonconformance_status(
 ) -> NonConformanceRecord:
     """Lifecycle transition. Closing must use close_nonconformance."""
     user = _require_authenticated_actor(actor)
-    record = NonConformanceRecord.objects.select_for_update().filter(pk=nonconformance_id).first()
+    record = locked_get(NonConformanceRecord, pk=nonconformance_id)
     if record is None:
         raise ValidationError({"nonconformance": "Nonconformance not found."})
     require_permission(user, MANAGE_NCR, scope=Scope(organization_id=record.organization_id))
@@ -263,15 +280,24 @@ def transition_nonconformance_status(
         raise ValidationError(
             {"status": "Use close_nonconformance to close a nonconformance case."}
         )
-    allowed = NCR_STATUS_TRANSITIONS.get(record.status, frozenset())
+    from_status = record.status
+    allowed = NCR_STATUS_TRANSITIONS.get(from_status, frozenset())
     if to_status not in allowed:
         raise ValidationError(
-            {"status": f"Transition from {record.status} to {to_status} is not allowed."}
+            {"status": f"Transition from {from_status} to {to_status} is not allowed."}
         )
-    from_status = record.status
-    record.status = to_status
-    record.full_clean()
-    record.save(update_fields=["status", "updated_at"])
+    now = timezone.now()
+    try:
+        cas_status_transition(
+            NonConformanceRecord,
+            pk=record.pk,
+            from_status=from_status,
+            to_status=to_status,
+            extra_updates={"updated_at": now},
+        )
+    except TransitionConflictError as exc:
+        raise ValidationError({"status": "Nonconformance was updated concurrently."}) from exc
+    record.refresh_from_db()
     _append_history(
         organization_id=record.organization_id,
         case_kind=QualityCaseHistoryKind.NONCONFORMANCE,
@@ -296,7 +322,7 @@ def transition_nonconformance_status(
     return record
 
 
-@transaction.atomic
+@atomic_fn
 def close_nonconformance(
     *,
     actor: User | None,
@@ -305,7 +331,7 @@ def close_nonconformance(
 ) -> NonConformanceRecord:
     """Close NCR. Requires close_nonconformance or manage_nonconformance (legacy)."""
     user = _require_authenticated_actor(actor)
-    record = NonConformanceRecord.objects.select_for_update().filter(pk=nonconformance_id).first()
+    record = locked_get(NonConformanceRecord, pk=nonconformance_id)
     if record is None:
         raise ValidationError({"nonconformance": "Nonconformance not found."})
     if not _can_close_ncr(user, record.organization_id):
@@ -318,12 +344,32 @@ def close_nonconformance(
             {"status": f"Cannot close nonconformance from status {record.status}."}
         )
     from_status = record.status
+    now = timezone.now()
+    notes = (closure_notes or "").strip()
     record.status = NonConformanceStatus.CLOSED
-    record.closure_notes = (closure_notes or "").strip()
+    record.closure_notes = notes
     record.closed_by = user
-    record.closed_at = timezone.now()
+    record.closed_at = now
     record.full_clean()
-    record.save(update_fields=["status", "closure_notes", "closed_by", "closed_at", "updated_at"])
+    try:
+        cas_status_transition(
+            NonConformanceRecord,
+            pk=record.pk,
+            from_status=from_status,
+            to_status=NonConformanceStatus.CLOSED,
+            extra_updates={
+                "closure_notes": notes,
+                "closed_by_id": user.pk,
+                "closed_at": now,
+                "updated_at": now,
+            },
+        )
+    except TransitionConflictError as exc:
+        fresh = NonConformanceRecord.objects.filter(pk=nonconformance_id).first()
+        if fresh is not None and fresh.status == NonConformanceStatus.CLOSED:
+            return fresh
+        raise ValidationError({"status": "Nonconformance was updated concurrently."}) from exc
+    record.refresh_from_db()
     _append_history(
         organization_id=record.organization_id,
         case_kind=QualityCaseHistoryKind.NONCONFORMANCE,
@@ -347,7 +393,7 @@ def close_nonconformance(
     return record
 
 
-@transaction.atomic
+@atomic_fn
 def create_hold_case(
     *,
     actor: User | None,
@@ -423,7 +469,7 @@ def create_hold_case(
     return hold
 
 
-@transaction.atomic
+@atomic_fn
 def close_hold_case(
     *,
     actor: User | None,
@@ -432,7 +478,7 @@ def close_hold_case(
 ) -> HoldCase:
     """Close hold with free-text resolution — no company resolution catalogue."""
     user = _require_authenticated_actor(actor)
-    hold = HoldCase.objects.select_for_update().filter(pk=hold_case_id).first()
+    hold = locked_get(HoldCase, pk=hold_case_id)
     if hold is None:
         raise ValidationError({"hold_case": "Hold case not found."})
     org_scope = Scope(organization_id=hold.organization_id)
@@ -443,12 +489,27 @@ def close_hold_case(
         raise PermissionDenied("Permission denied.")
     if hold.status == HoldCaseStatus.CLOSED:
         return hold
-    hold.status = HoldCaseStatus.CLOSED
-    hold.resolution = (resolution or "").strip()
-    hold.closed_by = user
-    hold.closed_at = timezone.now()
-    hold.full_clean()
-    hold.save(update_fields=["status", "resolution", "closed_by", "closed_at", "updated_at"])
+    now = timezone.now()
+    resolution_text = (resolution or "").strip()
+    try:
+        cas_status_transition(
+            HoldCase,
+            pk=hold.pk,
+            from_status=hold.status,
+            to_status=HoldCaseStatus.CLOSED,
+            extra_updates={
+                "resolution": resolution_text,
+                "closed_by_id": user.pk,
+                "closed_at": now,
+                "updated_at": now,
+            },
+        )
+    except TransitionConflictError as exc:
+        fresh = HoldCase.objects.filter(pk=hold_case_id).first()
+        if fresh is not None and fresh.status == HoldCaseStatus.CLOSED:
+            return fresh
+        raise ValidationError({"status": "Hold case was updated concurrently."}) from exc
+    hold.refresh_from_db()
     _append_history(
         organization_id=hold.organization_id,
         case_kind=QualityCaseHistoryKind.HOLD,

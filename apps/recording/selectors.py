@@ -13,7 +13,9 @@ from apps.access_control.services import (
     user_has_permission,
 )
 from apps.accounts.models import User
-from apps.checklists.models import ChecklistItem, ChecklistItemOption, ChecklistSection
+from apps.checklists.compat_queries import load_sections_with_items_and_options
+from apps.checklists.models import ChecklistSection
+from apps.core.persistence import prefetch_related_compat
 from apps.recording.models import (
     ChecklistCorrection,
     ChecklistCorrectionStatus,
@@ -53,29 +55,25 @@ def list_recordable_checklist_tasks(actor: User | None) -> QuerySet[ChecklistTas
     if not org_ids:
         return ChecklistTask.objects.none()
 
-    return (
+    return prefetch_related_compat(
         ChecklistTask.objects.select_related(
             "organization",
             "checklist_template",
             "checklist_version",
             "checklist_record",
-        )
-        .prefetch_related(
-            Prefetch(
-                "checklist_record__corrections",
-                queryset=ChecklistCorrection.objects.filter(
-                    status=ChecklistCorrectionStatus.DRAFT
-                ).select_related("source_submission"),
-                to_attr="active_corrections",
-            )
-        )
-        .filter(
+        ).filter(
             organization_id__in=org_ids,
             status=ChecklistTaskStatus.PENDING,
             checklist_version__status="PUBLISHED",
-        )
-        .order_by("-created_at")
-    )
+        ),
+        Prefetch(
+            "checklist_record__corrections",
+            queryset=ChecklistCorrection.objects.filter(
+                status=ChecklistCorrectionStatus.DRAFT
+            ).select_related("source_submission"),
+            to_attr="active_corrections",
+        ),
+    ).order_by("-created_at")
 
 
 def get_recordable_task(actor: User | None, task_id: uuid.UUID) -> ChecklistTask | None:
@@ -161,32 +159,7 @@ def get_latest_checklist_submission_for_record(
 
 
 def _load_sections(version_id: uuid.UUID) -> list[ChecklistSection]:
-    return list(
-        ChecklistSection.objects.filter(version_id=version_id)
-        .prefetch_related(
-            Prefetch(
-                "items",
-                queryset=ChecklistItem.objects.select_related("parent_item")
-                .prefetch_related(
-                    Prefetch(
-                        "options",
-                        queryset=ChecklistItemOption.objects.order_by("position"),
-                    ),
-                    Prefetch(
-                        "child_items",
-                        queryset=ChecklistItem.objects.prefetch_related(
-                            Prefetch(
-                                "options",
-                                queryset=ChecklistItemOption.objects.order_by("position"),
-                            )
-                        ).order_by("position"),
-                    ),
-                )
-                .order_by("position"),
-            )
-        )
-        .order_by("position")
-    )
+    return load_sections_with_items_and_options(version_id)
 
 
 def load_record_editor_context(

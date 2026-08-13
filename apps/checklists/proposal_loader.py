@@ -16,6 +16,7 @@ from django.db import transaction
 from django.db.models.functions import Lower
 
 from apps.accounts.models import User
+from apps.checklists.compat_queries import load_sections_with_items_and_options
 from apps.checklists.measurement import assert_known_unit
 from apps.checklists.models import (
     ChecklistItem,
@@ -391,9 +392,9 @@ def _normalized_structure_payload_from_proposal(definition: ProposalDefinition) 
 
 def version_structure_fingerprint(version: ChecklistVersion) -> str:
     sections_payload: list[dict[str, Any]] = []
-    for section in version.sections.prefetch_related("items__options").order_by("position"):
+    for section in load_sections_with_items_and_options(version.id):
         items_payload: list[dict[str, Any]] = []
-        for item in section.items.order_by("position"):
+        for item in section.items.all():
             items_payload.append(
                 {
                     "position": item.position,
@@ -414,7 +415,7 @@ def version_structure_fingerprint(version: ChecklistVersion) -> str:
                             "value": option.value,
                             "label": option.label,
                         }
-                        for option in item.options.order_by("position")
+                        for option in item.options.all()
                     ],
                 }
             )

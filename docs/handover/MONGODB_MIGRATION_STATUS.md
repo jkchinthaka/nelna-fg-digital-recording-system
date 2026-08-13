@@ -4,18 +4,12 @@
 
 ```text
 STARTING_BRANCH=feature/mongodb-same-maintainpro-db
-STARTING_SHA=d8682b7
+STARTING_SHA=c140d72
 MAIN_SHA=d5a4460
 ORIGIN_MAIN_SHA=d5a4460
 ```
 
 PostgreSQL remains the authoritative system of record on `main`.
-
-```text
-MONGODB SAME-DATABASE CUTOVER BLOCKED — CONTINUING COMPATIBILITY ENGINEERING
-```
-
-Exact classification for this checkpoint:
 
 ```text
 CONTINUATION REQUIRED — MONGODB FUNCTIONAL PARITY MIGRATION CHECKPOINT CREATED
@@ -41,47 +35,50 @@ main merged: NO
 
 | Item | Status |
 | --- | --- |
-| Persistence facade | Done — `apps/core/persistence/` (vendor, atomic, CAS, lock_queryset, latest_ids) |
-| Supervisor production path | Done — unique insert, no `select_for_update` |
-| QA production path | Done — unique insert, no `select_for_update` |
-| Recording start production | Done — unique(task) insert |
-| Recording draft save | Done — `lock_queryset` + draft_version CAS |
-| Recording submit / correction | Done — `lock_queryset` + unique IntegrityError |
-| RCA close/cancel | Done — CAS status + mutable guard; `@atomic_fn` |
-| Supervisor/QA queue OuterRef/Subquery | Done — `latest_ids_by_parent` |
-| Supervisor/QA section prefetch | Done — batched `load_sections_with_items_and_options` |
+| Persistence facade | Extended — `locked_get`, `prefetch_related_compat`, `cas_status_transition`, Mongo QuerySet safety net |
+| Checklist versioning | Done — unique(template, version_number)+retry, CAS publish/retire, draft immutability guard |
+| Scheduling | Done — `lock_queryset`/`atomic_fn`, unique occurrence_key upsert, CAS cancel |
+| CAPA | Done — `locked_get` + status CAS close/verify/effectiveness + open guard |
+| NCR / Hold | Done — `locked_get` + status CAS close + open guard |
+| Access-control governance | Done — last raw `select_for_update` sites → `lock_queryset` + `atomic_fn` |
+| Production `.select_for_update(` | **0** outside persistence facade helper |
+| Operational `.prefetch_related(` | **0** outside facade/compat; recording uses batched `load_version_items_for_recording` |
+| Health | Backend-aware: Mongo mode pings Mongo+Redis, not PostgreSQL |
+| FG-only backup plan | `docs/handover/MONGO_BACKUP_RESTORE_SHARED_DB.md` |
+| Concurrency spikes (PG harness) | Checklist / scheduling / CAPA / NCR / core persistence — green |
 | Full Mongo pytest suite | Not run |
 | Live company read-only audit | Script ready — not executed |
 
----
+### Inventory counts (this checkpoint)
 
-## Exact inventory highlights (this generation)
+```text
+SELECT_FOR_UPDATE INITIAL=137
+SELECT_FOR_UPDATE CURRENT_RAW_PRODUCTION=0  (facade helper only)
+SELECT_FOR_UPDATE MIGRATED≈137
 
-| Token | Count |
-| --- | ---: |
-| select_for_update | 118 (was 137) |
-| prefetch_related | 30 (was 34) |
-| OuterRef / Subquery (core queues) | 0 remaining in reviews/quality selectors |
-| transaction.atomic | 372 |
-| IntegrityError | 110 |
-| Lower | 87 |
+PREFETCH INITIAL=34
+PREFETCH CURRENT_RAW_PRODUCTION=0  (compat helper / Mongo no-op only)
+PREFETCH REMAINING_COMPAT_SITES≈operational via prefetch_related_compat
 
----
-
-## Next continuation module
-
-1. Remaining `select_for_update` in checklists versioning, scheduling, CAPA, NCR, laboratory, HACCP, master_data (~118 sites)
-2. Remaining `prefetch_related` in checklists selectors/services
-3. Isolated Mongo POC: migrate + subset pytest under `mongo_same_db_poc`
-4. Contrib Mongo AppConfig activation (POC only)
-5. FG-only backup/restore for `fg_*` collections
+TRANSACTION.ATOMIC ≈328 remaining (many behind atomic_fn / PG-only paths)
+LOWER / FUNCTION ≈87 (still to rewrite for Mongo)
+```
 
 ---
 
-## References
+## Next exact action
 
-- [../migration/MONGO_FULL_COMPATIBILITY_INVENTORY.md](../migration/MONGO_FULL_COMPATIBILITY_INVENTORY.md)
-- [../migration/MONGO_CONCURRENCY_PATTERN.md](../migration/MONGO_CONCURRENCY_PATTERN.md)
-- [../migration/FG_COLLECTION_MANIFEST.md](../migration/FG_COLLECTION_MANIFEST.md)
-- [../migration/DJANGO_CONTRIB_MONGO_CONFIG.md](../migration/DJANGO_CONTRIB_MONGO_CONFIG.md)
-- [../migration/MONGO_PRIMARY_KEY_MATRIX.md](../migration/MONGO_PRIMARY_KEY_MATRIX.md)
+1. Isolated Mongo POC (`fg_same_db_poc`): migrate + run full pytest under `mongo_same_db_poc`
+2. Rewrite high-priority `Lower()` / function expressions (employee_code uniqueness, search)
+3. Contrib Mongo AppConfig activation (POC only) — auth/session/admin proof
+4. Full recording → Supervisor → QA → RCA workflow on **actual** isolated Mongo
+5. Isolated FG-only dump/restore drill
+6. PostgreSQL regression + quality gates
+
+---
+
+## Safety
+
+- Do not write to `mgintginpro_prod`
+- Do not merge `main`
+- Do not touch MaintainPro data

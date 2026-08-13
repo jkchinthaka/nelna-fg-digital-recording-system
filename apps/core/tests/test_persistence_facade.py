@@ -11,6 +11,7 @@ from apps.core.persistence import (
     detect_database_vendor,
     is_mongodb,
     lock_queryset,
+    locked_get,
 )
 
 
@@ -40,6 +41,19 @@ def test_lock_queryset_is_noop_identity_on_postgresql() -> None:
     qs = Organization.objects.all()
     locked = lock_queryset(qs)
     assert locked.model is Organization
+
+
+@pytest.mark.django_db
+def test_locked_get_returns_row() -> None:
+    from tests.factories import make_org
+
+    from apps.organizations.models import Organization
+
+    org = make_org(code="LOCKGET1", name="Locked get")
+    found = locked_get(Organization, pk=org.pk)
+    assert found is not None
+    assert found.pk == org.pk
+    assert locked_get(Organization, pk=org.pk, extra_filters={"code": "NOPE"}) is None
 
 
 @pytest.mark.django_db

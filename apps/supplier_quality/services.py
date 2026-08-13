@@ -8,6 +8,7 @@ from typing import Any
 
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import IntegrityError, transaction
+from apps.core.persistence import lock_queryset, locked_get
 from django.utils import timezone
 
 from apps.access_control.services import Scope, require_permission, user_has_permission
@@ -124,7 +125,7 @@ def update_supplier_quality_profile(
     is_active: bool | None = None,
 ) -> SupplierQualityProfile:
     user = _require_authenticated_actor(actor)
-    profile = SupplierQualityProfile.objects.select_for_update().filter(pk=profile_id).first()
+    profile = locked_get(SupplierQualityProfile, pk=profile_id)
     if profile is None:
         raise ValidationError({"profile": "Supplier quality profile not found."})
     assert_can_manage_qa(actor=user, organization_id=profile.organization_id)
@@ -205,10 +206,9 @@ def verify_supplier_certificate(
 ) -> SupplierCertificate:
     user = _require_authenticated_actor(actor)
     cert = (
-        SupplierCertificate.objects.select_related("profile")
-        .select_for_update()
-        .filter(pk=certificate_id)
-        .first()
+        lock_queryset(
+        SupplierCertificate.objects.select_related("profile").filter(pk=certificate_id)
+        ).first()
     )
     if cert is None:
         raise ValidationError({"certificate": "Supplier certificate not found."})

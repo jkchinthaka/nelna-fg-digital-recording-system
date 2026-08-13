@@ -8,6 +8,7 @@ from typing import Any
 
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import IntegrityError, transaction
+from apps.core.persistence import lock_queryset, locked_get
 
 from apps.access_control.services import Scope, require_permission
 from apps.accounts.models import User
@@ -218,7 +219,7 @@ def update_organization(
     name: str | None = None,
 ) -> Organization:
     user = _require_authenticated_actor(actor)
-    organization = Organization.objects.select_for_update().filter(pk=organization_id).first()
+    organization = locked_get(Organization, pk=organization_id)
     if organization is None:
         raise ValidationError({"organization": "Organization not found."})
     require_permission(user, MANAGE_ORGANIZATION, scope=Scope())
@@ -344,10 +345,9 @@ def update_site(
 ) -> Site:
     user = _require_authenticated_actor(actor)
     site = (
-        Site.objects.select_for_update(of=("self",))
-        .select_related("organization")
-        .filter(pk=site_id)
-        .first()
+        lock_queryset(
+        Site.objects.select_related("organization").filter(pk=site_id)
+        ).first()
     )
     if site is None:
         raise ValidationError({"site": "Site not found."})
@@ -474,10 +474,9 @@ def update_department(
 ) -> Department:
     user = _require_authenticated_actor(actor)
     department = (
-        Department.objects.select_for_update(of=("self",))
-        .select_related("organization", "site")
-        .filter(pk=department_id)
-        .first()
+        lock_queryset(
+        Department.objects.select_related("organization", "site").filter(pk=department_id)
+        ).first()
     )
     if department is None:
         raise ValidationError({"department": "Department not found."})
@@ -682,10 +681,9 @@ def update_shift(
 ) -> Shift:
     user = _require_authenticated_actor(actor)
     shift = (
-        Shift.objects.select_for_update(of=("self",))
-        .select_related("organization", "site", "department")
-        .filter(pk=shift_id)
-        .first()
+        lock_queryset(
+        Shift.objects.select_related("organization", "site", "department").filter(pk=shift_id)
+        ).first()
     )
     if shift is None:
         raise ValidationError({"shift": "Shift not found."})
@@ -749,7 +747,7 @@ def update_shift(
 @transaction.atomic
 def activate_shift(*, actor: User | None, shift_id: uuid.UUID) -> Shift:
     user = _require_authenticated_actor(actor)
-    shift = Shift.objects.select_for_update().filter(pk=shift_id).first()
+    shift = locked_get(Shift, pk=shift_id)
     if shift is None:
         raise ValidationError({"shift": "Shift not found."})
     require_permission(user, MANAGE_SHIFT, scope=shift_authorization_scope(shift))
@@ -768,7 +766,7 @@ def activate_shift(*, actor: User | None, shift_id: uuid.UUID) -> Shift:
 @transaction.atomic
 def deactivate_shift(*, actor: User | None, shift_id: uuid.UUID) -> Shift:
     user = _require_authenticated_actor(actor)
-    shift = Shift.objects.select_for_update().filter(pk=shift_id).first()
+    shift = locked_get(Shift, pk=shift_id)
     if shift is None:
         raise ValidationError({"shift": "Shift not found."})
     require_permission(user, MANAGE_SHIFT, scope=shift_authorization_scope(shift))

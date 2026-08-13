@@ -15,15 +15,19 @@ from apps.core.persistence.concurrency import (
     TransitionConflictError,
     TransitionIdempotentHitError,
     TransitionResult,
+    cas_status_transition,
     cas_versioned_update,
     conditional_update,
     create_immutable_unique,
     require_conditional_update,
 )
 from apps.core.persistence.queries import (
+    apply_mongo_queryset_compat,
     attach_reverse_relation,
     latest_ids_by_parent,
     lock_queryset,
+    locked_get,
+    prefetch_related_compat,
 )
 from apps.core.persistence.transactions import atomic, atomic_fn, on_commit
 
@@ -35,6 +39,8 @@ __all__ = [
     "atomic",
     "atomic_fn",
     "attach_reverse_relation",
+    "apply_mongo_queryset_compat",
+    "cas_status_transition",
     "cas_versioned_update",
     "conditional_update",
     "create_immutable_unique",
@@ -42,6 +48,8 @@ __all__ = [
     "is_mongodb",
     "latest_ids_by_parent",
     "lock_queryset",
+    "locked_get",
     "on_commit",
+    "prefetch_related_compat",
     "require_conditional_update",
 ]

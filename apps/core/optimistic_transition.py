@@ -102,14 +102,10 @@ def _resolve_unique_conflict(
 ) -> Model:
     existing = model.objects.filter(**unique_lookup).first()
     if existing is None:
-        raise TransitionConflictError(
-            "Unique constraint conflict but existing row not found."
-        )
+        raise TransitionConflictError("Unique constraint conflict but existing row not found.")
     if getattr(existing, decision_field) == decision_value:
         return existing
-    raise TransitionConflictError(
-        "Immutable decision already exists with a different value."
-    )
+    raise TransitionConflictError("Immutable decision already exists with a different value.")
 
 
 def create_immutable_unique(
@@ -183,4 +179,36 @@ def cas_versioned_update(
     obj = model.objects.filter(pk=pk).first()
     if obj is None:
         raise TransitionConflictError(f"{model.__name__} pk={pk} missing after CAS update.")
+    return obj
+
+
+def cas_status_transition(
+    model: type[Model],
+    *,
+    pk: Any,
+    from_status: str,
+    to_status: str,
+    extra_updates: Mapping[str, Any] | None = None,
+    status_field: str = "status",
+) -> Model:
+    """Atomically move ``status_field`` from ``from_status`` to ``to_status``.
+
+    Duplicate identical transitions raise ``TransitionConflictError`` so the
+    caller can re-read and treat already-applied terminal states as idempotent.
+    """
+    payload = dict(extra_updates or {})
+    payload[status_field] = to_status
+    result = conditional_update(
+        model.objects.all(),
+        expected={"pk": pk, status_field: from_status},
+        updates=payload,
+    )
+    if not result.applied:
+        raise TransitionConflictError(
+            f"Status CAS {model.__name__} pk={pk} {from_status!r}→{to_status!r} matched "
+            f"{result.matched} row(s)."
+        )
+    obj = model.objects.filter(pk=pk).first()
+    if obj is None:
+        raise TransitionConflictError(f"{model.__name__} pk={pk} missing after status CAS.")
     return obj

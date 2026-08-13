@@ -13,6 +13,7 @@ from typing import Any
 from django.conf import settings
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import IntegrityError, transaction
+from apps.core.persistence import locked_get
 from django.utils import timezone
 from django.utils.html import strip_tags
 
@@ -239,7 +240,7 @@ def queue_sms_notification(**_kwargs: Any) -> None:
 @transaction.atomic
 def mark_notification_read(*, actor: User | None, notification_id: uuid.UUID) -> Notification:
     user = _require_authenticated_actor(actor)
-    notification = Notification.objects.select_for_update().filter(pk=notification_id).first()
+    notification = locked_get(Notification, pk=notification_id)
     if notification is None:
         raise ValidationError({"notification": "Notification not found."})
     if notification.recipient_id != user.id:

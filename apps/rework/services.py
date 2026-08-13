@@ -13,6 +13,7 @@ from apps.access_control.services import Scope, require_permission, user_has_per
 from apps.accounts.models import User
 from apps.batch_genealogy.models import GenealogyNodeKind, GenealogyRelationKind
 from apps.batch_genealogy.services import ingest_erp_genealogy_edge, upsert_genealogy_node
+from apps.core.persistence import lock_queryset
 from apps.nonconformance.models import HoldCase, NonConformanceRecord
 from apps.organizations.models import Organization
 from apps.quality.models import QAReview
@@ -205,7 +206,7 @@ def create_rework_case(
 @transaction.atomic
 def authorize_rework_case(*, actor: User | None, case: ReworkCase) -> ReworkCase:
     user = _require(actor, AUTHORIZE, case.organization_id)
-    locked = ReworkCase.objects.select_for_update().get(pk=case.pk)
+    locked = lock_queryset(ReworkCase.objects.filter(pk=case.pk)).get()
     if locked.status == ReworkCase.Status.AUTHORIZED:
         return locked
     if locked.status != ReworkCase.Status.DRAFT:
@@ -231,7 +232,7 @@ def authorize_rework_case(*, actor: User | None, case: ReworkCase) -> ReworkCase
 @transaction.atomic
 def start_rework_case(*, actor: User | None, case: ReworkCase) -> ReworkCase:
     user = _require(actor, EXECUTE, case.organization_id)
-    locked = ReworkCase.objects.select_for_update().get(pk=case.pk)
+    locked = lock_queryset(ReworkCase.objects.filter(pk=case.pk)).get()
     if locked.status == ReworkCase.Status.IN_PROGRESS:
         return locked
     if locked.status != ReworkCase.Status.AUTHORIZED:
@@ -315,7 +316,7 @@ def complete_rework_case(
     remaining_source_quantity_reference: str,
 ) -> ReworkCase:
     user = _require(actor, EXECUTE, case.organization_id)
-    locked = ReworkCase.objects.select_for_update().get(pk=case.pk)
+    locked = lock_queryset(ReworkCase.objects.filter(pk=case.pk)).get()
     result_ref = _clean(resulting_batch_reference, max_length=128)
     result_qty = _clean(resulting_quantity_reference, max_length=64)
     remaining_qty = _clean(remaining_source_quantity_reference, max_length=64)
@@ -387,7 +388,7 @@ def cancel_rework_case(
     *, actor: User | None, case: ReworkCase, detail_reference: str = ""
 ) -> ReworkCase:
     user = _require(actor, EXECUTE, case.organization_id)
-    locked = ReworkCase.objects.select_for_update().get(pk=case.pk)
+    locked = lock_queryset(ReworkCase.objects.filter(pk=case.pk)).get()
     if locked.status == ReworkCase.Status.CANCELLED:
         return locked
     if locked.status == ReworkCase.Status.COMPLETED:
@@ -422,7 +423,7 @@ def open_rework_reinspection(
     checklist_version_id: uuid.UUID,
 ) -> ReworkCase:
     user = _require(actor, EXECUTE, case.organization_id)
-    locked = ReworkCase.objects.select_for_update().get(pk=case.pk)
+    locked = lock_queryset(ReworkCase.objects.filter(pk=case.pk)).get()
     if locked.status != ReworkCase.Status.COMPLETED:
         raise ValidationError({"status": "Reinspection requires a completed rework result."})
     if not locked.resulting_batch_reference:

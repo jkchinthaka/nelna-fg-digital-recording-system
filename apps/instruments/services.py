@@ -8,6 +8,7 @@ from typing import Any
 
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import IntegrityError, transaction
+from apps.core.persistence import lock_queryset, locked_get
 
 from apps.access_control.services import Scope, require_permission
 from apps.accounts.models import User
@@ -176,10 +177,9 @@ def update_equipment(
 ) -> Equipment:
     user = _require_authenticated_actor(actor)
     equipment = (
-        Equipment.objects.select_for_update(of=("self",))
-        .select_related("organization", "site")
-        .filter(pk=equipment_id)
-        .first()
+        lock_queryset(
+        Equipment.objects.select_related("organization", "site").filter(pk=equipment_id)
+        ).first()
     )
     if equipment is None:
         raise ValidationError({"equipment": "Equipment not found."})
@@ -244,7 +244,7 @@ def set_equipment_operational_status(
     operational_status: str,
 ) -> Equipment:
     user = _require_authenticated_actor(actor)
-    equipment = Equipment.objects.select_for_update().filter(pk=equipment_id).first()
+    equipment = locked_get(Equipment, pk=equipment_id)
     if equipment is None:
         raise ValidationError({"equipment": "Equipment not found."})
     require_permission(user, MANAGE_EQUIPMENT, scope=equipment_authorization_scope(equipment))
@@ -270,7 +270,7 @@ def set_equipment_operational_status(
 @transaction.atomic
 def activate_equipment(*, actor: User | None, equipment_id: uuid.UUID) -> Equipment:
     user = _require_authenticated_actor(actor)
-    equipment = Equipment.objects.select_for_update().filter(pk=equipment_id).first()
+    equipment = locked_get(Equipment, pk=equipment_id)
     if equipment is None:
         raise ValidationError({"equipment": "Equipment not found."})
     require_permission(user, MANAGE_EQUIPMENT, scope=equipment_authorization_scope(equipment))
@@ -289,7 +289,7 @@ def activate_equipment(*, actor: User | None, equipment_id: uuid.UUID) -> Equipm
 @transaction.atomic
 def deactivate_equipment(*, actor: User | None, equipment_id: uuid.UUID) -> Equipment:
     user = _require_authenticated_actor(actor)
-    equipment = Equipment.objects.select_for_update().filter(pk=equipment_id).first()
+    equipment = locked_get(Equipment, pk=equipment_id)
     if equipment is None:
         raise ValidationError({"equipment": "Equipment not found."})
     require_permission(user, MANAGE_EQUIPMENT, scope=equipment_authorization_scope(equipment))
@@ -361,10 +361,9 @@ def update_calibration_certificate_metadata(
 ) -> CalibrationRecord:
     user = _require_authenticated_actor(actor)
     record = (
-        CalibrationRecord.objects.select_for_update(of=("self",))
-        .select_related("equipment", "equipment__organization", "equipment__site")
-        .filter(pk=calibration_record_id)
-        .first()
+        lock_queryset(
+        CalibrationRecord.objects.select_related("equipment", "equipment__organization", "equipment__site").filter(pk=calibration_record_id)
+        ).first()
     )
     if record is None:
         raise ValidationError({"calibration": "Calibration record not found."})
