@@ -6,10 +6,10 @@ import uuid
 from typing import Any
 
 from django.core.exceptions import PermissionDenied, ValidationError
-from django.db import IntegrityError, transaction
 
 from apps.access_control.services import Scope, require_permission
 from apps.accounts.models import User
+from apps.core.persistence import TransitionConflictError, atomic, create_immutable_unique
 from apps.quality.models import QAReview, QAReviewDecision
 from apps.recording.models import ChecklistRecordStatus, ChecklistSubmission
 from apps.reviews.models import SupervisorReview, SupervisorReviewDecision
@@ -83,6 +83,7 @@ def create_qa_review(
     Manual disposition only — does not evaluate responses, call ERP/warehouse,
     start correction, change ChecklistRecord/ChecklistTask status, or notify.
     SoD rules remain EVIDENCE REQUIRED and are not enforced in Phase 10A.
+    Concurrency: unique(submission) + create_immutable_unique (no select_for_update).
     """
     user = _require_authenticated_actor(actor)
 
@@ -91,137 +92,114 @@ def create_qa_review(
 
     note = normalize_qa_review_note(review_note)
 
-    try:
-        with transaction.atomic():
-            submission = (
-                ChecklistSubmission.objects.select_related(
-                    "checklist_record",
-                    "checklist_record__organization",
-                    "checklist_record__checklist_task",
-                    "checklist_record__checklist_task__checklist_template",
-                    "checklist_record__checklist_task__checklist_version",
-                    "submitted_by",
-                )
-                .select_for_update()
-                .filter(pk=submission_id)
-                .first()
+    with atomic():
+        submission = (
+            ChecklistSubmission.objects.select_related(
+                "checklist_record",
+                "checklist_record__organization",
+                "checklist_record__checklist_task",
+                "checklist_record__checklist_task__checklist_template",
+                "checklist_record__checklist_task__checklist_version",
+                "submitted_by",
             )
-            if submission is None:
-                raise ValidationError({"submission": "Checklist submission not found."})
-
-            record = submission.checklist_record
-            require_permission(
-                user,
-                QA_REVIEW_CHECKLIST_SUBMISSION,
-                scope=submission_authorization_scope(submission),
-            )
-
-            if record.status != ChecklistRecordStatus.SUBMITTED:
-                raise ValidationError(
-                    {"submission": ("Only SUBMITTED checklist records may receive QA review.")}
-                )
-
-            task = record.checklist_task
-            if task.status == ChecklistTaskStatus.CANCELLED:
-                raise ValidationError(
-                    {"task": "Cancelled checklist tasks cannot receive QA review."}
-                )
-            if task.status != ChecklistTaskStatus.PENDING:
-                raise ValidationError(
-                    {"task": "Only PENDING checklist tasks may receive QA review."}
-                )
-
-            latest = get_latest_submission_for_record(record.id)
-            if latest is None or latest.id != submission.id:
-                raise ValidationError(
-                    {
-                        "submission": (
-                            "QA review may act only on the latest ChecklistSubmission "
-                            "for the record."
-                        )
-                    }
-                )
-
-            # Load SupervisorReview separately — FOR UPDATE cannot use nullable outer join.
-            supervisor = (
-                SupervisorReview.objects.select_for_update()
-                .filter(checklist_submission_id=submission.id)
-                .first()
-            )
-            if supervisor is None:
-                raise ValidationError(
-                    {
-                        "submission": (
-                            "QA review requires an immutable Supervisor review on the submission."
-                        )
-                    }
-                )
-            if supervisor.decision != SupervisorReviewDecision.APPROVED:
-                raise ValidationError(
-                    {
-                        "submission": (
-                            "QA review requires SupervisorReview decision APPROVED. "
-                            "RETURNED_FOR_CORRECTION and other decisions are not eligible."
-                        )
-                    }
-                )
-
-            existing = (
-                QAReview.objects.select_for_update()
-                .filter(checklist_submission_id=submission.id)
-                .first()
-            )
-            if existing is not None:
-                if existing.decision == decision:
-                    return existing
-                raise ValidationError(
-                    {
-                        "decision": (
-                            "This submission already has an immutable QA review "
-                            f"({existing.decision}). Different decisions cannot overwrite it."
-                        )
-                    }
-                )
-
-            review = QAReview(
-                organization_id=record.organization_id,
-                checklist_submission=submission,
-                supervisor_review=supervisor,
-                decision=decision,
-                review_note=note,
-                reviewed_by=user,
-            )
-            review.full_clean()
-            review.save()
-
-            record_event(
-                event_type="QA_REVIEW_COMPLETED",
-                actor=user,
-                metadata=_qa_review_metadata(review),
-            )
-    except IntegrityError:
-        raced = (
-            QAReview.objects.select_related(
-                "organization",
-                "checklist_submission",
-                "supervisor_review",
-                "reviewed_by",
-            )
-            .filter(checklist_submission_id=submission_id)
+            .filter(pk=submission_id)
             .first()
         )
-        if raced is not None:
-            if raced.decision == decision:
-                return raced
+        if submission is None:
+            raise ValidationError({"submission": "Checklist submission not found."})
+
+        record = submission.checklist_record
+        require_permission(
+            user,
+            QA_REVIEW_CHECKLIST_SUBMISSION,
+            scope=submission_authorization_scope(submission),
+        )
+
+        if record.status != ChecklistRecordStatus.SUBMITTED:
+            raise ValidationError(
+                {"submission": ("Only SUBMITTED checklist records may receive QA review.")}
+            )
+
+        task = record.checklist_task
+        if task.status == ChecklistTaskStatus.CANCELLED:
+            raise ValidationError({"task": "Cancelled checklist tasks cannot receive QA review."})
+        if task.status != ChecklistTaskStatus.PENDING:
+            raise ValidationError({"task": "Only PENDING checklist tasks may receive QA review."})
+
+        latest = get_latest_submission_for_record(record.id)
+        if latest is None or latest.id != submission.id:
+            raise ValidationError(
+                {
+                    "submission": (
+                        "QA review may act only on the latest ChecklistSubmission "
+                        "for the record."
+                    )
+                }
+            )
+
+        supervisor = SupervisorReview.objects.filter(
+            checklist_submission_id=submission.id
+        ).first()
+        if supervisor is None:
+            raise ValidationError(
+                {
+                    "submission": (
+                        "QA review requires an immutable Supervisor review on the submission."
+                    )
+                }
+            )
+        if supervisor.decision != SupervisorReviewDecision.APPROVED:
+            raise ValidationError(
+                {
+                    "submission": (
+                        "QA review requires SupervisorReview decision APPROVED. "
+                        "RETURNED_FOR_CORRECTION and other decisions are not eligible."
+                    )
+                }
+            )
+
+        existing = QAReview.objects.filter(checklist_submission_id=submission.id).first()
+        if existing is not None:
+            if existing.decision == decision:
+                return existing
             raise ValidationError(
                 {
                     "decision": (
                         "This submission already has an immutable QA review "
-                        f"({raced.decision}). Different decisions cannot overwrite it."
+                        f"({existing.decision}). Different decisions cannot overwrite it."
                     )
                 }
-            ) from None
-        raise ValidationError({"review": "Unable to create QA review."}) from None
+            )
+
+        try:
+            review, created = create_immutable_unique(
+                model=QAReview,
+                create_kwargs={
+                    "organization_id": record.organization_id,
+                    "checklist_submission": submission,
+                    "supervisor_review": supervisor,
+                    "decision": decision,
+                    "review_note": note,
+                    "reviewed_by": user,
+                },
+                unique_lookup={"checklist_submission_id": submission.id},
+                decision_field="decision",
+                decision_value=decision,
+            )
+        except TransitionConflictError as exc:
+            raise ValidationError(
+                {
+                    "decision": (
+                        "This submission already has an immutable QA review "
+                        "with a different decision. Different decisions cannot overwrite it."
+                    )
+                }
+            ) from exc
+
+        if created:
+            meta = _qa_review_metadata(review)
+            meta["concurrency_pattern"] = "optimistic_unique_insert"
+            record_event(event_type="QA_REVIEW_COMPLETED", actor=user, metadata=meta)
 
     return QAReview.objects.select_related(
         "organization",

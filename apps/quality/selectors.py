@@ -6,14 +6,16 @@ import uuid
 from typing import Any
 
 from django.core.exceptions import PermissionDenied
-from django.db.models import OuterRef, Prefetch, QuerySet, Subquery
+from django.db.models import QuerySet
 
 from apps.access_control.services import (
     organization_ids_with_permission,
     user_has_permission,
 )
 from apps.accounts.models import User
-from apps.checklists.models import ChecklistItem, ChecklistItemOption, ChecklistSection
+from apps.checklists.compat_queries import load_sections_with_items_and_options
+from apps.checklists.models import ChecklistSection
+from apps.core.persistence import latest_ids_by_parent
 from apps.quality.models import QAReview
 from apps.quality.services import (
     QA_REVIEW_CHECKLIST_SUBMISSION,
@@ -47,10 +49,19 @@ def list_qa_reviewable_submissions(actor: User | None) -> QuerySet[ChecklistSubm
     if not org_ids:
         return ChecklistSubmission.objects.none()
 
-    latest_number = (
-        ChecklistSubmission.objects.filter(checklist_record_id=OuterRef("checklist_record_id"))
-        .order_by("-submission_number")
-        .values("submission_number")[:1]
+    candidates = ChecklistSubmission.objects.filter(
+        checklist_record__organization_id__in=org_ids,
+        checklist_record__status=ChecklistRecordStatus.SUBMITTED,
+        checklist_record__checklist_task__status=ChecklistTaskStatus.PENDING,
+        supervisor_review__decision=SupervisorReviewDecision.APPROVED,
+        qa_review__isnull=True,
+    )
+    record_ids = list(candidates.values_list("checklist_record_id", flat=True).distinct())
+    latest_ids = latest_ids_by_parent(
+        model=ChecklistSubmission,
+        parent_field="checklist_record_id",
+        number_field="submission_number",
+        parent_ids=record_ids,
     )
 
     return (
@@ -65,10 +76,9 @@ def list_qa_reviewable_submissions(actor: User | None) -> QuerySet[ChecklistSubm
             "supervisor_review__reviewed_by",
         )
         .filter(
-            checklist_record__organization_id__in=org_ids,
+            pk__in=latest_ids,
             checklist_record__status=ChecklistRecordStatus.SUBMITTED,
             checklist_record__checklist_task__status=ChecklistTaskStatus.PENDING,
-            submission_number=Subquery(latest_number),
             supervisor_review__decision=SupervisorReviewDecision.APPROVED,
             qa_review__isnull=True,
         )
@@ -135,21 +145,7 @@ def get_qa_review(actor: User | None, review_id: uuid.UUID) -> QAReview | None:
 
 
 def _load_sections(version_id: uuid.UUID) -> list[ChecklistSection]:
-    return list(
-        ChecklistSection.objects.filter(version_id=version_id)
-        .prefetch_related(
-            Prefetch(
-                "items",
-                queryset=ChecklistItem.objects.prefetch_related(
-                    Prefetch(
-                        "options",
-                        queryset=ChecklistItemOption.objects.order_by("position"),
-                    )
-                ).order_by("position"),
-            )
-        )
-        .order_by("position")
-    )
+    return load_sections_with_items_and_options(version_id)
 
 
 def load_qa_submission_context(

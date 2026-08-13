@@ -8,6 +8,7 @@ from typing import Any
 
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import IntegrityError, transaction
+from django.utils import timezone
 
 from apps.access_control.services import Scope, require_permission
 from apps.accounts.models import User
@@ -15,6 +16,11 @@ from apps.checklists.models import (
     ChecklistTemplate,
     ChecklistVersion,
     ChecklistVersionStatus,
+)
+from apps.core.persistence import (
+    TransitionConflictError,
+    cas_status_transition,
+    lock_queryset,
 )
 from apps.organizations.models import Organization
 from apps.scheduling.generation import batch_occurrence_key
@@ -288,14 +294,11 @@ def cancel_checklist_task(*, actor: User | None, task_id: uuid.UUID) -> Checklis
     user = _require_authenticated_actor(actor)
 
     with transaction.atomic():
-        task = (
+        task = lock_queryset(
             ChecklistTask.objects.select_related(
                 "organization", "checklist_template", "checklist_version"
-            )
-            .select_for_update()
-            .filter(pk=task_id)
-            .first()
-        )
+            ).filter(pk=task_id)
+        ).first()
         if task is None:
             raise ValidationError({"task": "Checklist task not found."})
 
@@ -313,8 +316,22 @@ def cancel_checklist_task(*, actor: User | None, task_id: uuid.UUID) -> Checklis
                 {"status": f"Cannot cancel checklist task in status {task.status}."}
             )
 
-        task.status = ChecklistTaskStatus.CANCELLED
-        task.save(update_fields=["status", "updated_at"])
+        from_status = task.status
+        now = timezone.now()
+        try:
+            cas_status_transition(
+                ChecklistTask,
+                pk=task.pk,
+                from_status=from_status,
+                to_status=ChecklistTaskStatus.CANCELLED,
+                extra_updates={"updated_at": now},
+            )
+        except TransitionConflictError as exc:
+            fresh = ChecklistTask.objects.filter(pk=task_id).first()
+            if fresh is not None and fresh.status == ChecklistTaskStatus.CANCELLED:
+                return fresh
+            raise ValidationError({"status": "Checklist task was updated concurrently."}) from exc
+        task.refresh_from_db()
         record_event(
             event_type="CHECKLIST_TASK_CANCELLED",
             actor=user,

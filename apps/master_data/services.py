@@ -11,6 +11,7 @@ from django.db import IntegrityError, transaction
 
 from apps.access_control.services import Scope, require_permission
 from apps.accounts.models import User
+from apps.core.persistence import lock_queryset, locked_get
 from apps.master_data.historical_safety import refuse_hard_delete_fg_product
 from apps.master_data.models import FGProduct
 from apps.organizations.models import Organization
@@ -220,12 +221,9 @@ def update_fg_product(
     effective_to: Any = _UNSET,
 ) -> FGProduct:
     user = _require_authenticated_actor(actor)
-    product = (
-        FGProduct.objects.select_for_update(of=("self",))
-        .select_related("organization")
-        .filter(pk=product_id)
-        .first()
-    )
+    product = lock_queryset(
+        FGProduct.objects.select_related("organization").filter(pk=product_id)
+    ).first()
     if product is None:
         raise ValidationError({"product": "FG Product not found."})
 
@@ -282,7 +280,7 @@ def update_fg_product(
 @transaction.atomic
 def activate_fg_product(*, actor: User | None, product_id: uuid.UUID) -> FGProduct:
     user = _require_authenticated_actor(actor)
-    product = FGProduct.objects.select_for_update().filter(pk=product_id).first()
+    product = locked_get(FGProduct, pk=product_id)
     if product is None:
         raise ValidationError({"product": "FG Product not found."})
     require_permission(user, MANAGE_FG_PRODUCT, scope=product_authorization_scope(product))
@@ -301,7 +299,7 @@ def activate_fg_product(*, actor: User | None, product_id: uuid.UUID) -> FGProdu
 @transaction.atomic
 def deactivate_fg_product(*, actor: User | None, product_id: uuid.UUID) -> FGProduct:
     user = _require_authenticated_actor(actor)
-    product = FGProduct.objects.select_for_update().filter(pk=product_id).first()
+    product = locked_get(FGProduct, pk=product_id)
     if product is None:
         raise ValidationError({"product": "FG Product not found."})
     require_permission(user, MANAGE_FG_PRODUCT, scope=product_authorization_scope(product))

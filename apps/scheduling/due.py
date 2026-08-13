@@ -25,6 +25,7 @@ from django.utils import timezone
 
 from apps.access_control.services import Scope, require_permission
 from apps.accounts.models import User
+from apps.core.persistence import lock_queryset
 from apps.scheduling.models import ChecklistTask, ChecklistTaskStatus
 from apps.scheduling.services import MANAGE_CHECKLIST_TASK, _require_authenticated_actor
 from apps.security_audit.services import record_event
@@ -225,12 +226,9 @@ def set_checklist_task_due_window(
 ) -> ChecklistTask:
     """Configure due_from / due_at (due_to) / due_soon_minutes. Never invent SLAs."""
     user = _require_authenticated_actor(actor)
-    task = (
-        ChecklistTask.objects.select_for_update(of=("self",))
-        .select_related("organization", "schedule")
-        .filter(pk=task_id)
-        .first()
-    )
+    task = lock_queryset(
+        ChecklistTask.objects.select_related("organization", "schedule").filter(pk=task_id)
+    ).first()
     if task is None:
         raise ValidationError({"task": "Checklist task not found."})
     require_permission(

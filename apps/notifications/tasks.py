@@ -7,6 +7,7 @@ from typing import Any
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db import transaction
+from apps.core.persistence import atomic, lock_queryset
 from django.utils import timezone
 
 from apps.notifications.models import (
@@ -31,12 +32,11 @@ def deliver_notification_email(self: Any, delivery_attempt_id: str) -> dict[str,
 
     Already-DELIVERED attempts are no-ops. Failures update status and may retry.
     """
-    with transaction.atomic():
+    with atomic():
         attempt = (
-            NotificationDeliveryAttempt.objects.select_for_update()
-            .select_related("notification", "notification__recipient")
-            .filter(pk=delivery_attempt_id)
-            .first()
+            lock_queryset(
+            NotificationDeliveryAttempt.objects.select_related("notification", "notification__recipient").filter(pk=delivery_attempt_id)
+            ).first()
         )
         if attempt is None:
             return {"ok": False, "reason": "missing_attempt"}

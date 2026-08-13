@@ -11,6 +11,7 @@ from typing import Any
 
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import IntegrityError, transaction
+from apps.core.persistence import locked_get
 from django.utils import timezone
 
 from apps.access_control.services import (
@@ -296,7 +297,7 @@ def mark_attempt_dead_letter(
     reason: str,
 ) -> IntegrationAttempt:
     user = _require_authenticated_actor(actor)
-    attempt = IntegrationAttempt.objects.select_for_update().filter(pk=attempt_id).first()
+    attempt = locked_get(IntegrationAttempt, pk=attempt_id)
     if attempt is None:
         raise ValidationError({"attempt": "Integration attempt not found."})
     scope = Scope(organization_id=attempt.organization_id) if attempt.organization_id else Scope()

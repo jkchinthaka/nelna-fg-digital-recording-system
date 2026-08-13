@@ -39,6 +39,7 @@ from apps.batch_genealogy.selectors import (
     edges_to_node,
     get_node_by_key,
 )
+from apps.core.persistence import lock_queryset
 from apps.organizations.models import Organization
 from apps.security_audit.services import record_event
 
@@ -147,7 +148,7 @@ def upsert_genealogy_policy(
 ) -> GenealogyPolicy:
     user = _require_actor(actor)
     require_permission(user, MANAGE_POLICY, scope=_org_scope(organization.id))
-    policy, _ = GenealogyPolicy.objects.select_for_update().get_or_create(
+    policy, _ = lock_queryset(GenealogyPolicy.objects.all()).get_or_create(
         organization=organization,
         defaults={
             "mongo_projection_enabled": False,

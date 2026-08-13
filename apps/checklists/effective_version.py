@@ -25,7 +25,6 @@ from datetime import datetime
 from typing import Any
 
 from django.core.exceptions import PermissionDenied, ValidationError
-from django.db import transaction
 from django.db.models import Q, QuerySet
 from django.utils import timezone
 
@@ -36,6 +35,7 @@ from apps.checklists.models import (
     ChecklistVersion,
     ChecklistVersionStatus,
 )
+from apps.core.persistence import atomic_fn, lock_queryset
 from apps.security_audit.services import record_event
 
 MANAGE_CHECKLIST = "checklists.manage_checklist"
@@ -303,7 +303,7 @@ def _assert_no_published_overlap_excluding(
             )
 
 
-@transaction.atomic
+@atomic_fn
 def set_checklist_version_effectivity(
     *,
     actor: User | None,
@@ -320,12 +320,11 @@ def set_checklist_version_effectivity(
     new eligibility. Overlaps among PUBLISHED siblings are rejected.
     """
     user = _require_authenticated_actor(actor)
-    version = (
-        ChecklistVersion.objects.select_related("template", "template__organization")
-        .select_for_update(of=("self",))
-        .filter(pk=version_id)
-        .first()
-    )
+    version = lock_queryset(
+        ChecklistVersion.objects.select_related("template", "template__organization").filter(
+            pk=version_id
+        )
+    ).first()
     if version is None:
         raise ValidationError({"version": "Checklist version not found."})
     require_permission(

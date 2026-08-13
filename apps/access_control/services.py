@@ -14,6 +14,7 @@ from django.utils import timezone
 
 from apps.access_control.models import Role, ScopedRoleAssignment
 from apps.accounts.models import User
+from apps.core.persistence import prefetch_related_compat
 from apps.organizations.models import Department, Organization, Site
 
 
@@ -30,12 +31,12 @@ def normalize_role_code(value: str) -> str:
 
 def _active_assignments_qs(user: User) -> QuerySet[ScopedRoleAssignment]:
     now = timezone.now()
-    return (
+    return prefetch_related_compat(
         ScopedRoleAssignment.objects.filter(user=user, is_active=True, role__is_active=True)
         .filter(Q(valid_from__isnull=True) | Q(valid_from__lte=now))
         .filter(Q(valid_until__isnull=True) | Q(valid_until__gt=now))
-        .select_related("role", "organization", "site", "department")
-        .prefetch_related("role__permissions")
+        .select_related("role", "organization", "site", "department"),
+        "role__permissions",
     )
 
 

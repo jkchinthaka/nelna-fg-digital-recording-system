@@ -14,6 +14,7 @@ from uuid import UUID
 
 from django.db.models import Q
 
+from apps.core.persistence import prefetch_related_compat
 from apps.sampling.models import (
     SampleRequirement,
     SamplingEvaluationResult,
@@ -137,7 +138,9 @@ def _effective_versions(*, organization_id: UUID, as_of: date) -> list[SamplingP
         (Q(effective_from__isnull=True) | Q(effective_from__lte=as_of))
         & (Q(effective_to__isnull=True) | Q(effective_to__gte=as_of))
     )
-    return list(qs.select_related("plan").prefetch_related("rules__requirement"))
+    return list(
+        prefetch_related_compat(qs.select_related("plan"), "rules__requirement")
+    )
 
 
 def resolve_sampling_requirement(

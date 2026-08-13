@@ -9,6 +9,7 @@ from typing import Any
 from django.db.models import Prefetch, Q, QuerySet
 
 from apps.capa.models import CorrectiveAction
+from apps.core.persistence import prefetch_related_compat
 from apps.dispatch.models import DispatchQualityRecord
 from apps.evidence.models import EvidenceAttachment, EvidenceLinkedKind
 from apps.integrations.models import IntegrationAttempt
@@ -154,24 +155,20 @@ def lab_samples_for_batch(
 ) -> QuerySet[LabSample]:
     ref = normalize_batch_reference(batch_reference)
     # Flat Prefetch paths avoid nested queryset order_by/model mismatch.
-    return (
+    return prefetch_related_compat(
         LabSample.objects.filter(
             organization_id=organization_id,
             batch_reference__iexact=ref,
-        )
-        .select_related("product", "site")
-        .prefetch_related(
-            Prefetch(
-                "tests",
-                queryset=LabTest.objects.order_by("created_at"),
-            ),
-            Prefetch(
-                "tests__results",
-                queryset=LabResult.objects.order_by("entered_at"),
-            ),
-        )
-        .order_by("registered_at")
-    )
+        ).select_related("product", "site"),
+        Prefetch(
+            "tests",
+            queryset=LabTest.objects.order_by("created_at"),
+        ),
+        Prefetch(
+            "tests__results",
+            queryset=LabResult.objects.order_by("entered_at"),
+        ),
+    ).order_by("registered_at")
 
 
 def ncrs_for_batch(
@@ -215,14 +212,13 @@ def dispatch_for_batch(
     *, organization_id: uuid.UUID, batch_reference: str
 ) -> QuerySet[DispatchQualityRecord]:
     ref = normalize_batch_reference(batch_reference)
-    return (
+    return prefetch_related_compat(
         DispatchQualityRecord.objects.filter(
             organization_id=organization_id,
             batch_reference__iexact=ref,
-        )
-        .prefetch_related("quantity_lines")
-        .order_by("created_at")
-    )
+        ),
+        "quantity_lines",
+    ).order_by("created_at")
 
 
 def external_batch_events_for_batch(
@@ -297,15 +293,16 @@ def submissions_with_device_traces(
 ) -> QuerySet[ChecklistSubmission]:
     from apps.recording.models import ChecklistSubmissionResponse
 
-    return submissions_for_batch(
-        organization_id=organization_id, batch_reference=batch_reference
-    ).prefetch_related(
+    return prefetch_related_compat(
+        submissions_for_batch(
+            organization_id=organization_id, batch_reference=batch_reference
+        ),
         Prefetch(
             "responses",
             queryset=ChecklistSubmissionResponse.objects.select_related(
                 "equipment", "calibration_record"
             ),
-        )
+        ),
     )
 
 

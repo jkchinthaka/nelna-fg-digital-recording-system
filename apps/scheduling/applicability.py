@@ -29,6 +29,7 @@ from apps.checklists.models import (
     ChecklistVersion,
     ChecklistVersionStatus,
 )
+from apps.core.persistence import lock_queryset
 from apps.master_data.models import FGProduct
 from apps.organizations.models import Department, Organization, Shift, Site
 from apps.scheduling.models import (
@@ -533,14 +534,11 @@ def update_checklist_applicability_rule(
 ) -> ChecklistApplicabilityRule:
     """Update a rule definition. Does not rewrite historical ChecklistTask pins."""
     user = _require_authenticated_actor(actor)
-    rule = (
+    rule = lock_queryset(
         ChecklistApplicabilityRule.objects.select_related(
             "organization", "checklist_template", "checklist_version"
-        )
-        .select_for_update()
-        .filter(pk=rule_id)
-        .first()
-    )
+        ).filter(pk=rule_id)
+    ).first()
     if rule is None:
         raise ValidationError({"rule": "Checklist applicability rule not found."})
     require_permission(user, MANAGE_APPLICABILITY, scope=applicability_authorization_scope(rule))
@@ -600,14 +598,11 @@ def deactivate_checklist_applicability_rule(
 ) -> ChecklistApplicabilityRule:
     """Deactivate a rule. Does not rewrite historical ChecklistTask version pins."""
     user = _require_authenticated_actor(actor)
-    rule = (
+    rule = lock_queryset(
         ChecklistApplicabilityRule.objects.select_related(
             "organization", "checklist_template", "checklist_version"
-        )
-        .select_for_update()
-        .filter(pk=rule_id)
-        .first()
-    )
+        ).filter(pk=rule_id)
+    ).first()
     if rule is None:
         raise ValidationError({"rule": "Checklist applicability rule not found."})
     require_permission(user, MANAGE_APPLICABILITY, scope=applicability_authorization_scope(rule))

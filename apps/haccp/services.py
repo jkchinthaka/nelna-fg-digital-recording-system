@@ -13,6 +13,7 @@ from typing import Any
 
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import IntegrityError, transaction
+from apps.core.persistence import lock_queryset, locked_get
 from django.utils import timezone
 
 from apps.access_control.services import (
@@ -172,7 +173,7 @@ def create_draft_plan_version(
     effective_to: date | None = None,
 ) -> HaccpPlanVersion:
     user = _require_actor(actor)
-    plan = HaccpPlan.objects.select_for_update().filter(pk=plan_id).first()
+    plan = locked_get(HaccpPlan, pk=plan_id)
     if plan is None:
         raise ValidationError({"plan": "HACCP plan not found."})
     _require_haccp_permission(user, MANAGE, plan.organization_id)
@@ -533,10 +534,9 @@ def approve_plan_version(
     """Food-safety approval privilege — separate from manage / System Admin."""
     user = _require_actor(actor)
     version = (
-        HaccpPlanVersion.objects.select_for_update()
-        .select_related("plan")
-        .filter(pk=plan_version_id)
-        .first()
+        lock_queryset(
+        HaccpPlanVersion.objects.select_related("plan").filter(pk=plan_version_id)
+        ).first()
     )
     if version is None:
         raise ValidationError({"plan_version": "Plan version not found."})
@@ -592,10 +592,9 @@ def approve_plan_version(
 def retire_plan_version(*, actor: User | None, plan_version_id: uuid.UUID) -> HaccpPlanVersion:
     user = _require_actor(actor)
     version = (
-        HaccpPlanVersion.objects.select_for_update()
-        .select_related("plan")
-        .filter(pk=plan_version_id)
-        .first()
+        lock_queryset(
+        HaccpPlanVersion.objects.select_related("plan").filter(pk=plan_version_id)
+        ).first()
     )
     if version is None:
         raise ValidationError({"plan_version": "Plan version not found."})

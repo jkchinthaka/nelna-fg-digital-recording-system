@@ -7,7 +7,7 @@ from decimal import Decimal, InvalidOperation
 from typing import Any
 
 from django.core.exceptions import PermissionDenied, ValidationError
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError
 
 from apps.access_control.services import require_permission
 from apps.accounts.models import User
@@ -17,6 +17,14 @@ from apps.checklists.models import (
     ChecklistItemOption,
     ChecklistResponseType,
     ChecklistVersionStatus,
+)
+from apps.checklists.compat_queries import load_version_items_for_recording
+from apps.core.persistence import (
+    TransitionConflictError,
+    atomic,
+    create_immutable_unique,
+    lock_queryset,
+    require_conditional_update,
 )
 from apps.recording.models import (
     ChecklistRecord,
@@ -158,51 +166,21 @@ def start_checklist_recording(
     if existing is not None:
         return existing
 
-    try:
-        with transaction.atomic():
-            locked = (
-                ChecklistTask.objects.select_related(
-                    "organization",
-                    "checklist_template",
-                    "checklist_version",
-                )
-                .select_for_update()
-                .filter(pk=task.id)
-                .first()
+    with atomic():
+        locked = (
+            ChecklistTask.objects.select_related(
+                "organization",
+                "checklist_template",
+                "checklist_version",
             )
-            if locked is None:
-                raise ValidationError({"task": "Checklist task not found."})
-            _assert_task_recordable(locked)
+            .filter(pk=task.id)
+            .first()
+        )
+        if locked is None:
+            raise ValidationError({"task": "Checklist task not found."})
+        _assert_task_recordable(locked)
 
-            raced_existing = (
-                ChecklistRecord.objects.select_related(
-                    "organization",
-                    "checklist_task",
-                    "checklist_task__checklist_template",
-                    "checklist_task__checklist_version",
-                    "started_by",
-                )
-                .filter(checklist_task_id=locked.id)
-                .first()
-            )
-            if raced_existing is not None:
-                return raced_existing
-
-            record = ChecklistRecord(
-                organization_id=locked.organization_id,
-                checklist_task=locked,
-                status=ChecklistRecordStatus.DRAFT,
-                started_by=user,
-            )
-            record.full_clean()
-            record.save()
-            record_event(
-                event_type="CHECKLIST_RECORD_STARTED",
-                actor=user,
-                metadata=_record_metadata(record),
-            )
-    except IntegrityError:
-        raced = (
+        raced_existing = (
             ChecklistRecord.objects.select_related(
                 "organization",
                 "checklist_task",
@@ -210,12 +188,37 @@ def start_checklist_recording(
                 "checklist_task__checklist_version",
                 "started_by",
             )
-            .filter(checklist_task_id=task.id)
+            .filter(checklist_task_id=locked.id)
             .first()
         )
-        if raced is None:
-            raise
-        return raced
+        if raced_existing is not None:
+            return raced_existing
+
+        try:
+            record, created = create_immutable_unique(
+                model=ChecklistRecord,
+                create_kwargs={
+                    "organization_id": locked.organization_id,
+                    "checklist_task": locked,
+                    "status": ChecklistRecordStatus.DRAFT,
+                    "started_by": user,
+                },
+                unique_lookup={"checklist_task_id": locked.id},
+                decision_field="checklist_task_id",
+                decision_value=locked.id,
+            )
+        except TransitionConflictError as exc:
+            raced = ChecklistRecord.objects.filter(checklist_task_id=task.id).first()
+            if raced is not None:
+                return raced
+            raise ValidationError({"task": "Unable to start checklist recording."}) from exc
+
+        if created:
+            record_event(
+                event_type="CHECKLIST_RECORD_STARTED",
+                actor=user,
+                metadata=_record_metadata(record),
+            )
 
     return ChecklistRecord.objects.select_related(
         "organization",
@@ -354,12 +357,7 @@ def collect_submission_completeness(
     """
     version_id = record.checklist_task.checklist_version_id
     if items is None:
-        items = list(
-            ChecklistItem.objects.select_related("section", "parent_item")
-            .prefetch_related("options")
-            .filter(section__version_id=version_id)
-            .order_by("section__position", "position")
-        )
+        items = load_version_items_for_recording(version_id)
     if responses is None:
         responses = responses_by_key(
             list(
@@ -689,16 +687,17 @@ def save_checklist_draft_responses(
         next_draft_version,
     )
 
-    with transaction.atomic():
+    with atomic():
         record = (
-            ChecklistRecord.objects.select_related(
-                "organization",
-                "checklist_task",
-                "checklist_task__organization",
-                "checklist_task__checklist_template",
-                "checklist_task__checklist_version",
+            lock_queryset(
+                ChecklistRecord.objects.select_related(
+                    "organization",
+                    "checklist_task",
+                    "checklist_task__organization",
+                    "checklist_task__checklist_template",
+                    "checklist_task__checklist_version",
+                )
             )
-            .select_for_update()
             .filter(pk=record_id)
             .first()
         )
@@ -719,16 +718,10 @@ def save_checklist_draft_responses(
         )
 
         version_id = task.checklist_version_id
-        item_rows = list(
-            ChecklistItem.objects.select_related("section", "parent_item")
-            .prefetch_related("calculation_operand_links__source_item__section")
-            .filter(section__version_id=version_id)
-        )
+        item_rows = load_version_items_for_recording(version_id)
         items = {item.id: item for item in item_rows}
         existing = responses_by_key(
-            list(
-                ChecklistResponse.objects.select_for_update().filter(checklist_record_id=record.id)
-            )
+            list(lock_queryset(ChecklistResponse.objects.filter(checklist_record_id=record.id)))
         )
 
         # Server is authoritative for CALCULATED — ignore client-supplied values.
@@ -834,8 +827,29 @@ def save_checklist_draft_responses(
             actor=user,
             calibration_overrides=calibration_overrides or {},
         )
-        record.draft_version = next_draft_version(record.draft_version)
-        record.save(update_fields=["updated_at", "draft_version"])
+        expected_version = record.draft_version
+        record.draft_version = next_draft_version(expected_version)
+        try:
+            from django.utils import timezone as dj_timezone
+
+            require_conditional_update(
+                ChecklistRecord.objects.all(),
+                expected={"pk": record.pk, "draft_version": expected_version},
+                updates={
+                    "draft_version": record.draft_version,
+                    "updated_at": dj_timezone.now(),
+                },
+            )
+        except TransitionConflictError as exc:
+            from apps.recording.concurrency import DraftConcurrencyConflict
+
+            current = ChecklistRecord.objects.filter(pk=record.pk).values_list(
+                "draft_version", flat=True
+            ).first()
+            raise DraftConcurrencyConflict(
+                current_version=current if current is not None else expected_version,
+                expected_version=expected_draft_version,
+            ) from exc
         meta = _record_metadata(record, changed_item_count=changed)
         meta["draft_version"] = record.draft_version
         meta["save_mode"] = save_mode
@@ -934,17 +948,18 @@ def submit_checklist_record(
     user = _require_authenticated_actor(actor)
 
     try:
-        with transaction.atomic():
+        with atomic():
             record = (
-                ChecklistRecord.objects.select_related(
-                    "organization",
-                    "checklist_task",
-                    "checklist_task__organization",
-                    "checklist_task__checklist_template",
-                    "checklist_task__checklist_version",
-                    "started_by",
+                lock_queryset(
+                    ChecklistRecord.objects.select_related(
+                        "organization",
+                        "checklist_task",
+                        "checklist_task__organization",
+                        "checklist_task__checklist_template",
+                        "checklist_task__checklist_version",
+                        "started_by",
+                    )
                 )
-                .select_for_update()
                 .filter(pk=record_id)
                 .first()
             )
@@ -979,20 +994,13 @@ def submit_checklist_record(
 
             _assert_record_is_draft(record)
             version_id = task.checklist_version_id
-            item_rows = list(
-                ChecklistItem.objects.select_related("section", "parent_item")
-                .prefetch_related(
-                    "options",
-                    "calculation_operand_links__source_item__section",
-                )
-                .filter(section__version_id=version_id)
-                .order_by("section__position", "position")
-            )
+            item_rows = load_version_items_for_recording(version_id)
             draft_responses = responses_by_key(
                 list(
-                    ChecklistResponse.objects.select_for_update(of=("self",))
-                    .filter(checklist_record_id=record.id)
-                    .select_related("selected_option")
+                    lock_queryset(
+                        ChecklistResponse.objects.filter(checklist_record_id=record.id),
+                        of=("self",),
+                    ).select_related("selected_option")
                 )
             )
             from apps.recording.calculation_runtime import apply_calculations_to_draft

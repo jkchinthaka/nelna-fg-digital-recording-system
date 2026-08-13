@@ -12,6 +12,7 @@ from django.utils import timezone
 
 from apps.access_control.services import Scope, user_has_permission
 from apps.accounts.models import User
+from apps.core.persistence import lock_queryset
 from apps.document_control.models import (
     IMMUTABLE_VERSION_STATUSES,
     VERSION_TRANSITIONS,
@@ -354,13 +355,11 @@ def make_version_effective(
     _transition(version, DocumentVersionStatus.EFFECTIVE)
     now = timezone.now()
     start = effective_from or now
-    previous = (
-        QualityDocumentVersion.objects.select_for_update()
-        .filter(
+    previous = lock_queryset(
+        QualityDocumentVersion.objects.filter(
             document=version.document,
             status=DocumentVersionStatus.EFFECTIVE,
-        )
-        .exclude(pk=version.pk)
+        ).exclude(pk=version.pk)
     )
     for prior in previous:
         prior.status = DocumentVersionStatus.RETIRED

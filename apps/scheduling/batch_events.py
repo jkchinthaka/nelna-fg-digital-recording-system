@@ -24,6 +24,7 @@ from apps.checklists.effective_version import (
     EffectiveVersionOutcome,
     resolve_effective_checklist_version,
 )
+from apps.core.persistence import lock_queryset
 from apps.scheduling.applicability import resolve_checklist_applicability
 from apps.scheduling.models import (
     ApplicabilityMatchOutcome,
@@ -333,11 +334,12 @@ def process_external_batch_event(
     receipt, created = _get_or_create_receipt(payload=payload)
 
     with transaction.atomic():
-        locked = (
-            ExternalBatchEvent.objects.select_for_update(of=("self",))
-            .select_related("checklist_task", "organization")
-            .get(pk=receipt.id)
-        )
+        locked = lock_queryset(
+            ExternalBatchEvent.objects.select_related("checklist_task", "organization").filter(
+                pk=receipt.id
+            ),
+            of=("self",),
+        ).get()
 
         if locked.status == ExternalBatchEventStatus.COMPLETED and locked.checklist_task_id:
             record_event(

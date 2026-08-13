@@ -8,3 +8,10 @@ class CoreConfig(AppConfig):
     name = "apps.core"
     label = "core"
     verbose_name = "Core Foundation"
+
+    def ready(self) -> None:
+        from apps.core.db_namespace import apply_fg_collection_namespace
+        from apps.core.persistence.queries import apply_mongo_queryset_compat
+
+        apply_fg_collection_namespace()
+        apply_mongo_queryset_compat()

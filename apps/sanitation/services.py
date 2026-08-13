@@ -12,6 +12,7 @@ from django.utils import timezone
 from apps.access_control.services import Scope, require_permission
 from apps.accounts.models import User
 from apps.checklists.models import ChecklistTemplate
+from apps.core.persistence import lock_queryset, locked_get
 from apps.instruments.models import Equipment
 from apps.organizations.models import Department, Organization, Site
 from apps.organizations.services import normalize_code
@@ -138,7 +139,7 @@ def create_draft_program_version(
     verification_mode: str = SanitationVerificationMode.SELF_CHECK,
 ) -> SanitationProgramVersion:
     user = _require_actor(actor)
-    program = SanitationProgram.objects.select_for_update().filter(pk=program_id).first()
+    program = locked_get(SanitationProgram, pk=program_id)
     if program is None:
         raise ValidationError({"program": "Sanitation program not found."})
     require_permission(user, MANAGE, scope=_org_scope(program.organization_id))
@@ -192,12 +193,9 @@ def add_sanitation_scope(
     notes: str = "",
 ) -> SanitationScope:
     user = _require_actor(actor)
-    version = (
-        SanitationProgramVersion.objects.select_related("program")
-        .select_for_update()
-        .filter(pk=program_version_id)
-        .first()
-    )
+    version = lock_queryset(
+        SanitationProgramVersion.objects.select_related("program").filter(pk=program_version_id)
+    ).first()
     if version is None:
         raise ValidationError({"program_version": "Version not found."})
     require_permission(user, MANAGE, scope=_org_scope(version.program.organization_id))
@@ -235,12 +233,9 @@ def add_schedule_link(
     notes: str = "",
 ) -> SanitationScheduleLink:
     user = _require_actor(actor)
-    version = (
-        SanitationProgramVersion.objects.select_related("program")
-        .select_for_update()
-        .filter(pk=program_version_id)
-        .first()
-    )
+    version = lock_queryset(
+        SanitationProgramVersion.objects.select_related("program").filter(pk=program_version_id)
+    ).first()
     if version is None:
         raise ValidationError({"program_version": "Version not found."})
     require_permission(user, MANAGE, scope=_org_scope(version.program.organization_id))
@@ -299,12 +294,9 @@ def link_chemical_to_version(
     notes: str = "",
 ) -> SanitationChemicalReference:
     user = _require_actor(actor)
-    version = (
-        SanitationProgramVersion.objects.select_related("program")
-        .select_for_update()
-        .filter(pk=program_version_id)
-        .first()
-    )
+    version = lock_queryset(
+        SanitationProgramVersion.objects.select_related("program").filter(pk=program_version_id)
+    ).first()
     if version is None:
         raise ValidationError({"program_version": "Version not found."})
     require_permission(user, MANAGE, scope=_org_scope(version.program.organization_id))
@@ -332,12 +324,9 @@ def approve_program_version(
     program_version_id: uuid.UUID,
 ) -> SanitationProgramVersion:
     user = _require_actor(actor)
-    version = (
-        SanitationProgramVersion.objects.select_related("program")
-        .select_for_update()
-        .filter(pk=program_version_id)
-        .first()
-    )
+    version = lock_queryset(
+        SanitationProgramVersion.objects.select_related("program").filter(pk=program_version_id)
+    ).first()
     if version is None:
         raise ValidationError({"program_version": "Version not found."})
     require_permission(user, PUBLISH, scope=_org_scope(version.program.organization_id))
@@ -373,12 +362,9 @@ def retire_program_version(
     program_version_id: uuid.UUID,
 ) -> SanitationProgramVersion:
     user = _require_actor(actor)
-    version = (
-        SanitationProgramVersion.objects.select_related("program")
-        .select_for_update()
-        .filter(pk=program_version_id)
-        .first()
-    )
+    version = lock_queryset(
+        SanitationProgramVersion.objects.select_related("program").filter(pk=program_version_id)
+    ).first()
     if version is None:
         raise ValidationError({"program_version": "Version not found."})
     require_permission(user, PUBLISH, scope=_org_scope(version.program.organization_id))
@@ -409,13 +395,11 @@ def bind_checklist_template_to_sanitation_program(
 ) -> ChecklistTemplateSanitationBinding:
     """Bind the program's checklist template to an APPROVED version with frozen context."""
     user = _require_actor(actor)
-    version = (
-        SanitationProgramVersion.objects.select_related("program", "program__checklist_template")
-        .prefetch_related("scopes", "schedule_links", "chemical_links__chemical")
-        .select_for_update()
-        .filter(pk=program_version_id)
-        .first()
-    )
+    version = lock_queryset(
+        SanitationProgramVersion.objects.select_related(
+            "program", "program__checklist_template"
+        ).filter(pk=program_version_id)
+    ).first()
     if version is None:
         raise ValidationError({"program_version": "Version not found."})
     require_permission(user, MANAGE, scope=_org_scope(version.program.organization_id))

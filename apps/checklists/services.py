@@ -7,7 +7,7 @@ from decimal import Decimal, InvalidOperation
 from typing import Any
 
 from django.core.exceptions import PermissionDenied, ValidationError
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError
 from django.db.models import Max
 from django.utils import timezone
 
@@ -41,6 +41,15 @@ from apps.checklists.models import (
     ChecklistVersion,
     ChecklistVersionStatus,
     validate_item_response_definition,
+)
+from apps.core.persistence import (
+    TransitionConflictError,
+    atomic,
+    atomic_fn,
+    cas_status_transition,
+    lock_queryset,
+    locked_get,
+    prefetch_related_compat,
 )
 from apps.master_data.models import FGProduct
 from apps.organizations.models import Organization
@@ -190,15 +199,26 @@ def _require_draft(version: ChecklistVersion) -> None:
                 )
             }
         )
+    matched = ChecklistVersion.objects.filter(
+        pk=version.pk, status=ChecklistVersionStatus.DRAFT
+    ).update(updated_at=timezone.now())
+    if matched != 1:
+        raise ValidationError(
+            {
+                "version": (
+                    "Published or retired checklist versions cannot be modified. "
+                    "Create a new draft version instead."
+                )
+            }
+        )
 
 
 def _lock_version(version_id: uuid.UUID) -> ChecklistVersion:
-    version = (
-        ChecklistVersion.objects.select_for_update(of=("self",))
-        .select_related("template", "template__organization", "template__product")
-        .filter(pk=version_id)
-        .first()
-    )
+    version = lock_queryset(
+        ChecklistVersion.objects.select_related(
+            "template", "template__organization", "template__product"
+        ).filter(pk=version_id)
+    ).first()
     if version is None:
         raise ValidationError({"version": "Checklist version not found."})
     return version
@@ -378,7 +398,7 @@ def _normalize_item_kind_fields(
     )
 
 
-@transaction.atomic
+@atomic_fn
 def set_checklist_item_rule(
     *,
     actor: User | None,
@@ -443,7 +463,7 @@ def set_checklist_item_rule(
     return rule
 
 
-@transaction.atomic
+@atomic_fn
 def clear_checklist_item_rule(
     *,
     actor: User | None,
@@ -462,7 +482,7 @@ def clear_checklist_item_rule(
     ChecklistItemRule.objects.filter(target_item_id=item.id, rule_kind=kind).delete()
 
 
-@transaction.atomic
+@atomic_fn
 def set_checklist_item_evaluation_rule(
     *,
     actor: User | None,
@@ -544,7 +564,7 @@ def set_checklist_item_evaluation_rule(
     return rule
 
 
-@transaction.atomic
+@atomic_fn
 def clear_checklist_item_evaluation_rule(
     *,
     actor: User | None,
@@ -571,7 +591,7 @@ def clear_checklist_item_evaluation_rule(
         )
 
 
-@transaction.atomic
+@atomic_fn
 def set_checklist_calculation_operands(
     *,
     actor: User | None,
@@ -591,9 +611,12 @@ def set_checklist_calculation_operands(
     version_id = item.section.version_id
     version_items = {
         row.id: row
-        for row in ChecklistItem.objects.select_related("section", "parent_item")
-        .prefetch_related("calculation_operand_links")
-        .filter(section__version_id=version_id)
+        for row in prefetch_related_compat(
+            ChecklistItem.objects.select_related("section", "parent_item").filter(
+                section__version_id=version_id
+            ),
+            "calculation_operand_links",
+        )
     }
     operands: list[ChecklistItem] = []
     for source_id in source_item_ids:
@@ -612,11 +635,10 @@ def set_checklist_calculation_operands(
             source_item=source,
             position=position,
         )
-    item = (
-        ChecklistItem.objects.select_related("section", "parent_item")
-        .prefetch_related("calculation_operand_links__source_item__section")
-        .get(pk=item.id)
-    )
+    item = prefetch_related_compat(
+        ChecklistItem.objects.select_related("section", "parent_item"),
+        "calculation_operand_links__source_item__section",
+    ).get(pk=item.id)
     version_items[item.id] = item
     validate_calculation_definition(
         calculated=item,
@@ -645,9 +667,7 @@ def _swap_positions(
     if direction not in {"up", "down"}:
         raise ValidationError({"direction": "Direction must be up or down."})
     siblings: list[ChecklistSection | ChecklistItem | ChecklistItemOption] = list(
-        queryset_model.objects.select_for_update()
-        .filter(**parent_filter)
-        .order_by("position", "pk")
+        lock_queryset(queryset_model.objects.filter(**parent_filter)).order_by("position", "pk")
     )
     ids = [row.pk for row in siblings]
     try:
@@ -669,7 +689,7 @@ def _swap_positions(
     other.save(update_fields=["position"])
 
 
-@transaction.atomic
+@atomic_fn
 def create_checklist_template(
     *,
     actor: User | None,
@@ -710,7 +730,7 @@ def create_checklist_template(
     return template
 
 
-@transaction.atomic
+@atomic_fn
 def update_checklist_template(
     *,
     actor: User | None,
@@ -721,12 +741,9 @@ def update_checklist_template(
     product: Any = _UNSET,
 ) -> ChecklistTemplate:
     user = _require_authenticated_actor(actor)
-    template = (
-        ChecklistTemplate.objects.select_for_update(of=("self",))
-        .select_related("organization", "product")
-        .filter(pk=template_id)
-        .first()
-    )
+    template = lock_queryset(
+        ChecklistTemplate.objects.select_related("organization", "product").filter(pk=template_id)
+    ).first()
     if template is None:
         raise ValidationError({"template": "Checklist template not found."})
     require_permission(user, MANAGE_CHECKLIST, scope=template_authorization_scope(template))
@@ -775,10 +792,10 @@ def update_checklist_template(
     return template
 
 
-@transaction.atomic
+@atomic_fn
 def activate_checklist_template(*, actor: User | None, template_id: uuid.UUID) -> ChecklistTemplate:
     user = _require_authenticated_actor(actor)
-    template = ChecklistTemplate.objects.select_for_update().filter(pk=template_id).first()
+    template = locked_get(ChecklistTemplate, pk=template_id)
     if template is None:
         raise ValidationError({"template": "Checklist template not found."})
     require_permission(user, MANAGE_CHECKLIST, scope=template_authorization_scope(template))
@@ -794,12 +811,12 @@ def activate_checklist_template(*, actor: User | None, template_id: uuid.UUID) -
     return template
 
 
-@transaction.atomic
+@atomic_fn
 def deactivate_checklist_template(
     *, actor: User | None, template_id: uuid.UUID
 ) -> ChecklistTemplate:
     user = _require_authenticated_actor(actor)
-    template = ChecklistTemplate.objects.select_for_update().filter(pk=template_id).first()
+    template = locked_get(ChecklistTemplate, pk=template_id)
     if template is None:
         raise ValidationError({"template": "Checklist template not found."})
     require_permission(user, MANAGE_CHECKLIST, scope=template_authorization_scope(template))
@@ -816,7 +833,7 @@ def deactivate_checklist_template(
 
 
 def _allocate_next_version_number(template: ChecklistTemplate) -> int:
-    locked = ChecklistTemplate.objects.select_for_update().filter(pk=template.pk).first()
+    locked = locked_get(ChecklistTemplate, pk=template.pk)
     if locked is None:
         raise ValidationError({"template": "Checklist template not found."})
     current = locked.versions.aggregate(m=Max("version_number"))["m"]
@@ -895,28 +912,26 @@ def _next_option_position(item: ChecklistItem) -> int:
 
 
 def _lock_item(item_id: uuid.UUID) -> ChecklistItem:
-    item = (
-        ChecklistItem.objects.select_for_update(of=("self",))
-        .select_related(
+    item = lock_queryset(
+        ChecklistItem.objects.select_related(
             "section",
             "section__version",
             "section__version__template",
             "parent_item",
-        )
-        .filter(pk=item_id)
-        .first()
-    )
+        ).filter(pk=item_id)
+    ).first()
     if item is None:
         raise ValidationError({"item": "Checklist item not found."})
     return item
 
 
 def _clone_structure(*, source: ChecklistVersion, target: ChecklistVersion) -> None:
-    for section in source.sections.prefetch_related(
+    for section in prefetch_related_compat(
+        source.sections.order_by("position", "pk"),
         "items__options",
         "items__calculation_operand_links",
         "items__condition_rules",
-    ).order_by("position", "pk"):
+    ):
         new_section = ChecklistSection.objects.create(
             version=target,
             title=section.title,
@@ -990,14 +1005,13 @@ def _clone_structure(*, source: ChecklistVersion, target: ChecklistVersion) -> N
 
     # Remap conditional rules across the full cloned version (codes + section position).
     full_source_items = list(
-        ChecklistItem.objects.filter(section__version=source)
-        .prefetch_related(
+        prefetch_related_compat(
+            ChecklistItem.objects.filter(section__version=source).select_related("section"),
             "condition_rules__expected_option",
             "condition_rules__operand_item__section",
             "evaluation_rule__expected_option",
             "options",
         )
-        .select_related("section")
     )
     full_target_by_code_section: dict[tuple[str, int], ChecklistItem] = {}
     for item in ChecklistItem.objects.filter(section__version=target).select_related("section"):
@@ -1071,7 +1085,7 @@ def _clone_structure(*, source: ChecklistVersion, target: ChecklistVersion) -> N
                 )
 
 
-@transaction.atomic
+@atomic_fn
 def create_checklist_version(
     *,
     actor: User | None,
@@ -1085,12 +1099,9 @@ def create_checklist_version(
     (never share mutable structure across versions).
     """
     user = _require_authenticated_actor(actor)
-    template = (
-        ChecklistTemplate.objects.select_for_update(of=("self",))
-        .select_related("organization")
-        .filter(pk=template_id)
-        .first()
-    )
+    template = lock_queryset(
+        ChecklistTemplate.objects.select_related("organization").filter(pk=template_id)
+    ).first()
     if template is None:
         raise ValidationError({"template": "Checklist template not found."})
     require_permission(user, MANAGE_CHECKLIST, scope=template_authorization_scope(template))
@@ -1107,9 +1118,10 @@ def create_checklist_version(
 
     version: ChecklistVersion | None = None
     last_error: Exception | None = None
-    # Template row lock serializes allocation; unique constraint + savepoint retry
+    # Template row lock serializes allocation; unique constraint retry
     # covers residual races if another writer sneaks between max() and insert.
-    for _attempt in range(2):
+    # No nested atomic() — already inside atomic_fn, Mongo has no savepoints.
+    for _attempt in range(8):
         version_number = _allocate_next_version_number(template)
         candidate = ChecklistVersion(
             template=template,
@@ -1117,9 +1129,8 @@ def create_checklist_version(
             status=ChecklistVersionStatus.DRAFT,
         )
         try:
-            with transaction.atomic():
-                candidate.full_clean()
-                candidate.save()
+            candidate.full_clean()
+            candidate.save()
             version = candidate
             break
         except IntegrityError as exc:
@@ -1156,7 +1167,7 @@ def create_checklist_version(
     return version
 
 
-@transaction.atomic
+@atomic_fn
 def add_checklist_section(
     *,
     actor: User | None,
@@ -1185,7 +1196,7 @@ def add_checklist_section(
     return section
 
 
-@transaction.atomic
+@atomic_fn
 def update_checklist_section(
     *,
     actor: User | None,
@@ -1194,12 +1205,11 @@ def update_checklist_section(
     description: Any = _UNSET,
 ) -> ChecklistSection:
     user = _require_authenticated_actor(actor)
-    section = (
-        ChecklistSection.objects.select_for_update(of=("self",))
-        .select_related("version", "version__template")
-        .filter(pk=section_id)
-        .first()
-    )
+    section = lock_queryset(
+        ChecklistSection.objects.select_related("version", "version__template").filter(
+            pk=section_id
+        )
+    ).first()
     if section is None:
         raise ValidationError({"section": "Checklist section not found."})
     require_permission(user, MANAGE_CHECKLIST, scope=version_authorization_scope(section.version))
@@ -1219,15 +1229,14 @@ def update_checklist_section(
     return section
 
 
-@transaction.atomic
+@atomic_fn
 def remove_checklist_section(*, actor: User | None, section_id: uuid.UUID) -> None:
     user = _require_authenticated_actor(actor)
-    section = (
-        ChecklistSection.objects.select_for_update(of=("self",))
-        .select_related("version", "version__template")
-        .filter(pk=section_id)
-        .first()
-    )
+    section = lock_queryset(
+        ChecklistSection.objects.select_related("version", "version__template").filter(
+            pk=section_id
+        )
+    ).first()
     if section is None:
         raise ValidationError({"section": "Checklist section not found."})
     require_permission(user, MANAGE_CHECKLIST, scope=version_authorization_scope(section.version))
@@ -1244,7 +1253,7 @@ def remove_checklist_section(*, actor: User | None, section_id: uuid.UUID) -> No
             sibling.save(update_fields=["position"])
 
 
-@transaction.atomic
+@atomic_fn
 def move_checklist_section(
     *,
     actor: User | None,
@@ -1252,12 +1261,11 @@ def move_checklist_section(
     direction: str,
 ) -> ChecklistSection:
     user = _require_authenticated_actor(actor)
-    section = (
-        ChecklistSection.objects.select_for_update(of=("self",))
-        .select_related("version", "version__template")
-        .filter(pk=section_id)
-        .first()
-    )
+    section = lock_queryset(
+        ChecklistSection.objects.select_related("version", "version__template").filter(
+            pk=section_id
+        )
+    ).first()
     if section is None:
         raise ValidationError({"section": "Checklist section not found."})
     require_permission(user, MANAGE_CHECKLIST, scope=version_authorization_scope(section.version))
@@ -1272,7 +1280,7 @@ def move_checklist_section(
     return section
 
 
-@transaction.atomic
+@atomic_fn
 def add_checklist_item(
     *,
     actor: User | None,
@@ -1302,12 +1310,11 @@ def add_checklist_item(
     required_equipment_type: str = "",
 ) -> ChecklistItem:
     user = _require_authenticated_actor(actor)
-    section = (
-        ChecklistSection.objects.select_for_update(of=("self",))
-        .select_related("version", "version__template")
-        .filter(pk=section_id)
-        .first()
-    )
+    section = lock_queryset(
+        ChecklistSection.objects.select_related("version", "version__template").filter(
+            pk=section_id
+        )
+    ).first()
     if section is None:
         raise ValidationError({"section": "Checklist section not found."})
     require_permission(user, MANAGE_CHECKLIST, scope=version_authorization_scope(section.version))
@@ -1321,11 +1328,9 @@ def add_checklist_item(
 
     parent_item: ChecklistItem | None = None
     if parent_item_id is not None:
-        parent_item = (
-            ChecklistItem.objects.select_for_update(of=("self",))
-            .filter(pk=parent_item_id, section_id=section.id)
-            .first()
-        )
+        parent_item = lock_queryset(
+            ChecklistItem.objects.filter(pk=parent_item_id, section_id=section.id)
+        ).first()
         if parent_item is None:
             raise ValidationError({"parent_item": "Parent item not found in this section."})
 
@@ -1411,7 +1416,7 @@ def add_checklist_item(
     return item
 
 
-@transaction.atomic
+@atomic_fn
 def update_checklist_item(
     *,
     actor: User | None,
@@ -1645,7 +1650,7 @@ def update_checklist_item(
     return item
 
 
-@transaction.atomic
+@atomic_fn
 def remove_checklist_item(*, actor: User | None, item_id: uuid.UUID) -> None:
     user = _require_authenticated_actor(actor)
     item = _lock_item(item_id)
@@ -1661,7 +1666,7 @@ def remove_checklist_item(*, actor: User | None, item_id: uuid.UUID) -> None:
             sibling.save(update_fields=["position"])
 
 
-@transaction.atomic
+@atomic_fn
 def move_checklist_item(
     *,
     actor: User | None,
@@ -1687,7 +1692,7 @@ def move_checklist_item(
     return item
 
 
-@transaction.atomic
+@atomic_fn
 def add_checklist_item_option(
     *,
     actor: User | None,
@@ -1728,7 +1733,7 @@ def add_checklist_item_option(
     return option
 
 
-@transaction.atomic
+@atomic_fn
 def update_checklist_item_option(
     *,
     actor: User | None,
@@ -1737,17 +1742,14 @@ def update_checklist_item_option(
     label: str | None = None,
 ) -> ChecklistItemOption:
     user = _require_authenticated_actor(actor)
-    option = (
-        ChecklistItemOption.objects.select_for_update(of=("self",))
-        .select_related(
+    option = lock_queryset(
+        ChecklistItemOption.objects.select_related(
             "item",
             "item__section",
             "item__section__version",
             "item__section__version__template",
-        )
-        .filter(pk=option_id)
-        .first()
-    )
+        ).filter(pk=option_id)
+    ).first()
     if option is None:
         raise ValidationError({"option": "Checklist item option not found."})
     require_permission(
@@ -1779,20 +1781,17 @@ def update_checklist_item_option(
     return option
 
 
-@transaction.atomic
+@atomic_fn
 def remove_checklist_item_option(*, actor: User | None, option_id: uuid.UUID) -> None:
     user = _require_authenticated_actor(actor)
-    option = (
-        ChecklistItemOption.objects.select_for_update(of=("self",))
-        .select_related(
+    option = lock_queryset(
+        ChecklistItemOption.objects.select_related(
             "item",
             "item__section",
             "item__section__version",
             "item__section__version__template",
-        )
-        .filter(pk=option_id)
-        .first()
-    )
+        ).filter(pk=option_id)
+    ).first()
     if option is None:
         raise ValidationError({"option": "Checklist item option not found."})
     require_permission(
@@ -1809,7 +1808,7 @@ def remove_checklist_item_option(*, actor: User | None, option_id: uuid.UUID) ->
             sibling.save(update_fields=["position"])
 
 
-@transaction.atomic
+@atomic_fn
 def move_checklist_item_option(
     *,
     actor: User | None,
@@ -1817,17 +1816,14 @@ def move_checklist_item_option(
     direction: str,
 ) -> ChecklistItemOption:
     user = _require_authenticated_actor(actor)
-    option = (
-        ChecklistItemOption.objects.select_for_update(of=("self",))
-        .select_related(
+    option = lock_queryset(
+        ChecklistItemOption.objects.select_related(
             "item",
             "item__section",
             "item__section__version",
             "item__section__version__template",
-        )
-        .filter(pk=option_id)
-        .first()
-    )
+        ).filter(pk=option_id)
+    ).first()
     if option is None:
         raise ValidationError({"option": "Checklist item option not found."})
     require_permission(
@@ -1855,7 +1851,8 @@ def _validate_publish_structure(version: ChecklistVersion) -> None:
     remain EVIDENCE REQUIRED and are not enforced here.
     """
     sections = list(
-        version.sections.prefetch_related(
+        prefetch_related_compat(
+            version.sections.order_by("position"),
             "items__options",
             "items__child_items",
             "items__calculation_operand_links__source_item__section",
@@ -1864,7 +1861,7 @@ def _validate_publish_structure(version: ChecklistVersion) -> None:
             "items__condition_rules__operand_item__parent_item",
             "items__condition_rules__expected_option",
             "items__evaluation_rule__expected_option",
-        ).order_by("position")
+        )
     )
     if not sections:
         raise ValidationError({"version": "A checklist version must have at least one section."})
@@ -2060,7 +2057,7 @@ def _validate_publish_structure(version: ChecklistVersion) -> None:
             ) from exc
 
 
-@transaction.atomic
+@atomic_fn
 def publish_checklist_version(*, actor: User | None, version_id: uuid.UUID) -> ChecklistVersion:
     user = _require_authenticated_actor(actor)
     version = _lock_version(version_id)
@@ -2073,9 +2070,20 @@ def publish_checklist_version(*, actor: User | None, version_id: uuid.UUID) -> C
     # Phase 07D: overlapping PUBLISHED windows are blocked at selection / effectivity
     # update — not at publish — so 07A explicit multi-publish + UUID bind remains valid.
 
-    version.status = ChecklistVersionStatus.PUBLISHED
-    version.published_at = timezone.now()
-    version.save(update_fields=["status", "published_at", "updated_at"])
+    now = timezone.now()
+    try:
+        cas_status_transition(
+            ChecklistVersion,
+            pk=version.pk,
+            from_status=version.status,
+            to_status=ChecklistVersionStatus.PUBLISHED,
+            extra_updates={"published_at": now, "updated_at": now},
+        )
+    except TransitionConflictError as exc:
+        raise ValidationError(
+            {"version": "Checklist version was updated concurrently and cannot be published."}
+        ) from exc
+    version.refresh_from_db()
     record_event(
         event_type="CHECKLIST_VERSION_PUBLISHED",
         actor=user,
@@ -2084,7 +2092,7 @@ def publish_checklist_version(*, actor: User | None, version_id: uuid.UUID) -> C
     return version
 
 
-@transaction.atomic
+@atomic_fn
 def retire_checklist_version(*, actor: User | None, version_id: uuid.UUID) -> ChecklistVersion:
     user = _require_authenticated_actor(actor)
     version = _lock_version(version_id)
@@ -2093,8 +2101,19 @@ def retire_checklist_version(*, actor: User | None, version_id: uuid.UUID) -> Ch
         current=version.status,
         target=ChecklistVersionStatus.RETIRED,
     )
-    version.status = ChecklistVersionStatus.RETIRED
-    version.save(update_fields=["status", "updated_at"])
+    try:
+        cas_status_transition(
+            ChecklistVersion,
+            pk=version.pk,
+            from_status=version.status,
+            to_status=ChecklistVersionStatus.RETIRED,
+            extra_updates={"updated_at": timezone.now()},
+        )
+    except TransitionConflictError as exc:
+        raise ValidationError(
+            {"version": "Checklist version was updated concurrently and cannot be retired."}
+        ) from exc
+    version.refresh_from_db()
     record_event(
         event_type="CHECKLIST_VERSION_RETIRED",
         actor=user,

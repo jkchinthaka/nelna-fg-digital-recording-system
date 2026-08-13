@@ -10,12 +10,18 @@ import uuid
 from typing import Any
 
 from django.core.exceptions import PermissionDenied, ValidationError
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError
 from django.utils import timezone
 
 from apps.access_control.services import Scope, user_has_permission
 from apps.accounts.models import User
 from apps.capa.services import create_corrective_action
+from apps.core.persistence import (
+    TransitionConflictError,
+    atomic_fn,
+    lock_queryset,
+    require_conditional_update,
+)
 from apps.rca.models import (
     TERMINAL_RCA_STATUSES,
     RcaCapaLink,
@@ -88,13 +94,10 @@ def _transition(rca: RootCauseAnalysis, target: str) -> None:
 
 
 def _locked_rca(rca_id: uuid.UUID) -> RootCauseAnalysis:
-    """Lock RCA row before status/mutability checks (CAPA/reviews pattern)."""
-    rca = (
-        RootCauseAnalysis.objects.select_for_update()
-        .select_related("organization")
-        .filter(pk=rca_id)
-        .first()
-    )
+    """Load RCA for mutation. PostgreSQL uses row lock; Mongo relies on CAS/transactions."""
+    rca = lock_queryset(
+        RootCauseAnalysis.objects.select_related("organization")
+    ).filter(pk=rca_id).first()
     if rca is None:
         raise ValidationError({"rca": "RCA not found."})
     return rca
@@ -106,16 +109,27 @@ def _locked_cause(cause_id: uuid.UUID) -> RcaCause:
     if cause is None:
         raise ValidationError({"cause": "Cause not found."})
     rca = _locked_rca(cause.rca_id)
-    locked = (
-        RcaCause.objects.select_for_update()
-        .select_related("rca", "rca__organization")
-        .filter(pk=cause_id, rca_id=rca.id)
-        .first()
-    )
+    locked = lock_queryset(
+        RcaCause.objects.select_related("rca", "rca__organization")
+    ).filter(pk=cause_id, rca_id=rca.id).first()
     if locked is None:
         raise ValidationError({"cause": "Cause not found."})
     locked.rca = rca
     return locked
+
+
+def _guard_rca_still_mutable(rca: RootCauseAnalysis) -> None:
+    """Fail closed if another writer already moved RCA to a terminal status."""
+    _assert_mutable(rca)
+    matched = (
+        RootCauseAnalysis.objects.filter(pk=rca.pk)
+        .exclude(status__in=TERMINAL_RCA_STATUSES)
+        .update(updated_at=timezone.now())
+    )
+    if matched != 1:
+        raise ValidationError(
+            {"status": "Closed or cancelled RCA records are historically immutable."}
+        )
 
 
 def _rca_code_conflict(exc: Exception) -> ValidationError:
@@ -168,7 +182,7 @@ def _cause_has_evidence(cause: RcaCause) -> bool:
     return cause.evidence_links.exists()
 
 
-@transaction.atomic
+@atomic_fn
 def create_rca(
     *,
     actor: User,
@@ -235,11 +249,11 @@ def create_rca(
     return rca
 
 
-@transaction.atomic
+@atomic_fn
 def start_rca(*, actor: User, rca_id: uuid.UUID) -> RootCauseAnalysis:
     rca = _locked_rca(rca_id)
     _require(actor, PERM_MANAGE, rca.organization_id)
-    _assert_mutable(rca)
+    _guard_rca_still_mutable(rca)
     _transition(rca, RcaStatus.IN_PROGRESS)
     rca.status = RcaStatus.IN_PROGRESS
     rca.save(update_fields=["status", "updated_at"])
@@ -258,7 +272,7 @@ def start_rca(*, actor: User, rca_id: uuid.UUID) -> RootCauseAnalysis:
     return rca
 
 
-@transaction.atomic
+@atomic_fn
 def add_rca_participant(
     *,
     actor: User,
@@ -269,7 +283,7 @@ def add_rca_participant(
 ) -> RcaParticipant:
     rca = _locked_rca(rca_id)
     _require(actor, PERM_MANAGE, rca.organization_id)
-    _assert_mutable(rca)
+    _guard_rca_still_mutable(rca)
     row = RcaParticipant(
         rca=rca,
         participant=participant,
@@ -289,7 +303,7 @@ def add_rca_participant(
     return row
 
 
-@transaction.atomic
+@atomic_fn
 def add_five_why_step(
     *,
     actor: User,
@@ -300,7 +314,7 @@ def add_five_why_step(
 ) -> RcaFiveWhyStep:
     rca = _locked_rca(rca_id)
     _require(actor, PERM_MANAGE, rca.organization_id)
-    _assert_mutable(rca)
+    _guard_rca_still_mutable(rca)
     step = RcaFiveWhyStep(
         rca=rca,
         sequence=sequence,
@@ -325,7 +339,7 @@ def add_five_why_step(
     return step
 
 
-@transaction.atomic
+@atomic_fn
 def add_fishbone_entry(
     *,
     actor: User,
@@ -336,7 +350,7 @@ def add_fishbone_entry(
 ) -> RcaFishboneEntry:
     rca = _locked_rca(rca_id)
     _require(actor, PERM_MANAGE, rca.organization_id)
-    _assert_mutable(rca)
+    _guard_rca_still_mutable(rca)
     if category not in RcaFishboneCategory.values:
         raise ValidationError({"category": "Unknown fishbone category."})
     entry = RcaFishboneEntry(
@@ -363,7 +377,7 @@ def add_fishbone_entry(
     return entry
 
 
-@transaction.atomic
+@atomic_fn
 def add_possible_cause(
     *,
     actor: User,
@@ -374,7 +388,7 @@ def add_possible_cause(
 ) -> RcaCause:
     rca = _locked_rca(rca_id)
     _require(actor, PERM_MANAGE, rca.organization_id)
-    _assert_mutable(rca)
+    _guard_rca_still_mutable(rca)
     cause = RcaCause(
         rca=rca,
         statement=(statement or "").strip(),
@@ -409,7 +423,7 @@ def add_possible_cause(
     return cause
 
 
-@transaction.atomic
+@atomic_fn
 def add_rca_evidence(
     *,
     actor: User,
@@ -420,10 +434,10 @@ def add_rca_evidence(
 ) -> RcaEvidenceLink:
     rca = _locked_rca(rca_id)
     _require(actor, PERM_MANAGE, rca.organization_id)
-    _assert_mutable(rca)
+    _guard_rca_still_mutable(rca)
     cause = None
     if cause_id is not None:
-        cause = RcaCause.objects.select_for_update().filter(pk=cause_id, rca=rca).first()
+        cause = lock_queryset(RcaCause.objects.filter(pk=cause_id, rca=rca)).first()
         if cause is None:
             raise ValidationError({"cause_id": "Cause does not belong to this RCA."})
     if linked_object_id is not None:
@@ -460,13 +474,13 @@ def add_rca_evidence(
     return link
 
 
-@transaction.atomic
+@atomic_fn
 def mark_cause_supported(
     *, actor: User, cause_id: uuid.UUID, evidence_citation: str = ""
 ) -> RcaCause:
     cause = _locked_cause(cause_id)
     _require(actor, PERM_MANAGE, cause.rca.organization_id)
-    _assert_mutable(cause.rca)
+    _guard_rca_still_mutable(cause.rca)
     if cause.state != RcaCauseState.POSSIBLE_CAUSE:
         raise ValidationError({"state": "Only a possible cause can be marked supported."})
     extra = (evidence_citation or "").strip()
@@ -502,14 +516,14 @@ def mark_cause_supported(
     return cause
 
 
-@transaction.atomic
+@atomic_fn
 def confirm_root_cause(
     *, actor: User, cause_id: uuid.UUID, confirmation_note: str = ""
 ) -> RcaCause:
     """Human-only confirmation. Software/AI must never call this autonomously."""
     cause = _locked_cause(cause_id)
     _require(actor, PERM_CONFIRM, cause.rca.organization_id)
-    _assert_mutable(cause.rca)
+    _guard_rca_still_mutable(cause.rca)
     if cause.state != RcaCauseState.SUPPORTED_CAUSE:
         raise ValidationError(
             {
@@ -562,13 +576,13 @@ def confirm_root_cause(
     return cause
 
 
-@transaction.atomic
+@atomic_fn
 def record_rca_verification(
     *, actor: User, rca_id: uuid.UUID, verification_notes: str
 ) -> RootCauseAnalysis:
     rca = _locked_rca(rca_id)
     _require(actor, PERM_CONFIRM, rca.organization_id)
-    _assert_mutable(rca)
+    _guard_rca_still_mutable(rca)
     notes = (verification_notes or "").strip()
     if not notes:
         raise ValidationError({"verification_notes": "Verification notes are required."})
@@ -601,7 +615,7 @@ def record_rca_verification(
     return rca
 
 
-@transaction.atomic
+@atomic_fn
 def link_confirmed_cause_to_capa(
     *,
     actor: User,
@@ -613,7 +627,7 @@ def link_confirmed_cause_to_capa(
     cause = _locked_cause(cause_id)
     org = cause.rca.organization
     _require(actor, PERM_CAPA, org.id)
-    _assert_mutable(cause.rca)
+    _guard_rca_still_mutable(cause.rca)
     if cause.state != RcaCauseState.CONFIRMED_ROOT_CAUSE:
         raise ValidationError({"state": "CAPA may be linked only from a CONFIRMED_ROOT_CAUSE."})
     from apps.capa.models import CorrectiveAction
@@ -666,16 +680,29 @@ def link_confirmed_cause_to_capa(
     return link
 
 
-@transaction.atomic
+@atomic_fn
 def close_rca(*, actor: User, rca_id: uuid.UUID) -> RootCauseAnalysis:
     rca = _locked_rca(rca_id)
     _require(actor, PERM_MANAGE, rca.organization_id)
-    _assert_mutable(rca)
+    _guard_rca_still_mutable(rca)
+    expected_status = rca.status
     _transition(rca, RcaStatus.CLOSED)
-    rca.status = RcaStatus.CLOSED
-    rca.closed_by = actor
-    rca.closed_at = timezone.now()
-    rca.save(update_fields=["status", "closed_by", "closed_at", "updated_at"])
+    now = timezone.now()
+    try:
+        require_conditional_update(
+            RootCauseAnalysis.objects.all(),
+            expected={"pk": rca.id, "status": expected_status},
+            updates={
+                "status": RcaStatus.CLOSED,
+                "closed_by": actor,
+                "closed_at": now,
+            },
+        )
+    except TransitionConflictError as exc:
+        raise ValidationError(
+            {"status": "Closed or cancelled RCA records are historically immutable."}
+        ) from exc
+    rca.refresh_from_db()
     _append_event(
         rca=rca,
         event_type="RCA_CLOSED",
@@ -691,16 +718,29 @@ def close_rca(*, actor: User, rca_id: uuid.UUID) -> RootCauseAnalysis:
     return rca
 
 
-@transaction.atomic
+@atomic_fn
 def cancel_rca(*, actor: User, rca_id: uuid.UUID) -> RootCauseAnalysis:
     rca = _locked_rca(rca_id)
     _require(actor, PERM_MANAGE, rca.organization_id)
-    _assert_mutable(rca)
+    _guard_rca_still_mutable(rca)
+    expected_status = rca.status
     _transition(rca, RcaStatus.CANCELLED)
-    rca.status = RcaStatus.CANCELLED
-    rca.closed_by = actor
-    rca.closed_at = timezone.now()
-    rca.save(update_fields=["status", "closed_by", "closed_at", "updated_at"])
+    now = timezone.now()
+    try:
+        require_conditional_update(
+            RootCauseAnalysis.objects.all(),
+            expected={"pk": rca.id, "status": expected_status},
+            updates={
+                "status": RcaStatus.CANCELLED,
+                "closed_by": actor,
+                "closed_at": now,
+            },
+        )
+    except TransitionConflictError as exc:
+        raise ValidationError(
+            {"status": "Closed or cancelled RCA records are historically immutable."}
+        ) from exc
+    rca.refresh_from_db()
     _append_event(
         rca=rca,
         event_type="RCA_CANCELLED",

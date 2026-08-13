@@ -2,54 +2,83 @@
 
 ## Executive status
 
-PostgreSQL remains the authoritative system of record. MongoDB remains an assessment stream only.
-
-Exact gate status from the MongoDB POC results:
-
 ```text
-STATUS: MONGODB POC PARTIAL — ISOLATED INVARIANTS PASSED; FULL APPLICATION NOT PROVEN — DO NOT MIGRATE
+STARTING_BRANCH=feature/mongodb-same-maintainpro-db
+STARTING_SHA=c140d72
+MAIN_SHA=d5a4460
+ORIGIN_MAIN_SHA=d5a4460
 ```
 
-Exact cutover status from the same document:
+PostgreSQL remains the authoritative system of record on `main`.
 
 ```text
-STATUS: MONGODB POC FAILED FOR CUTOVER — DO NOT MIGRATE
+CONTINUATION REQUIRED — MONGODB FUNCTIONAL PARITY MIGRATION CHECKPOINT CREATED
 ```
 
-## Handover blocker statement
+---
 
-MongoDB cutover must be treated as professionally blocked at handover time because:
+## Production target (unchanged)
 
-- the POC proved only isolated mirror-model invariants
-- full application compatibility was not demonstrated
-- the default application path still targets PostgreSQL
-- the required owner decision `APR-020` is still outstanding
+```text
+Host route: via MONGODB_URI (do not hard-code 127.0.0.1:27018 in Python)
+Logical database: mgintginpro_prod
+FG namespace: fg_
+Isolated POC only: fg_same_db_poc
+Company Mongo writes: NONE
+MaintainPro impact: NONE
+main merged: NO
+```
 
-## Specific technical blockers cited in the repo
+---
 
-- `select_for_update` parity not proven
-- nested savepoint behavior unsupported
-- `prefetch_related` unsupported for the assessed backend path
-- `OuterRef` / `Subquery` production selectors not fully proven
-- stock Django `auth.User` AutoField compatibility not proven for cutover
-- full application pytest suite on MongoDB not completed
+## Checkpoint progress
 
-## Safe handover language
+| Item | Status |
+| --- | --- |
+| Persistence facade | Extended — `locked_get`, `prefetch_related_compat`, `cas_status_transition`, Mongo QuerySet safety net |
+| Checklist versioning | Done — unique(template, version_number)+retry, CAS publish/retire, draft immutability guard |
+| Scheduling | Done — `lock_queryset`/`atomic_fn`, unique occurrence_key upsert, CAS cancel |
+| CAPA | Done — `locked_get` + status CAS close/verify/effectiveness + open guard |
+| NCR / Hold | Done — `locked_get` + status CAS close + open guard |
+| Access-control governance | Done — last raw `select_for_update` sites → `lock_queryset` + `atomic_fn` |
+| Production `.select_for_update(` | **0** outside persistence facade helper |
+| Operational `.prefetch_related(` | **0** outside facade/compat; recording uses batched `load_version_items_for_recording` |
+| Health | Backend-aware: Mongo mode pings Mongo+Redis, not PostgreSQL |
+| FG-only backup plan | `docs/handover/MONGO_BACKUP_RESTORE_SHARED_DB.md` |
+| Concurrency spikes (PG harness) | Checklist / scheduling / CAPA / NCR / core persistence — green |
+| Full Mongo pytest suite | Not run |
+| Live company read-only audit | Script ready — not executed |
 
-Use one of these statements:
+### Inventory counts (this checkpoint)
 
-- PostgreSQL is the current system of record.
-- MongoDB was evaluated through an isolated POC.
-- MongoDB cutover is blocked and must not be presented as the migration path.
+```text
+SELECT_FOR_UPDATE INITIAL=137
+SELECT_FOR_UPDATE CURRENT_RAW_PRODUCTION=0  (facade helper only)
+SELECT_FOR_UPDATE MIGRATED≈137
 
-Do not say:
+PREFETCH INITIAL=34
+PREFETCH CURRENT_RAW_PRODUCTION=0  (compat helper / Mongo no-op only)
+PREFETCH REMAINING_COMPAT_SITES≈operational via prefetch_related_compat
 
-- MongoDB is approved
-- MongoDB passed cutover
-- the application has migrated
+TRANSACTION.ATOMIC ≈328 remaining (many behind atomic_fn / PG-only paths)
+LOWER / FUNCTION ≈87 (still to rewrite for Mongo)
+```
 
-## References
+---
 
-- [../migration/MONGODB_POC_RESULTS.md](../migration/MONGODB_POC_RESULTS.md)
-- [../architecture/ADR-018-DATABASE-PLATFORM-MONGODB-ASSESSMENT.md](../architecture/ADR-018-DATABASE-PLATFORM-MONGODB-ASSESSMENT.md)
-- [DATABASE.md](DATABASE.md)
+## Next exact action
+
+1. Isolated Mongo POC (`fg_same_db_poc`): migrate + run full pytest under `mongo_same_db_poc`
+2. Rewrite high-priority `Lower()` / function expressions (employee_code uniqueness, search)
+3. Contrib Mongo AppConfig activation (POC only) — auth/session/admin proof
+4. Full recording → Supervisor → QA → RCA workflow on **actual** isolated Mongo
+5. Isolated FG-only dump/restore drill
+6. PostgreSQL regression + quality gates
+
+---
+
+## Safety
+
+- Do not write to `mgintginpro_prod`
+- Do not merge `main`
+- Do not touch MaintainPro data

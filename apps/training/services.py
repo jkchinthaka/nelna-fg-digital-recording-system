@@ -13,6 +13,7 @@ from apps.access_control.models import Role
 from apps.access_control.services import Scope, require_permission
 from apps.accounts.models import User
 from apps.checklists.models import ChecklistTemplate
+from apps.core.persistence import lock_queryset, locked_get
 from apps.instruments.models import Equipment
 from apps.organizations.models import Organization
 from apps.organizations.services import normalize_code, normalize_name
@@ -263,12 +264,9 @@ def update_training_record(
     Scope associations are immutable after create (re-record + SUPERSEDE instead).
     """
     user = _require_authenticated_actor(actor)
-    record = (
-        TrainingRecord.objects.select_for_update(of=("self",))
-        .select_related("organization")
-        .filter(pk=training_record_id)
-        .first()
-    )
+    record = lock_queryset(
+        TrainingRecord.objects.select_related("organization").filter(pk=training_record_id)
+    ).first()
     if record is None:
         raise ValidationError({"training": "Training record not found."})
     require_permission(
@@ -331,7 +329,7 @@ def set_training_record_status(
     status: str,
 ) -> TrainingRecord:
     user = _require_authenticated_actor(actor)
-    record = TrainingRecord.objects.select_for_update().filter(pk=training_record_id).first()
+    record = locked_get(TrainingRecord, pk=training_record_id)
     if record is None:
         raise ValidationError({"training": "Training record not found."})
     require_permission(
@@ -380,11 +378,9 @@ def set_training_enforcement_policy(
     if gate_mode not in TrainingGateMode.values:
         raise ValidationError({"gate_mode": "Unknown training gate mode."})
 
-    policy = (
-        TrainingEnforcementPolicy.objects.select_for_update()
-        .filter(organization=organization)
-        .first()
-    )
+    policy = lock_queryset(
+        TrainingEnforcementPolicy.objects.filter(organization=organization)
+    ).first()
     created = False
     before_mode: str | None = None
     if policy is None:

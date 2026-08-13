@@ -52,6 +52,7 @@ from apps.batch_dossier.selectors import (
     supervisor_reviews_for_batch,
     tasks_for_batch,
 )
+from apps.core.persistence import lock_queryset
 from apps.organizations.models import Organization
 from apps.security_audit.services import record_event
 
@@ -144,7 +145,7 @@ def upsert_batch_dossier_policy(
 ) -> BatchDossierPolicy:
     user = _require_actor(actor)
     require_permission(user, MANAGE_POLICY, scope=_org_scope(organization.id))
-    policy, _created = BatchDossierPolicy.objects.select_for_update().get_or_create(
+    policy, _created = lock_queryset(BatchDossierPolicy.objects.all()).get_or_create(
         organization=organization,
         defaults={
             "pdf_export_enabled": False,

@@ -10,6 +10,7 @@ from django.conf import settings
 from django.contrib.auth import login, logout
 from django.core.exceptions import ValidationError
 from django.db import transaction
+from apps.core.persistence import atomic_fn, conditional_update, lock_queryset
 from django.http import HttpRequest
 from django.utils import timezone
 
@@ -209,47 +210,65 @@ def authenticate_login(
     )
 
 
-@transaction.atomic
+@atomic_fn
 def record_failed_login(user: User, *, request: HttpRequest | None = None) -> User:
-    """Increment failure counters under row lock; lock account at threshold."""
+    """Increment failure counters with CAS; lock account at threshold."""
     from apps.security_audit.services import record_event
 
-    locked_user = _ensure_user(
-        User.objects.select_for_update().get(pk=user.pk),
-        context="record_failed_login",
-    )
-    if locked_user.is_locked:
-        return locked_user
-
-    now = timezone.now()
-    locked_user.failed_login_count += 1
-    locked_user.last_failed_login_at = now
-    update_fields = ["failed_login_count", "last_failed_login_at"]
-
-    if locked_user.failed_login_count >= _max_failed_attempts():
-        locked_user.locked_until = now + timedelta(minutes=_lockout_minutes())
-        update_fields.append("locked_until")
-        locked_user.save(update_fields=update_fields)
-        meta = _client_meta(request)
-        record_event(
-            event_type="ACCOUNT_LOCKED",
-            subject_user=locked_user,
-            request_id=meta["request_id"],
-            ip_address=meta["ip_address"],
-            user_agent_summary=meta["user_agent"],
-            metadata={"failed_login_count": locked_user.failed_login_count},
+    # Retry loop for CAS counter increment
+    for _attempt in range(5):
+        locked_user = _ensure_user(
+            lock_queryset(User.objects.filter(pk=user.pk)).get(),
+            context="record_failed_login",
         )
-    else:
-        locked_user.save(update_fields=update_fields)
+        if locked_user.is_locked:
+            return locked_user
 
-    return locked_user
+        now = timezone.now()
+        current_count = locked_user.failed_login_count
+        new_count = current_count + 1
+
+        # Atomic CAS increment
+        updates = {
+            "failed_login_count": new_count,
+            "last_failed_login_at": now,
+        }
+
+        # If this increment crosses threshold, also set lockout
+        if new_count >= _max_failed_attempts():
+            updates["locked_until"] = now + timedelta(minutes=_lockout_minutes())
+
+        result = conditional_update(
+            User.objects.all(),
+            expected={"pk": user.pk, "failed_login_count": current_count},
+            updates=updates,
+        )
+
+        if result.applied:
+            # CAS succeeded; re-read for audit
+            locked_user = User.objects.get(pk=user.pk)
+            if locked_user.locked_until is not None and locked_user.locked_until > now:
+                meta = _client_meta(request)
+                record_event(
+                    event_type="ACCOUNT_LOCKED",
+                    subject_user=locked_user,
+                    request_id=meta["request_id"],
+                    ip_address=meta["ip_address"],
+                    user_agent_summary=meta["user_agent"],
+                    metadata={"failed_login_count": locked_user.failed_login_count},
+                )
+            return locked_user
+        # CAS conflict; retry
+
+    # Fallback: return current state after retries exhausted
+    return User.objects.get(pk=user.pk)
 
 
-@transaction.atomic
+@atomic_fn
 def record_successful_login(user: User, *, request: HttpRequest) -> User:
     """Reset failure counters, stamp success time, establish session with key cycle."""
     locked_user = _ensure_user(
-        User.objects.select_for_update().get(pk=user.pk),
+        lock_queryset(User.objects.filter(pk=user.pk)).get(),
         context="record_successful_login",
     )
     now = timezone.now()
@@ -361,7 +380,7 @@ def unlock_account(
     from apps.security_audit.services import record_event
 
     locked_user = _ensure_user(
-        User.objects.select_for_update().get(pk=user.pk),
+        lock_queryset(User.objects.filter(pk=user.pk)).get(),
         context="unlock_user",
     )
     locked_user.failed_login_count = 0
