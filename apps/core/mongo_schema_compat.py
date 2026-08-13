@@ -58,8 +58,41 @@ def _condition_contains_isnull(condition: Any) -> bool:
     return False
 
 
-def rewrite_unique_constraint(constraint: UniqueConstraint) -> UniqueConstraint:
-    """Rewrite Lower/Upper expression unique constraints to field-based uniques."""
+def _isnull_false_only_fields(condition: Any) -> list[str] | None:
+    """Return field names when ``condition`` is only ``field__isnull=False`` clause(s)."""
+    if condition is None:
+        return None
+    try:
+        children = list(condition.children)
+    except Exception:  # noqa: BLE001
+        return None
+    if not children:
+        return None
+    fields: list[str] = []
+    for child in children:
+        if isinstance(child, tuple) and len(child) == 2:
+            key, value = child
+            if not isinstance(key, str) or not key.endswith("__isnull"):
+                return None
+            if value is not False:
+                return None
+            fields.append(key[: -len("__isnull")])
+        else:
+            # Nested Q — not a simple isnull-false-only predicate
+            return None
+    return fields or None
+
+
+def rewrite_unique_constraint(constraint: UniqueConstraint) -> UniqueConstraint | None:
+    """Rewrite Lower/Upper expression unique constraints to field-based uniques.
+
+    Partial unique handling:
+    * ``field__isnull=False`` only → plain unique on field(s) (Mongo-safe; matches
+      nullable unique semantics used for employee_code).
+    * Any other predicate (e.g. ``batch_reference__gt ''``) → skip entirely so we
+      do not incorrectly reject legitimate empty-valued rows. Service-layer /
+      alternate uniques remain authoritative.
+    """
     if not isinstance(constraint, UniqueConstraint):
         return constraint
     expressions = list(getattr(constraint, "expressions", ()) or ())
@@ -76,18 +109,35 @@ def rewrite_unique_constraint(constraint: UniqueConstraint) -> UniqueConstraint:
                 return constraint
             if field_name not in fields:
                 fields.append(field_name)
+
     condition = constraint.condition
-    # Partial unique predicates (isnull / ~ / complex Q) are not fully supported by
-    # django-mongodb-backend index builders. Drop them; field uniqueness still applies
-    # and service-layer guards remain authoritative for partial business rules.
     if condition is not None:
-        logger.warning(
-            "Mongo schema compat: dropping partial predicate on unique %s "
-            "(service-layer uniqueness remains authoritative for partial cases)",
+        isnull_fields = _isnull_false_only_fields(condition)
+        if isnull_fields is None:
+            logger.warning(
+                "Mongo schema compat: SKIPPING partial unique %s on Mongo "
+                "(predicate not convertible; service-layer / alternate unique remains)",
+                constraint.name,
+            )
+            return None
+        for name in isnull_fields:
+            if name not in fields:
+                fields.append(name)
+        logger.info(
+            "Mongo schema compat: rewriting nullable partial unique %s → fields=%s",
             constraint.name,
+            fields,
         )
-        condition = None
-    if not expressions and condition is constraint.condition:
+        return UniqueConstraint(
+            fields=fields,
+            name=constraint.name,
+            condition=None,
+            deferrable=constraint.deferrable,
+            include=constraint.include,
+            nulls_distinct=getattr(constraint, "nulls_distinct", None),
+        )
+
+    if not expressions:
         return constraint
     logger.info(
         "Mongo schema compat: rewriting unique constraint %s → fields=%s",
@@ -97,17 +147,26 @@ def rewrite_unique_constraint(constraint: UniqueConstraint) -> UniqueConstraint:
     return UniqueConstraint(
         fields=fields,
         name=constraint.name,
-        condition=condition,
+        condition=None,
         deferrable=constraint.deferrable,
         include=constraint.include,
         nulls_distinct=getattr(constraint, "nulls_distinct", None),
     )
 
 
-def rewrite_index(index: Index) -> Index:
-    """Rewrite Lower/Upper expression indexes to plain field indexes."""
+def rewrite_index(index: Index) -> Index | None:
+    """Rewrite Lower/Upper expression indexes to plain field indexes.
+
+    Partial indexes are skipped on Mongo (same rationale as partial uniques).
+    """
     if not isinstance(index, Index):
         return index
+    if index.condition is not None:
+        logger.warning(
+            "Mongo schema compat: SKIPPING partial index %s on Mongo",
+            index.name,
+        )
+        return None
     expressions = list(getattr(index, "expressions", ()) or ())
     fields: list[str] = list(index.fields or [])
     if index.contains_expressions:
@@ -122,17 +181,10 @@ def rewrite_index(index: Index) -> Index:
                 return index
             if field_name not in fields:
                 fields.append(field_name)
-    condition = index.condition
-    if condition is not None:
-        logger.warning(
-            "Mongo schema compat: dropping partial predicate on index %s",
-            index.name,
-        )
-        condition = None
-    if not index.contains_expressions and condition is index.condition:
+    if not index.contains_expressions:
         return index
     logger.info("Mongo schema compat: rewriting index %s → fields=%s", index.name, fields)
-    return Index(fields=fields, name=index.name, condition=condition)
+    return Index(fields=fields, name=index.name, condition=None)
 
 
 def apply_mongo_schema_compat() -> None:
@@ -183,7 +235,27 @@ def apply_mongo_schema_compat() -> None:
 
     def create_model(self: Any, model: Any, *args: Any, **kwargs: Any) -> None:
         _ensure_model_table_prefixed(model)
-        return _orig_create_model(self, model, *args, **kwargs)
+        from django.db import DatabaseError
+        from pymongo.errors import CollectionInvalid
+
+        try:
+            return _orig_create_model(self, model, *args, **kwargs)
+        except (CollectionInvalid, DatabaseError) as exc:
+            if "already exists" not in str(exc).lower():
+                raise
+            # Idempotent create for namespaced collections (re-migrate / leftover POC).
+            logger.warning(
+                "Mongo schema compat: collection %s already exists; ensuring indexes",
+                model._meta.db_table,
+            )
+            create_indexes = getattr(self, "_create_model_indexes", None)
+            if callable(create_indexes):
+                create_indexes(model)
+            for field in model._meta.local_many_to_many:
+                through = field.remote_field.through
+                if through._meta.auto_created:
+                    self.create_model(through)
+            return None
 
     def delete_model(self: Any, model: Any, *args: Any, **kwargs: Any) -> None:
         _ensure_model_table_prefixed(model)
@@ -247,6 +319,8 @@ def apply_mongo_schema_compat() -> None:
             return
         if isinstance(constraint, UniqueConstraint):
             constraint = rewrite_unique_constraint(constraint)
+            if constraint is None:
+                return
         try:
             return _orig_add_constraint(self, model, constraint, *args, **kwargs)
         except NotSupportedError as exc:
@@ -263,6 +337,8 @@ def apply_mongo_schema_compat() -> None:
             return None
         if isinstance(constraint, UniqueConstraint):
             constraint = rewrite_unique_constraint(constraint)
+            if constraint is None:
+                return None
         try:
             return _orig_remove_constraint(self, model, constraint, *args, **kwargs)
         except Exception as exc:  # noqa: BLE001
@@ -276,6 +352,8 @@ def apply_mongo_schema_compat() -> None:
     def add_index(self: Any, model: Any, index: Any, *args: Any, **kwargs: Any) -> None:
         if isinstance(index, Index):
             index = rewrite_index(index)
+            if index is None:
+                return
         try:
             return _orig_add_index(self, model, index, *args, **kwargs)
         except NotSupportedError as exc:
@@ -290,6 +368,8 @@ def apply_mongo_schema_compat() -> None:
     def remove_index(self: Any, model: Any, index: Any, *args: Any, **kwargs: Any) -> None:
         if isinstance(index, Index):
             index = rewrite_index(index)
+            if index is None:
+                return None
         try:
             return _orig_remove_index(self, model, index, *args, **kwargs)
         except Exception as exc:  # noqa: BLE001
