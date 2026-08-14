@@ -12,7 +12,6 @@ from pathlib import Path
 from typing import Any
 
 from django.core.exceptions import ValidationError
-from django.db.models.functions import Lower
 
 from apps.core.persistence.transactions import atomic_fn
 from apps.accounts.models import User
@@ -437,9 +436,10 @@ def version_structure_fingerprint(version: ChecklistVersion) -> str:
 
 def _get_org_template(*, organization_id: uuid.UUID) -> ChecklistTemplate | None:
     return (
-        ChecklistTemplate.objects.filter(organization_id=organization_id)
-        .annotate(code_lower=Lower("code"))
-        .filter(code_lower=FG_QA_001_TEMPLATE_CODE.lower())
+        ChecklistTemplate.objects.filter(
+            organization_id=organization_id,
+            code__iexact=FG_QA_001_TEMPLATE_CODE,
+        )
         .select_related("organization")
         .first()
     )
