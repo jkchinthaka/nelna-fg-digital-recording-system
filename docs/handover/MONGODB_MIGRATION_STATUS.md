@@ -4,8 +4,8 @@
 
 ```text
 STARTING_BRANCH=feature/mongodb-same-maintainpro-db
-STARTING_SHA=e3a5e67
-FINAL_SHA=7c1e576
+STARTING_SHA=ea128ae
+FINAL_SHA=bd4252f (+ uncommitted test skips for PG-only assertions)
 MAIN_SHA=d5a4460
 MAIN_MERGED=NO
 REAL_COMPANY_MONGO_WRITTEN_TO=NO
@@ -33,51 +33,57 @@ Isolated POC: fg_same_db_poc @ compose.mongo-poc.yaml (127.0.0.1:27027 / nelnaPo
 
 | Item | Status |
 | --- | --- |
-| Production `transaction.atomic` → facade | **Done** — 303 `@atomic_fn` + 11 `with atomic()` across 50 service modules |
+| Working-tree safety | Restored **104** accidental emptied/EOL files; preserved unrelated WIP |
+| Isolated POC migrate | **Green** — 232 `fg_*`; NON_FG=0 |
+| Mongo POC SECRET_KEY / health tests | **Fixed** — committed `bd4252f` |
 | Runtime `Lower()` annotate | **Rewritten** — `proposal_loader` uses `code__iexact` |
-| Auth + module concurrency spikes | **Green** — 43 passed |
-| Decimal BSON round-trip | **Green** — 8/8 values (dedicated test) |
-| Dedicated cross-org Mongo suite | **Green** — service + HTTP history/print/CSV denial |
-| FG dump → restore drill | **Green** — 232 `fg_*`; refuse prod dump/restore; `NON_FG=0`; users 1→1 |
-| Celery worker live | **Green** — `health_echo` + `generate_due_checklist_tasks` on Mongo+Redis |
-| Celery Beat | **Boot started**; schedule `*/5`; duplicate prevention `replay_safe=True` |
-| Health | **Green** — `/health/live/` + `/health/ready/` mongodb+redis+celery_broker ok |
-| Full Mongo pytest + coverage ≥80% | **In progress** |
-| Full PG regression + quality/security | Not complete |
+| Full Mongo pytest | **Partial** — **788 passed / 154 failed / 2 skipped** (944 collected; ~63 min) |
+| Mongo coverage ≥80% | Not measured on green suite (prior incomplete run ~29%) |
+| Unique / IntegrityError parity | Still failing on some case-insensitive / partial unique paths |
+| `select_related` on list returns | Still failing in some recording calculated-field paths |
+| PG-only test assertions under Mongo | Partial skips added (settings/persistence/namespace) — uncommitted |
+| Decimal BSON / cross-org / spikes | Prior pass green (needs re-confirm after fixes) |
+| FG dump/restore / Celery / health | Prior pass green (needs re-confirm after fixes) |
 | Browser Mongo smoke | Not complete |
+| Full PG regression + quality/security | Not complete |
+| Final release package | Not rebuilt from this SHA |
 
 ### Focused Mongo evidence this pass
 
 ```text
-SPIKES+AUTH: 43 passed
-DECIMAL+CROSS_ORG: 10 passed
-FG_DUMP_COLLECTIONS: 232
-FG_RESTORE: 232 fg_*; NON_FG_COLLECTIONS_WRITTEN=0
-CELERY_WORKER: health_echo + generate_due executed
-HEALTH_READY: mongodb ok, redis ok, celery_broker ok
+FULL_MONGO_COLLECTED: 944
+FULL_MONGO_PASSED: 788
+FULL_MONGO_FAILED: 154
+FULL_MONGO_SKIPPED: 2
+EVIDENCE_FILE: .gate_mongo_full12.txt
+UI_RECHECK_AFTER_TRUNCATION_CLEAR: test_home_page_renders + login UI = 2 passed
 ```
 
 ---
 
-## Inventory (recalculated)
+## Inventory (recalculated on HEAD)
 
 ```text
-LOWER/FUNCTION: TOTAL≈102; UNRESOLVED runtime Lower=0 after iexact rewrite;
-  remaining aggregates treated as supported-under-suite (pending full-suite proof)
-TRANSACTION production raw django.atomic: 0 (migrated to facade)
+FUNCTION_INVENTORY_TOTAL≈92 (Lower≈90 mostly model Constraints; Upper=2 schema-compat)
+RUNTIME_LOWER_UNRESOLVED: 0 after iexact rewrite (model Constraints rewritten by mongo_schema_compat)
+TRANSACTION production raw django.atomic: facade migrated (atomic_fn / with atomic)
 NESTED_MONGO_SAVEPOINT_DEPENDENCY: 0 (facade nested atomic is Mongo no-op)
+select_for_update production: facade only
 ```
 
 ---
 
 ## Next exact action
 
-1. Finish full `pytest --ds=config.settings.mongo_same_db_poc --ignore=apps/mongo_poc` + coverage ≥80%
-2. Full PostgreSQL regression + quality/security gates
-3. Observe Celery Beat due-tick against Mongo worker
-4. Playwright/browser smoke on isolated Mongo runtime
-5. Rebuild release package from final green SHA
-6. Company cutover remains authorization-blocked
+1. Fix remaining unique-index / IntegrityError Mongo parity for org/assignment codes
+2. Fix `'list' object has no attribute 'select_related'` recording paths
+3. Re-run full `pytest --ds=config.settings.mongo_same_db_poc --ignore=apps/mongo_poc` to **FAILED=0**
+4. Mongo coverage ≥80% from that green suite
+5. Re-confirm concurrency + Decimal + cross-org + FG dump/restore + Celery worker/beat + health
+6. Playwright/browser smoke on isolated Mongo runtime
+7. Full PostgreSQL regression + quality/security gates
+8. Rebuild release package from final green SHA
+9. Company cutover remains authorization-blocked
 
 ---
 
@@ -86,3 +92,4 @@ NESTED_MONGO_SAVEPOINT_DEPENDENCY: 0 (facade nested atomic is Mongo no-op)
 - Do not use the OneDrive clone
 - Do not merge `main` automatically
 - Do not write to `mgintginpro_prod` / MaintainPro
+- Watch for accidental zero-byte truncation of source files (restore from HEAD only after proving)
